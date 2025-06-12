@@ -6,34 +6,42 @@ python3 train_GLYPH_SR.py \
     --val_hq_meta_path /home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl \
     --val_neg_meta_path /home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl \
 """
-import os
 import argparse
+import os
 from dataclasses import dataclass, fields
-import torch
+
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+import torch
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from sgm.util import instantiate_from_config
 from GLYPHSR.ControlNet import load_TS_ControlNet
-from GLYPHSR.util import *
 from GLYPHSR.dataloader import make_hqlq_dataloader
+from GLYPHSR.util import *
+from sgm.util import instantiate_from_config
 
 # Default device
 SR_DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 
 @dataclass
 class TrainConfig:
     # Data paths
     hq_meta_path: str = "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl"
-    neg_meta_path: str ="/home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl"
-    val_hq_meta_path: str  = "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl"
-    val_neg_meta_path: str  = "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl"
+    neg_meta_path: str = (
+        "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl"
+    )
+    val_hq_meta_path: str = (
+        "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl"
+    )
+    val_neg_meta_path: str = (
+        "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl"
+    )
 
     # Model & ControlNet
     yaml_file: str = "./model_configs/juggernautXL.yaml"
-    pretrained_ckpt: str = ""    # Path to pretrained ControlNet checkpoint
-    sign: str = "Q"              # ControlNet sign
+    pretrained_ckpt: str = ""  # Path to pretrained ControlNet checkpoint
+    sign: str = "Q"  # ControlNet sign
 
     # Training hyperparameters
     batch_size: int = 12
@@ -41,7 +49,7 @@ class TrainConfig:
     img_size_train: int = 512
     img_size_val: int = 256
     num_samples: int = 1
-    
+
     upscale: int = 2
     sign: str = "Q"
     seed: int = -1
@@ -86,7 +94,7 @@ class TrainConfig:
     ckpt_filename: str = "FT1_epoch{epoch:03d}-train_loss{train/loss:.4f}"
     monitor_metric: str = "train/loss"
     monitor_mode: str = "min"
-    
+
     # Prompts
     a_prompt: str = (
         "Cinematic, High Contrast, highly detailed, taken using a Canon EOS R camera, "
@@ -119,14 +127,22 @@ def parse_args():
         arg_name = f"--{field.name}"
         default = field.default
         if default is None:
-            parser.add_argument(arg_name, required=True, help=f"{field.name} (required)")
+            parser.add_argument(
+                arg_name, required=True, help=f"{field.name} (required)"
+            )
         elif isinstance(default, bool):
-            action = 'store_true' if not default else 'store_false'
-            parser.add_argument(arg_name, action=action, help=f"flag, default={default}")
+            action = "store_true" if not default else "store_false"
+            parser.add_argument(
+                arg_name, action=action, help=f"flag, default={default}"
+            )
         else:
             arg_type = type(default)
-            parser.add_argument(arg_name, type=arg_type, default=default,
-                                help=f"{field.name}, default={default}")
+            parser.add_argument(
+                arg_name,
+                type=arg_type,
+                default=default,
+                help=f"{field.name}, default={default}",
+            )
     return parser.parse_args()
 
 
@@ -145,8 +161,8 @@ def main():
         neg_meta_path=cfg.neg_meta_path,
         batch_size=cfg.batch_size,
         img_size=cfg.img_size_train,
-        include_types=("P_HQ","P_LQ","N_HQ","N_LQ"),
-        shuffle=True
+        include_types=("P_HQ", "P_LQ", "N_HQ", "N_LQ"),
+        shuffle=True,
     )
     val_loader = make_hqlq_dataloader(
         hq_meta_path=cfg.val_hq_meta_path,
@@ -154,15 +170,12 @@ def main():
         batch_size=1,
         img_size=cfg.img_size_val,
         include_types=("P_HQ",),
-        shuffle=False
+        shuffle=False,
     )
 
     # Load ControlNet-based SR model
     model, _ = load_TS_ControlNet(
-        cfg_path=cfg.yaml_file,
-        args=cfg,
-        device=SR_DEVICE,
-        sign=cfg.sign
+        cfg_path=cfg.yaml_file, args=cfg, device=SR_DEVICE, sign=cfg.sign
     )
 
     # Setup logging and callbacks
@@ -176,7 +189,7 @@ def main():
         save_top_k=1,
         save_last=True,
         every_n_epochs=1,
-        save_on_train_epoch_end=True
+        save_on_train_epoch_end=True,
     )
 
     # Initialize trainer
@@ -190,7 +203,7 @@ def main():
         check_val_every_n_epoch=1,
         num_sanity_val_steps=0,
         logger=tb_logger,
-        callbacks=[checkpoint_callback, lr_monitor]
+        callbacks=[checkpoint_callback, lr_monitor],
     )
 
     # Start training

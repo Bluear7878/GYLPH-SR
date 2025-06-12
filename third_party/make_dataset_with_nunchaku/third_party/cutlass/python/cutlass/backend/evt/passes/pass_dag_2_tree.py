@@ -40,17 +40,16 @@ from copy import deepcopy
 from cutlass.backend.evt.ir import DAGIR, TopoVisitorNode
 from cutlass.backend.evt.passes.pass_get_impl import PassGetImpl
 from cutlass.backend.evt.passes.pass_manager import EVTPassBase
-from cutlass.backend.evt.passes.pass_shape_type_propagation import PassShapeTypePropagation
+from cutlass.backend.evt.passes.pass_shape_type_propagation import \
+    PassShapeTypePropagation
 
 
 class PassDAG2Tree(EVTPassBase):
     """
     Convert the DAG IR to Tree by fusing subgraphs
     """
-    dependencies = [
-        PassShapeTypePropagation,
-        PassGetImpl
-    ]
+
+    dependencies = [PassShapeTypePropagation, PassGetImpl]
 
     def call(self):
         # Step 1: find the nodes that have multiple parents
@@ -104,7 +103,9 @@ class PassDAG2Tree(EVTPassBase):
                 all_input_nodes = set.union(*all_input_nodes)
                 all_output_nodes = set.union(*all_output_nodes)
 
-                new_subgraph_nodes = set.union(node_to_fuse, all_input_nodes, all_output_nodes)
+                new_subgraph_nodes = set.union(
+                    node_to_fuse, all_input_nodes, all_output_nodes
+                )
 
                 # Create the subgraph
                 subgraph_ = self.dag_ir._graph.subgraph(new_subgraph_nodes)
@@ -115,13 +116,16 @@ class PassDAG2Tree(EVTPassBase):
                         meta.disabled = True
                     subgraph.add_node(meta)
                 for edge in subgraph_.edges:
-                    subgraph.add_edge(edge[0], edge[1], self.dag_ir.get_edge_weight(edge[0], edge[1]))
-
+                    subgraph.add_edge(
+                        edge[0], edge[1], self.dag_ir.get_edge_weight(edge[0], edge[1])
+                    )
 
                 # Create the fused node
                 dag_node = TopoVisitorNode(
-                    name=f"dag_{lca}", subgraph=subgraph,
-                    output_node=self.dag_ir.get_node_meta(lca))
+                    name=f"dag_{lca}",
+                    subgraph=subgraph,
+                    output_node=self.dag_ir.get_node_meta(lca),
+                )
                 self.dag_ir.add_node(dag_node)
 
                 # Add input edges
@@ -144,4 +148,6 @@ class PassDAG2Tree(EVTPassBase):
         for node in self.dag_ir.nodes:
             out_degree = self.dag_ir.out_degree(node)
             if out_degree > 1:
-                raise RuntimeError(f"PassDAG2Tree failed. Node {node} still have outdegree = {out_degree}")
+                raise RuntimeError(
+                    f"PassDAG2Tree failed. Node {node} still have outdegree = {out_degree}"
+                )

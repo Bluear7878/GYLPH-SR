@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,22 +18,23 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*
-  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However, certain
-         existing integrations of CUTLASS require C++11 host compilers.
+  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However,
+  certain existing integrations of CUTLASS require C++11 host compilers.
 
-         Until this requirement can be lifted, certain headers with this annotation are required
-         to be remain consistent with C++11 syntax.
+         Until this requirement can be lifted, certain headers with this
+  annotation are required to be remain consistent with C++11 syntax.
 
          C++11 compatibility is enforced by `cutlass_test_unit_core_cpp11`.
 */
@@ -43,16 +44,16 @@
 #if defined(__CUDACC_RTC__)
 #include <cuda/std/cstdint>
 #else
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <type_traits>
 #endif
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/uint128.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/half.h"
+#include "cutlass/uint128.h"
 
 /**
  * \file
@@ -63,8 +64,7 @@ namespace cutlass {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-CUTLASS_HOST_DEVICE void swap(T &lhs, T &rhs) {
+template <typename T> CUTLASS_HOST_DEVICE void swap(T &lhs, T &rhs) {
   T tmp = lhs;
   lhs = rhs;
   rhs = tmp;
@@ -74,13 +74,12 @@ CUTLASS_HOST_DEVICE void swap(T &lhs, T &rhs) {
  * Static math utilities
  ******************************************************************************/
 
-/// Mixed precision dot product 
+/// Mixed precision dot product
 template <typename Index, typename LongIndex, int N>
-CUTLASS_HOST_DEVICE LongIndex dot(
-  Coord<N, Index> const &coord, 
-  Coord<N, LongIndex> const &stride, 
-  LongIndex acc = LongIndex()) {
-  
+CUTLASS_HOST_DEVICE LongIndex dot(Coord<N, Index> const &coord,
+                                  Coord<N, LongIndex> const &stride,
+                                  LongIndex acc = LongIndex()) {
+
   CUTLASS_PRAGMA_UNROLL
   for (int n = 0; n < N; ++n) {
     acc += LongIndex(coord[n]) * stride[n];
@@ -91,46 +90,40 @@ CUTLASS_HOST_DEVICE LongIndex dot(
 /**
  * Statically determine if N is a power-of-two
  */
-template <int N>
-struct is_pow2 {
+template <int N> struct is_pow2 {
   static bool const value = ((N & (N - 1)) == 0);
 };
 
 /**
  * Statically determine log2(N), rounded down
  */
-template <int N, int CurrentVal = N, int Count = 0>
-struct log2_down {
+template <int N, int CurrentVal = N, int Count = 0> struct log2_down {
   /// Static logarithm value
   enum { value = log2_down<N, (CurrentVal >> 1), Count + 1>::value };
 };
 
 // Base case
-template <int N, int Count>
-struct log2_down<N, 1, Count> {
+template <int N, int Count> struct log2_down<N, 1, Count> {
   enum { value = Count };
 };
 
 /**
  * Statically determine log2(N), rounded up
  */
-template <int N, int CurrentVal = N, int Count = 0>
-struct log2_up {
+template <int N, int CurrentVal = N, int Count = 0> struct log2_up {
   /// Static logarithm value
   enum { value = log2_up<N, (CurrentVal >> 1), Count + 1>::value };
 };
 
 // Base case
-template <int N, int Count>
-struct log2_up<N, 1, Count> {
+template <int N, int Count> struct log2_up<N, 1, Count> {
   enum { value = ((1 << Count) < N) ? Count + 1 : Count };
 };
 
 /**
  * Statically estimate sqrt(N) to the nearest power-of-two
  */
-template <int N>
-struct sqrt_est {
+template <int N> struct sqrt_est {
   enum { value = 1 << (log2_up<N>::value / 2) };
 };
 
@@ -138,8 +131,7 @@ struct sqrt_est {
  * For performing a constant-division with a compile-time assertion that the
  * Divisor evenly-divides the Dividend.
  */
-template <int Dividend, int Divisor>
-struct divide_assert {
+template <int Dividend, int Divisor> struct divide_assert {
   enum { value = Dividend / Divisor };
 
   static_assert((Dividend % Divisor == 0), "Not an even multiple");
@@ -153,27 +145,27 @@ struct divide_assert {
  * Round dividend up to the nearest multiple of divisor
  */
 template <typename dividend_t, typename divisor_t>
-CUTLASS_HOST_DEVICE dividend_t round_nearest(dividend_t dividend, divisor_t divisor) {
+CUTLASS_HOST_DEVICE dividend_t round_nearest(dividend_t dividend,
+                                             divisor_t divisor) {
   return ((dividend + divisor - 1) / divisor) * divisor;
 }
 
 template <typename value_t>
-CUTLASS_HOST_DEVICE
-constexpr
-value_t abs_for_integer(value_t a) {
+CUTLASS_HOST_DEVICE constexpr value_t abs_for_integer(value_t a) {
   return ((a > 0) ? a : -a);
 }
 /**
  * Greatest common divisor
  */
 template <typename value_t>
-CUTLASS_HOST_DEVICE
-CUTLASS_CONSTEXPR_IF_CXX17
-value_t gcd(value_t a, value_t b) {
+CUTLASS_HOST_DEVICE CUTLASS_CONSTEXPR_IF_CXX17 value_t gcd(value_t a,
+                                                           value_t b) {
   for (;;) {
-    if (a == 0) return cutlass::abs_for_integer(b);
+    if (a == 0)
+      return cutlass::abs_for_integer(b);
     b %= a;
-    if (b == 0) return cutlass::abs_for_integer(a);
+    if (b == 0)
+      return cutlass::abs_for_integer(a);
     a %= b;
   }
 }
@@ -182,46 +174,43 @@ value_t gcd(value_t a, value_t b) {
  * Least common multiple
  */
 template <typename value_t>
-CUTLASS_HOST_DEVICE
-CUTLASS_CONSTEXPR_IF_CXX17
-value_t lcm(value_t a, value_t b) {
+CUTLASS_HOST_DEVICE CUTLASS_CONSTEXPR_IF_CXX17 value_t lcm(value_t a,
+                                                           value_t b) {
   value_t temp = gcd(a, b);
 
-  return temp ? (cutlass::abs_for_integer(a) / temp * cutlass::abs_for_integer(b)) : 0;
+  return temp ? (cutlass::abs_for_integer(a) / temp *
+                 cutlass::abs_for_integer(b))
+              : 0;
 }
 
 /**
  * Greatest common divisor
  */
 template <typename value_t>
-CUTLASS_HOST_DEVICE
-constexpr
-value_t gcd_cxx11(value_t a, value_t b) {
-  return (a == 0 || b == 0) ? cutlass::abs_for_integer(a | b) : gcd_cxx11(b, a % b);
+CUTLASS_HOST_DEVICE constexpr value_t gcd_cxx11(value_t a, value_t b) {
+  return (a == 0 || b == 0) ? cutlass::abs_for_integer(a | b)
+                            : gcd_cxx11(b, a % b);
 }
 
 /**
  * Least common multiple
  */
 template <typename value_t>
-CUTLASS_HOST_DEVICE
-constexpr
-value_t lcm_cxx11(value_t a, value_t b) {
-  return gcd_cxx11(a, b) ? (cutlass::abs_for_integer(a) / gcd_cxx11(a, b) * cutlass::abs_for_integer(b)) : 0;
+CUTLASS_HOST_DEVICE constexpr value_t lcm_cxx11(value_t a, value_t b) {
+  return gcd_cxx11(a, b) ? (cutlass::abs_for_integer(a) / gcd_cxx11(a, b) *
+                            cutlass::abs_for_integer(b))
+                         : 0;
 }
-/// Returns the smallest value in the half-open range [a, a+b) that is a multiple of b
+/// Returns the smallest value in the half-open range [a, a+b) that is a
+/// multiple of b
 CUTLASS_HOST_DEVICE
 CUTLASS_CONSTEXPR_IF_CXX17
-int round_up(int a, int b) {
-  return ((a + b - 1) / b) * b;
-}
+int round_up(int a, int b) { return ((a + b - 1) / b) * b; }
 
 /// Returns the ceiling of (a / b)
 CUTLASS_HOST_DEVICE
 CUTLASS_CONSTEXPR_IF_CXX17
-int ceil_div(int a, int b) {
-  return (a + b - 1) / b;
-}
+int ceil_div(int a, int b) { return (a + b - 1) / b; }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -230,8 +219,7 @@ int ceil_div(int a, int b) {
  * difference between the below codes and
  * log2_up/down codes?
  */
-template <typename value_t>
-CUTLASS_HOST_DEVICE value_t clz(value_t x) {
+template <typename value_t> CUTLASS_HOST_DEVICE value_t clz(value_t x) {
   for (int i = 31; i >= 0; --i) {
     if ((1 << i) & x)
       return value_t(31 - i);
@@ -239,25 +227,24 @@ CUTLASS_HOST_DEVICE value_t clz(value_t x) {
   return 32;
 }
 
-template <typename value_t>
-CUTLASS_HOST_DEVICE value_t find_log2(value_t x) {
+template <typename value_t> CUTLASS_HOST_DEVICE value_t find_log2(value_t x) {
   int a = int(31 - clz(x));
-  a += (x & (x - 1)) != 0;  // Round up, add 1 if not a power of 2.
+  a += (x & (x - 1)) != 0; // Round up, add 1 if not a power of 2.
   return a;
 }
-
 
 /**
  * Find divisor, using find_log2
  */
-CUTLASS_HOST_DEVICE 
-void find_divisor(unsigned int& mul, unsigned int& shr, unsigned int denom) {
+CUTLASS_HOST_DEVICE
+void find_divisor(unsigned int &mul, unsigned int &shr, unsigned int denom) {
   if (denom == 1) {
     mul = 0;
     shr = 0;
   } else {
     unsigned int p = 31 + find_log2(denom);
-    unsigned m = unsigned(((1ull << p) + unsigned(denom) - 1) / unsigned(denom));
+    unsigned m =
+        unsigned(((1ull << p) + unsigned(denom) - 1) / unsigned(denom));
 
     mul = m;
     shr = p - 32;
@@ -267,15 +254,16 @@ void find_divisor(unsigned int& mul, unsigned int& shr, unsigned int denom) {
 /**
  * Find quotient and remainder using device-side intrinsics
  */
-CUTLASS_HOST_DEVICE 
-void fast_divmod(int& quo, int& rem, int src, int div, unsigned int mul, unsigned int shr) {
+CUTLASS_HOST_DEVICE
+void fast_divmod(int &quo, int &rem, int src, int div, unsigned int mul,
+                 unsigned int shr) {
 
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   // Use IMUL.HI if div != 1, else simply copy the source.
   quo = (div != 1) ? __umulhi(src, mul) >> shr : src;
-  #else
+#else
   quo = int((div != 1) ? int(((int64_t)src * mul) >> 32) >> shr : src);
-  #endif
+#endif
 
   // The remainder.
   rem = src - (quo * div);
@@ -283,14 +271,15 @@ void fast_divmod(int& quo, int& rem, int src, int div, unsigned int mul, unsigne
 
 // For long int input
 CUTLASS_HOST_DEVICE
-void fast_divmod(int& quo, int64_t& rem, int64_t src, int div, unsigned int mul, unsigned int shr) {
+void fast_divmod(int &quo, int64_t &rem, int64_t src, int div, unsigned int mul,
+                 unsigned int shr) {
 
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   // Use IMUL.HI if div != 1, else simply copy the source.
   quo = (div != 1) ? __umulhi(src, mul) >> shr : src;
-  #else
+#else
   quo = int((div != 1) ? ((src * mul) >> 32) >> shr : src);
-  #endif
+#endif
   // The remainder.
   rem = src - (quo * div);
 }
@@ -299,9 +288,10 @@ void fast_divmod(int& quo, int64_t& rem, int64_t src, int div, unsigned int mul,
 
 /// Object to encapsulate the fast division+modulus operation.
 ///
-/// This object precomputes two values used to accelerate the computation and is best used
-/// when the divisor is a grid-invariant. In this case, it may be computed in host code and
-/// marshalled along other kernel arguments using the 'Params' pattern.
+/// This object precomputes two values used to accelerate the computation and is
+/// best used when the divisor is a grid-invariant. In this case, it may be
+/// computed in host code and marshalled along other kernel arguments using the
+/// 'Params' pattern.
 ///
 /// Example:
 ///
@@ -310,7 +300,7 @@ void fast_divmod(int& quo, int64_t& rem, int64_t src, int div, unsigned int mul,
 ///
 ///   FastDivmod divmod(divisor);
 ///
-///   divmod(quotient, remainder, dividend);  
+///   divmod(quotient, remainder, dividend);
 ///
 ///   // quotient = (dividend / divisor)
 ///   // remainder = (dividend % divisor)
@@ -323,13 +313,17 @@ struct FastDivmod {
 
   /// Find quotient and remainder using device-side intrinsics
   CUTLASS_HOST_DEVICE
-  void fast_divmod(int& quotient, int& remainder, int dividend) const {
+  void fast_divmod(int &quotient, int &remainder, int dividend) const {
 
 #if defined(__CUDA_ARCH__)
     // Use IMUL.HI if divisor != 1, else simply copy the source.
-    quotient = (divisor != 1) ? __umulhi(dividend, multiplier) >> shift_right : dividend;
+    quotient = (divisor != 1) ? __umulhi(dividend, multiplier) >> shift_right
+                              : dividend;
 #else
-    quotient = int((divisor != 1) ? int(((int64_t)dividend * multiplier) >> 32) >> shift_right : dividend);
+    quotient =
+        int((divisor != 1)
+                ? int(((int64_t)dividend * multiplier) >> 32) >> shift_right
+                : dividend);
 #endif
 
     // The remainder.
@@ -338,32 +332,36 @@ struct FastDivmod {
 
   /// For long int input
   CUTLASS_HOST_DEVICE
-  void fast_divmod(int& quotient, int64_t& remainder, int64_t dividend) const {
+  void fast_divmod(int &quotient, int64_t &remainder, int64_t dividend) const {
 
 #if defined(__CUDA_ARCH__)
     // Use IMUL.HI if divisor != 1, else simply copy the source.
-    quotient = (divisor != 1) ? __umulhi(dividend, multiplier) >> shift_right : dividend;
+    quotient = (divisor != 1) ? __umulhi(dividend, multiplier) >> shift_right
+                              : dividend;
 #else
-    quotient = int((divisor != 1) ? ((dividend * multiplier) >> 32) >> shift_right : dividend);
+    quotient =
+        int((divisor != 1) ? ((dividend * multiplier) >> 32) >> shift_right
+                           : dividend);
 #endif
     // The remainder.
     remainder = dividend - (quotient * divisor);
   }
 
-
   /// Construct the FastDivmod object, in host code ideally.
   ///
-  /// This precomputes some values based on the divisor and is computationally expensive.
+  /// This precomputes some values based on the divisor and is computationally
+  /// expensive.
 
   CUTLASS_HOST_DEVICE
-  FastDivmod(): divisor(0), multiplier(0), shift_right(0) { }
+  FastDivmod() : divisor(0), multiplier(0), shift_right(0) {}
 
   CUTLASS_HOST_DEVICE
-  FastDivmod(int divisor): divisor(divisor) {
+  FastDivmod(int divisor) : divisor(divisor) {
 
     if (divisor != 1) {
       unsigned int p = 31 + find_log2(divisor);
-      unsigned m = unsigned(((1ull << p) + unsigned(divisor) - 1) / unsigned(divisor));
+      unsigned m =
+          unsigned(((1ull << p) + unsigned(divisor) - 1) / unsigned(divisor));
 
       multiplier = m;
       shift_right = p - 32;
@@ -373,15 +371,15 @@ struct FastDivmod {
     }
   }
 
-  /// Computes integer division and modulus using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division and modulus using precomputed values. This is
+  /// computationally inexpensive.
   CUTLASS_HOST_DEVICE
   void operator()(int &quotient, int &remainder, int dividend) const {
     fast_divmod(quotient, remainder, dividend);
   }
 
-  /// Computes integer division using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division using precomputed values. This is
+  /// computationally inexpensive.
   CUTLASS_HOST_DEVICE
   int div(int dividend) const {
     int quotient, remainder;
@@ -391,12 +389,10 @@ struct FastDivmod {
 
   /// Alias for `div` to match the interface of FastDivmodU64
   CUTLASS_HOST_DEVICE
-  int divide(int dividend) const {
-    return div(dividend);
-  }
+  int divide(int dividend) const { return div(dividend); }
 
-  /// Computes integer division and modulus using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division and modulus using precomputed values. This is
+  /// computationally inexpensive.
   ///
   /// Simply returns the quotient
   CUTLASS_HOST_DEVICE
@@ -406,15 +402,15 @@ struct FastDivmod {
     return quotient;
   }
 
-  /// Computes integer division and modulus using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division and modulus using precomputed values. This is
+  /// computationally inexpensive.
   CUTLASS_HOST_DEVICE
   void operator()(int &quotient, int64_t &remainder, int64_t dividend) const {
     fast_divmod(quotient, remainder, dividend);
   }
 
-  /// Computes integer division and modulus using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division and modulus using precomputed values. This is
+  /// computationally inexpensive.
   CUTLASS_HOST_DEVICE
   int divmod(int64_t &remainder, int64_t dividend) const {
     int quotient;
@@ -425,16 +421,17 @@ struct FastDivmod {
   /// Returns the divisor when cast to integer
   CUTLASS_HOST_DEVICE
   operator int() const { return divisor; }
-
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Object to encapsulate the fast division+modulus operation for 64b integer division.
+/// Object to encapsulate the fast division+modulus operation for 64b integer
+/// division.
 ///
-/// This object precomputes two values used to accelerate the computation and is best used
-/// when the divisor is a grid-invariant. In this case, it may be computed in host code and
-/// marshalled along other kernel arguments using the 'Params' pattern.
+/// This object precomputes two values used to accelerate the computation and is
+/// best used when the divisor is a grid-invariant. In this case, it may be
+/// computed in host code and marshalled along other kernel arguments using the
+/// 'Params' pattern.
 ///
 /// Example:
 ///
@@ -443,7 +440,7 @@ struct FastDivmod {
 ///
 ///   FastDivmodU64 divmod(divisor);
 ///
-///   divmod(quotient, remainder, dividend);  
+///   divmod(quotient, remainder, dividend);
 ///
 ///   // quotient = (dividend / divisor)
 ///   // remainder = (dividend % divisor)
@@ -459,7 +456,8 @@ struct FastDivmodU64 {
   // Static methods
   //
 
-  /// Computes b, where 2^b is the greatest power of two that is less than or equal to x
+  /// Computes b, where 2^b is the greatest power of two that is less than or
+  /// equal to x
   CUTLASS_HOST_DEVICE
   static uint32_t integer_log2(uint64_t x) {
     uint32_t n = 0;
@@ -471,21 +469,22 @@ struct FastDivmodU64 {
 
   /// Default ctor
   CUTLASS_HOST_DEVICE
-  FastDivmodU64(): divisor(0), multiplier(0), shift_right(0), round_up(0) { }
+  FastDivmodU64() : divisor(0), multiplier(0), shift_right(0), round_up(0) {}
 
   /// Construct the FastDivmod object, in host code ideally.
   ///
-  /// This precomputes some values based on the divisor and is computationally expensive.
+  /// This precomputes some values based on the divisor and is computationally
+  /// expensive.
   CUTLASS_HOST_DEVICE
-  FastDivmodU64(uint64_t divisor_): divisor(divisor_), multiplier(1), shift_right(0), round_up(0) {
+  FastDivmodU64(uint64_t divisor_)
+      : divisor(divisor_), multiplier(1), shift_right(0), round_up(0) {
 
     if (divisor) {
       shift_right = integer_log2(divisor);
 
       if ((divisor & (divisor - 1)) == 0) {
         multiplier = 0;
-      }
-      else {
+      } else {
         uint64_t power_of_two = (uint64_t(1) << shift_right);
         uint64_t multiplier_lo = uint128_t(0, power_of_two) / divisor;
         multiplier = uint128_t(power_of_two, power_of_two) / divisor;
@@ -499,15 +498,15 @@ struct FastDivmodU64 {
   uint64_t divide(uint64_t dividend) const {
     uint64_t quotient = 0;
 
-    #ifdef __CUDA_ARCH__
-      uint64_t x = dividend;
-      if (multiplier) {
-        x = __umul64hi(dividend + round_up, multiplier);
-      }
-      quotient = (x >> shift_right);
-    #else
-      quotient = dividend / divisor;
-    #endif
+#ifdef __CUDA_ARCH__
+    uint64_t x = dividend;
+    if (multiplier) {
+      x = __umul64hi(dividend + round_up, multiplier);
+    }
+    quotient = (x >> shift_right);
+#else
+    quotient = dividend / divisor;
+#endif
 
     return quotient;
   }
@@ -518,7 +517,8 @@ struct FastDivmodU64 {
     return uint32_t(dividend - quotient * divisor);
   }
 
-  /// Returns the quotient of floor(dividend / divisor) and computes the remainder
+  /// Returns the quotient of floor(dividend / divisor) and computes the
+  /// remainder
   CUTLASS_HOST_DEVICE
   uint64_t divmod(uint64_t &remainder, uint64_t dividend) const {
     uint64_t quotient = divide(dividend);
@@ -526,18 +526,19 @@ struct FastDivmodU64 {
     return quotient;
   }
 
-  /// Computes integer division and modulus using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division and modulus using precomputed values. This is
+  /// computationally inexpensive.
   CUTLASS_HOST_DEVICE
-  void operator()(uint64_t &quotient, uint64_t &remainder, uint64_t dividend) const {
+  void operator()(uint64_t &quotient, uint64_t &remainder,
+                  uint64_t dividend) const {
     quotient = divmod(remainder, dividend);
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Object to encapsulate the fast division+modulus operation for 64b integer division
-/// in which the divisor is a power of two.
+/// Object to encapsulate the fast division+modulus operation for 64b integer
+/// division in which the divisor is a power of two.
 struct FastDivmodU64Pow2 {
 
   uint64_t divisor;
@@ -545,28 +546,30 @@ struct FastDivmodU64Pow2 {
 
   /// Default ctor
   CUTLASS_HOST_DEVICE
-  FastDivmodU64Pow2(): divisor(0), shift_right(0) { }
+  FastDivmodU64Pow2() : divisor(0), shift_right(0) {}
 
   /// Construct the FastDivmod object, in host code ideally.
   ///
-  /// This precomputes some values based on the divisor and is computationally expensive.
+  /// This precomputes some values based on the divisor and is computationally
+  /// expensive.
   CUTLASS_HOST_DEVICE
-  FastDivmodU64Pow2(uint64_t divisor_): divisor(divisor_), shift_right(FastDivmodU64::integer_log2(divisor_)) { }
+  FastDivmodU64Pow2(uint64_t divisor_)
+      : divisor(divisor_), shift_right(FastDivmodU64::integer_log2(divisor_)) {}
 
   /// Returns the quotient of floor(dividend / divisor)
   CUTLASS_HOST_DEVICE
-  uint64_t divide(uint64_t dividend) const {
-    return dividend >> shift_right;
-  }
+  uint64_t divide(uint64_t dividend) const { return dividend >> shift_right; }
 
   /// Computes the remainder given a computed quotient and dividend
   CUTLASS_HOST_DEVICE
   uint64_t modulus(uint64_t dividend) const {
-    // See https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#division-modulo-operations
+    // See
+    // https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#division-modulo-operations
     return dividend & (divisor - 1);
   }
 
-  /// Returns the quotient of floor(dividend / divisor) and computes the remainder
+  /// Returns the quotient of floor(dividend / divisor) and computes the
+  /// remainder
   CUTLASS_HOST_DEVICE
   uint64_t divmod(uint64_t &remainder, uint64_t dividend) const {
     uint64_t quotient = divide(dividend);
@@ -574,24 +577,26 @@ struct FastDivmodU64Pow2 {
     return quotient;
   }
 
-  /// Computes integer division and modulus using precomputed values. This is computationally
-  /// inexpensive.
+  /// Computes integer division and modulus using precomputed values. This is
+  /// computationally inexpensive.
   CUTLASS_HOST_DEVICE
-  void operator()(uint64_t &quotient, uint64_t &remainder, uint64_t dividend) const {
+  void operator()(uint64_t &quotient, uint64_t &remainder,
+                  uint64_t dividend) const {
     quotient = divmod(remainder, dividend);
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Computes the coordinate decomposition from a linear index (64-bit linear index => coord<int32_t>)
+/// Computes the coordinate decomposition from a linear index (64-bit linear
+/// index => coord<int32_t>)
 ///
-/// This decomposition is accelerated by the FastDivmodU64 object. It is assumed that
-/// a coordinate of <Rank> indices can be decomposed by <Rank - 1> div/mod operations.
-/// Note, is assumed that element divmod[0] divides by extent[1].
+/// This decomposition is accelerated by the FastDivmodU64 object. It is assumed
+/// that a coordinate of <Rank> indices can be decomposed by <Rank - 1> div/mod
+/// operations. Note, is assumed that element divmod[0] divides by extent[1].
 ///
-/// For example, assume 4-D coordinate (n, p, q, c) is mapped to a linear index `npqc`. This
-/// can be decomposed via three divide and modulus operations:
+/// For example, assume 4-D coordinate (n, p, q, c) is mapped to a linear index
+/// `npqc`. This can be decomposed via three divide and modulus operations:
 ///
 ///      c = npqc % C;         |  divmod[2] = FastDivmodU64(C)
 ///    npq = npqc / C;         |   coord[3] = c
@@ -606,10 +611,12 @@ struct FastDivmodU64Pow2 {
 ///
 template <int Rank>
 CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecomposition(
-  uint64_t linear_idx,                    ///< Linear index to decompose
-  FastDivmodU64 const *divmod) {          ///< Pointer to array of Rank-1 FastDivmodU64 objects
+    uint64_t linear_idx, ///< Linear index to decompose
+    FastDivmodU64 const
+        *divmod) { ///< Pointer to array of Rank-1 FastDivmodU64 objects
 
-  static_assert(Rank > 0, "CoordinateDecomposition requires Rank=1 or greater.");
+  static_assert(Rank > 0,
+                "CoordinateDecomposition requires Rank=1 or greater.");
 
   Coord<Rank> coord;
 
@@ -625,13 +632,16 @@ CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecomposition(
   return coord;
 }
 
-/// Computes the coordinate decomposition from a linear index (32-bit linear index => coord<int32_t>)
+/// Computes the coordinate decomposition from a linear index (32-bit linear
+/// index => coord<int32_t>)
 template <int Rank>
 CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecomposition(
-  int linear_idx,                    ///< Linear index to decompose
-  FastDivmod const *divmod) {          ///< Pointer to array of Rank-1 FastDivmodU64 objects
+    int linear_idx, ///< Linear index to decompose
+    FastDivmod const
+        *divmod) { ///< Pointer to array of Rank-1 FastDivmodU64 objects
 
-  static_assert(Rank > 0, "CoordinateDecomposition requires Rank=1 or greater.");
+  static_assert(Rank > 0,
+                "CoordinateDecomposition requires Rank=1 or greater.");
 
   Coord<Rank> coord;
 
@@ -649,10 +659,12 @@ CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecomposition(
 
 template <int Rank>
 CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecompositionLittleEndian(
-  uint64_t linear_idx,                    ///< Linear index to decompose
-  FastDivmodU64 const *divmod) {          ///< Pointer to array of Rank-1 FastDivmodU64 objects
+    uint64_t linear_idx, ///< Linear index to decompose
+    FastDivmodU64 const
+        *divmod) { ///< Pointer to array of Rank-1 FastDivmodU64 objects
 
-  static_assert(Rank > 0, "CoordinateDecomposition requires Rank=1 or greater.");
+  static_assert(Rank > 0,
+                "CoordinateDecomposition requires Rank=1 or greater.");
 
   Coord<Rank> coord;
 
@@ -668,13 +680,16 @@ CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecompositionLittleEndian(
   return coord;
 }
 
-/// Computes the coordinate decomposition from a linear index (32-bit linear index => coord<int32_t>)
+/// Computes the coordinate decomposition from a linear index (32-bit linear
+/// index => coord<int32_t>)
 template <int Rank>
 CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecompositionLittleEndian(
-  int linear_idx,                    ///< Linear index to decompose
-  FastDivmod const *divmod) {          ///< Pointer to array of Rank-1 FastDivmodU64 objects
+    int linear_idx, ///< Linear index to decompose
+    FastDivmod const
+        *divmod) { ///< Pointer to array of Rank-1 FastDivmodU64 objects
 
-  static_assert(Rank > 0, "CoordinateDecomposition requires Rank=1 or greater.");
+  static_assert(Rank > 0,
+                "CoordinateDecomposition requires Rank=1 or greater.");
 
   Coord<Rank> coord;
 
@@ -694,270 +709,261 @@ CUTLASS_HOST_DEVICE Coord<Rank> CoordinateDecompositionLittleEndian(
 template <typename Element>
 CUTLASS_HOST_DEVICE int64_t OffsetBytes(int64_t index) {
 
-  static_assert(
-    (sizeof_bits<Element>::value >= 8 && !(sizeof_bits<Element>::value % 8)) || 
-    (sizeof_bits<Element>::value <  8 && !(8 % sizeof_bits<Element>::value)), 
-    "Size of numeric type in bits must either be divisible by 8 bits, or 8 bits must be divisible by the size.");
+  static_assert((sizeof_bits<Element>::value >= 8 &&
+                 !(sizeof_bits<Element>::value % 8)) ||
+                    (sizeof_bits<Element>::value < 8 &&
+                     !(8 % sizeof_bits<Element>::value)),
+                "Size of numeric type in bits must either be divisible by 8 "
+                "bits, or 8 bits must be divisible by the size.");
 
   if (sizeof_bits<Element>::value >= 8) {
     return index * (sizeof_bits<Element>::value / 8);
-  }
-  else {
-    int const kElementsPerByte = ((8 / sizeof_bits<Element>::value) + ((sizeof_bits<Element>::value >= 8) ? 1 : 0));
+  } else {
+    int const kElementsPerByte = ((8 / sizeof_bits<Element>::value) +
+                                  ((sizeof_bits<Element>::value >= 8) ? 1 : 0));
     return index / kElementsPerByte;
   }
 }
 
-CUTLASS_HOST_DEVICE int64_t OffsetBytes(int64_t index, int64_t element_sizeof_bits) {
+CUTLASS_HOST_DEVICE int64_t OffsetBytes(int64_t index,
+                                        int64_t element_sizeof_bits) {
   if (element_sizeof_bits >= 8) {
     return index * (element_sizeof_bits / 8);
-  }
-  else {
-    int64_t const kElementsPerByte = ((8 / element_sizeof_bits) + ((element_sizeof_bits >= 8) ? 1 : 0));
+  } else {
+    int64_t const kElementsPerByte =
+        ((8 / element_sizeof_bits) + ((element_sizeof_bits >= 8) ? 1 : 0));
     return index / kElementsPerByte;
   }
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Min/Max
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <int A, int B>
-struct Min {
+template <int A, int B> struct Min {
   static int const kValue = (A < B) ? A : B;
 };
 
-template <int A, int B>
-struct Max {
+template <int A, int B> struct Max {
   static int const kValue = (A > B) ? A : B;
 };
 
 CUTLASS_HOST_DEVICE
 CUTLASS_CONSTEXPR_IF_CXX17 int const_min(int a, int b) {
-    return (b < a ? b : a);
+  return (b < a ? b : a);
 }
 
 CUTLASS_HOST_DEVICE
 CUTLASS_CONSTEXPR_IF_CXX17 int const_max(int a, int b) {
-    return (b > a ? b : a);
+  return (b > a ? b : a);
 }
 
-template <typename T>
-CUTLASS_HOST_DEVICE
-T fast_min(T a, T b) {
+template <typename T> CUTLASS_HOST_DEVICE T fast_min(T a, T b) {
   return (b < a ? b : a);
 }
 
-template <>
-CUTLASS_HOST_DEVICE
-float fast_min(float a, float b) {
+template <> CUTLASS_HOST_DEVICE float fast_min(float a, float b) {
   return fminf(a, b);
 }
 
-template <typename T>
-CUTLASS_HOST_DEVICE
-T fast_max(T a, T b) {
+template <typename T> CUTLASS_HOST_DEVICE T fast_max(T a, T b) {
   return (a < b ? b : a);
 }
 
-template <>
-CUTLASS_HOST_DEVICE
-float fast_max(float a, float b) {
+template <> CUTLASS_HOST_DEVICE float fast_max(float a, float b) {
   return fmaxf(a, b);
 }
 
 CUTLASS_HOST_DEVICE
 float fast_cos(float theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::cosf(theta);
-  #else
+#else
   return std::cos(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_cos(double theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::cos(theta);
-  #else
+#else
   return std::cos(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_sin(float theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::sinf(theta);
-  #else
+#else
   return std::sin(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_sin(double theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::sin(theta);
-  #else
+#else
   return std::sin(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_acos(float theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::acosf(theta);
-  #else
+#else
   return std::acos(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_acos(double theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::acos(theta);
-  #else
+#else
   return std::acos(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_asin(float theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::asinf(theta);
-  #else
+#else
   return std::asin(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_asin(double theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::asin(theta);
-  #else
+#else
   return std::asin(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_sqrt(float theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::sqrtf(theta);
-  #else
+#else
   return std::sqrt(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_sqrt(double theta) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::sqrt(theta);
-  #else
+#else
   return std::sqrt(theta);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_exp(float x) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::expf(x);
-  #else
+#else
   return std::exp(x);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_exp(double x) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::exp(x);
-  #else
+#else
   return std::exp(x);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 half_t fast_exp(half_t x) {
-  #if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 10) && (__CUDA_ARCH__ >= 750)
-      return (half_t)(::hexp(x.to_half()));
-  #else
-      return (half_t)(fast_exp(float(x)));
-  #endif
+#if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 10) &&                  \
+    (__CUDA_ARCH__ >= 750)
+  return (half_t)(::hexp(x.to_half()));
+#else
+  return (half_t)(fast_exp(float(x)));
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_log(float x) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::logf(x);
-  #else
+#else
   return std::log(x);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_log(double x) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::log(x);
-  #else
+#else
   return std::log(x);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 float fast_tanh(float x) {
-  #if defined(__CUDA_ARCH__)
-    #if (__CUDACC_VER_MAJOR__ >= 11) && (__CUDA_ARCH__ >= 750)
-      float y;
-      asm volatile ( "tanh.approx.f32 %0, %1; " : "=f"(y) : "f"(x));
-      return y;
-    #else
-      return ::tanhf(x);
-    #endif
-  #else
+#if defined(__CUDA_ARCH__)
+#if (__CUDACC_VER_MAJOR__ >= 11) && (__CUDA_ARCH__ >= 750)
+  float y;
+  asm volatile("tanh.approx.f32 %0, %1; " : "=f"(y) : "f"(x));
+  return y;
+#else
+  return ::tanhf(x);
+#endif
+#else
   return std::tanh(x);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 double fast_tanh(double x) {
-  #if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__)
   return ::tanh(x);
-  #else
+#else
   return std::tanh(x);
-  #endif
+#endif
 }
 
 CUTLASS_HOST_DEVICE
 half_t fast_tanh(half_t x) {
-  #if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 11) && (__CUDA_ARCH__ >= 750)
-  
-  asm volatile ( "tanh.approx.f16 %0, %1;" : "=h"(x.raw()) : "h"(x.raw()));
+#if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 11) &&                  \
+    (__CUDA_ARCH__ >= 750)
+
+  asm volatile("tanh.approx.f16 %0, %1;" : "=h"(x.raw()) : "h"(x.raw()));
   return x;
 
-  #else
+#else
   return half_t(fast_tanh(float(x)));
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-struct fast_exp_op {
+template <typename T> struct fast_exp_op {
   CUTLASS_HOST_DEVICE
-  T operator()(T const &rhs) const {
-    return fast_exp(rhs);
-  }
+  T operator()(T const &rhs) const { return fast_exp(rhs); }
 };
 
-#if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 10) && (__CUDA_ARCH__ >= 750)
-template <int N>
-struct fast_exp_op<Array<half_t, N>> {
+#if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 10) &&                  \
+    (__CUDA_ARCH__ >= 750)
+template <int N> struct fast_exp_op<Array<half_t, N>> {
   CUTLASS_DEVICE
   Array<half_t, N> operator()(Array<half_t, N> const &rhs) const {
 
     Array<half_t, N> result;
 
     // use x2 specialization
-    __half2 const *in  = reinterpret_cast<__half2 const *>(&rhs);
+    __half2 const *in = reinterpret_cast<__half2 const *>(&rhs);
     __half2 *out = reinterpret_cast<__half2 *>(&result);
 
     CUTLASS_PRAGMA_UNROLL
@@ -976,8 +982,7 @@ struct fast_exp_op<Array<half_t, N>> {
 };
 #endif // #if defined(__CUDA_ARCH__)
 
-template <typename T, int N>
-struct fast_exp_op<Array<T, N>> {
+template <typename T, int N> struct fast_exp_op<Array<T, N>> {
   CUTLASS_HOST_DEVICE
   Array<T, N> operator()(Array<T, N> const &rhs) const {
 
@@ -995,36 +1000,35 @@ struct fast_exp_op<Array<T, N>> {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-struct fast_tanh_op {
+template <typename T> struct fast_tanh_op {
   CUTLASS_HOST_DEVICE
-  T operator()(T const &rhs) const {
-    return fast_tanh(rhs);
-  }
+  T operator()(T const &rhs) const { return fast_tanh(rhs); }
 };
 
-#if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 11) && (__CUDA_ARCH__ >= 750)
-template <int N>
-struct fast_tanh_op<Array<half_t, N>> {
+#if defined(__CUDA_ARCH__) && (__CUDACC_VER_MAJOR__ >= 11) &&                  \
+    (__CUDA_ARCH__ >= 750)
+template <int N> struct fast_tanh_op<Array<half_t, N>> {
   CUTLASS_DEVICE
   Array<half_t, N> operator()(Array<half_t, N> const &rhs) const {
-    
+
     Array<half_t, N> result;
 
     // use x2 specialization
-    uint32_t const *in  = reinterpret_cast<uint32_t const *>(&rhs);
+    uint32_t const *in = reinterpret_cast<uint32_t const *>(&rhs);
     uint32_t *out = reinterpret_cast<uint32_t *>(&result);
-    
+
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < N / 2; ++i) {
-      asm volatile ("tanh.approx.f16x2 %0, %1;" : "=r"(out[i]) : "r"(in[i]));
+      asm volatile("tanh.approx.f16x2 %0, %1;" : "=r"(out[i]) : "r"(in[i]));
     }
 
     // residual
     if (N % 2) {
       uint16_t const *in = reinterpret_cast<uint16_t const *>(&rhs);
       uint16_t *out = reinterpret_cast<uint16_t *>(&result);
-      asm volatile ("tanh.approx.f16 %0, %1;" : "=h"(out[N - 1]) : "h"(in[N - 1])); 
+      asm volatile("tanh.approx.f16 %0, %1;"
+                   : "=h"(out[N - 1])
+                   : "h"(in[N - 1]));
     }
 
     return result;
@@ -1032,11 +1036,10 @@ struct fast_tanh_op<Array<half_t, N>> {
 };
 #endif // #if defined(__CUDA_ARCH__)
 
-template <typename T, int N>
-struct fast_tanh_op<Array<T, N>> {
+template <typename T, int N> struct fast_tanh_op<Array<T, N>> {
   CUTLASS_HOST_DEVICE
   Array<T, N> operator()(Array<T, N> const &rhs) const {
-    
+
     fast_tanh_op<T> fast_op;
     Array<T, N> y;
 
@@ -1052,9 +1055,7 @@ struct fast_tanh_op<Array<T, N>> {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Absolute value function
-template <typename T>
-CUTLASS_HOST_DEVICE
-T absolute_value(T x) {
+template <typename T> CUTLASS_HOST_DEVICE T absolute_value(T x) {
   if (x < T()) {
     return -x;
   }
@@ -1063,7 +1064,6 @@ T absolute_value(T x) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace cutlass
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-

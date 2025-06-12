@@ -37,4 +37,3 @@ cutlass_example_add_executable(
   TEST_COMMAND_OPTIONS
   TEST_COMMAND_00
   )
-

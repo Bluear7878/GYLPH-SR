@@ -19,18 +19,22 @@ By default, the macro is not defined.
 
 !!! danger "ABI compatibility"
 
-    Mixing different library versions in the same code can be a problem as the different versions may not be ABI
-    compatible.
+```
+Mixing different library versions in the same code can be a problem as the different versions may not be ABI
+compatible.
+```
 
 ## Examples
 
 !!! example
 
-    The following warning will be shown in case a different version of the library was already included:
+````
+The following warning will be shown in case a different version of the library was already included:
 
-    ```
-    Already included a different version of the library!
-    ```
+```
+Already included a different version of the library!
+```
+````
 
 ## Version history
 

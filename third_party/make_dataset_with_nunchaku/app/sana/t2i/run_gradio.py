@@ -6,15 +6,14 @@ import time
 from datetime import datetime
 
 import GPUtil
-import spaces
-import torch
-
-from nunchaku.models.safety_checker import SafetyChecker
-from utils import get_pipeline
-from vars import EXAMPLES, MAX_SEED
-
 # import gradio last to avoid conflicts with other imports
 import gradio as gr
+import spaces
+import torch
+from nunchaku.models.safety_checker import SafetyChecker
+from vars import EXAMPLES, MAX_SEED
+
+from utils import get_pipeline
 
 
 def get_args() -> argparse.Namespace:
@@ -28,9 +27,15 @@ def get_args() -> argparse.Namespace:
         choices=["int4", "bf16"],
         help="Which precisions to use",
     )
-    parser.add_argument("--use-qencoder", action="store_true", help="Whether to use 4-bit text encoder")
-    parser.add_argument("--no-safety-checker", action="store_true", help="Disable safety checker")
-    parser.add_argument("--count-use", action="store_true", help="Whether to count the number of uses")
+    parser.add_argument(
+        "--use-qencoder", action="store_true", help="Whether to use 4-bit text encoder"
+    )
+    parser.add_argument(
+        "--no-safety-checker", action="store_true", help="Disable safety checker"
+    )
+    parser.add_argument(
+        "--count-use", action="store_true", help="Whether to count the number of uses"
+    )
     parser.add_argument("--gradio-root-path", type=str, default="")
     return parser.parse_args()
 
@@ -146,7 +151,9 @@ with gr.Blocks(
             )
         else:
             count_info = ""
-        header_str = DESCRIPTION.format(device_info=device_info, notice=notice, count_info=count_info)
+        header_str = DESCRIPTION.format(
+            device_info=device_info, notice=notice, count_info=count_info
+        )
         return header_str
 
     header = gr.HTML(get_header_str())
@@ -171,25 +178,63 @@ with gr.Blocks(
                     latency_results.append(latency_result)
     with gr.Row():
         prompt = gr.Text(
-            label="Prompt", show_label=False, max_lines=1, placeholder="Enter your prompt", container=False, scale=4
+            label="Prompt",
+            show_label=False,
+            max_lines=1,
+            placeholder="Enter your prompt",
+            container=False,
+            scale=4,
         )
         run_button = gr.Button("Run", scale=1)
 
     with gr.Row():
-        seed = gr.Slider(label="Seed", show_label=True, minimum=0, maximum=MAX_SEED, value=233, step=1, scale=4)
-        randomize_seed = gr.Button("Random Seed", scale=1, min_width=50, elem_id="random_seed")
+        seed = gr.Slider(
+            label="Seed",
+            show_label=True,
+            minimum=0,
+            maximum=MAX_SEED,
+            value=233,
+            step=1,
+            scale=4,
+        )
+        randomize_seed = gr.Button(
+            "Random Seed", scale=1, min_width=50, elem_id="random_seed"
+        )
     with gr.Accordion("Advanced options", open=False):
         with gr.Group():
-            height = gr.Slider(label="Height", minimum=256, maximum=4096, step=32, value=1024)
-            width = gr.Slider(label="Width", minimum=256, maximum=4096, step=32, value=1024)
+            height = gr.Slider(
+                label="Height", minimum=256, maximum=4096, step=32, value=1024
+            )
+            width = gr.Slider(
+                label="Width", minimum=256, maximum=4096, step=32, value=1024
+            )
         with gr.Group():
-            num_inference_steps = gr.Slider(label="Sampling Steps", minimum=10, maximum=50, step=1, value=20)
-            guidance_scale = gr.Slider(label="Guidance Scale", minimum=1, maximum=10, step=0.1, value=5)
-            pag_scale = gr.Slider(label="PAG Scale", minimum=0, maximum=10, step=0.1, value=2.0)
+            num_inference_steps = gr.Slider(
+                label="Sampling Steps", minimum=10, maximum=50, step=1, value=20
+            )
+            guidance_scale = gr.Slider(
+                label="Guidance Scale", minimum=1, maximum=10, step=0.1, value=5
+            )
+            pag_scale = gr.Slider(
+                label="PAG Scale", minimum=0, maximum=10, step=0.1, value=2.0
+            )
 
-    input_args = [prompt, height, width, num_inference_steps, guidance_scale, pag_scale, seed]
+    input_args = [
+        prompt,
+        height,
+        width,
+        num_inference_steps,
+        guidance_scale,
+        pag_scale,
+        seed,
+    ]
 
-    gr.Examples(examples=EXAMPLES, inputs=input_args, outputs=[*image_results, *latency_results], fn=generate)
+    gr.Examples(
+        examples=EXAMPLES,
+        inputs=input_args,
+        outputs=[*image_results, *latency_results],
+        fn=generate,
+    )
 
     gr.on(
         triggers=[prompt.submit, run_button.click],
@@ -199,11 +244,25 @@ with gr.Blocks(
         api_name=False,
     )
     randomize_seed.click(
-        lambda: random.randint(0, MAX_SEED), inputs=[], outputs=seed, api_name=False, queue=False
-    ).then(fn=generate, inputs=input_args, outputs=[*image_results, *latency_results], api_name=False, queue=False)
+        lambda: random.randint(0, MAX_SEED),
+        inputs=[],
+        outputs=seed,
+        api_name=False,
+        queue=False,
+    ).then(
+        fn=generate,
+        inputs=input_args,
+        outputs=[*image_results, *latency_results],
+        api_name=False,
+        queue=False,
+    )
 
-    gr.Markdown("MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility")
+    gr.Markdown(
+        "MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility"
+    )
 
 
 if __name__ == "__main__":
-    demo.queue(max_size=20).launch(server_name="0.0.0.0", debug=True, share=True, root_path=args.gradio_root_path)
+    demo.queue(max_size=20).launch(
+        server_name="0.0.0.0", debug=True, share=True, root_path=args.gradio_root_path
+    )

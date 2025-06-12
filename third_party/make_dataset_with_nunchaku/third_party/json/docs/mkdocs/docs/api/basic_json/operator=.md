@@ -15,7 +15,7 @@ constructor, destructor, and the `swap()` member function.
 ## Parameters
 
 `other` (in)
-:   value to copy from
+: value to copy from
 
 ## Complexity
 
@@ -25,18 +25,20 @@ Linear.
 
 ??? example
 
-    The code below shows and example for the copy assignment. It creates a copy of value `a` which is then swapped with
-    `b`. Finally, the copy of `a` (which is the null value after the swap) is destroyed.
-     
-    ```cpp
-    --8<-- "examples/basic_json__copyassignment.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/basic_json__copyassignment.output"
-    ```
+````
+The code below shows and example for the copy assignment. It creates a copy of value `a` which is then swapped with
+`b`. Finally, the copy of `a` (which is the null value after the swap) is destroyed.
+
+```cpp
+--8<-- "examples/basic_json__copyassignment.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/basic_json__copyassignment.output"
+```
+````
 
 ## Version history
 

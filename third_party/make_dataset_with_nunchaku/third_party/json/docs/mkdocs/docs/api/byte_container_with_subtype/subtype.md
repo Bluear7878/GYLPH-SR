@@ -23,18 +23,20 @@ Constant.
 
 ??? example
 
-    The example below demonstrates how the subtype can be retrieved with `subtype`. Note how `subtype_type(-1)` is
-    returned for container `c1`.
+````
+The example below demonstrates how the subtype can be retrieved with `subtype`. Note how `subtype_type(-1)` is
+returned for container `c1`.
 
-    ```cpp
-    --8<-- "examples/byte_container_with_subtype__subtype.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/byte_container_with_subtype__subtype.output"
-    ```
+```cpp
+--8<-- "examples/byte_container_with_subtype__subtype.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/byte_container_with_subtype__subtype.output"
+```
+````
 
 ## Version history
 

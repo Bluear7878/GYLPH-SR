@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,28 +18,30 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-  \brief Kernel performing a reduction over one or more ranks of an affine tensor
+  \brief Kernel performing a reduction over one or more ranks of an affine
+  tensor
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/fast_math.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/numeric_conversion.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
+#include "cutlass/fast_math.h"
+#include "cutlass/numeric_conversion.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/reduction/kernel/tensor_reduce_affine_strided.h"
 
@@ -52,17 +54,15 @@ namespace device {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Tensor reduction operator on layouts which are affine
-template <
-  int Rank,                                   ///< Rank of source tensor (e.g. NDHWC => 5)
-  int ReducedRank,                            ///< Rank of reduced tensor (includes contiguous, e.g. NC => 2)
-  typename ElementOutput_,
-  typename ElementSource_,
-  typename ReductionOp_,
-  int VectorLength  = 1,
-  typename ElementCompute_ = ElementOutput_,
-  int Threads = 256,                          ///< Number of participating threads
-  int BatchSize = 4                           ///< Number of elements to load per batch
->
+template <int Rank,        ///< Rank of source tensor (e.g. NDHWC => 5)
+          int ReducedRank, ///< Rank of reduced tensor (includes contiguous,
+                           ///< e.g. NC => 2)
+          typename ElementOutput_, typename ElementSource_,
+          typename ReductionOp_, int VectorLength = 1,
+          typename ElementCompute_ = ElementOutput_,
+          int Threads = 256, ///< Number of participating threads
+          int BatchSize = 4  ///< Number of elements to load per batch
+          >
 struct TensorReductionAffineStrided {
 
   static int const kRank = Rank;
@@ -119,7 +119,7 @@ private:
       return 1;
     }
     int x = 1;
-    for (; count >= ext * 2; ) {
+    for (; count >= ext * 2;) {
       count >>= 1;
       x <<= 1;
     }
@@ -127,27 +127,17 @@ private:
   }
 
 public:
-
   /// Default ctor
-  TensorReductionAffineStrided():
-    status(Status::kErrorInvalidProblem),
-    extent(),
-    outer_count(0),
-    inner_count(0),
-    workspace_count(0),
-    grid_shape(0, 0, 0),
-    threadblock_shape(0, 0, 0) { }
+  TensorReductionAffineStrided()
+      : status(Status::kErrorInvalidProblem), extent(), outer_count(0),
+        inner_count(0), workspace_count(0), grid_shape(0, 0, 0),
+        threadblock_shape(0, 0, 0) {}
 
   /// Constructor
-  TensorReductionAffineStrided(
-    Coord<kRank> extent_,
-    int target_threadblock_count = 128
-  ):
-    status(Status::kSuccess),
-    extent(extent_), 
-    outer_count(0),
-    inner_count(0),
-    workspace_count(0) {
+  TensorReductionAffineStrided(Coord<kRank> extent_,
+                               int target_threadblock_count = 128)
+      : status(Status::kSuccess), extent(extent_), outer_count(0),
+        inner_count(0), workspace_count(0) {
 
     //
     // Plan the parallel mapping strategy.
@@ -167,7 +157,7 @@ public:
 
     // Compute plan for the reduction
     int extent_c = extent[kRank - 1];
-    int vectors_c = (extent_c -1 + kVectorLength) / kVectorLength;
+    int vectors_c = (extent_c - 1 + kVectorLength) / kVectorLength;
 
     // Determine CTA shape
     int cta_width = kThreads * kVectorLength;
@@ -183,20 +173,22 @@ public:
         return;
       }
     }
-    
+
     // Determine grid shape
     int cta_count_x = (vectors_c + cta_threads_x - 1) / cta_threads_x;
     int cta_count_y = std::max(1, target_threadblock_count / cta_count_x);
 
     // Limit the number of CTAs assigned to outer dimension
     if (int64_t(cta_count_y * threadblock_shape.y) > outer_count) {
-      cta_count_y = int(outer_count + threadblock_shape.y - 1) / threadblock_shape.y;
+      cta_count_y =
+          int(outer_count + threadblock_shape.y - 1) / threadblock_shape.y;
     }
 
     // Limit the number of CTAs assigned to inner dimension
     int cta_count_z = std::max(1, target_threadblock_count / cta_count_y);
     if (int64_t(cta_count_z * threadblock_shape.z) > inner_count) {
-      cta_count_z = int(inner_count + threadblock_shape.z - 1) / threadblock_shape.z;
+      cta_count_z =
+          int(inner_count + threadblock_shape.z - 1) / threadblock_shape.z;
     }
 
     grid_shape = dim3(cta_count_x, cta_count_y, cta_count_z);
@@ -208,24 +200,24 @@ public:
   }
 
   /// Simple check to verify the object is initialized correctly
-  bool good() const {
-    return status == Status::kSuccess;
-  }
+  bool good() const { return status == Status::kSuccess; }
 
   /// Size of one CTA's workspace
   int64_t workspace_stride() const {
-    
+
     // Error condition
     if (!good()) {
       return 0;
     }
 
-    int vector_size_bytes = kVectorLength * sizeof_bits<ElementCompute>::value / 8;
+    int vector_size_bytes =
+        kVectorLength * sizeof_bits<ElementCompute>::value / 8;
 
     return extent[kRank - 1] * vector_size_bytes;
   }
 
-  /// Returns the size (in bytes) of a temporary workspace needed for reduction across CTAs
+  /// Returns the size (in bytes) of a temporary workspace needed for reduction
+  /// across CTAs
   int64_t workspace_size() const {
 
     // Error condition
@@ -242,15 +234,17 @@ public:
   }
 
   /// Performs a reduction
-  Status reduce(
-    ElementOutput *dst_ptr,                       ///< Pointer to destination tensor
-    int64_t dst_stride[],                         ///< Stride vector (of length kReducedRank - 1)
-    ElementSource const *src_ptr,                 ///< Pointer to source tensor
-    int64_t src_stride[],                         ///< Stride vector (of length kRank - 1)
-    void *device_workspace_ptr = nullptr,             ///< Device workspace
-    ElementCompute reduction_identity = ElementCompute(), ///< Reduciton identity
-    ReductionOp reduction_op = ReductionOp(),     ///< Reduction operator
-    cudaStream_t stream = nullptr) {              ///< CUDA Stream into which all kernels are launched
+  Status
+  reduce(ElementOutput *dst_ptr, ///< Pointer to destination tensor
+         int64_t dst_stride[],   ///< Stride vector (of length kReducedRank - 1)
+         ElementSource const *src_ptr, ///< Pointer to source tensor
+         int64_t src_stride[],         ///< Stride vector (of length kRank - 1)
+         void *device_workspace_ptr = nullptr, ///< Device workspace
+         ElementCompute reduction_identity =
+             ElementCompute(),                     ///< Reduciton identity
+         ReductionOp reduction_op = ReductionOp(), ///< Reduction operator
+         cudaStream_t stream =
+             nullptr) { ///< CUDA Stream into which all kernels are launched
 
     // Initial status check
     if (!good()) {
@@ -264,64 +258,45 @@ public:
 
     // Define reduction kernel
     using ReductionKernel = kernel::TensorReductionAffineStrided<
-      kRank,
-      kReducedRank,
-      ElementOutput, 
-      ElementSource, 
-      ReductionOp, 
-      kVectorLength,
-      ElementCompute,
-      kThreads>;
+        kRank, kReducedRank, ElementOutput, ElementSource, ReductionOp,
+        kVectorLength, ElementCompute, kThreads>;
 
     using FinalReductionKernel = kernel::TensorReductionAffineStridedFinal<
-      kRank,
-      kReducedRank,
-      ElementOutput, 
-      ElementSource, 
-      ReductionOp, 
-      kVectorLength,
-      ElementCompute,
-      kThreads>;
+        kRank, kReducedRank, ElementOutput, ElementSource, ReductionOp,
+        kVectorLength, ElementCompute, kThreads>;
 
     using Params = typename ReductionKernel::Params;
 
     // Construct the parameters
-    Params params(
-      extent, 
-      dst_ptr,
-      dst_stride, 
-      src_ptr,
-      src_stride,
-      static_cast<ElementCompute *>(device_workspace_ptr),
-      workspace_stride(),
-      workspace_count,
-      reduction_op,
-      reduction_identity);
+    Params params(extent, dst_ptr, dst_stride, src_ptr, src_stride,
+                  static_cast<ElementCompute *>(device_workspace_ptr),
+                  workspace_stride(), workspace_count, reduction_op,
+                  reduction_identity);
 
     // Shared memory size
     int shared_mem_bytes = sizeof(typename ReductionKernel::SharedStorage);
 
     // Launch the kernel
-    Kernel<ReductionKernel><<< grid_shape, threadblock_shape, shared_mem_bytes, stream >>>(params);
+    Kernel<ReductionKernel>
+        <<<grid_shape, threadblock_shape, shared_mem_bytes, stream>>>(params);
 
     // Check error condition
     if (cudaPeekAtLastError() == cudaSuccess) {
       status = Status::kSuccess;
-    }
-    else {
+    } else {
       status = Status::kErrorInternal;
     }
 
     // Final reduction kernel
     if (workspace_count) {
 
-      Kernel<FinalReductionKernel><<< grid_final, threadblock_final, 0, stream >>>(params);
+      Kernel<FinalReductionKernel>
+          <<<grid_final, threadblock_final, 0, stream>>>(params);
 
       // Check error condition
       if (cudaPeekAtLastError() == cudaSuccess) {
         status = Status::kSuccess;
-      }
-      else {
+      } else {
         status = Status::kErrorInternal;
       }
     }
@@ -331,24 +306,20 @@ public:
 
   /// Helper to use overloaded function call operator
   Status operator()(
-    ElementOutput *dst_ptr,                       ///< Pointer to destination tensor
-    int64_t dst_stride[],                         ///< Stride vector (of length kReducedRank - 1)
-    ElementSource const *src_ptr,                 ///< Pointer to source tensor
-    int64_t src_stride[],                         ///< Stride vector (of length kRank - 1)
-    void *device_workspace_ptr = nullptr,         ///< Pointer to device workspace
-    ElementCompute reduction_identity = ElementCompute(), ///< Reduciton identity
-    ReductionOp reduction_op = ReductionOp(),     ///< Reduction operator
-    cudaStream_t stream = nullptr) {              ///< CUDA Stream into which all kernels are launched
+      ElementOutput *dst_ptr, ///< Pointer to destination tensor
+      int64_t dst_stride[],   ///< Stride vector (of length kReducedRank - 1)
+      ElementSource const *src_ptr, ///< Pointer to source tensor
+      int64_t src_stride[],         ///< Stride vector (of length kRank - 1)
+      void *device_workspace_ptr = nullptr, ///< Pointer to device workspace
+      ElementCompute reduction_identity =
+          ElementCompute(),                     ///< Reduciton identity
+      ReductionOp reduction_op = ReductionOp(), ///< Reduction operator
+      cudaStream_t stream =
+          nullptr) { ///< CUDA Stream into which all kernels are launched
 
-    return reduce(
-      dst_ptr, 
-      dst_stride, 
-      src_ptr, 
-      src_stride, 
-      device_workspace_ptr, 
-      reduction_identity, 
-      reduction_op, 
-      stream);
+    return reduce(dst_ptr, dst_stride, src_ptr, src_stride,
+                  device_workspace_ptr, reduction_identity, reduction_op,
+                  stream);
   }
 };
 

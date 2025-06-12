@@ -41,8 +41,8 @@ set(CUTLASS_TOOLS_PROFILER_SOURCES
   src/gpu_timer.cpp
   src/device_allocation.cu
   src/device_context.cu
-  src/cublas_helpers.cu             
-  src/cudnn_helpers.cpp                   
+  src/cublas_helpers.cu
+  src/cudnn_helpers.cpp
   src/problem_space.cpp
   src/operation_profiler.cu
   src/gemm_operation_profiler.cu
@@ -50,8 +50,8 @@ set(CUTLASS_TOOLS_PROFILER_SOURCES
   src/rank_2k_operation_profiler.cu
   src/trmm_operation_profiler.cu
   src/symm_operation_profiler.cu
-  src/conv2d_operation_profiler.cu          
-  src/conv3d_operation_profiler.cu          
+  src/conv2d_operation_profiler.cu
+  src/conv3d_operation_profiler.cu
   src/sparse_gemm_operation_profiler.cu
 )
 
@@ -82,7 +82,7 @@ target_include_directories(
 
 target_link_libraries(
   cutlass_profiler
-  PRIVATE 
+  PRIVATE
   cutlass_lib
   cutlass_tools_util_includes
   $<$<BOOL:${CUTLASS_ENABLE_CUBLAS}>:nvidia::cublas>
@@ -127,4 +127,3 @@ cutlass_add_executable_tests(
     CUTLASS_PROFILER_TEST_COMMAND_OPTIONS_
   DISABLE_EXECUTABLE_INSTALL_RULE
   )
-

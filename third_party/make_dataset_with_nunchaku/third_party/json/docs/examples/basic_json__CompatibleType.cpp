@@ -1,12 +1,12 @@
-#include <iostream>
 #include <deque>
-#include <list>
 #include <forward_list>
+#include <iostream>
+#include <list>
+#include <nlohmann/json.hpp>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <valarray>
-#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
@@ -17,36 +17,38 @@ int main()
     // ============
 
     // create an object from an object_t value
-    json::object_t object_value = { {"one", 1}, {"two", 2} };
+    json::object_t object_value = {{"one", 1}, {"two", 2}};
     json j_object_t(object_value);
 
     // create an object from std::map
-    std::map<std::string, int> c_map
-    {
-        {"one", 1}, {"two", 2}, {"three", 3}
-    };
+    std::map<std::string, int> c_map{
+        {"one", 1},
+        {"two", 2},
+        {"three", 3}};
     json j_map(c_map);
 
     // create an object from std::unordered_map
-    std::unordered_map<const char*, double> c_umap
-    {
-        {"one", 1.2}, {"two", 2.3}, {"three", 3.4}
-    };
+    std::unordered_map<const char*, double> c_umap{
+        {"one", 1.2},
+        {"two", 2.3},
+        {"three", 3.4}};
     json j_umap(c_umap);
 
     // create an object from std::multimap
-    std::multimap<std::string, bool> c_mmap
-    {
-        {"one", true}, {"two", true}, {"three", false}, {"three", true}
-    };
-    json j_mmap(c_mmap); // only one entry for key "three" is used
+    std::multimap<std::string, bool> c_mmap{
+        {"one", true},
+        {"two", true},
+        {"three", false},
+        {"three", true}};
+    json j_mmap(c_mmap);  // only one entry for key "three" is used
 
     // create an object from std::unordered_multimap
-    std::unordered_multimap<std::string, bool> c_ummap
-    {
-        {"one", true}, {"two", true}, {"three", false}, {"three", true}
-    };
-    json j_ummap(c_ummap); // only one entry for key "three" is used
+    std::unordered_multimap<std::string, bool> c_ummap{
+        {"one", true},
+        {"two", true},
+        {"three", false},
+        {"three", true}};
+    json j_ummap(c_ummap);  // only one entry for key "three" is used
 
     // serialize the JSON objects
     std::cout << j_object_t << '\n';
@@ -64,44 +66,44 @@ int main()
     json j_array_t(array_value);
 
     // create an array from std::vector
-    std::vector<int> c_vector {1, 2, 3, 4};
+    std::vector<int> c_vector{1, 2, 3, 4};
     json j_vec(c_vector);
 
     // create an array from std::valarray
-    std::valarray<short> c_valarray {10, 9, 8, 7};
+    std::valarray<short> c_valarray{10, 9, 8, 7};
     json j_valarray(c_valarray);
 
     // create an array from std::deque
-    std::deque<double> c_deque {1.2, 2.3, 3.4, 5.6};
+    std::deque<double> c_deque{1.2, 2.3, 3.4, 5.6};
     json j_deque(c_deque);
 
     // create an array from std::list
-    std::list<bool> c_list {true, true, false, true};
+    std::list<bool> c_list{true, true, false, true};
     json j_list(c_list);
 
     // create an array from std::forward_list
-    std::forward_list<std::int64_t> c_flist {12345678909876, 23456789098765, 34567890987654, 45678909876543};
+    std::forward_list<std::int64_t> c_flist{12345678909876, 23456789098765, 34567890987654, 45678909876543};
     json j_flist(c_flist);
 
     // create an array from std::array
-    std::array<unsigned long, 4> c_array {{1, 2, 3, 4}};
+    std::array<unsigned long, 4> c_array{{1, 2, 3, 4}};
     json j_array(c_array);
 
     // create an array from std::set
-    std::set<std::string> c_set {"one", "two", "three", "four", "one"};
-    json j_set(c_set); // only one entry for "one" is used
+    std::set<std::string> c_set{"one", "two", "three", "four", "one"};
+    json j_set(c_set);  // only one entry for "one" is used
 
     // create an array from std::unordered_set
-    std::unordered_set<std::string> c_uset {"one", "two", "three", "four", "one"};
-    json j_uset(c_uset); // only one entry for "one" is used
+    std::unordered_set<std::string> c_uset{"one", "two", "three", "four", "one"};
+    json j_uset(c_uset);  // only one entry for "one" is used
 
     // create an array from std::multiset
-    std::multiset<std::string> c_mset {"one", "two", "one", "four"};
-    json j_mset(c_mset); // both entries for "one" are used
+    std::multiset<std::string> c_mset{"one", "two", "one", "four"};
+    json j_mset(c_mset);  // both entries for "one" are used
 
     // create an array from std::unordered_multiset
-    std::unordered_multiset<std::string> c_umset {"one", "two", "one", "four"};
-    json j_umset(c_umset); // both entries for "one" are used
+    std::unordered_multiset<std::string> c_umset{"one", "two", "one", "four"};
+    json j_umset(c_umset);  // both entries for "one" are used
 
     // serialize the JSON arrays
     std::cout << j_array_t << '\n';
@@ -149,7 +151,10 @@ int main()
     json j_unsigned_t(value_unsigned_t);
 
     // create a JSON number from an anonymous enum
-    enum { enum_value = 17 };
+    enum
+    {
+        enum_value = 17
+    };
     json j_enum(enum_value);
 
     // create values of different integer types

@@ -1,6 +1,6 @@
 #include <iostream>
-#include <string_view>
 #include <nlohmann/json.hpp>
+#include <string_view>
 
 using namespace std::string_view_literals;
 using json = nlohmann::json;
@@ -9,17 +9,16 @@ int main()
 {
     // create JSON object
     json object =
-    {
-        {"the good", "il buono"},
-        {"the bad", "il cattivo"},
-        {"the ugly", "il brutto"}
-    };
+        {
+            {"the good", "il buono"},
+            {"the bad", "il cattivo"},
+            {"the ugly", "il brutto"}};
 
     // output element with key "the ugly" using string_view
-    std::cout << object.at("the ugly"sv) << '\n';
+    std::cout << object.at("the ugly" sv) << '\n';
 
     // change element with key "the bad" using string_view
-    object.at("the bad"sv) = "il cattivo";
+    object.at("the bad" sv) = "il cattivo";
 
     // output changed array
     std::cout << object << '\n';
@@ -29,7 +28,7 @@ int main()
     {
         // use at() with string_view on a non-object type
         json str = "I am a string";
-        str.at("the good"sv) = "Another string";
+        str.at("the good" sv) = "Another string";
     }
     catch (const json::type_error& e)
     {
@@ -40,7 +39,7 @@ int main()
     try
     {
         // try to write at a nonexisting key using string_view
-        object.at("the fast"sv) = "il rapido";
+        object.at("the fast" sv) = "il rapido";
     }
     catch (const json::out_of_range& e)
     {

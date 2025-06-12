@@ -43,6 +43,7 @@ header. See also the [macro overview page](../../features/macros.md).
 - [**JSON_USE_IMPLICIT_CONVERSIONS**](json_use_implicit_conversions.md) - control implicit conversions
 
 <!-- comment-->
+
 ## Comparison behavior
 
 - [**JSON_USE_LEGACY_DISCARDED_VALUE_COMPARISON**](json_use_legacy_discarded_value_comparison.md) -
@@ -51,12 +52,12 @@ header. See also the [macro overview page](../../features/macros.md).
 ## Serialization/deserialization macros
 
 - [**NLOHMANN_DEFINE_TYPE_INTRUSIVE(type, member...)**<br>**NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(type, member...)**
-<br>**NLOHMANN_DEFINE_TYPE_INTRUSIVE_ONLY_SERIALIZE(type, member...)**][DefInt]
+  <br>**NLOHMANN_DEFINE_TYPE_INTRUSIVE_ONLY_SERIALIZE(type, member...)**][defint]
   \- serialization/deserialization of types _with_ access to private variables
 - [**NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(type, member...)**<br>**NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(type, member...)**
-<br>**NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(type, member...)**][DefNonInt]
+  <br>**NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(type, member...)**][defnonint]
   \- serialization/deserialization of types _without_ access to private variables
 - [**NLOHMANN_JSON_SERIALIZE_ENUM(type, ...)**](nlohmann_json_serialize_enum.md) - serialization/deserialization of enum types
 
-[DefInt]: nlohmann_define_type_intrusive.md
-[DefNonInt]: nlohmann_define_type_non_intrusive.md
+[defint]: nlohmann_define_type_intrusive.md
+[defnonint]: nlohmann_define_type_non_intrusive.md

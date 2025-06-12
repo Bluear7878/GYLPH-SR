@@ -38,19 +38,20 @@ The layout Nodes change the layout of intermediate nodes in epilogue visitor gra
 
 from copy import deepcopy
 
-from cutlass_library import LayoutType
-from pycute import product, flatten
-
 import cutlass
-from cutlass.backend.evt.ir.layout_algorithm import _list_to_tuple, _tuple_to_list
+from cutlass.backend.evt.ir.layout_algorithm import (_list_to_tuple,
+                                                     _tuple_to_list)
 from cutlass.backend.evt.ir.node import NodeBase
 from cutlass.backend.evt.ir.tensor import Tensor
+from cutlass_library import LayoutType
+from pycute import flatten, product
 
 
 class PermutationImpl:
     """
     Detailed implementation and helper functions for permutation
     """
+
     def __init__(self, node) -> None:
         assert "indices" in node.kwargs.keys()
         self.indices = list(node.kwargs["indices"])
@@ -71,7 +72,9 @@ class PermutationImpl:
             indices[i] = idx + num_dim - num_old_dim
         # Add broadcast dims
         for i in range(num_dim - num_old_dim):
-            indices = [i,] + indices
+            indices = [
+                i,
+            ] + indices
 
         self.indices = indices
         self.inverse_indices = self.get_inverse_indices(self.indices)
@@ -122,6 +125,7 @@ class ReshapeImpl:
     """
     Detailed implementation and helper functions for reshape
     """
+
     def __init__(self, node) -> None:
         self.node = node
         assert "new_shape" in node.kwargs.keys()
@@ -142,22 +146,34 @@ class ReshapeImpl:
         Broadcast the inputs based on current shape.
         """
         # Step 1: infer split
-        flatten_split_shape = self.infer_split(flatten(self.input_shape), flatten(self.output_shape))
+        flatten_split_shape = self.infer_split(
+            flatten(self.input_shape), flatten(self.output_shape)
+        )
         split_input_shape = self.infer_merge(flatten_split_shape, self.input_shape)
         split_output_shape = self.infer_merge(flatten_split_shape, self.output_shape)
 
         # broadcast shape -> split_output_shape -> flatten_split_shape
         if len(shape) - len(split_output_shape) > 0:
             for _ in range(len(shape) - len(split_output_shape)):
-                split_output_shape = [1,] + split_output_shape
-                flatten_split_shape = [1,] + flatten_split_shape
-                split_input_shape = [1,] + split_input_shape
+                split_output_shape = [
+                    1,
+                ] + split_output_shape
+                flatten_split_shape = [
+                    1,
+                ] + flatten_split_shape
+                split_input_shape = [
+                    1,
+                ] + split_input_shape
         broadcast_factor = []
         for dim, old_dim in zip(shape, split_output_shape):
             if not isinstance(dim, list):
-                dim = [dim,]
+                dim = [
+                    dim,
+                ]
             if not isinstance(old_dim, list):
-                old_dim = [old_dim,]
+                old_dim = [
+                    old_dim,
+                ]
             if product(tuple(dim)) == product(tuple(old_dim)):
                 broadcast_factor += [1] * len(old_dim)
             elif product(tuple(old_dim)) == 1:
@@ -183,7 +199,9 @@ class ReshapeImpl:
         node_meta.tensor.reshape(_list_to_tuple(split_input_shape))
         node_meta.tensor.broadcast(broadcast_split_input_shape)
         # Last reshape op to clean up
-        broadcast_input_shape = tuple([product(dim) for dim in broadcast_split_input_shape])
+        broadcast_input_shape = tuple(
+            [product(dim) for dim in broadcast_split_input_shape]
+        )
         node_meta.tensor.reshape(broadcast_input_shape)
         # Update the input shape and output shape
         self.input_shape = _list_to_tuple(node_meta.tensor.shape)
@@ -234,15 +252,33 @@ class ReshapeImpl:
         new_dim = output_shape[-1]
         # Exact match
         if old_dim == new_dim:
-            return self.infer_split(input_shape[:-1], output_shape[:-1]) + [new_dim,]
+            return self.infer_split(input_shape[:-1], output_shape[:-1]) + [
+                new_dim,
+            ]
         # Needs split
         if old_dim > new_dim and old_dim % new_dim == 0:
             residual = old_dim // new_dim
-            return self.infer_split(input_shape[:-1] + [residual,], output_shape[:-1]) + [new_dim,]
+            return self.infer_split(
+                input_shape[:-1]
+                + [
+                    residual,
+                ],
+                output_shape[:-1],
+            ) + [
+                new_dim,
+            ]
         # Needs merge
         if old_dim < new_dim and new_dim % old_dim == 0:
             residual = new_dim // old_dim
-            return self.infer_split(input_shape[:-1], output_shape[:-1] + [residual,]) + [old_dim,]
+            return self.infer_split(
+                input_shape[:-1],
+                output_shape[:-1]
+                + [
+                    residual,
+                ],
+            ) + [
+                old_dim,
+            ]
 
         raise NotImplementedError(f"Unsupported split: {input_shape} -> {output_shape}")
 
@@ -260,13 +296,15 @@ class ReshapeImpl:
             elif dim > flatten_shape[idx_flat] and dim % flatten_shape[idx_flat] == 0:
                 residual = dim
                 group = []
-                while(residual > 1):
+                while residual > 1:
                     group.append(flatten_shape[idx_flat])
                     residual = residual // flatten_shape[idx_flat]
                     idx_flat -= 1
                 merged_shape.append(group[::-1])
             else:
-                raise NotImplementedError(f"Unsupported merge: {flatten_shape} -> {shape}")
+                raise NotImplementedError(
+                    f"Unsupported merge: {flatten_shape} -> {shape}"
+                )
 
         return merged_shape[::-1]
 
@@ -275,10 +313,9 @@ class LayoutNode(NodeBase):
     """
     Layout manipulation nodes
     """
-    fn_to_impl = {
-        "permute": PermutationImpl,
-        "reshape": ReshapeImpl
-    }
+
+    fn_to_impl = {"permute": PermutationImpl, "reshape": ReshapeImpl}
+
     def __init__(self, name: str, fn, kwargs: dict) -> None:
         super().__init__(name)
         self.op = "layout"
@@ -300,19 +337,20 @@ class LayoutNode(NodeBase):
 
         self._tensor = Tensor(
             element=self.element_output,
-            shape=output_shape, layout_tag=LayoutType.RowMajor
+            shape=output_shape,
+            layout_tag=LayoutType.RowMajor,
         )
 
         return super().shape_propagation(input_node_metas)
 
-    def type_propagation(self, input_node_metas: 'list[NodeBase]'):
+    def type_propagation(self, input_node_metas: "list[NodeBase]"):
         """
         The store nodes has element_output = element_input
         """
         assert len(input_node_metas) == 1, "Layout node can only have one input node"
         self.element_output = input_node_metas[0].element_output
 
-    def broadcast_propagation(self, input_node_metas: 'list[NodeBase]'):
+    def broadcast_propagation(self, input_node_metas: "list[NodeBase]"):
         """
         Propagate the broadcast in the reversed topological order
         """

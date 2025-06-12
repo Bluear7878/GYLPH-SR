@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,33 +18,34 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Statically sized array of elements that accommodates all CUTLASS-supported numeric types
-           and is safe to use in a union.
+    \brief Statically sized array of elements that accommodates all
+   CUTLASS-supported numeric types and is safe to use in a union.
 */
 
 #include "../common/cutlass_unit_test.h"
 
 #include "cutlass/array.h"
 #include "cutlass/util/device_memory.h"
-#pragma warning( disable : 4800)
+#pragma warning(disable : 4800)
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace test {
 namespace core {
 
-/// Each thread clears its array and writes to global memory. No PRMT instructions should
-/// be generated if Array<T, N> is a multiple of 32 bits.
+/// Each thread clears its array and writes to global memory. No PRMT
+/// instructions should be generated if Array<T, N> is a multiple of 32 bits.
 template <typename T, int N>
 __global__ void test_array_clear(cutlass::Array<T, N> *ptr) {
 
@@ -55,8 +56,8 @@ __global__ void test_array_clear(cutlass::Array<T, N> *ptr) {
   ptr[threadIdx.x] = storage;
 }
 
-/// Each thread writes its thread index into the elements of its array and then writes the result
-/// to global memory.
+/// Each thread writes its thread index into the elements of its array and then
+/// writes the result to global memory.
 template <typename T, int N>
 __global__ void test_array_threadid(cutlass::Array<T, N> *ptr) {
 
@@ -70,8 +71,8 @@ __global__ void test_array_threadid(cutlass::Array<T, N> *ptr) {
   ptr[threadIdx.x] = storage;
 }
 
-/// Each thread writes its thread index into the elements of its array and then writes the result
-/// to global memory.
+/// Each thread writes its thread index into the elements of its array and then
+/// writes the result to global memory.
 template <typename T, int N>
 __global__ void test_array_sequence(cutlass::Array<T, N> *ptr) {
 
@@ -90,10 +91,8 @@ __global__ void test_array_sequence(cutlass::Array<T, N> *ptr) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T, int N>
-class TestArray {
+template <typename T, int N> class TestArray {
 public:
-
   //
   // Data members
   //
@@ -103,39 +102,39 @@ public:
 
   typedef cutlass::Array<T, N> ArrayTy;
 
-
   //
   // Methods
   //
 
   /// Ctor
-  TestArray() {
-
-  }
+  TestArray() {}
 
   /// Runs the test
   void run() {
 
     /// Device memory containing output
-    cutlass::device_memory::allocation< ArrayTy > output(kThreads);
-    std::vector< ArrayTy > output_host(kThreads);
+    cutlass::device_memory::allocation<ArrayTy> output(kThreads);
+    std::vector<ArrayTy> output_host(kThreads);
 
-    dim3 grid(1,1);
+    dim3 grid(1, 1);
     dim3 block(kThreads, 1, 1);
 
-    test::core::test_array_clear<<< grid, block >>>(output.get());
+    test::core::test_array_clear<<<grid, block>>>(output.get());
 
     cudaError_t result = cudaDeviceSynchronize();
-    ASSERT_EQ(result, cudaSuccess) << "CUDA error: " << cudaGetErrorString(result);
+    ASSERT_EQ(result, cudaSuccess)
+        << "CUDA error: " << cudaGetErrorString(result);
 
     //
     // Verify contains all zeros
     //
 
-    cutlass::device_memory::copy_to_host(output_host.data(), output.get(), kThreads);
+    cutlass::device_memory::copy_to_host(output_host.data(), output.get(),
+                                         kThreads);
 
     result = cudaGetLastError();
-    ASSERT_EQ(result, cudaSuccess) << "CUDA error: " << cudaGetErrorString(result);
+    ASSERT_EQ(result, cudaSuccess)
+        << "CUDA error: " << cudaGetErrorString(result);
 
     char const *ptr_host = reinterpret_cast<char const *>(output_host.data());
     for (int i = 0; i < sizeof(ArrayTy) * kThreads; ++i) {
@@ -146,15 +145,18 @@ public:
     // Verify each element contains the low bits of the thread Id
     //
 
-    test::core::test_array_threadid<<< grid, block >>>(output.get());
+    test::core::test_array_threadid<<<grid, block>>>(output.get());
 
     result = cudaDeviceSynchronize();
-    ASSERT_EQ(result, cudaSuccess) << "CUDA error: " << cudaGetErrorString(result);
+    ASSERT_EQ(result, cudaSuccess)
+        << "CUDA error: " << cudaGetErrorString(result);
 
-    cutlass::device_memory::copy_to_host(output_host.data(), output.get(), kThreads);
+    cutlass::device_memory::copy_to_host(output_host.data(), output.get(),
+                                         kThreads);
 
     result = cudaGetLastError();
-    ASSERT_EQ(result, cudaSuccess) << "CUDA error: " << cudaGetErrorString(result);
+    ASSERT_EQ(result, cudaSuccess)
+        << "CUDA error: " << cudaGetErrorString(result);
 
     for (int i = 0; i < kThreads; ++i) {
       T tid = T(i);
@@ -172,7 +174,7 @@ public:
       }
 
       // Range-based for
-      for (auto const & x : thread) {
+      for (auto const &x : thread) {
         EXPECT_TRUE(tid == x);
       }
     }
@@ -181,15 +183,18 @@ public:
     // Verify each element
     //
 
-    test::core::test_array_sequence<<< grid, block >>>(output.get());
+    test::core::test_array_sequence<<<grid, block>>>(output.get());
 
     result = cudaDeviceSynchronize();
-    ASSERT_EQ(result, cudaSuccess) << "CUDA error: " << cudaGetErrorString(result);
+    ASSERT_EQ(result, cudaSuccess)
+        << "CUDA error: " << cudaGetErrorString(result);
 
-    cutlass::device_memory::copy_to_host(output_host.data(), output.get(), kThreads);
+    cutlass::device_memory::copy_to_host(output_host.data(), output.get(),
+                                         kThreads);
 
     result = cudaGetLastError();
-    ASSERT_EQ(result, cudaSuccess) << "CUDA error: " << cudaGetErrorString(result);
+    ASSERT_EQ(result, cudaSuccess)
+        << "CUDA error: " << cudaGetErrorString(result);
 
     for (int i = 0; i < kThreads; ++i) {
 
@@ -210,7 +215,7 @@ public:
 
       // Range-based for
       j = 0;
-      for (auto const & x : thread) {
+      for (auto const &x : thread) {
         T got = T(j);
         EXPECT_TRUE(got == x);
         ++j;
@@ -220,42 +225,24 @@ public:
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-TEST(Array, Int8x16) {
-  TestArray<int8_t, 16>().run();
-}
+TEST(Array, Int8x16) { TestArray<int8_t, 16>().run(); }
 
-TEST(Array, Int32x4) {
-  TestArray<int, 4>().run();
-}
+TEST(Array, Int32x4) { TestArray<int, 4>().run(); }
 
 #if __CUDA_ARCH__ >= 520
-TEST(Array, Float16x8) {
-  TestArray<cutlass::half_t, 8>().run();
-}
+TEST(Array, Float16x8) { TestArray<cutlass::half_t, 8>().run(); }
 #endif
 
-TEST(Array, FloatBF16x8) {
-  TestArray<cutlass::bfloat16_t, 8>().run();
-}
+TEST(Array, FloatBF16x8) { TestArray<cutlass::bfloat16_t, 8>().run(); }
 
-TEST(Array, FloatTF32x4) {
-  TestArray<cutlass::tfloat32_t, 4>().run();
-}
+TEST(Array, FloatTF32x4) { TestArray<cutlass::tfloat32_t, 4>().run(); }
 
-TEST(Array, Float32x4) {
-  TestArray<float, 4>().run();
-}
+TEST(Array, Float32x4) { TestArray<float, 4>().run(); }
 
-TEST(Array, Int4x32) {
-  TestArray<cutlass::int4b_t, 32>().run();
-}
+TEST(Array, Int4x32) { TestArray<cutlass::int4b_t, 32>().run(); }
 
-TEST(Array, Uint4x32) {
-  TestArray<cutlass::uint4b_t, 32>().run();
-}
+TEST(Array, Uint4x32) { TestArray<cutlass::uint4b_t, 32>().run(); }
 
-TEST(Array, Bin1x128) {
-  TestArray<cutlass::bin1_t, 128>().run();
-}
+TEST(Array, Bin1x128) { TestArray<cutlass::bin1_t, 128>().run(); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

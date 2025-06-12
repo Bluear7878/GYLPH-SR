@@ -6,7 +6,7 @@ constexpr bool is_number() const noexcept;
 
 This function returns `#!cpp true` if and only if the JSON value is a number. This includes both integer (signed and
 unsigned) and floating-point values.
-    
+
 ## Return value
 
 `#!cpp true` if type is number (regardless whether integer, unsigned integer or floating-type), `#!cpp false` otherwise.
@@ -32,17 +32,19 @@ constexpr bool is_number() const noexcept
 
 ??? example
 
-    The following code exemplifies `is_number()` for all JSON types.
-    
-    ```cpp
-    --8<-- "examples/is_number.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/is_number.output"
-    ```
+````
+The following code exemplifies `is_number()` for all JSON types.
+
+```cpp
+--8<-- "examples/is_number.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/is_number.output"
+```
+````
 
 ## See also
 

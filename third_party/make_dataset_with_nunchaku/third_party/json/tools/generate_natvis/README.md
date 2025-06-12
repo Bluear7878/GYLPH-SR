@@ -1,5 +1,4 @@
-generate_natvis.py
-==================
+# generate_natvis.py
 
 Generate the Natvis debugger visualization file for all supported namespace combinations.
 

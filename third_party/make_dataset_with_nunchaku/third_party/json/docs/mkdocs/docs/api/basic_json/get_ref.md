@@ -13,10 +13,10 @@ Implicit reference access to the internally stored JSON value. No copies are mad
 ## Template parameters
 
 `ReferenceType`
-:   reference type; must be a reference to [`array_t`](array_t.md), [`object_t`](object_t.md),
-    [`string_t`](string_t.md), [`boolean_t`](boolean_t.md), [`number_integer_t`](number_integer_t.md), or
-    [`number_unsigned_t`](number_unsigned_t.md), [`number_float_t`](number_float_t.md), or [`binary_t`](binary_t.md).
-    Enforced by a static assertion.
+: reference type; must be a reference to [`array_t`](array_t.md), [`object_t`](object_t.md),
+[`string_t`](string_t.md), [`boolean_t`](boolean_t.md), [`number_integer_t`](number_integer_t.md), or
+[`number_unsigned_t`](number_unsigned_t.md), [`number_float_t`](number_float_t.md), or [`binary_t`](binary_t.md).
+Enforced by a static assertion.
 
 ## Return value
 
@@ -40,23 +40,27 @@ Constant.
 
 !!! danger "Undefined behavior"
 
-    Writing data to the referee of the result yields an undefined state.
+```
+Writing data to the referee of the result yields an undefined state.
+```
 
 ## Examples
 
 ??? example
 
-    The example shows several calls to `get_ref()`.
-    
-    ```cpp
-    --8<-- "examples/get_ref.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/get_ref.output"
-    ```
+````
+The example shows several calls to `get_ref()`.
+
+```cpp
+--8<-- "examples/get_ref.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/get_ref.output"
+```
+````
 
 ## Version history
 

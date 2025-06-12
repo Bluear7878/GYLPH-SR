@@ -1,10 +1,7 @@
 name: "Check amalgamation"
-
 on:
   pull_request:
-
 permissions: read-all
-
 jobs:
   save:
     runs-on: ubuntu-latest
@@ -18,7 +15,6 @@ jobs:
         with:
           name: pr
           path: pr/
-
   check:
     runs-on: ubuntu-latest
     env:
@@ -26,10 +22,7 @@ jobs:
       INCLUDE_DIR: ${{ github.workspace }}/main/single_include/nlohmann
       TOOL_DIR: ${{ github.workspace }}/tools/tools/amalgamate
       ASTYLE_FLAGS: >
-        --style=allman --indent=spaces=4 --indent-modifiers --indent-switches --indent-preproc-block
-        --indent-preproc-define --indent-col1-comments --pad-oper --pad-header --align-pointer=type
-        --align-reference=type --add-brackets --convert-tabs --close-templates --lineend=linux --preserve-date
-        --formatted
+        --style=allman --indent=spaces=4 --indent-modifiers --indent-switches --indent-preproc-block --indent-preproc-define --indent-col1-comments --pad-oper --pad-header --align-pointer=type --align-reference=type --add-brackets --convert-tabs --close-templates --lineend=linux --preserve-date --formatted
 
     steps:
       - name: Checkout pull request
@@ -37,18 +30,15 @@ jobs:
         with:
           path: main
           ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Checkout tools
         uses: actions/checkout@v3
         with:
           path: tools
           ref: develop
-
       - name: Install astyle
         run: |
           sudo apt-get update
           sudo apt-get install astyle
-
       - name: Check amalgamation
         run: |
           cd $MAIN_DIR

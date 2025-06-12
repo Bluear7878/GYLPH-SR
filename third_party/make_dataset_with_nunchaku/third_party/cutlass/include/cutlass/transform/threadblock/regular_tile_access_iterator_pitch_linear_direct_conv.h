@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -35,10 +36,10 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
 #include "cutlass/matrix_coord.h"
 #include "cutlass/matrix_shape.h"
 #include "cutlass/tensor_ref.h"
@@ -51,20 +52,18 @@ namespace cutlass {
 namespace transform {
 namespace threadblock {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Shape, typename Element, typename Layout, int AdvanceRank,
-          typename ThreadMap,
-           bool Dynamic_iterations = false,
+          typename ThreadMap, bool Dynamic_iterations = false,
           int Alignment =
-              sizeof_bits<Element>::value* ThreadMap::kElementsPerAccess / 8
-          >
+              sizeof_bits<Element>::value * ThreadMap::kElementsPerAccess / 8>
 class RegularTileAccessIteratorDirectConv;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Tile iterator specialized for congruous arrangements for TensorOps with dynamic_iterations OFF
+/// Tile iterator specialized for congruous arrangements for TensorOps with
+/// dynamic_iterations OFF
 ///
 ///
 /// Satisfies: ForwardTileIteratorConcept |
@@ -73,11 +72,10 @@ class RegularTileAccessIteratorDirectConv;
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, int Alignment>
-class RegularTileAccessIteratorDirectConv<
-    Shape_, Element_,
-    layout::PitchLinear,
-    AdvanceRank, ThreadMap_, false, Alignment> {
- public:
+class RegularTileAccessIteratorDirectConv<Shape_, Element_, layout::PitchLinear,
+                                          AdvanceRank, ThreadMap_, false,
+                                          Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -101,7 +99,7 @@ class RegularTileAccessIteratorDirectConv<
   /// Element type per access
   using AccessType = Array<Element, ThreadMap::kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
@@ -121,19 +119,22 @@ class RegularTileAccessIteratorDirectConv<
   /// Iteration in the strided dimension
   int iteration_strided_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIteratorDirectConv(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
-                            )
+  RegularTileAccessIteratorDirectConv(
+      TensorRef ref, ///< Pointer to start of tensor
+      int thread_id  ///< ID of each participating thread
+      )
       : stride_(ref.stride(0) / ThreadMap::kElementsPerAccess),
         byte_offset_(0) {
 
-    layout::PitchLinearCoord thread_offset_base = ThreadMap::initial_offset(thread_id);
+    layout::PitchLinearCoord thread_offset_base =
+        ThreadMap::initial_offset(thread_id);
 
     // initialize pointer
-    pointer_ = reinterpret_cast<AccessType *>(ref.data() + ref.offset(thread_offset_base));
+    pointer_ = reinterpret_cast<AccessType *>(ref.data() +
+                                              ref.offset(thread_offset_base));
 
     set_iteration_index(0);
   }
@@ -148,7 +149,7 @@ class RegularTileAccessIteratorDirectConv<
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
   void set_iteration_num(int num) {
-    //Do nothing
+    // Do nothing
   }
 
   /// Adds a pointer offset in units of Element
@@ -163,9 +164,10 @@ class RegularTileAccessIteratorDirectConv<
 
     AccessType *access_ptr = pointer_;
 
-    int access_offset = iteration_strided_ * ThreadMap::Delta::kStrided * stride_ +
-                        iteration_contiguous_ * ThreadMap::Delta::kContiguous /
-                            ThreadMap::kElementsPerAccess;
+    int access_offset =
+        iteration_strided_ * ThreadMap::Delta::kStrided * stride_ +
+        iteration_contiguous_ * ThreadMap::Delta::kContiguous /
+            ThreadMap::kElementsPerAccess;
 
     char *access_byte_ptr =
         reinterpret_cast<char *>(access_ptr + access_offset);
@@ -211,13 +213,15 @@ class RegularTileAccessIteratorDirectConv<
   void add_tile_offset(TensorCoord const &coord) {
     add_pointer_offset(coord.contiguous() * Shape::kContiguous +
                        coord.strided() * ThreadMap::Iterations::kStrided *
-                           ThreadMap::Delta::kStrided * stride_ * ThreadMap::kElementsPerAccess);
+                           ThreadMap::Delta::kStrided * stride_ *
+                           ThreadMap::kElementsPerAccess);
   }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Tile iterator specialized for congruous arrangements for TensorOps with dynamic_iterations ON
+/// Tile iterator specialized for congruous arrangements for TensorOps with
+/// dynamic_iterations ON
 ///
 ///
 /// Satisfies: ForwardTileIteratorConcept |
@@ -226,11 +230,10 @@ class RegularTileAccessIteratorDirectConv<
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, int Alignment>
-class RegularTileAccessIteratorDirectConv<
-    Shape_, Element_,
-    layout::PitchLinear,
-    AdvanceRank, ThreadMap_,true, Alignment> {
- public:
+class RegularTileAccessIteratorDirectConv<Shape_, Element_, layout::PitchLinear,
+                                          AdvanceRank, ThreadMap_, true,
+                                          Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -254,7 +257,7 @@ class RegularTileAccessIteratorDirectConv<
   /// Element type per access
   using AccessType = Array<Element, ThreadMap::kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
@@ -277,19 +280,22 @@ class RegularTileAccessIteratorDirectConv<
   /// Total iterattions in the strided dimension: Dynamic value
   int total_iteration_strided_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIteratorDirectConv(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
-                            )
+  RegularTileAccessIteratorDirectConv(
+      TensorRef ref, ///< Pointer to start of tensor
+      int thread_id  ///< ID of each participating thread
+      )
       : stride_(ref.stride(0) / ThreadMap::kElementsPerAccess),
         byte_offset_(0) {
 
-    layout::PitchLinearCoord thread_offset_base = ThreadMap::initial_offset(thread_id);
+    layout::PitchLinearCoord thread_offset_base =
+        ThreadMap::initial_offset(thread_id);
 
     // initialize pointer
-    pointer_ = reinterpret_cast<AccessType *>(ref.data() + ref.offset(thread_offset_base));
+    pointer_ = reinterpret_cast<AccessType *>(ref.data() +
+                                              ref.offset(thread_offset_base));
 
     set_iteration_index(0);
   }
@@ -303,9 +309,7 @@ class RegularTileAccessIteratorDirectConv<
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
-  void set_iteration_num(int num) {
-    total_iteration_strided_ = num;
-  }
+  void set_iteration_num(int num) { total_iteration_strided_ = num; }
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -319,9 +323,10 @@ class RegularTileAccessIteratorDirectConv<
 
     AccessType *access_ptr = pointer_;
 
-    int access_offset = iteration_strided_ * ThreadMap::Delta::kStrided * stride_ +
-                        iteration_contiguous_ * ThreadMap::Delta::kContiguous /
-                            ThreadMap::kElementsPerAccess;
+    int access_offset =
+        iteration_strided_ * ThreadMap::Delta::kStrided * stride_ +
+        iteration_contiguous_ * ThreadMap::Delta::kContiguous /
+            ThreadMap::kElementsPerAccess;
 
     char *access_byte_ptr =
         reinterpret_cast<char *>(access_ptr + access_offset);
@@ -366,7 +371,8 @@ class RegularTileAccessIteratorDirectConv<
   CUTLASS_DEVICE
   void add_tile_offset(TensorCoord const &coord) {
     add_pointer_offset(coord.contiguous() * Shape::kContiguous +
-                       coord.strided() * total_iteration_strided_ * ThreadMap::Delta::kStrided * stride_ *
+                       coord.strided() * total_iteration_strided_ *
+                           ThreadMap::Delta::kStrided * stride_ *
                            ThreadMap::kElementsPerAccess);
   }
 };
@@ -381,12 +387,11 @@ class RegularTileAccessIteratorDirectConv<
 ///            WriteableContiguousTileIteratorConcept
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
-          typename ThreadMap_,bool Dynamic_iterations, int Alignment >
-class RegularTileAccessIteratorDirectConv<
-    Shape_, Element_,
-    layout::ColumnMajor,
-    AdvanceRank, ThreadMap_, Dynamic_iterations , Alignment> {
- public:
+          typename ThreadMap_, bool Dynamic_iterations, int Alignment>
+class RegularTileAccessIteratorDirectConv<Shape_, Element_, layout::ColumnMajor,
+                                          AdvanceRank, ThreadMap_,
+                                          Dynamic_iterations, Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -409,35 +414,31 @@ class RegularTileAccessIteratorDirectConv<
   /// Underlying iterator type
   using UnderlyingIterator = RegularTileAccessIteratorDirectConv<
       layout::PitchLinearShape<Shape::kRow, Shape::kColumn>, Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 0 : 1), 
-      ThreadMap_,
+      layout::PitchLinear, (kAdvanceRank == 0 ? 0 : 1), ThreadMap_,
       Dynamic_iterations>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
-
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIteratorDirectConv(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
-                            )
+  RegularTileAccessIteratorDirectConv(
+      TensorRef ref, ///< Pointer to start of tensor
+      int thread_id  ///< ID of each participating thread
+      )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
   void set_iteration_index(int index) { iterator_.set_iteration_index(index); }
-  
+
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
-  void set_iteration_num(int num) {
-    iterator_.set_iteration_num(num);
-  }
+  void set_iteration_num(int num) { iterator_.set_iteration_num(num); }
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -474,7 +475,6 @@ class RegularTileAccessIteratorDirectConv<
   }
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Tile iterator specialized for row major layouts
@@ -485,12 +485,11 @@ class RegularTileAccessIteratorDirectConv<
 ///            WriteableContiguousTileIteratorConcept
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
-          typename ThreadMap_,bool Dynamic_iterations, int Alignment>
-class RegularTileAccessIteratorDirectConv<
-    Shape_, Element_,
-    layout::RowMajor,
-    AdvanceRank, ThreadMap_, Dynamic_iterations, Alignment> {
- public:
+          typename ThreadMap_, bool Dynamic_iterations, int Alignment>
+class RegularTileAccessIteratorDirectConv<Shape_, Element_, layout::RowMajor,
+                                          AdvanceRank, ThreadMap_,
+                                          Dynamic_iterations, Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -513,24 +512,22 @@ class RegularTileAccessIteratorDirectConv<
   /// Underlying iterator type
   using UnderlyingIterator = RegularTileAccessIteratorDirectConv<
       layout::PitchLinearShape<Shape::kColumn, Shape::kRow>, Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 1 : 0), 
-      ThreadMap_,
+      layout::PitchLinear, (kAdvanceRank == 0 ? 1 : 0), ThreadMap_,
       Dynamic_iterations>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
-
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIteratorDirectConv(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
-                            )
+  RegularTileAccessIteratorDirectConv(
+      TensorRef ref, ///< Pointer to start of tensor
+      int thread_id  ///< ID of each participating thread
+      )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
   /// Overrides the internal iteration index
@@ -539,9 +536,7 @@ class RegularTileAccessIteratorDirectConv<
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
-  void set_iteration_num(int num) {
-    iterator_.set_iteration_num(num);
-  }
+  void set_iteration_num(int num) { iterator_.set_iteration_num(num); }
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -580,8 +575,8 @@ class RegularTileAccessIteratorDirectConv<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -45,7 +45,6 @@ code like the following for GEMM:
 
 from cutlass.backend import epilogue
 
-
 gelu = epilogue.gelu
 hardswish = epilogue.hardswish
 identity = epilogue.identity
@@ -145,10 +144,13 @@ def trace(fn, example_tensors, **kwargs):
         epilogue_visitor = cutlass.epilogue.trace(example_fn, example_inputs)
     """
     if callable(fn):
+
         class EpilogueFunctor(PythonASTFrontend):
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
+
             pass
+
         setattr(EpilogueFunctor, "__call__", staticmethod(fn))
 
         epilogue_functor = EpilogueFunctor(**kwargs)

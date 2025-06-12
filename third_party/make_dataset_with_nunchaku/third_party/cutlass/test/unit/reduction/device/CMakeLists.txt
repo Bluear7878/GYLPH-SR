@@ -31,4 +31,3 @@ cutlass_test_unit_add_executable(
   tensor_reduce_strided.cu
   tensor_reduce_contiguous.cu
 )
-

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,25 +18,26 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-  \brief 
+  \brief
 */
 
 #pragma once
 
 #include "cutlass/cutlass.h"
-#include "cutlass/layout/matrix.h"
 #include "cutlass/fast_math.h"
+#include "cutlass/layout/matrix.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,15 +47,12 @@ namespace threadblock {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  int Rank
->
-struct PredicatedTileIteratorAffineLayoutRankNParams {
+template <int Rank> struct PredicatedTileIteratorAffineLayoutRankNParams {
   using Layout = layout::AffineRankN<Rank>;
   using TensorCoord = typename Layout::TensorCoord;
 
   static bool const kBigEndian = false;
-  
+
   //
   // Data members
   //
@@ -62,16 +60,16 @@ struct PredicatedTileIteratorAffineLayoutRankNParams {
   Layout layout;
 
   /// Stride in units of bytes along M modes
-  Coord<Layout::kRank/2, typename Layout::LongIndex> stride_m;
+  Coord<Layout::kRank / 2, typename Layout::LongIndex> stride_m;
 
   /// Stride in units of bytes along N modes
-  Coord<Layout::kRank/2, typename Layout::LongIndex> stride_n;
+  Coord<Layout::kRank / 2, typename Layout::LongIndex> stride_n;
 
   /// Fast divmod objects divided by tensor extents
-  FastDivmod divmod_m[(Layout::kRank == 2) ? 1 : (Layout::kRank/2 - 1)];
+  FastDivmod divmod_m[(Layout::kRank == 2) ? 1 : (Layout::kRank / 2 - 1)];
 
   /// Fast divmod objects divided by tensor extents
-  FastDivmod divmod_n[(Layout::kRank == 2) ? 1 : (Layout::kRank/2 - 1)];
+  FastDivmod divmod_n[(Layout::kRank == 2) ? 1 : (Layout::kRank / 2 - 1)];
 
   int64_t rank2_inc_col;
   int64_t rank2_inc_row;
@@ -80,19 +78,19 @@ struct PredicatedTileIteratorAffineLayoutRankNParams {
   // Methods
   //
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorAffineLayoutRankNParams() { }
+  PredicatedTileIteratorAffineLayoutRankNParams() {}
 
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorAffineLayoutRankNParams(TensorCoord const &extent, 
+  PredicatedTileIteratorAffineLayoutRankNParams(TensorCoord const &extent,
                                                 Layout const &layout_,
                                                 int64_t element_sizeof_bits)
-  : layout(layout_) 
-  {
+      : layout(layout_) {
 
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < Layout::kRank / 2; ++i) {
       stride_m[i] = OffsetBytes(layout_.stride()[i], element_sizeof_bits);
-      stride_n[i] = OffsetBytes(layout_.stride()[i + Layout::kRank / 2], element_sizeof_bits);
+      stride_n[i] = OffsetBytes(layout_.stride()[i + Layout::kRank / 2],
+                                element_sizeof_bits);
     }
 
     if (kBigEndian) {
@@ -102,8 +100,7 @@ struct PredicatedTileIteratorAffineLayoutRankNParams {
         divmod_m[i] = FastDivmod(extent[i + 1]);
         divmod_n[i] = FastDivmod(extent[i + Layout::kRank / 2 + 1]);
       }
-    }
-    else {
+    } else {
       // "Little Endian" scheme
       CUTLASS_PRAGMA_UNROLL
       for (int i = 0; i < Layout::kRank / 2 - 1; ++i) {
@@ -112,7 +109,7 @@ struct PredicatedTileIteratorAffineLayoutRankNParams {
       }
     }
 
-    #if 0
+#if 0
     //
     // Debug print statements to verify extents and strides are passed correctly.
     //
@@ -126,7 +123,7 @@ struct PredicatedTileIteratorAffineLayoutRankNParams {
       printf("  stride[%d]: %ld\n", i, layout_.stride()[i]);
     }
     printf("PredicatedTileIteratorAffine::Params() returning\n");
-    #endif
+#endif
   }
 
   CUTLASS_HOST_DEVICE
@@ -134,13 +131,13 @@ struct PredicatedTileIteratorAffineLayoutRankNParams {
                                                 int32_t threadmap_delta_kColumn,
                                                 int32_t threadmap_delta_kRow,
                                                 int64_t element_sizeof_bits)
-  : layout(layout_) 
-  {
+      : layout(layout_) {
 
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < Layout::kRank / 2; ++i) {
       stride_m[i] = OffsetBytes(layout_.stride()[i], element_sizeof_bits);
-      stride_n[i] = OffsetBytes(layout_.stride()[i + Layout::kRank / 2], element_sizeof_bits);
+      stride_n[i] = OffsetBytes(layout_.stride()[i + Layout::kRank / 2],
+                                element_sizeof_bits);
     }
 
     rank2_inc_col = threadmap_delta_kColumn * stride_n[0];

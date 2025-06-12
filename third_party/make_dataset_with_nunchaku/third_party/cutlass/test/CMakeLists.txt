@@ -32,4 +32,3 @@ else()
   # Always provide at least the phony test_unit target.
   add_custom_target(test_unit)
 endif()
-

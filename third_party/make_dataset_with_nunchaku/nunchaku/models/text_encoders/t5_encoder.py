@@ -52,7 +52,9 @@ def quantize_t5_encoder(
         )
 
     state_dict = load_file(qmodel_path)
-    qlayer_suffix = tuple(kwargs.get("qlayer_suffix", (".q", ".k", ".v", ".o", ".wi_0")))
+    qlayer_suffix = tuple(
+        kwargs.get("qlayer_suffix", (".q", ".k", ".v", ".o", ".wi_0"))
+    )
 
     named_modules = {}
     for name, module in t5_encoder.named_modules():
@@ -68,7 +70,9 @@ def quantize_t5_encoder(
                 # qmodule.scaled_zeros.data.copy_(state_dict[f"{name}.scaled_zeros"])
 
                 # modeling_t5.py: T5DenseGatedActDense needs dtype of weight
-                qmodule.weight = torch.empty([1], dtype=module.weight.dtype, device=module.weight.device)
+                qmodule.weight = torch.empty(
+                    [1], dtype=module.weight.dtype, device=module.weight.device
+                )
 
                 parent_name, child_name = name.rsplit(".", 1)
                 setattr(named_modules[parent_name], child_name, qmodule)

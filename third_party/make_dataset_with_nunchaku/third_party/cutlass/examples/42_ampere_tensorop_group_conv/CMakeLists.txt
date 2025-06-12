@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   42_ampere_tensorop_group_conv
   ampere_tensorop_group_conv.cu
   )
-

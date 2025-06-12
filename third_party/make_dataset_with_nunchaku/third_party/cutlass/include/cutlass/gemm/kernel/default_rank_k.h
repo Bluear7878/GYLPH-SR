@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,53 +18,53 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief 
-      Default kernel-level RankK definitions combine threadblock-scoped matrix multiply-add with
-      the appropriate threadblock-scoped epilogue.
+    \brief
+      Default kernel-level RankK definitions combine threadblock-scoped matrix
+   multiply-add with the appropriate threadblock-scoped epilogue.
 
-  
+
 */
 
 #pragma once
 
 #include "cutlass/blas3.h"
 
-#include "cutlass/layout/matrix.h"
 #include "cutlass/arch/wmma.h"
+#include "cutlass/layout/matrix.h"
 
-#include "cutlass/epilogue/threadblock/epilogue.h"
 #include "cutlass/epilogue/thread/linear_combination.h"
+#include "cutlass/epilogue/threadblock/epilogue.h"
 
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/kernel/rank_k_universal.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm75.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm70.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_mma.h"
 #include "cutlass/gemm/threadblock/default_mma_core_simt.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm70.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm75.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
+#include "cutlass/epilogue/threadblock/default_epilogue_simt.h"
 #include "cutlass/epilogue/threadblock/default_epilogue_tensor_op_blas3.h"
 #include "cutlass/epilogue/threadblock/default_epilogue_volta_tensor_op.h"
-#include "cutlass/epilogue/threadblock/default_epilogue_simt.h"
 #include "cutlass/transform/threadblock/predicated_tile_iterator.h"
 
 #if defined(CUTLASS_ARCH_WMMA_ENABLED)
 #include "cutlass/epilogue/threadblock/default_epilogue_wmma_tensor_op.h"
-#endif //CUTLASS_ARCH_WMMA_ENABLED
-
+#endif // CUTLASS_ARCH_WMMA_ENABLED
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -147,34 +147,31 @@ template <
     bool SplitKSerial,
     /// Operation performed by GEMM
     typename Operator>
-struct DefaultRankK<
-                    ElementA, LayoutA, kAlignmentA, 
-                    ElementC,layout::RowMajor, FillModeC, 
-                    ElementAccumulator, arch::OpClassTensorOp, arch::Sm90, 
-                    ThreadblockShape, WarpShape, InstructionShape,
+struct DefaultRankK<ElementA, LayoutA, kAlignmentA, ElementC, layout::RowMajor,
+                    FillModeC, ElementAccumulator, arch::OpClassTensorOp,
+                    arch::Sm90, ThreadblockShape, WarpShape, InstructionShape,
                     EpilogueOutputOp, ThreadblockSwizzle, Stages, SplitKSerial,
                     Operator> {
   /// Define the threadblock-scoped matrix multiply-accumulate (A x AT)
   using Mma = typename cutlass::gemm::threadblock::DefaultMma<
-      ElementA, LayoutA, 
-      kAlignmentA, 
-      ElementA, typename layout::LayoutTranspose<LayoutA>::type, 
-      kAlignmentA,
+      ElementA, LayoutA, kAlignmentA, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, kAlignmentA,
       ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm90,
       ThreadblockShape, WarpShape, InstructionShape, Stages,
       Operator>::ThreadblockMma;
-  
 
   static const int kPartitionsK = ThreadblockShape::kK / WarpShape::kK;
 
   /// Define the epilogue
   using Epilogue =
       typename cutlass::epilogue::threadblock::DefaultEpilogueTensorOpBlas3<
-          ThreadblockShape, typename Mma::Operator, kPartitionsK, EpilogueOutputOp,
-          EpilogueOutputOp::kCount, BlasMode::kSymmetric>::Epilogue;
+          ThreadblockShape, typename Mma::Operator, kPartitionsK,
+          EpilogueOutputOp, EpilogueOutputOp::kCount,
+          BlasMode::kSymmetric>::Epilogue;
 
   /// Define the kernel-level Rank2 operator.
-  using RankKkernel = kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
+  using RankKkernel =
+      kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,38 +207,34 @@ template <
     bool SplitKSerial,
     /// Operation performed by GEMM
     typename Operator>
-struct DefaultRankK<
-                    ElementA, LayoutA, kAlignmentA, 
-                    ElementC,layout::RowMajor, FillModeC, 
-                    ElementAccumulator, arch::OpClassTensorOp, arch::Sm80, 
-                    ThreadblockShape, WarpShape, InstructionShape,
+struct DefaultRankK<ElementA, LayoutA, kAlignmentA, ElementC, layout::RowMajor,
+                    FillModeC, ElementAccumulator, arch::OpClassTensorOp,
+                    arch::Sm80, ThreadblockShape, WarpShape, InstructionShape,
                     EpilogueOutputOp, ThreadblockSwizzle, Stages, SplitKSerial,
                     Operator> {
   /// Define the threadblock-scoped matrix multiply-accumulate (A x AT)
   using Mma = typename cutlass::gemm::threadblock::DefaultMma<
-      ElementA, LayoutA, 
-      kAlignmentA, 
-      ElementA, typename layout::LayoutTranspose<LayoutA>::type, 
-      kAlignmentA,
+      ElementA, LayoutA, kAlignmentA, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, kAlignmentA,
       ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm80,
       ThreadblockShape, WarpShape, InstructionShape, Stages,
       Operator>::ThreadblockMma;
-  
 
   static const int kPartitionsK = ThreadblockShape::kK / WarpShape::kK;
 
   /// Define the epilogue
   using Epilogue =
       typename cutlass::epilogue::threadblock::DefaultEpilogueTensorOpBlas3<
-          ThreadblockShape, typename Mma::Operator, kPartitionsK, EpilogueOutputOp,
-          EpilogueOutputOp::kCount, BlasMode::kSymmetric>::Epilogue;
+          ThreadblockShape, typename Mma::Operator, kPartitionsK,
+          EpilogueOutputOp, EpilogueOutputOp::kCount,
+          BlasMode::kSymmetric>::Epilogue;
 
   /// Define the kernel-level Rank2 operator.
-  using RankKkernel = kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
+  using RankKkernel =
+      kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
 };
 ////////////////////////////////////////////////////////////////////////////////
 
-
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass

@@ -58,7 +58,7 @@ target_include_directories(
   )
 
 target_link_libraries(
-  example 
+  example
   PRIVATE
   nvidia::cutlass::cutlass
   nvidia::cutlass::library

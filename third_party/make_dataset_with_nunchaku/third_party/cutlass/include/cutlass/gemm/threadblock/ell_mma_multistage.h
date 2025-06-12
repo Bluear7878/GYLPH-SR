@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -33,7 +34,6 @@
 */
 
 #pragma once
-
 
 #include "cutlass/aligned_buffer.h"
 #include "cutlass/arch/memory.h"
@@ -86,8 +86,7 @@ template <
     int Stages,
     /// Used for partial specialization
     typename Enable = bool>
-class EllMmaMultistage : 
-  public MmaBase<Shape_, Policy_, Stages> {
+class EllMmaMultistage : public MmaBase<Shape_, Policy_, Stages> {
 public:
   ///< Base class
   using Base = MmaBase<Shape_, Policy_, Stages>;
@@ -124,7 +123,7 @@ public:
 
   /// Minimum architecture is Sm80 to support cp.async
   using ArchTag = arch::Sm80;
-  
+
   /// Complex transform on A operand
   static ComplexTransform const kTransformA = Operator::kTransformA;
 
@@ -151,22 +150,22 @@ public:
 
     /// Number of cp.async instructions to load on group of operand A
     static int const kAccessesPerGroupA =
-        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// Number of cp.async instructions to load on group of operand B
     static int const kAccessesPerGroupB =
-        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
   };
 
- private:
-
+private:
   using WarpLoadedFragmentA = typename Operator::FragmentA;
   using WarpLoadedFragmentB = typename Operator::FragmentB;
   using WarpTransformedFragmentA = typename Operator::TransformedFragmentA;
   using WarpTransformedFragmentB = typename Operator::TransformedFragmentB;
 
- private:
-
+private:
   //
   // Data members
   //
@@ -178,7 +177,6 @@ public:
   SmemIteratorB smem_iterator_B_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   EllMmaMultistage(
@@ -189,12 +187,10 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      Base(shared_storage, thread_idx, warp_idx, lane_idx),
-      smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
-      smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx)
-  {
+      int lane_idx)
+      : Base(shared_storage, thread_idx, warp_idx, lane_idx),
+        smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
+        smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx) {
     // Compute warp location within threadblock tile by mapping the warp_id to
     // three coordinates:
     //   _m: the warp's position within the threadblock along the M dimension
@@ -214,10 +210,11 @@ public:
         {Base::kWarpGemmIterations * warp_idx_k, warp_idx_n});
   }
 
-  template<bool is_A_sparse, bool is_offset_constant>
-  CUTLASS_DEVICE
-  void copy_tiles_and_advance(IteratorA &iterator_A, IteratorB &iterator_B, EllIterator &ell_iter,
-                              int group_start_A = 0, int group_start_B = 0) {
+  template <bool is_A_sparse, bool is_offset_constant>
+  CUTLASS_DEVICE void
+  copy_tiles_and_advance(IteratorA &iterator_A, IteratorB &iterator_B,
+                         EllIterator &ell_iter, int group_start_A = 0,
+                         int group_start_B = 0) {
     iterator_A.set_iteration_index(group_start_A *
                                    IteratorA::kAccessesPerVector);
     this->smem_iterator_A_.set_iteration_index(group_start_A);
@@ -239,11 +236,11 @@ public:
           auto gmem_ptr = iterator_A.get();
           bool is_valid = iterator_A.valid();
 
-          if (!is_A_sparse){
-            if (is_offset_constant){
+          if (!is_A_sparse) {
+            if (is_offset_constant) {
               auto ell_offset = ell_iter.get_offset_fast();
               is_valid = is_valid && (ell_offset >= 0);
-              gmem_ptr +=  ell_offset * sizeof(IteratorA::Element) / kSrcBytes;
+              gmem_ptr += ell_offset * sizeof(IteratorA::Element) / kSrcBytes;
             } else {
               int k_offset = iterator_A.get_k();
               auto ell_offset = ell_iter.get_offset(k_offset);
@@ -283,8 +280,8 @@ public:
           auto gmem_ptr = iterator_B.get();
           bool is_valid = iterator_B.valid();
 
-          if (is_A_sparse){
-            if (is_offset_constant){
+          if (is_A_sparse) {
+            if (is_offset_constant) {
               auto ell_offset = ell_iter.get_offset_fast();
               is_valid = is_valid && (ell_offset >= 0);
               gmem_ptr += ell_offset * sizeof(IteratorB::Element) / kSrcBytes;
@@ -292,7 +289,7 @@ public:
               int k_offset = iterator_B.get_k();
               auto ell_offset = ell_iter.get_offset(k_offset);
               is_valid = is_valid && (ell_offset >= 0);
-              gmem_ptr += ( ell_offset * sizeof(IteratorB::Element)) / kSrcBytes;
+              gmem_ptr += (ell_offset * sizeof(IteratorB::Element)) / kSrcBytes;
             }
           }
 
@@ -306,11 +303,9 @@ public:
     }
   }
 
-
   /// Perform a threadblock-scoped matrix multiply-accumulate
-  template<bool is_A_sparse, bool is_offset_constant>
-  CUTLASS_DEVICE
-  void operator()(
+  template <bool is_A_sparse, bool is_offset_constant>
+  CUTLASS_DEVICE void operator()(
       ///< problem size of GEMM
       int gemm_k_iterations,
       ///< destination accumulator tile
@@ -320,9 +315,7 @@ public:
       ///< iterator over B operand in global memory
       IteratorB iterator_B,
       ///< initial value of accumulator
-      FragmentC const &src_accum,
-      EllIterator &ell_iterator
-      ) {
+      FragmentC const &src_accum, EllIterator &ell_iterator) {
     //
     // Prologue
     //
@@ -355,11 +348,11 @@ public:
           auto gmem_ptr = iterator_A.get();
           bool is_valid = iterator_A.valid();
 
-          if (!is_A_sparse){
-            if (is_offset_constant){
+          if (!is_A_sparse) {
+            if (is_offset_constant) {
               auto ell_offset = ell_iterator.get_offset_fast();
               is_valid = is_valid && (ell_offset >= 0);
-              gmem_ptr +=  ell_offset * sizeof(IteratorA::Element) / kSrcBytes;
+              gmem_ptr += ell_offset * sizeof(IteratorA::Element) / kSrcBytes;
             } else {
               int k_offset = iterator_A.get_k();
               auto ell_offset = ell_iterator.get_offset(k_offset);
@@ -393,12 +386,12 @@ public:
               sizeof_bits<typename IteratorB::Element>::value *
               IteratorB::ThreadMap::kElementsPerAccess /
               IteratorB::kAccessesPerVector / 8;
-          
+
           auto gmem_ptr = iterator_B.get();
           bool is_valid = iterator_B.valid();
-          
-          if (is_A_sparse){
-            if (is_offset_constant){
+
+          if (is_A_sparse) {
+            if (is_offset_constant) {
               auto ell_offset = ell_iterator.get_offset_fast();
               is_valid = is_valid && (ell_offset >= 0);
               gmem_ptr += ell_offset * sizeof(IteratorB::Element) / kSrcBytes;
@@ -406,7 +399,7 @@ public:
               int k_offset = iterator_B.get_k();
               auto ell_offset = ell_iterator.get_offset(k_offset);
               is_valid = is_valid && (ell_offset >= 0);
-              gmem_ptr += ( ell_offset * sizeof(IteratorB::Element)) / kSrcBytes;
+              gmem_ptr += (ell_offset * sizeof(IteratorB::Element)) / kSrcBytes;
             }
           }
 
@@ -423,7 +416,7 @@ public:
       iterator_A.add_tile_offset({0, 1});
       iterator_B.add_tile_offset({1, 0});
       ++ell_iterator;
-      
+
       this->smem_iterator_A_.add_tile_offset({0, 1});
       this->smem_iterator_B_.add_tile_offset({1, 0});
 
@@ -459,10 +452,9 @@ public:
     iterator_A.clear_mask(gemm_k_iterations == 0);
     iterator_B.clear_mask(gemm_k_iterations == 0);
 
-    if (is_A_sparse){
+    if (is_A_sparse) {
       iterator_A.ell_add_mask(ell_iterator.get_blocksize());
-    }
-    else {
+    } else {
       iterator_B.ell_add_mask(ell_iterator.get_blocksize());
     }
 
@@ -480,9 +472,9 @@ public:
     FragmentC tmp_accum;
 
     if (platform::is_same<typename Operator::MathOperator,
-                          arch::OpMultiplyAddFastF32>::value
-      || platform::is_same<typename Operator::MathOperator,
-                           arch::OpMultiplyAddComplexFastF32>::value) {
+                          arch::OpMultiplyAddFastF32>::value ||
+        platform::is_same<typename Operator::MathOperator,
+                          arch::OpMultiplyAddComplexFastF32>::value) {
 
       tmp_accum.clear();
     }
@@ -506,11 +498,15 @@ public:
         // Load warp-level tiles from shared memory, wrapping to k offset if
         // this is the last group as the case may be.
 
-        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        
-        this->warp_tile_iterator_A_.load(warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_B_.load(warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+
+        this->warp_tile_iterator_A_.load(
+            warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B_.load(
+            warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
 
         ++this->warp_tile_iterator_A_;
         ++this->warp_tile_iterator_B_;
@@ -522,28 +518,20 @@ public:
                              warp_loaded_frag_B[warp_mma_k % 2]);
 
         if (platform::is_same<typename Operator::MathOperator,
-                              arch::OpMultiplyAddFastF32>::value
-          || platform::is_same<typename Operator::MathOperator,
-                               arch::OpMultiplyAddComplexFastF32>::value) {
+                              arch::OpMultiplyAddFastF32>::value ||
+            platform::is_same<typename Operator::MathOperator,
+                              arch::OpMultiplyAddComplexFastF32>::value) {
 
-          warp_mma(
-            tmp_accum, 
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B[warp_mma_k % 2], 
-            tmp_accum
-          );
+          warp_mma(tmp_accum, warp_transformed_frag_A[warp_mma_k % 2],
+                   warp_transformed_frag_B[warp_mma_k % 2], tmp_accum);
 
           if (warp_mma_k == 0) {
             accum = plus_accum(accum, tmp_accum);
             tmp_accum.clear();
           }
         } else {
-          warp_mma(
-            accum, 
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B[warp_mma_k % 2], 
-            accum
-          );
+          warp_mma(accum, warp_transformed_frag_A[warp_mma_k % 2],
+                   warp_transformed_frag_B[warp_mma_k % 2], accum);
         }
 
         // Issue global->shared copies for the this stage
@@ -554,8 +542,8 @@ public:
           group_start_iteration_B = warp_mma_k * Detail::kAccessesPerGroupB;
 
           copy_tiles_and_advance<is_A_sparse, is_offset_constant>(
-              iterator_A, iterator_B, ell_iterator, group_start_iteration_A, 
-                               group_start_iteration_B);
+              iterator_A, iterator_B, ell_iterator, group_start_iteration_A,
+              group_start_iteration_B);
         }
 
         if (warp_mma_k + 2 == Base::kWarpGemmIterations) {
@@ -566,8 +554,8 @@ public:
               (warp_mma_k + 1) * Detail::kAccessesPerGroupB;
 
           copy_tiles_and_advance<is_A_sparse, is_offset_constant>(
-              iterator_A, iterator_B, ell_iterator, group_start_iteration_A, 
-                               group_start_iteration_B);
+              iterator_A, iterator_B, ell_iterator, group_start_iteration_A,
+              group_start_iteration_B);
 
           // Inserts a memory fence between stages of cp.async instructions.
           cutlass::arch::cp_async_fence();
@@ -620,29 +608,27 @@ public:
                              warp_loaded_frag_A[(warp_mma_k + 1) % 2],
                              warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
       }
-
     }
 
     if (platform::is_same<typename Operator::MathOperator,
-                          arch::OpMultiplyAddFastF32>::value
-      || platform::is_same<typename Operator::MathOperator,
-                           arch::OpMultiplyAddComplexFastF32>::value) {
-      accum = plus_accum(accum, tmp_accum); 
+                          arch::OpMultiplyAddFastF32>::value ||
+        platform::is_same<typename Operator::MathOperator,
+                          arch::OpMultiplyAddComplexFastF32>::value) {
+      accum = plus_accum(accum, tmp_accum);
     }
 
-
-    // Commit and drain all pending and predicated cp.async pnz from the GEMM mainloop
+    // Commit and drain all pending and predicated cp.async pnz from the GEMM
+    // mainloop
     cutlass::arch::cp_async_fence();
     cutlass::arch::cp_async_wait<0>();
     __syncthreads();
-
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

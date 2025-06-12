@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,20 +18,22 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*!
   \file
 
-  \brief Utilities accompanying the CUTLASS library for interacting with Library types.
+  \brief Utilities accompanying the CUTLASS library for interacting with Library
+  types.
 */
 
 #pragma once
@@ -94,10 +96,12 @@ template <> NumericTypeID from_string<NumericTypeID>(std::string const &str);
 /// Returns the size of a data type in bits
 int sizeof_bits(NumericTypeID type);
 
-/// Returns true if the numeric type is a complex data type or false if real-valued.
+/// Returns true if the numeric type is a complex data type or false if
+/// real-valued.
 bool is_complex_type(NumericTypeID type);
 
-/// Returns the real-valued type underlying a type (only different from 'type' if complex)
+/// Returns the real-valued type underlying a type (only different from 'type'
+/// if complex)
 NumericTypeID get_real_type(NumericTypeID type);
 
 /// Returns true if numeric type is integer
@@ -131,8 +135,7 @@ int get_layout_stride_rank(LayoutTypeID layout_id);
 char const *to_string(OpcodeClassID type, bool pretty = false);
 
 /// Converts a OpcodeClassID enumerant from a string
-template <>
-OpcodeClassID from_string<OpcodeClassID>(std::string const &str);
+template <> OpcodeClassID from_string<OpcodeClassID>(std::string const &str);
 
 /// Converts a ComplexTransform enumerant to a string
 char const *to_string(ComplexTransform type, bool pretty = false);
@@ -141,20 +144,17 @@ char const *to_string(ComplexTransform type, bool pretty = false);
 template <>
 ComplexTransform from_string<ComplexTransform>(std::string const &str);
 
-
 /// Converts a SplitKMode enumerant to a string
 char const *to_string(SplitKMode split_k_mode, bool pretty = false);
 
 /// Converts a SplitKMode enumerant from a string
-template <>
-SplitKMode from_string<SplitKMode>(std::string const &str);
+template <> SplitKMode from_string<SplitKMode>(std::string const &str);
 
 /// Converts a ConvModeID enumerant to a string
 char const *to_string(ConvModeID type, bool pretty = false);
 
 /// Converts a ConvModeID enumerant from a string
-template <>
-ConvModeID from_string<ConvModeID>(std::string const &str);
+template <> ConvModeID from_string<ConvModeID>(std::string const &str);
 
 /// Converts a IteratorAlgorithmID enumerant to a string
 char const *to_string(IteratorAlgorithmID type, bool pretty = false);
@@ -167,33 +167,40 @@ IteratorAlgorithmID from_string<IteratorAlgorithmID>(std::string const &str);
 char const *to_string(ConvKind type, bool pretty = false);
 
 /// Converts a ConvKind enumerant from a string
-template <>
-ConvKind from_string<ConvKind>(std::string const &str);
+template <> ConvKind from_string<ConvKind>(std::string const &str);
 
 /// Converts a RasterOrder enumerant to a string
 char const *to_string(RasterOrder type, bool pretty = false);
 
 /// Convers a RasterOrder enumerant from a string
-template<>
-RasterOrder from_string<RasterOrder>(std::string const &str);
+template <> RasterOrder from_string<RasterOrder>(std::string const &str);
 
 /// Lexical cast from int64_t to string
 std::string lexical_cast(int64_t int_value);
 
-/// Lexical cast a string to a byte array. Returns true if cast is successful or false if invalid.
-bool lexical_cast(std::vector<uint8_t> &bytes, NumericTypeID type, std::string const &str);
+/// Lexical cast a string to a byte array. Returns true if cast is successful or
+/// false if invalid.
+bool lexical_cast(std::vector<uint8_t> &bytes, NumericTypeID type,
+                  std::string const &str);
 
-/// Lexical cast TO a string FROM a byte array. Returns true if cast is successful or false if invalid.
+/// Lexical cast TO a string FROM a byte array. Returns true if cast is
+/// successful or false if invalid.
 std::string lexical_cast(std::vector<uint8_t> &bytes, NumericTypeID type);
 
-/// Casts from a signed int64 to the destination type. Returns true if successful.
-bool cast_from_int64(std::vector<uint8_t> &bytes, NumericTypeID type, int64_t src);
+/// Casts from a signed int64 to the destination type. Returns true if
+/// successful.
+bool cast_from_int64(std::vector<uint8_t> &bytes, NumericTypeID type,
+                     int64_t src);
 
-/// Casts from an unsigned int64 to the destination type. Returns true if successful.
-bool cast_from_uint64(std::vector<uint8_t> &bytes, NumericTypeID type, uint64_t src);
+/// Casts from an unsigned int64 to the destination type. Returns true if
+/// successful.
+bool cast_from_uint64(std::vector<uint8_t> &bytes, NumericTypeID type,
+                      uint64_t src);
 
-/// Casts from a real value represented as a double to the destination type. Returns true if successful.
-bool cast_from_double(std::vector<uint8_t> &bytes, NumericTypeID type, double src);
+/// Casts from a real value represented as a double to the destination type.
+/// Returns true if successful.
+bool cast_from_double(std::vector<uint8_t> &bytes, NumericTypeID type,
+                      double src);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -201,4 +208,3 @@ bool cast_from_double(std::vector<uint8_t> &bytes, NumericTypeID type, double sr
 } // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-

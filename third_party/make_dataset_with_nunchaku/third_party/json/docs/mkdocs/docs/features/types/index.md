@@ -6,14 +6,14 @@ This page gives an overview how JSON values are stored and how this can be confi
 
 By default, JSON values are stored as follows:
 
-| JSON type | C++ type                                      |
+| JSON type | C++ type |
 |-----------|-----------------------------------------------|
-| object    | `std::map<std::string, basic_json>`           |
-| array     | `std::vector<basic_json>`                     |
-| null      | `std::nullptr_t`                              |
-| string    | `std::string`                                 |
-| boolean   | `bool`                                        |
-| number    | `std::int64_t`, `std::uint64_t`, and `double` |
+| object | `std::map<std::string, basic_json>` |
+| array | `std::vector<basic_json>` |
+| null | `std::nullptr_t` |
+| string | `std::string` |
+| boolean | `bool` |
+| number | `std::int64_t`, `std::uint64_t`, and `double` |
 
 Note there are three different types for numbers - when parsing JSON text, the best fitting type is chosen.
 
@@ -104,7 +104,6 @@ using number_float_t = NumberFloatType;
 using binary_t = nlohmann::byte_container_with_subtype<BinaryType>;
 ```
 
-
 ## Objects
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes JSON objects as follows:
@@ -149,7 +148,6 @@ In this class, the object's limit of nesting is not explicitly constrained. Howe
 
 Objects are stored as pointers in a `basic_json` type. That is, for any access to object values, a pointer of type `object_t*` must be dereferenced.
 
-
 ## Arrays
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes JSON arrays as follows:
@@ -179,7 +177,6 @@ In this class, the array's limit of nesting is not explicitly constrained. Howev
 
 Arrays are stored as pointers in a `basic_json` type. That is, for any access to array values, a pointer of type `array_t*` must be dereferenced.
 
-
 ## Strings
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes JSON strings as follows:
@@ -207,7 +204,6 @@ This implementation is interoperable as it does compare strings code unit by cod
 ### Storage
 
 String values are stored as pointers in a `basic_json` type. That is, for any access to string values, a pointer of type `string_t*` must be dereferenced.
-
 
 ## Booleans
 
@@ -256,7 +252,7 @@ When the default type is used, the maximal unsigned integer number that can be s
 
 > Note that when such software is used, numbers that are integers and are in the range $[-2^{53}+1, 2^{53}-1]$ are interoperable in the sense that implementations will agree exactly on their numeric values.
 
-As this range is a subrange of the exactly supported range [`INT64_MIN`, `INT64_MAX`], this class's integer type is interoperable.
+As this range is a subrange of the exactly supported range \[`INT64_MIN`, `INT64_MAX`\], this class's integer type is interoperable.
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) states:
 

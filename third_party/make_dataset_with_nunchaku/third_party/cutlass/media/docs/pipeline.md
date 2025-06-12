@@ -4,13 +4,13 @@
 
 The CUDA programming model provides 3 abstractions:
 
-* hierarchical parallelism -- that is, parallel threads
+- hierarchical parallelism -- that is, parallel threads
   grouped into hierarchical units such as blocks and clusters;
 
-* shared memory, through which parallel threads that are
+- shared memory, through which parallel threads that are
   in the same hierarchical unit can communicate; and
 
-* synchronization methods for threads.
+- synchronization methods for threads.
 
 These abstractions help developers extract
 both fine-grained and coarse-grained parallelism,
@@ -22,19 +22,19 @@ Over the years CUDA has introduced several synchronization primitives
 that operate at different levels of the hierarchy.
 These include
 
-* [thread block - level](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions) synchronization (e.g., `__syncthreads()`);
+- [thread block - level](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#synchronization-functions) synchronization (e.g., `__syncthreads()`);
 
-* [warp-level](https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/) synchronization (e.g., `__syncwarp()`); and
+- [warp-level](https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/) synchronization (e.g., `__syncwarp()`); and
 
-* [thread-level](https://docs.nvidia.com/cuda/cuda-c-programming-guide/#memory-fence-functions) fence operations.
+- [thread-level](https://docs.nvidia.com/cuda/cuda-c-programming-guide/#memory-fence-functions) fence operations.
 
 As an extension to this, starting with the Hopper architecture, CUDA added the following improvements:
 
-* [thread block clusters](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#thread-block-clusters) --
+- [thread block clusters](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#thread-block-clusters) --
   a new level in the thread hierarchy representing
   a group of thread blocks that can coordinate and share data;
 
-* synchronization instructions for a thread block cluster and threads within a cluster scope.
+- synchronization instructions for a thread block cluster and threads within a cluster scope.
 
 ## CUTLASS's abstractions for Hopper features
 
@@ -44,7 +44,7 @@ for the following features introduced in Hopper.
 1. Thread block cluster - level synchronization and query
    [APIs](/include/cute/arch/cluster_sm90.hpp)
 
-2. Abstractions for new
+1. Abstractions for new
    [barrier instructions](/include/cutlass/arch/barrier.h)
    which help with efficient synchronization
    of threads within a thread block cluster.
@@ -81,9 +81,9 @@ These classes serve a similar function as the various
 [pipeline abstractions](https://nvidia.github.io/libcudacxx/extended_api/synchronization_primitives/pipeline.html)
 in libcu++.
 
-#### Pipeline methods 
-  
-##### Producer acquire 
+#### Pipeline methods
+
+##### Producer acquire
 
 The `producer_acquire` method is to be used by asynchronous producer threads
 before issuing other instructions associated with a particular pipeline stage
@@ -94,7 +94,7 @@ which blocks further execution of consumer threads
 unless the particular stage waiting to be acquired
 is released by a consumer.
 
-We say that a pipeline at its start is "empty" if producer threads are free to produce and do not need to wait for a consumer release -- that is, if an acquire operation is expected to succeed.  If the pipeline at its start is empty, then we can either skip performing producer acquire operations during the first pass through the pipeline stages, or use the `make_producer_start_state` method.  The latter ensures that the acquire operation will succeed at the start of a pipeline.
+We say that a pipeline at its start is "empty" if producer threads are free to produce and do not need to wait for a consumer release -- that is, if an acquire operation is expected to succeed. If the pipeline at its start is empty, then we can either skip performing producer acquire operations during the first pass through the pipeline stages, or use the `make_producer_start_state` method. The latter ensures that the acquire operation will succeed at the start of a pipeline.
 
 ##### Producer commit
 
@@ -106,15 +106,15 @@ This is a nonblocking instruction.
 
 This API may result in a No-Op in some cases,
 if the producer instructions also update the barrier stage associated automatically
-(e.g., TMA_based producer threads using the  `PipelineTmaAsync ` class).
+(e.g., TMA_based producer threads using the `PipelineTmaAsync ` class).
 
 ##### Consumer wait
 
 The `consumer_wait` method is to be used by consumer threads
 before consuming data from a particular pipeline stage
-which is expected to be produced by producer threads.  
+which is expected to be produced by producer threads.
 
-This is a blocking instruction.  That is,
+This is a blocking instruction. That is,
 until the producer threads have committed to a particular stage,
 this instruction is expected to block further execution of consumer threads.
 
@@ -133,12 +133,12 @@ static constexpr int NumStages = 4;
 using MainloopPipeline = typename cutlass::PipelineAsync<NumStages>;
 using PipelineState = typename cutlass::PipelineState<NumStages>;
 
-// 2 producer threads and 1 consumer thread 
+// 2 producer threads and 1 consumer thread
 typename MainloopPipeline::Params params;
 params.producer_arv_count = 2;
 params.consumer_arv_count = 1;
 MainloopPipeline pipeline(shared_storage.storage, params);
-  
+
 // Producer threads
 if (thread_idx == 0 or thread_idx == 1) {
   PipelineState smem_pipe_write = cutlass::make_producer_start_state<MainloopPipeline>();

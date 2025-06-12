@@ -6,7 +6,7 @@ constexpr bool is_number_integer() const noexcept;
 
 This function returns `#!cpp true` if and only if the JSON value is a signed or unsigned integer number. This excludes
 floating-point values.
-    
+
 ## Return value
 
 `#!cpp true` if type is an integer or unsigned integer number, `#!cpp false` otherwise.
@@ -23,17 +23,19 @@ Constant.
 
 ??? example
 
-    The following code exemplifies `is_number_integer()` for all JSON types.
-    
-    ```cpp
-    --8<-- "examples/is_number_integer.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/is_number_integer.output"
-    ```
+````
+The following code exemplifies `is_number_integer()` for all JSON types.
+
+```cpp
+--8<-- "examples/is_number_integer.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/is_number_integer.output"
+```
+````
 
 ## See also
 

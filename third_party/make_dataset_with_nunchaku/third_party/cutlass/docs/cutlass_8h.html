@@ -58,8 +58,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
                onmouseout="return searchBox.OnSearchSelectHide()"
                alt=""/>
           <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
@@ -83,7 +83,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
+<iframe src="javascript:void(0)" frameborder="0"
         name="MSearchResults" id="MSearchResults">
 </iframe>
 </div>
@@ -103,7 +103,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Basic include for CUTLASS.  
+<p>Basic include for CUTLASS.
 <a href="#details">More...</a></p>
 
 <p><a href="cutlass_8h_source.html">Go to the source code of this file.</a></p>
@@ -131,14 +131,14 @@ Macros</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:ac5a88c5840a28a9e0206b9cc7812a18d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18d">cutlass::Status</a> { <br />
-&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da8c632159fa131f09d04f94e3cbcd8782">cutlass::Status::kSuccess</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18daa4867e1466f5d067dbec566abfe5a67a">cutlass::Status::kErrorMisalignedOperand</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da7fa8ed49e2d3f7e9af8ad025cdca548c">cutlass::Status::kErrorInvalidLayout</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da58c16acfe39125423ff22c907487ba2c">cutlass::Status::kErrorInvalidProblem</a>, 
+&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da8c632159fa131f09d04f94e3cbcd8782">cutlass::Status::kSuccess</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18daa4867e1466f5d067dbec566abfe5a67a">cutlass::Status::kErrorMisalignedOperand</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da7fa8ed49e2d3f7e9af8ad025cdca548c">cutlass::Status::kErrorInvalidLayout</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da58c16acfe39125423ff22c907487ba2c">cutlass::Status::kErrorInvalidProblem</a>,
 <br />
-&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da3af1f6b1c6965aa925910b89e4152ab8">cutlass::Status::kErrorNotSupported</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da6467125354474c5cff2f3c920abb7d3f">cutlass::Status::kErrorWorkspaceNull</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da4d3b5847a0b17037c6b69faf8b1d4d71">cutlass::Status::kErrorInternal</a>, 
+&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da3af1f6b1c6965aa925910b89e4152ab8">cutlass::Status::kErrorNotSupported</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da6467125354474c5cff2f3c920abb7d3f">cutlass::Status::kErrorWorkspaceNull</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da4d3b5847a0b17037c6b69faf8b1d4d71">cutlass::Status::kErrorInternal</a>,
 <a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18dab10913c938482a8aa4ba85b7a1116cb4">cutlass::Status::kInvalid</a>
 <br />
  }<tr class="memdesc:ac5a88c5840a28a9e0206b9cc7812a18d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Status code returned by CUTLASS operations.  <a href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18d">More...</a><br /></td></tr>

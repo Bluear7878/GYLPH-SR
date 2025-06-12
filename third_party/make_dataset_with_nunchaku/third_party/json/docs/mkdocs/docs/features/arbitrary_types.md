@@ -74,12 +74,11 @@ Likewise, when calling `template get<your_type>()` or `get_to(your_type&)`, the 
 
 Some important things:
 
-* Those methods **MUST** be in your type's namespace (which can be the global namespace), or the library will not be able to locate them (in this example, they are in namespace `ns`, where `person` is defined).
-* Those methods **MUST** be available (e.g., proper headers must be included) everywhere you use these conversions. Look at [issue 1108](https://github.com/nlohmann/json/issues/1108) for errors that may occur otherwise.
-* When using `template get<your_type>()`, `your_type` **MUST** be [DefaultConstructible](https://en.cppreference.com/w/cpp/named_req/DefaultConstructible). (There is a way to bypass this requirement described later.)
-* In function `from_json`, use function [`at()`](../api/basic_json/at.md) to access the object values rather than `operator[]`. In case a key does not exist, `at` throws an exception that you can handle, whereas `operator[]` exhibits undefined behavior.
-* You do not need to add serializers or deserializers for STL types like `std::vector`: the library already implements these.
-
+- Those methods **MUST** be in your type's namespace (which can be the global namespace), or the library will not be able to locate them (in this example, they are in namespace `ns`, where `person` is defined).
+- Those methods **MUST** be available (e.g., proper headers must be included) everywhere you use these conversions. Look at [issue 1108](https://github.com/nlohmann/json/issues/1108) for errors that may occur otherwise.
+- When using `template get<your_type>()`, `your_type` **MUST** be [DefaultConstructible](https://en.cppreference.com/w/cpp/named_req/DefaultConstructible). (There is a way to bypass this requirement described later.)
+- In function `from_json`, use function [`at()`](../api/basic_json/at.md) to access the object values rather than `operator[]`. In case a key does not exist, `at` throws an exception that you can handle, whereas `operator[]` exhibits undefined behavior.
+- You do not need to add serializers or deserializers for STL types like `std::vector`: the library already implements these.
 
 ## Simplify your life with macros
 
@@ -96,36 +95,40 @@ In all macros, the first parameter is the name of the class/struct, and all rema
 
 !!! info "Implementation limits"
 
-    - The current macro implementations are limited to at most 64 member variables. If you want to serialize/deserialize
-      types with more than 64 member variables, you need to define the `to_json`/`from_json` functions manually.
-    - The macros only work for the [`nlohmann::json`](../api/json.md) type; other specializations such as
-      [`nlohmann::ordered_json`](../api/ordered_json.md) are currently unsupported.
+```
+- The current macro implementations are limited to at most 64 member variables. If you want to serialize/deserialize
+  types with more than 64 member variables, you need to define the `to_json`/`from_json` functions manually.
+- The macros only work for the [`nlohmann::json`](../api/json.md) type; other specializations such as
+  [`nlohmann::ordered_json`](../api/ordered_json.md) are currently unsupported.
+```
 
 ??? example
 
-    The `to_json`/`from_json` functions for the `person` struct above can be created with:
+````
+The `to_json`/`from_json` functions for the `person` struct above can be created with:
 
-    ```cpp
-    namespace ns {
-        NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(person, name, address, age)
-    }
-    ```
+```cpp
+namespace ns {
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(person, name, address, age)
+}
+```
 
-    Here is an example with private members, where `NLOHMANN_DEFINE_TYPE_INTRUSIVE` is needed:
+Here is an example with private members, where `NLOHMANN_DEFINE_TYPE_INTRUSIVE` is needed:
 
-    ```cpp
-    namespace ns {
-        class address {
-          private:
-            std::string street;
-            int housenumber;
-            int postcode;
+```cpp
+namespace ns {
+    class address {
+      private:
+        std::string street;
+        int housenumber;
+        int postcode;
 
-          public:
-            NLOHMANN_DEFINE_TYPE_INTRUSIVE(address, street, housenumber, postcode)
-        };
-    }
-    ```
+      public:
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(address, street, housenumber, postcode)
+    };
+}
+```
+````
 
 ## How do I convert third-party types?
 
@@ -181,8 +184,10 @@ NLOHMANN_JSON_NAMESPACE_END
 
 !!! note "ABI compatibility"
 
-    Use [`NLOHMANN_JSON_NAMESPACE_BEGIN`](../api/macros/nlohmann_json_namespace_begin.md) and `NLOHMANN_JSON_NAMESPACE_END`
-    instead of `#!cpp namespace nlohmann { }` in code which may be linked with different versions of this library.
+```
+Use [`NLOHMANN_JSON_NAMESPACE_BEGIN`](../api/macros/nlohmann_json_namespace_begin.md) and `NLOHMANN_JSON_NAMESPACE_END`
+instead of `#!cpp namespace nlohmann { }` in code which may be linked with different versions of this library.
+```
 
 ## How can I use `get()` for non-default constructible/non-copyable types?
 
@@ -227,7 +232,7 @@ If you write your own serializer, you'll need to do a few things:
 - use your `basic_json` alias (or a template parameter) in all your `to_json`/`from_json` methods
 - use `nlohmann::to_json` and `nlohmann::from_json` when you need ADL
 
-Here is an example, without simplifications, that only accepts types with a size <= 32, and uses ADL.
+Here is an example, without simplifications, that only accepts types with a size \<= 32, and uses ADL.
 
 ```cpp
 // You should use void as a second template argument

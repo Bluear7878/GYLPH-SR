@@ -12,13 +12,15 @@ are the base for JSON patches.
 ## Template parameters
 
 `RefStringType`
-:   the string type used for the reference tokens making up the JSON pointer
+: the string type used for the reference tokens making up the JSON pointer
 
 !!! warning "Deprecation"
 
-    For backwards compatibility `RefStringType` may also be a specialization of [`basic_json`](../basic_json/index.md)
-    in which case `string_t` will be deduced as [`basic_json::string_t`](../basic_json/string_t.md). This feature is
-    deprecated and may be removed in a future major version.
+```
+For backwards compatibility `RefStringType` may also be a specialization of [`basic_json`](../basic_json/index.md)
+in which case `string_t` will be deduced as [`basic_json::string_t`](../basic_json/string_t.md). This feature is
+deprecated and may be removed in a future major version.
+```
 
 ## Member types
 
@@ -41,7 +43,8 @@ are the base for JSON patches.
 
 ## Literals
 
-- [**operator""_json_pointer**](../operator_literal_json_pointer.md) - user-defined string literal for JSON pointers
+- [**operator""\_json_pointer**](../operator_literal_json_pointer.md) - user-defined string literal for JSON pointers
+
 ## See also
 
 - [RFC 6901](https://datatracker.ietf.org/doc/html/rfc6901)

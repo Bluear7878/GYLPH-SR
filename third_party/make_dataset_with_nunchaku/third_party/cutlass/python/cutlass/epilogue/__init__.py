@@ -30,24 +30,8 @@
 #
 #################################################################################################
 
-from cutlass.epilogue.epilogue import (
-    get_activations,
-    get_activation_epilogue,
-    gelu,
-    hardswish,
-    identity,
-    leaky_relu,
-    relu,
-    sigmoid,
-    silu,
-    tanh,
-    trace
-)
-
-from cutlass.epilogue.evt_ops import (
-    max,
-    multiply_add,
-    sum,
-    permute,
-    reshape
-)
+from cutlass.epilogue.epilogue import (gelu, get_activation_epilogue,
+                                       get_activations, hardswish, identity,
+                                       leaky_relu, relu, sigmoid, silu, tanh,
+                                       trace)
+from cutlass.epilogue.evt_ops import max, multiply_add, permute, reshape, sum

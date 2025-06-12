@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   38_syr2k_grouped
   syr2k_grouped.cu
   )
-

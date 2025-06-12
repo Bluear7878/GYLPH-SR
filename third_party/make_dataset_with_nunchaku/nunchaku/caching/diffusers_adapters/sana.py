@@ -7,7 +7,9 @@ from diffusers import DiffusionPipeline, SanaTransformer2DModel
 from ...caching import utils
 
 
-def apply_cache_on_transformer(transformer: SanaTransformer2DModel, *, residual_diff_threshold=0.12):
+def apply_cache_on_transformer(
+    transformer: SanaTransformer2DModel, *, residual_diff_threshold=0.12
+):
     if getattr(transformer, "_is_cached", False):
         return transformer
 
@@ -23,7 +25,9 @@ def apply_cache_on_transformer(transformer: SanaTransformer2DModel, *, residual_
 
     @functools.wraps(original_forward)
     def new_forward(self, *args, **kwargs):
-        with unittest.mock.patch.object(self, "transformer_blocks", cached_transformer_blocks):
+        with unittest.mock.patch.object(
+            self, "transformer_blocks", cached_transformer_blocks
+        ):
             return original_forward(*args, **kwargs)
 
     transformer.forward = new_forward.__get__(transformer)
@@ -32,7 +36,9 @@ def apply_cache_on_transformer(transformer: SanaTransformer2DModel, *, residual_
     return transformer
 
 
-def apply_cache_on_pipe(pipe: DiffusionPipeline, *, shallow_patch: bool = False, **kwargs):
+def apply_cache_on_pipe(
+    pipe: DiffusionPipeline, *, shallow_patch: bool = False, **kwargs
+):
     if not getattr(pipe, "_is_cached", False):
         original_call = pipe.__class__.__call__
 

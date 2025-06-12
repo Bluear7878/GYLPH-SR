@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,55 +18,59 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Statically sized array of elements that accommodates all CUTLASS-supported numeric types
-           and is safe to use in a union.
+    \brief Statically sized array of elements that accommodates all
+   CUTLASS-supported numeric types and is safe to use in a union.
 */
 
 #include "../common/cutlass_unit_test.h"
 
 #include "cutlass/array.h"
 #include "cutlass/core_io.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/numeric_conversion.h"
 #include "cutlass/layout/matrix.h"
+#include "cutlass/numeric_conversion.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/util/device_memory.h"
 #include "cutlass/util/host_tensor.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-__global__ void convert_bf16_f32(cutlass::bfloat16_t *output, float const *input, int N) {
+__global__ void convert_bf16_f32(cutlass::bfloat16_t *output,
+                                 float const *input, int N) {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid < N) {
     output[tid] = static_cast<cutlass::bfloat16_t>(input[tid]);
   }
 }
 
-__global__ void convert_and_pack_bf16(cutlass::bfloat16_t *output, float const *input, int N) {
+__global__ void convert_and_pack_bf16(cutlass::bfloat16_t *output,
+                                      float const *input, int N) {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid * 2 < N) {
 
     cutlass::NumericArrayConverter<cutlass::bfloat16_t, float, 2> convert;
 
-    cutlass::Array<cutlass::bfloat16_t, 2> *dst_ptr = 
-      reinterpret_cast<cutlass::Array<cutlass::bfloat16_t, 2> *>(output + tid * 2);
+    cutlass::Array<cutlass::bfloat16_t, 2> *dst_ptr =
+        reinterpret_cast<cutlass::Array<cutlass::bfloat16_t, 2> *>(output +
+                                                                   tid * 2);
 
-    cutlass::Array<float, 2> const *src_ptr = 
-      reinterpret_cast<cutlass::Array<float, 2> const *>(input + tid * 2);
+    cutlass::Array<float, 2> const *src_ptr =
+        reinterpret_cast<cutlass::Array<float, 2> const *>(input + tid * 2);
 
     *dst_ptr = convert(*src_ptr);
-  } 
+  }
 }
 
 TEST(bfloat16_t, device_conversion) {
@@ -86,7 +90,8 @@ TEST(bfloat16_t, device_conversion) {
   source.sync_device();
   destination.sync_device();
 
-  convert_bf16_f32<<< dim3(1,1), dim3(N, 1) >>>(destination.device_data(), source.device_data(), N);
+  convert_bf16_f32<<<dim3(1, 1), dim3(N, 1)>>>(destination.device_data(),
+                                               source.device_data(), N);
 
   ASSERT_EQ(cudaGetLastError(), cudaSuccess) << "Kernel launch error.";
 
@@ -100,7 +105,8 @@ TEST(bfloat16_t, device_conversion) {
     if (S(got) != expected) {
       ++errors;
       if (errors < 10) {
-        std::cerr << "Basic conversion error - [" << i << "] - got " << got << ", expected " << expected << "\n";
+        std::cerr << "Basic conversion error - [" << i << "] - got " << got
+                  << ", expected " << expected << "\n";
       }
     }
 
@@ -108,11 +114,12 @@ TEST(bfloat16_t, device_conversion) {
   }
 
   destination.sync_device();
-  
-  convert_and_pack_bf16<<< dim3(1,1), dim3(N, 1) >>>(destination.device_data(), source.device_data(), N);
-  
+
+  convert_and_pack_bf16<<<dim3(1, 1), dim3(N, 1)>>>(destination.device_data(),
+                                                    source.device_data(), N);
+
   ASSERT_EQ(cudaGetLastError(), cudaSuccess) << "Kernel launch error.";
-  
+
   destination.sync_host();
 
   for (int i = 0; i < N; ++i) {
@@ -122,14 +129,14 @@ TEST(bfloat16_t, device_conversion) {
     if (S(got) != expected) {
       ++errors;
       if (errors < 10) {
-        std::cerr << "Convert and pack error - [" << i << "] - got " << got << ", expected " << expected << "\n";
+        std::cerr << "Convert and pack error - [" << i << "] - got " << got
+                  << ", expected " << expected << "\n";
       }
     }
   }
 
   EXPECT_EQ(errors, 0);
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -170,28 +177,26 @@ TEST(bfloat16_t, host_arithmetic) {
 }
 
 TEST(bfloat16_t, host_round) {
-  
+
   struct {
     uint32_t f32_bits;
     uint16_t expected;
-  } tests[] = {
-    {0x40040000, 0x4004},  // M=0, R=0, S=0 => rtz
-    {0x40048000, 0x4004},  // M=0, R=1, S=0 => rtz
-    {0x40040001, 0x4004},  // M=0, R=1, S=1 => +inf
-    {0x4004c000, 0x4005},  // M=0, R=1, S=1 => +inf
-    {0x4004a000, 0x4005},  // M=0, R=1, S=1 => +inf
-    {0x40050000, 0x4005},  // M=1, R=0, S=0 => rtz
-    {0x40054000, 0x4005},  // M=1, R=0, S=1 => rtz
-    {0x40058000, 0x4006},  // M=1, R=1, S=0 => +inf
-    {0x40058001, 0x4006},  // M=1, R=1, S=1 => +inf
-    {0x7f800000, 0x7f80},  // +inf
-    {0xff800000, 0xff80},  // -inf
-    {0x7fffffff, 0x7fff},  // canonical NaN
-    {0x7ff00001, 0x7fff},  // NaN -> canonical NaN
-    {0xfff00010, 0x7fff},  // Nan -> canonical NaN
-    {0, 0}
-  };
-  
+  } tests[] = {{0x40040000, 0x4004}, // M=0, R=0, S=0 => rtz
+               {0x40048000, 0x4004}, // M=0, R=1, S=0 => rtz
+               {0x40040001, 0x4004}, // M=0, R=1, S=1 => +inf
+               {0x4004c000, 0x4005}, // M=0, R=1, S=1 => +inf
+               {0x4004a000, 0x4005}, // M=0, R=1, S=1 => +inf
+               {0x40050000, 0x4005}, // M=1, R=0, S=0 => rtz
+               {0x40054000, 0x4005}, // M=1, R=0, S=1 => rtz
+               {0x40058000, 0x4006}, // M=1, R=1, S=0 => +inf
+               {0x40058001, 0x4006}, // M=1, R=1, S=1 => +inf
+               {0x7f800000, 0x7f80}, // +inf
+               {0xff800000, 0xff80}, // -inf
+               {0x7fffffff, 0x7fff}, // canonical NaN
+               {0x7ff00001, 0x7fff}, // NaN -> canonical NaN
+               {0xfff00010, 0x7fff}, // Nan -> canonical NaN
+               {0, 0}};
+
   bool running = true;
   for (int i = 0; running; ++i) {
 
@@ -200,10 +205,11 @@ TEST(bfloat16_t, host_round) {
     cutlass::bfloat16_t bf16 = cutlass::bfloat16_t(f32);
 
     bool passed = (tests[i].expected == bf16.raw());
-    
-    EXPECT_TRUE(passed)
-      << "Error - convert(f32: 0x" << std::hex << tests[i].f32_bits 
-      << ") -> 0x" << std::hex << tests[i].expected << "\ngot: 0x" << std::hex << bf16.raw();
+
+    EXPECT_TRUE(passed) << "Error - convert(f32: 0x" << std::hex
+                        << tests[i].f32_bits << ") -> 0x" << std::hex
+                        << tests[i].expected << "\ngot: 0x" << std::hex
+                        << bf16.raw();
 
     if (!tests[i].f32_bits) {
       running = false;

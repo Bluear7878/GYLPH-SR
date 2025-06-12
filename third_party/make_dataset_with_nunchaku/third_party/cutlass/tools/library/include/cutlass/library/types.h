@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,20 +18,21 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
- #pragma once
+#pragma once
 
- /////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace cutlass {
 namespace library {
@@ -63,7 +64,7 @@ enum class LayoutTypeID {
   kTensorC64RSK64,
   kInvalid
 };
-  
+
 /// Numeric data type
 enum class NumericTypeID {
   kUnknown,
@@ -84,7 +85,7 @@ enum class NumericTypeID {
   kFE4M3,
   kFE5M2,
   kF16,
-  kBF16, 
+  kBF16,
   kTF32,
   kF32,
   kF64,
@@ -109,11 +110,7 @@ enum class NumericTypeID {
 };
 
 /// Enumerated type describing a transformation on a complex value.
-enum class ComplexTransform {
-  kNone,
-  kConjugate,
-  kInvalid
-};
+enum class ComplexTransform { kNone, kConjugate, kInvalid };
 
 /// Providers
 enum class Provider {
@@ -144,20 +141,10 @@ enum class OperationKind {
 };
 
 /// Enumeration indicating whether scalars are in host or device memory
-enum class ScalarPointerMode {
-  kHost,
-  kDevice,
-  kInvalid
-};
+enum class ScalarPointerMode { kHost, kDevice, kInvalid };
 
 /// Describes how reductions are performed across threadblocks
-enum class SplitKMode {
-  kNone,
-  kSerial,
-  kParallel,
-  kParallelSerial,
-  kInvalid
-};
+enum class SplitKMode { kNone, kSerial, kParallel, kParallelSerial, kInvalid };
 
 /// Indicates the classificaition of the math instruction
 enum class OpcodeClassID {
@@ -197,37 +184,18 @@ enum class GemmKind {
 };
 
 /// Enumeration indicating what kind of RankK update operation to perform
-enum class RankKKind {
-  kUniversal,
-  kInvalid
-};
+enum class RankKKind { kUniversal, kInvalid };
 
 /// Enumeration indicating what kind of TRMM operation to perform
-enum class TrmmKind {
-  kUniversal,
-  kInvalid
-};
+enum class TrmmKind { kUniversal, kInvalid };
 
 /// Enumeration indicating what kind of SYMM/HEMM operation to perform
-enum class SymmKind {
-  kUniversal,
-  kInvalid
-};
+enum class SymmKind { kUniversal, kInvalid };
 
 /// Enumeration indicating what kind of Conv2d operation to perform
-enum class ConvKind {
-  kUnknown,
-  kFprop,
-  kDgrad,
-  kWgrad,
-  kInvalid
-};
+enum class ConvKind { kUnknown, kFprop, kDgrad, kWgrad, kInvalid };
 
-enum class ConvModeID {
-  kCrossCorrelation,
-  kConvolution,
-  kInvalid
-};
+enum class ConvModeID { kCrossCorrelation, kConvolution, kInvalid };
 
 // Iterator algorithm enum in order of general performance-efficiency
 enum class IteratorAlgorithmID {
@@ -238,7 +206,6 @@ enum class IteratorAlgorithmID {
   kFewChannels,
   kInvalid
 };
-
 
 enum class EpilogueKind {
   kUnknown,
@@ -251,12 +218,7 @@ enum class EpilogueKind {
   kInvalid
 };
 
-enum class RasterOrder {
-  kAlongN,
-  kAlongM,
-  kHeuristic,
-  kInvalid
-};
+enum class RasterOrder { kAlongN, kAlongM, kHeuristic, kInvalid };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

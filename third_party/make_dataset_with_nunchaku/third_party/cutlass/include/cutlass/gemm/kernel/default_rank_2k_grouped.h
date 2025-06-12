@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -42,9 +43,9 @@
 #include "cutlass/layout/matrix.h"
 #include "cutlass/numeric_types.h"
 
-#include "cutlass/gemm/kernel/rank_2k_transpose_operands.h"
 #include "cutlass/gemm/kernel/default_rank_2k.h"
 #include "cutlass/gemm/kernel/default_rank_2k_complex.h"
+#include "cutlass/gemm/kernel/rank_2k_transpose_operands.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -102,8 +103,7 @@ template <
     /// Whether the schedule of problems to visit has been precomputed
     GroupScheduleMode GroupScheduleMode_ = GroupScheduleMode::kDeviceOnly,
     ///
-    typename Enable = void
-    >
+    typename Enable = void>
 struct DefaultRank2KGrouped;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,71 +157,40 @@ template <
     /// Blas3 computation mode
     BlasMode BlasMode_,
     /// Whether the schedule of problems to visit has been precomputed
-    GroupScheduleMode GroupScheduleMode_
-    >
-struct DefaultRank2KGrouped<ElementA, LayoutA, TransformA, kAlignmentA,
-          ElementB, LayoutB, TransformB, kAlignmentB,
-          ElementC, LayoutC,
-          FillModeC, ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape,
-          WarpShape, InstructionShape, EpilogueOutputOp,
-          ThreadblockSwizzle, Stages, Operator, BlasMode_, GroupScheduleMode_,
-          typename std::enable_if< ! cutlass::is_complex<ElementAccumulator>::value>::type
-> {
+    GroupScheduleMode GroupScheduleMode_>
+struct DefaultRank2KGrouped<
+    ElementA, LayoutA, TransformA, kAlignmentA, ElementB, LayoutB, TransformB,
+    kAlignmentB, ElementC, LayoutC, FillModeC, ElementAccumulator,
+    OperatorClass, ArchTag, ThreadblockShape, WarpShape, InstructionShape,
+    EpilogueOutputOp, ThreadblockSwizzle, Stages, Operator, BlasMode_,
+    GroupScheduleMode_,
+    typename std::enable_if<
+        !cutlass::is_complex<ElementAccumulator>::value>::type> {
   // If true, we must construct a 'transposed-and-exchanged' Rank2K operator.
-  static bool const kInternalTranspose = platform::is_same<LayoutC, layout::ColumnMajor>::value;
+  static bool const kInternalTranspose =
+      platform::is_same<LayoutC, layout::ColumnMajor>::value;
 
   using MapArguments = kernel::detail::Rank2KMapArguments<
-    ElementA,
-    LayoutA,
-    TransformA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    TransformB,
-    kAlignmentB,
-    LayoutC,
-    FillModeC,
-    kInternalTranspose
-  >;
+      ElementA, LayoutA, TransformA, kAlignmentA, ElementB, LayoutB, TransformB,
+      kAlignmentB, LayoutC, FillModeC, kInternalTranspose>;
 
   // Define the default grouped Rank2K kernel
   using DefaultRank2Kkernel = typename kernel::DefaultRank2K<
-    typename MapArguments::ElementA,
-    typename MapArguments::LayoutA,
-    MapArguments::kAlignmentA,
-    typename MapArguments::ElementB,
-    typename MapArguments::LayoutB,
-    MapArguments::kAlignmentB,
-    ElementC,
-    typename MapArguments::LayoutC,
-    MapArguments::kFillModeC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    false,                  // SplitKSerial
-    Operator,
-    BlasMode_
-  >::Rank2Kkernel;
+      typename MapArguments::ElementA, typename MapArguments::LayoutA,
+      MapArguments::kAlignmentA, typename MapArguments::ElementB,
+      typename MapArguments::LayoutB, MapArguments::kAlignmentB, ElementC,
+      typename MapArguments::LayoutC, MapArguments::kFillModeC,
+      ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
+      InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+      false, // SplitKSerial
+      Operator, BlasMode_>::Rank2Kkernel;
 
   /// Define the kernel in terms of the default kernel
   using Rank2Kkernel = kernel::Rank2KGrouped<
-    typename DefaultRank2Kkernel::Mma1,
-    typename DefaultRank2Kkernel::Mma2,
-    typename DefaultRank2Kkernel::Epilogue,
-    ThreadblockSwizzle,
-    TransformA,
-    TransformB,
-    DefaultRank2Kkernel::kFillModeC,
-    DefaultRank2Kkernel::kBlasMode,
-    GroupScheduleMode_,
-    kInternalTranspose
-  >;
+      typename DefaultRank2Kkernel::Mma1, typename DefaultRank2Kkernel::Mma2,
+      typename DefaultRank2Kkernel::Epilogue, ThreadblockSwizzle, TransformA,
+      TransformB, DefaultRank2Kkernel::kFillModeC,
+      DefaultRank2Kkernel::kBlasMode, GroupScheduleMode_, kInternalTranspose>;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,81 +244,51 @@ template <
     /// Blas3 computation mode
     BlasMode BlasMode_,
     /// Whether the schedule of problems to visit has been precomputed
-    GroupScheduleMode GroupScheduleMode_
-    >
-struct DefaultRank2KGrouped<ElementA, LayoutA, TransformA, kAlignmentA,
-          ElementB, LayoutB, TransformB, kAlignmentB,
-          ElementC, LayoutC,
-          FillModeC, ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape,
-          WarpShape, InstructionShape, EpilogueOutputOp,
-          ThreadblockSwizzle, Stages, Operator, BlasMode_, GroupScheduleMode_,
-          typename std::enable_if<cutlass::is_complex<ElementAccumulator>::value>::type
-> {
+    GroupScheduleMode GroupScheduleMode_>
+struct DefaultRank2KGrouped<
+    ElementA, LayoutA, TransformA, kAlignmentA, ElementB, LayoutB, TransformB,
+    kAlignmentB, ElementC, LayoutC, FillModeC, ElementAccumulator,
+    OperatorClass, ArchTag, ThreadblockShape, WarpShape, InstructionShape,
+    EpilogueOutputOp, ThreadblockSwizzle, Stages, Operator, BlasMode_,
+    GroupScheduleMode_,
+    typename std::enable_if<
+        cutlass::is_complex<ElementAccumulator>::value>::type> {
   // If true, we must construct a 'transposed-and-exchanged' Rank2K operator.
-  static bool const kInternalTranspose = platform::is_same<LayoutC, layout::ColumnMajor>::value;
+  static bool const kInternalTranspose =
+      platform::is_same<LayoutC, layout::ColumnMajor>::value;
 
   using MapArguments = kernel::detail::Rank2KMapArguments<
-    ElementA,
-    LayoutA,
-    TransformA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    TransformB,
-    kAlignmentB,
-    LayoutC,
-    FillModeC,
-    kInternalTranspose
-  >;
+      ElementA, LayoutA, TransformA, kAlignmentA, ElementB, LayoutB, TransformB,
+      kAlignmentB, LayoutC, FillModeC, kInternalTranspose>;
 
   // Define the default grouped Rank2K kernel
   using DefaultRank2Kkernel = typename kernel::DefaultRank2KComplex<
-    typename MapArguments::ElementA,
-    typename MapArguments::LayoutA,
-    typename MapArguments::ElementB,
-    typename MapArguments::LayoutB,
-    ElementC,
-    typename MapArguments::LayoutC,
-    MapArguments::kFillModeC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    MapArguments::kTransformA,
-    MapArguments::kTransformB,
-    Operator,
-    false,                  // SplitKSerial
-    BlasMode_
-  >::Rank2Kkernel;
+      typename MapArguments::ElementA, typename MapArguments::LayoutA,
+      typename MapArguments::ElementB, typename MapArguments::LayoutB, ElementC,
+      typename MapArguments::LayoutC, MapArguments::kFillModeC,
+      ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
+      InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+      MapArguments::kTransformA, MapArguments::kTransformB, Operator,
+      false, // SplitKSerial
+      BlasMode_>::Rank2Kkernel;
 
   /// Define the kernel in terms of the default kernel
   /// Pass through the user-provided TransformA and TransformB so as to
-  /// correctly set public-facing TransformA and TransformB in kernel::Rank2KGrouped.
-  /// This is needed because kernel::DefaultRank2KComplex may change TransformA and
-  /// TransformB that become template arguments to Mma1 and Mma2.
+  /// correctly set public-facing TransformA and TransformB in
+  /// kernel::Rank2KGrouped. This is needed because kernel::DefaultRank2KComplex
+  /// may change TransformA and TransformB that become template arguments to
+  /// Mma1 and Mma2.
   using Rank2Kkernel = kernel::Rank2KGrouped<
-    typename DefaultRank2Kkernel::Mma1,
-    typename DefaultRank2Kkernel::Mma2,
-    typename DefaultRank2Kkernel::Epilogue,
-    ThreadblockSwizzle,
-    TransformA,
-    TransformB,
-    DefaultRank2Kkernel::kFillModeC,
-    DefaultRank2Kkernel::kBlasMode,
-    GroupScheduleMode_,
-    kInternalTranspose
-  >;
+      typename DefaultRank2Kkernel::Mma1, typename DefaultRank2Kkernel::Mma2,
+      typename DefaultRank2Kkernel::Epilogue, ThreadblockSwizzle, TransformA,
+      TransformB, DefaultRank2Kkernel::kFillModeC,
+      DefaultRank2Kkernel::kBlasMode, GroupScheduleMode_, kInternalTranspose>;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

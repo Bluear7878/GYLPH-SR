@@ -4,36 +4,36 @@
 class visitor_adaptor_with_metadata
 {
   public:
-    template <class Fnc>
+    template<class Fnc>
     void visit(const Fnc& fnc) const;
 
     int metadata = 42;
+
   private:
-    template <class Ptr, class Fnc>
+    template<class Ptr, class Fnc>
     void do_visit(const Ptr& ptr, const Fnc& fnc) const;
 };
 
-using json = nlohmann::basic_json <
-             std::map,
-             std::vector,
-             std::string,
-             bool,
-             std::int64_t,
-             std::uint64_t,
-             double,
-             std::allocator,
-             nlohmann::adl_serializer,
-             std::vector<std::uint8_t>,
-             visitor_adaptor_with_metadata
-             >;
+using json = nlohmann::basic_json<
+    std::map,
+    std::vector,
+    std::string,
+    bool,
+    std::int64_t,
+    std::uint64_t,
+    double,
+    std::allocator,
+    nlohmann::adl_serializer,
+    std::vector<std::uint8_t>,
+    visitor_adaptor_with_metadata>;
 
-template <class Fnc>
+template<class Fnc>
 void visitor_adaptor_with_metadata::visit(const Fnc& fnc) const
 {
     do_visit(json::json_pointer{}, fnc);
 }
 
-template <class Ptr, class Fnc>
+template<class Ptr, class Fnc>
 void visitor_adaptor_with_metadata::do_visit(const Ptr& ptr, const Fnc& fnc) const
 {
     using value_t = nlohmann::detail::value_t;
@@ -79,10 +79,9 @@ int main()
 
     // visit and output
     j.visit(
-        [&](const json::json_pointer & p,
-            const json & j)
-    {
-        std::cout << (p.empty() ? std::string{"/"} : p.to_string())
-                  << " - metadata = " << j.metadata << " -> " << j.dump() << '\n';
-    });
+        [&](const json::json_pointer& p,
+            const json& j) {
+            std::cout << (p.empty() ? std::string{"/"} : p.to_string())
+                      << " - metadata = " << j.metadata << " -> " << j.dump() << '\n';
+        });
 }

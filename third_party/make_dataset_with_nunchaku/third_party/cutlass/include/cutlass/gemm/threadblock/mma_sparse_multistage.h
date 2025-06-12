@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -94,8 +95,7 @@ template <
     int Stages,
     /// Used for partial specialization
     typename Enable = bool>
-class SparseMmaMultistage : 
-  public SparseMmaBase<Shape_, Policy_, Stages> {
+class SparseMmaMultistage : public SparseMmaBase<Shape_, Policy_, Stages> {
 public:
   ///< Base class
   using Base = SparseMmaBase<Shape_, Policy_, Stages>;
@@ -142,11 +142,11 @@ public:
   using ElementE = typename IteratorE::Element;
 
   /// LayoutE
-  using LayoutE = typename IteratorE::Layout; 
+  using LayoutE = typename IteratorE::Layout;
 
   /// Minimum architecture is Sm80 to support cp.async
   using ArchTag = arch::Sm80;
-  
+
   /// Complex transform on A operand
   static ComplexTransform const kTransformA = Operator::kTransformA;
 
@@ -173,15 +173,18 @@ public:
 
     /// Number of async copies to load one group of operand A
     static int const kAccessesPerGroupA =
-        (TBLoadIterationsA + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (TBLoadIterationsA + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// Number of async copies to load one group of operand B
     static int const kAccessesPerGroupB =
-        (TBLoadIterationsB + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (TBLoadIterationsB + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// Number of async copies to load one group of operand E
     static int const kAccessesPerGroupE =
-        (TBLoadIterationsE + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (TBLoadIterationsE + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// E operand is tiny.  For the most of time, not all the warps are needed
     /// to load it from the global memory.
@@ -200,16 +203,14 @@ public:
             : 2;
   };
 
- private:
-
+private:
   using WarpLoadedFragmentA = typename Operator::FragmentA;
   using WarpLoadedFragmentB = typename Operator::FragmentB;
   using WarpTransformedFragmentA = typename Operator::TransformedFragmentA;
   using WarpTransformedFragmentB = typename Operator::TransformedFragmentB;
   using WarpFragmentE = typename Operator::FragmentE;
 
- private:
-
+private:
   //
   // Data members
   //
@@ -227,7 +228,6 @@ public:
   bool is_warp_valid_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   SparseMmaMultistage(
@@ -238,13 +238,11 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      Base(shared_storage, thread_idx, warp_idx, lane_idx),
-      smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
-      smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx),
-      smem_iterator_E_(shared_storage.operand_E_ref(), thread_idx)
-  {
+      int lane_idx)
+      : Base(shared_storage, thread_idx, warp_idx, lane_idx),
+        smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
+        smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx),
+        smem_iterator_E_(shared_storage.operand_E_ref(), thread_idx) {
     is_warp_valid_ = warp_idx < Detail::kValidWarps;
 
     // Compute warp location within threadblock tile by mapping the warp_id to
@@ -292,8 +290,8 @@ public:
         for (int v = 0; v < IteratorA::kAccessesPerVector; ++v) {
           auto gmem_ptr = iterator_A.get();
 
-          cutlass::arch::cp_async<kSrcBytes, kCacheOpA>(
-              dst_ptr + v, gmem_ptr, iterator_A.valid());
+          cutlass::arch::cp_async<kSrcBytes, kCacheOpA>(dst_ptr + v, gmem_ptr,
+                                                        iterator_A.valid());
 
           ++iterator_A;
         }
@@ -322,8 +320,8 @@ public:
         for (int v = 0; v < IteratorB::kAccessesPerVector; ++v) {
           auto gmem_ptr = iterator_B.get();
 
-          cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(
-              dst_ptr + v, gmem_ptr, iterator_B.valid());
+          cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(dst_ptr + v, gmem_ptr,
+                                                        iterator_B.valid());
 
           ++iterator_B;
         }
@@ -528,45 +526,48 @@ public:
         // Load warp-level tiles from shared memory, wrapping to k offset if
         // this is the last group as the case may be.
 
-        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_E_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        
-        this->warp_tile_iterator_A_.load(warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+        this->warp_tile_iterator_E_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+
+        this->warp_tile_iterator_A_.load(
+            warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
         this->warp_tile_iterator_E_.load(warp_frag_E[(warp_mma_k + 1) % 2]);
 
         ++this->warp_tile_iterator_A_;
         ++this->warp_tile_iterator_E_;
 
-       if (Detail::kBBufferSize == 2) {
-          this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
+        if (Detail::kBBufferSize == 2) {
+          this->warp_tile_iterator_B_.set_kgroup_index(
+              (warp_mma_k + 1) % Base::kWarpGemmIterations);
           this->warp_tile_iterator_B_.load(
               warp_loaded_frag_B[(warp_mma_k + 1) % Detail::kBBufferSize]);
           ++this->warp_tile_iterator_B_;
         }
 
         if (warp_mma_k > 0)
-          warp_mma.transform(warp_transformed_frag_A[warp_mma_k % 2],
-                             warp_transformed_frag_B[warp_mma_k % Detail::kBBufferSize],
-                             warp_loaded_frag_A[warp_mma_k % 2],
-                             warp_loaded_frag_B[warp_mma_k % Detail::kBBufferSize]);
+          warp_mma.transform(
+              warp_transformed_frag_A[warp_mma_k % 2],
+              warp_transformed_frag_B[warp_mma_k % Detail::kBBufferSize],
+              warp_loaded_frag_A[warp_mma_k % 2],
+              warp_loaded_frag_B[warp_mma_k % Detail::kBBufferSize]);
 
-        warp_mma(
-          accum,
-          warp_transformed_frag_A[warp_mma_k % 2],
-          warp_transformed_frag_B[warp_mma_k % Detail::kBBufferSize], accum,
-          warp_frag_E[warp_mma_k % 2]
-        );
+        warp_mma(accum, warp_transformed_frag_A[warp_mma_k % 2],
+                 warp_transformed_frag_B[warp_mma_k % Detail::kBBufferSize],
+                 accum, warp_frag_E[warp_mma_k % 2]);
 
         if (Detail::kBBufferSize == 1) {
-          this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
+          this->warp_tile_iterator_B_.set_kgroup_index(
+              (warp_mma_k + 1) % Base::kWarpGemmIterations);
           this->warp_tile_iterator_B_.load(warp_loaded_frag_B[0]);
           ++this->warp_tile_iterator_B_;
-  
         }
 
         // Issue global->shared copies for the this stage
         if (warp_mma_k < Base::kWarpGemmIterations - 1) {
-          int group_start_iteration_A, group_start_iteration_B, group_start_iteration_E;
+          int group_start_iteration_A, group_start_iteration_B,
+              group_start_iteration_E;
 
           group_start_iteration_A = warp_mma_k * Detail::kAccessesPerGroupA;
           group_start_iteration_B = warp_mma_k * Detail::kAccessesPerGroupB;
@@ -578,7 +579,8 @@ public:
         }
 
         if (warp_mma_k + 2 == Base::kWarpGemmIterations) {
-          int group_start_iteration_A, group_start_iteration_B, group_start_iteration_E;
+          int group_start_iteration_A, group_start_iteration_B,
+              group_start_iteration_E;
           group_start_iteration_A =
               (warp_mma_k + 1) * Detail::kAccessesPerGroupA;
           group_start_iteration_B =
@@ -593,7 +595,7 @@ public:
           // Inserts a memory fence between stages of cp.async instructions.
           cutlass::arch::cp_async_fence();
 
-          // Waits until kStages-2 stages have committed. 
+          // Waits until kStages-2 stages have committed.
           arch::cp_async_wait<Base::kStages - 2>();
           __syncthreads();
 
@@ -642,27 +644,26 @@ public:
         // Do any conversions feeding the first stage at the end of the loop so
         // we can start right away on mma instructions
         if (warp_mma_k + 1 == Base::kWarpGemmIterations)
-          warp_mma.transform(warp_transformed_frag_A[(warp_mma_k + 1) % 2],
-                             warp_transformed_frag_B[(warp_mma_k + 1) % Detail::kBBufferSize],
-                             warp_loaded_frag_A[(warp_mma_k + 1) % 2],
-                             warp_loaded_frag_B[(warp_mma_k + 1) % Detail::kBBufferSize]);
+          warp_mma.transform(
+              warp_transformed_frag_A[(warp_mma_k + 1) % 2],
+              warp_transformed_frag_B[(warp_mma_k + 1) % Detail::kBBufferSize],
+              warp_loaded_frag_A[(warp_mma_k + 1) % 2],
+              warp_loaded_frag_B[(warp_mma_k + 1) % Detail::kBBufferSize]);
       }
-
     }
 
-
-    // Commit and drain all pending and predicated cp.async pnz from the GEMM mainloop
+    // Commit and drain all pending and predicated cp.async pnz from the GEMM
+    // mainloop
     cutlass::arch::cp_async_fence();
     cutlass::arch::cp_async_wait<0>();
     __syncthreads();
-
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

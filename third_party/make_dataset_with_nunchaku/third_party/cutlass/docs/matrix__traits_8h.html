@@ -58,8 +58,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
                onmouseout="return searchBox.OnSearchSelectHide()"
                alt=""/>
           <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
@@ -83,7 +83,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
+<iframe src="javascript:void(0)" frameborder="0"
         name="MSearchResults" id="MSearchResults">
 </iframe>
 </div>
@@ -102,7 +102,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Defines properties of matrices used to denote layout and operands to GEMM kernels.  
+<p>Defines properties of matrices used to denote layout and operands to GEMM kernels.
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="cutlass_8h_source.html">cutlass/cutlass.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -129,13 +129,13 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:af99b012f0e1795ca7dc167b7b109dd19"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19">cutlass::MatrixLayout</a> { <a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19abbcb6d9641fe76477dcbe3b209efa7ca">cutlass::MatrixLayout::kColumnMajor</a>, 
+<tr class="memitem:af99b012f0e1795ca7dc167b7b109dd19"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19">cutlass::MatrixLayout</a> { <a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19abbcb6d9641fe76477dcbe3b209efa7ca">cutlass::MatrixLayout::kColumnMajor</a>,
 <a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19a1ebc644af759b214a70279505401a0b9">cutlass::MatrixLayout::kRowMajor</a>
  }</td></tr>
 <tr class="separator:af99b012f0e1795ca7dc167b7b109dd19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7e605b25da48d89f98764c12d50b467"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467">cutlass::MatrixTransform</a> { <a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a35c3ace1970663a16e5c65baa5941b13">cutlass::MatrixTransform::kNone</a>, 
-<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a0b1273062aff94c51d1d2788bc9052d2">cutlass::MatrixTransform::kTranspose</a>, 
-<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a8be1522542c86e700b5e787b1aabc70b">cutlass::MatrixTransform::kConjugate</a>, 
+<tr class="memitem:ab7e605b25da48d89f98764c12d50b467"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467">cutlass::MatrixTransform</a> { <a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a35c3ace1970663a16e5c65baa5941b13">cutlass::MatrixTransform::kNone</a>,
+<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a0b1273062aff94c51d1d2788bc9052d2">cutlass::MatrixTransform::kTranspose</a>,
+<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a8be1522542c86e700b5e787b1aabc70b">cutlass::MatrixTransform::kConjugate</a>,
 <a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a01311591f8ae2ee4658df72786ed1050">cutlass::MatrixTransform::kHermitian</a>
  }<tr class="memdesc:ab7e605b25da48d89f98764c12d50b467"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transformation applied to matrix operands.  <a href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467">More...</a><br /></td></tr>
 </td></tr>

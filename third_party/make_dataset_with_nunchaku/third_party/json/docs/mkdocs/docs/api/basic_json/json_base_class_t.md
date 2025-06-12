@@ -10,7 +10,7 @@ Examples of such functionality might be metadata, additional member functions (e
 ## Template parameters
 
 `CustomBaseClass`
-:   the base class to be added to `basic_json`
+: the base class to be added to `basic_json`
 
 ## Notes
 
@@ -28,17 +28,19 @@ The type `CustomBaseClass` has to be a default-constructible class.
 
 ??? example
 
-    The following code shows how to inject custom data and methods for each node.
-     
-    ```cpp
-    --8<-- "examples/json_base_class_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/json_base_class_t.output"
-    ```
+````
+The following code shows how to inject custom data and methods for each node.
+
+```cpp
+--8<-- "examples/json_base_class_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/json_base_class_t.output"
+```
+````
 
 ## Version history
 

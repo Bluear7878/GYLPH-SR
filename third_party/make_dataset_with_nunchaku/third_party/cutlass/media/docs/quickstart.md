@@ -7,18 +7,21 @@
 ## Prerequisites
 
 CUTLASS requires:
+
 - NVIDIA CUDA Toolkit (11.4 or later required, [12.0](https://developer.nvidia.com/cuda-toolkit) recommended)
 - CMake 3.18+
 - host compiler supporting C++17 or greater (minimum g++ 7.5.0)
 - Python 3.6+
 
 CUTLASS may be optionally compiled and linked with
+
 - cuBLAS
 - cuDNN v7.6 or later
 
 ## Initial build steps
 
 Construct a build directory and run CMake.
+
 ```bash
 $ export CUDACXX=${CUDA_INSTALL_PATH}/bin/nvcc
 
@@ -29,6 +32,7 @@ $ cmake .. -DCUTLASS_NVCC_ARCHS=90a             # compiles for NVIDIA Hopper GPU
 
 If your goal is strictly to build only the CUTLASS Profiler and to minimize compilation time, we suggest
 executing the following CMake command in an empty `build/` directory.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=90a -DCUTLASS_ENABLE_TESTS=OFF -DCUTLASS_UNITY_BUILD_ENABLED=ON
 ```
@@ -47,21 +51,24 @@ You may also filter kernels by name by supplying a filter string with flag `CUTL
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=90a -DCUTLASS_LIBRARY_KERNELS=cutlass3x*
 ```
+
 See more examples on selectively compiling CUTLASS GEMM and convolution kernels [here](quickstart.md#example-cmake-commands).
 
 You may explicitly exclude cuBLAS and cuDNN as dependencies with the following CMake flags.
+
 - `-DCUTLASS_ENABLE_CUBLAS=OFF`
 - `-DCUTLASS_ENABLE_CUDNN=OFF`
-
 
 ## Build and run the CUTLASS Profiler
 
 From the `build/` directory created above, compile the CUTLASS Profiler.
+
 ```bash
 $ make cutlass_profiler -j12
 ```
 
 Then execute the CUTLASS Profiler computing GEMM, execute the following command.
+
 ```bash
 $ ./tools/profiler/cutlass_profiler --kernels=sgemm --m=4352 --n=4096 --k=4096
 
@@ -89,11 +96,13 @@ $ ./tools/profiler/cutlass_profiler --kernels=sgemm --m=4352 --n=4096 --k=4096
 ```
 
 To execute the CUTLASS Profiler for convolution, run the following example.
+
 ```bash
 $ ./tools/profiler/cutlass_profiler --kernels=s1688fprop --n=8 --h=224 --w=224 --c=128 --k=128 --r=3 --s=3 --pad_h=1 --pad_w=1
 ```
 
 To execute all CUTLASS 2-D convolution operators, execute the following.
+
 ```bash
 $ ./tools/profiler/cutlass_profiler --operation=conv2d --n=8 --h=224 --w=224 --c=128 --k=128 --r=3 --s=3
 
@@ -144,6 +153,7 @@ $ make test_unit -j
 [  PASSED  ] 946 tests.
 $
 ```
+
 The exact number of tests run is subject to change as we add more functionality.
 
 No tests should fail. Unit tests automatically construct the appropriate runtime filters
@@ -154,6 +164,7 @@ parallelism in building and running tests as well as reducing compilation times 
 set of tests are desired.
 
 For example, the following executes strictly the warp-level GEMM tests.
+
 ```bash
 $ make test_unit_gemm_warp -j
 ...
@@ -180,6 +191,7 @@ To minimize compilation time, specific GPU architectures can be enabled via the 
 selected by [CUDA Compute Capability.](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities)
 
 **NVIDIA Ampere Architecture.**
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=90a              # compiles for NVIDIA Hopper GPU architecture
 ```
@@ -189,21 +201,25 @@ $ cmake .. -DCUTLASS_NVCC_ARCHS=80               # compiles for NVIDIA Ampere GP
 ```
 
 **NVIDIA Turing Architecture.**
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=75               # compiles for NVIDIA Turing GPU architecture
 ```
 
 **NVIDIA Volta Architecture.**
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=70               # compiles for NVIDIA Volta GPU architecture
 ```
 
 **NVIDIA Pascal Architecture.**
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="60;61"          # compiles for NVIDIA Pascal GPU architecture
 ```
 
 **NVIDIA Maxwell Architecture.**
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="50;53"          # compiles for NVIDIA Maxwell GPU architecture
 ```
@@ -214,6 +230,7 @@ Applications should list [`/include`](/include) within their include paths. They
 compiled as C++17 or greater.
 
 **Example:** print the contents of a variable storing half-precision data.
+
 ```c++
 #include <iostream>
 #include <cutlass/cutlass.h>
@@ -232,9 +249,10 @@ int main() {
 
 ## Launching a GEMM kernel in CUDA
 
-**Example:** launch a mixed-precision GEMM targeting Turing Tensor Cores. 
+**Example:** launch a mixed-precision GEMM targeting Turing Tensor Cores.
 
 _Note, this example uses CUTLASS Utilities. Be sure `tools/util/include` is listed as an include path._
+
 ```c++
 #include <cutlass/numeric_types.h>
 #include <cutlass/gemm/device/gemm.h>
@@ -289,7 +307,7 @@ int main() {
   //
   // Launch GEMM on the device
   //
- 
+
   status = gemm_op({
     {M, N, K},
     {ptrA, lda},            // TensorRef to A device tensor
@@ -308,6 +326,7 @@ int main() {
 ```
 
 Note, the above could be simplified as follows using helper methods defined in `HostTensor`.
+
 ```c++
   cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> A({M, K});
   cutlass::HostTensor<cutlass::half_t, cutlass::layout::ColumnMajor> B({K, N});
@@ -315,7 +334,7 @@ Note, the above could be simplified as follows using helper methods defined in `
 
   //
   // Use the TensorRef returned by HostTensor::device_ref().
-  // 
+  //
 
   status = gemm_op({
     {M, N, K},
@@ -329,7 +348,7 @@ Note, the above could be simplified as follows using helper methods defined in `
 
 ## Launching a GEMM kernel using CUTLASS 3.0 or newer
 
-**Example:** launch a mixed-precision GEMM targeting Hopper Tensor Cores. 
+**Example:** launch a mixed-precision GEMM targeting Hopper Tensor Cores.
 
 ```c++
 #include "cutlass/cutlass.h"
@@ -367,7 +386,7 @@ int main(int argc, char const **args) {
   using TilesShape          = Shape<_128,_128,_64>;                           // Threadblock-level tile size
   using ClusterShape        = Shape<_1,_2,_1>;                                // Shape of the threadblocks in a cluster
   using StageCountType = cutlass::gemm::collective::StageCountAuto;           // Stage count maximized based on the tile size
-  using KernelSchedule = cutlass::gemm::collective::KernelScheduleAuto;       // Kernel to launch based on the default setting in the Collective Builder 
+  using KernelSchedule = cutlass::gemm::collective::KernelScheduleAuto;       // Kernel to launch based on the default setting in the Collective Builder
 
   using CollectiveMainloop = typename cutlass::gemm::collective::CollectiveBuilder<
       ArchTag, OperatorClass,
@@ -438,7 +457,7 @@ int main(int argc, char const **args) {
   //
   // Launch GEMM on the device
   //
- 
+
   status = gemm_op({
     cutlass::gemm::GemmUniversalMode::kGemm,
     {M, N, K},
@@ -462,9 +481,9 @@ int main(int argc, char const **args) {
 The [CUTLASS Library](/tools/library) defines an API for managing and executing collections of compiled
 kernel instances and launching them from host code without template instantiations in client code.
 
-The host-side launch API is designed to be analogous to BLAS implementations for convenience, though its 
-kernel selection procedure is intended only to be functionally sufficient. It may not launch the 
-optimal tile size for a given problem. It chooses the first available kernel whose data types, 
+The host-side launch API is designed to be analogous to BLAS implementations for convenience, though its
+kernel selection procedure is intended only to be functionally sufficient. It may not launch the
+optimal tile size for a given problem. It chooses the first available kernel whose data types,
 layouts, and alignment constraints satisfy the given problem. Kernel instances and a data structure
 describing them are completely available to client applications which may choose to implement their
 own selection logic.
@@ -475,17 +494,18 @@ for dense matrix computations on NVIDIA GPUs.
 The CUTLASS Library is used by the CUTLASS Profiler to manage kernel instances, and it is also used
 by several SDK examples.
 
-* [10_planar_complex](/examples/10_planar_complex/planar_complex.cu)
-* [11_planar_complex_array](/examples/11_planar_complex_array/planar_complex_array.cu)
+- [10_planar_complex](/examples/10_planar_complex/planar_complex.cu)
+- [11_planar_complex_array](/examples/11_planar_complex_array/planar_complex_array.cu)
 
 The CUTLASS Library defines enumerated types describing numeric data types, matrix and tensor
-layouts, math operation classes, complex transformations, and more. 
+layouts, math operation classes, complex transformations, and more.
 
 Client applications should specify [`tools/library/include`](/tools/library/include) in their
 include paths and link against libcutlas_lib.so.
 
-The CUTLASS SDK example [10_planar_complex](/examples/10_planar_complex/CMakeLists.txt) specifies 
+The CUTLASS SDK example [10_planar_complex](/examples/10_planar_complex/CMakeLists.txt) specifies
 its dependency on the CUTLASS Library with the following CMake command.
+
 ```
 target_link_libraries(
   10_planar_complex
@@ -534,7 +554,7 @@ int main() {
   //
   // CUTLASS Library call to execute device GEMM
   //
-  
+
   cutlass::library::Handle handle;
 
   //
@@ -571,7 +591,7 @@ int main() {
     ptrD,                                           // pointer to D matrix in device memory
     ldd                                             // leading dimension of D matrix
   );
-  
+
   if (status != cutlass::Status::kSuccess) {
     return -1;
   }
@@ -580,74 +600,87 @@ int main() {
 }
 ```
 
-# Example CMake Commands 
+# Example CMake Commands
 
-To instantiate all operations supporting all tile sizes, data types, and alignment constraints, specify 
+To instantiate all operations supporting all tile sizes, data types, and alignment constraints, specify
 `-DCUTLASS_LIBRARY_KERNELS=all` when running `cmake`.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS='70;75;80' -DCUTLASS_LIBRARY_KERNELS=all
 ```
-The above command line generates about twenty thousand kernels targeting NVIDIA Ampere, Turing, and Volta architectures. 
-Compiling thousands of kernels for three different architectures is time-consuming. Additionally, this would also result 
+
+The above command line generates about twenty thousand kernels targeting NVIDIA Ampere, Turing, and Volta architectures.
+Compiling thousands of kernels for three different architectures is time-consuming. Additionally, this would also result
 in a large binary size and on some platforms linker to fail on building the library.
 
-Enabling the "unity build" instantiates multiple kernel instances in each compilation unit, thereby reducing binary size 
+Enabling the "unity build" instantiates multiple kernel instances in each compilation unit, thereby reducing binary size
 and avoiding linker limitations on some platforms.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="70;75;80" -DCUTLASS_LIBRARY_KERNELS=all -DCUTLASS_UNITY_BUILD_ENABLED=ON
 ```
 
-It is advised to only compile CUTLASS kernels for NVIDIA architectures one plans on running. Furthermore, kernels 
-can be selectively included in the CUTLASS Library by specifying filter strings and wildcard characters when executing CMake. 
+It is advised to only compile CUTLASS kernels for NVIDIA architectures one plans on running. Furthermore, kernels
+can be selectively included in the CUTLASS Library by specifying filter strings and wildcard characters when executing CMake.
 
-Several examples are defined below for convenience. They may be combined as a comma-delimited list. 
+Several examples are defined below for convenience. They may be combined as a comma-delimited list.
 Compling only the kernels desired reduces compilation time.
 
-
 ## GEMM CMake Examples
+
 **Example.** All GEMM kernels targeting NVIDIA Ampere Tensor Cores.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=80 -DCUTLASS_LIBRARY_KERNELS=tensorop*gemm
 ```
 
 **Example.** All GEMM kernels targeting NVIDIA Turing Tensor Cores.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS=75 -DCUTLASS_LIBRARY_KERNELS=tensorop*gemm
 ```
 
 **Example.** All GEMM kernels with FP32 accumulation targeting NVIDIA Ampere, Turing, and Volta architectures.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="70;75;80" -DCUTLASS_LIBRARY_KERNELS=s*gemm
 ```
 
 **Example.** All kernels which expect A and B to be column-major or row-major targeting NVIDIA Ampere, Turing, and Volta architectures.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="70;75;80" -DCUTLASS_LIBRARY_KERNELS=gemm*nn,gemm*tt
 ```
 
 **Example.** All planar complex GEMM variants targeting NVIDIA Ampere, Turing, and Volta architectures.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="70;75;80" -DCUTLASS_LIBRARY_KERNELS=planar_complex
 ```
 
 ## Convolution CMake Examples
+
 **Example.** All convolution kernels targeting NVIDIA Ampere's 16816 Tensor Core operation
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS='80' -DCUTLASS_LIBRARY_KERNELS=s16816fprop,s16816dgrad,s16816wgrad
 ```
 
 **Example.** All forward propagation (fprop) convolution kernels targeting CUDA Cores for multiple NVIDIA architectures
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS='50;60;61;70;75;80' -DCUTLASS_LIBRARY_KERNELS=sfprop
 ```
 
 **Example.** All forward propagation (fprop) convolution kernels with FP32 accumulation and FP16 input targeting NVIDIA Ampere's 16816 Tensor Core operation
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS='80' -DCUTLASS_LIBRARY_KERNELS=s16816fprop_*_f16
 ```
 
-**Example.** All backward weight gradient (wgrad) convolution kernels with FP32 accumulation, FP16 input, and optimized global memory iterator 
+**Example.** All backward weight gradient (wgrad) convolution kernels with FP32 accumulation, FP16 input, and optimized global memory iterator
 targeting NVIDIA Ampere, Turing, and Volta Tensor Core operations
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS='70;75;80' -DCUTLASS_LIBRARY_KERNELS=tensorop*s*wgrad_optimized_f16
 ```

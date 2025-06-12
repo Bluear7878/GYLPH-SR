@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,20 +18,22 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
     \brief Template for a double-buffered threadblock-scoped GEMM kernel.
-    Used by BLAS3 kernels that need to treat diagonal elements of a input iterator as a special case.
-  
+    Used by BLAS3 kernels that need to treat diagonal elements of a input
+   iterator as a special case.
+
 */
 
 #pragma once
@@ -91,8 +93,7 @@ template <
     BlasMode BlasMode_ = BlasMode::kTriangular,
     /// Used for partial specialization
     typename Enable = bool>
-class MmaBlas3Multistage : 
-  public MmaBase<Shape_, Policy_, Stages> {
+class MmaBlas3Multistage : public MmaBase<Shape_, Policy_, Stages> {
 public:
   ///< Base class
   using Base = MmaBase<Shape_, Policy_, Stages>;
@@ -129,7 +130,7 @@ public:
 
   /// Minimum architecture is Sm80 to support cp.async
   using ArchTag = arch::Sm80;
-  
+
   /// Complex transform on A operand
   static ComplexTransform const kTransformA = Operator::kTransformA;
 
@@ -152,22 +153,22 @@ public:
 
     /// Number of cp.async instructions to load on group of operand A
     static int const kAccessesPerGroupA =
-        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// Number of cp.async instructions to load on group of operand B
     static int const kAccessesPerGroupB =
-        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
   };
 
- private:
-
+private:
   using WarpLoadedFragmentA = typename Operator::FragmentA;
   using WarpLoadedFragmentB = typename Operator::FragmentB;
   using WarpTransformedFragmentA = typename Operator::TransformedFragmentA;
   using WarpTransformedFragmentB = typename Operator::TransformedFragmentB;
 
- private:
-
+private:
   //
   // Data members
   //
@@ -179,7 +180,6 @@ public:
   SmemIteratorB smem_iterator_B_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   MmaBlas3Multistage(
@@ -190,12 +190,10 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      Base(shared_storage, thread_idx, warp_idx, lane_idx),
-      smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
-      smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx)
-  {
+      int lane_idx)
+      : Base(shared_storage, thread_idx, warp_idx, lane_idx),
+        smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
+        smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx) {
     // Compute warp location within threadblock tile by mapping the warp_id to
     // three coordinates:
     //   _m: the warp's position within the threadblock along the M dimension
@@ -241,19 +239,26 @@ public:
 
           if (isvalid && iterator_A.getOnDiag()) {
             // Elements that are on diagonal
-            if (kBlasMode == BlasMode::kHermitian && cutlass::is_complex<typename IteratorA::Element>::value) {
+            if (kBlasMode == BlasMode::kHermitian &&
+                cutlass::is_complex<typename IteratorA::Element>::value) {
               /* Copy real part from gmem, write zero for imag part in smem */
-              /* The following logic to determine kSizeRealBytes is so that compiler doesn't complain when
-               * compiling for not complex datatype and using half the size for cp_async_zfill */
-              int const kSizeRealBytes = (platform::is_same<typename IteratorA::Element,
-                                          complex<double>>::value) ? 8 : 4;
-              cutlass::arch::cp_async_zfill<kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
-                dst_ptr + v, gmem_ptr, true);
+              /* The following logic to determine kSizeRealBytes is so that
+               * compiler doesn't complain when compiling for not complex
+               * datatype and using half the size for cp_async_zfill */
+              int const kSizeRealBytes =
+                  (platform::is_same<typename IteratorA::Element,
+                                     complex<double>>::value)
+                      ? 8
+                      : 4;
+              cutlass::arch::cp_async_zfill<
+                  kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
+                  dst_ptr + v, gmem_ptr, true);
               cutlass::arch::cp_async_diag<typename IteratorA::Element, true>(
-                reinterpret_cast<char *> (dst_ptr + v) + kSizeRealBytes);
+                  reinterpret_cast<char *>(dst_ptr + v) + kSizeRealBytes);
             } else {
               /* Write one (1) directly to smem*/
-              cutlass::arch::cp_async_diag<typename IteratorA::Element>(dst_ptr + v);
+              cutlass::arch::cp_async_diag<typename IteratorA::Element>(
+                  dst_ptr + v);
             }
           } else {
             // Elements that are not of diagonal
@@ -291,17 +296,23 @@ public:
 
           if (isvalid && iterator_B.getOnDiag()) {
             // Elements that are on diagonal
-            if (kBlasMode == BlasMode::kHermitian && cutlass::is_complex<typename IteratorB::Element>::value) {
+            if (kBlasMode == BlasMode::kHermitian &&
+                cutlass::is_complex<typename IteratorB::Element>::value) {
               /* Copy real part from gmem, write zero for imag part in smem */
-              int const kSizeRealBytes = (platform::is_same<typename IteratorB::Element,
-                                          complex<double>>::value) ? 8 : 4;
-              cutlass::arch::cp_async_zfill<kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
-                dst_ptr + v, gmem_ptr, true);
+              int const kSizeRealBytes =
+                  (platform::is_same<typename IteratorB::Element,
+                                     complex<double>>::value)
+                      ? 8
+                      : 4;
+              cutlass::arch::cp_async_zfill<
+                  kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
+                  dst_ptr + v, gmem_ptr, true);
               cutlass::arch::cp_async_diag<typename IteratorB::Element, true>(
-                reinterpret_cast<char *> (dst_ptr + v) + kSizeRealBytes);
+                  reinterpret_cast<char *>(dst_ptr + v) + kSizeRealBytes);
             } else {
               /* Write one (1) directly to smem*/
-              cutlass::arch::cp_async_diag<typename IteratorB::Element>(dst_ptr + v);
+              cutlass::arch::cp_async_diag<typename IteratorB::Element>(
+                  dst_ptr + v);
             }
           } else {
             // Elements that are not of diagonal
@@ -364,17 +375,23 @@ public:
 
           if (isvalid && iterator_A.getOnDiag()) {
             // Elements that are on diagonal
-            if (kBlasMode == BlasMode::kHermitian && cutlass::is_complex<typename IteratorA::Element>::value) {
+            if (kBlasMode == BlasMode::kHermitian &&
+                cutlass::is_complex<typename IteratorA::Element>::value) {
               /* Copy real part from gmem, write zero for imag part in smem */
-              int const kSizeRealBytes = (platform::is_same<typename IteratorA::Element,
-                                          complex<double>>::value) ? 8 : 4;
-              cutlass::arch::cp_async_zfill<kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
-                dst_ptr + v, gmem_ptr, true);
+              int const kSizeRealBytes =
+                  (platform::is_same<typename IteratorA::Element,
+                                     complex<double>>::value)
+                      ? 8
+                      : 4;
+              cutlass::arch::cp_async_zfill<
+                  kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
+                  dst_ptr + v, gmem_ptr, true);
               cutlass::arch::cp_async_diag<typename IteratorA::Element, true>(
-                reinterpret_cast<char *> (dst_ptr + v) + kSizeRealBytes);
+                  reinterpret_cast<char *>(dst_ptr + v) + kSizeRealBytes);
             } else {
               /* Write one (1) directly to smem*/
-              cutlass::arch::cp_async_diag<typename IteratorA::Element>(dst_ptr + v);
+              cutlass::arch::cp_async_diag<typename IteratorA::Element>(
+                  dst_ptr + v);
             }
           } else {
             // Elements that are not of diagonal
@@ -410,17 +427,23 @@ public:
 
           if (isvalid && iterator_B.getOnDiag()) {
             // Elements that are on diagonal
-            if (kBlasMode == BlasMode::kHermitian && cutlass::is_complex<typename IteratorB::Element>::value) {
+            if (kBlasMode == BlasMode::kHermitian &&
+                cutlass::is_complex<typename IteratorB::Element>::value) {
               /* Copy real part from gmem, write zero for imag part in smem */
-              int const kSizeRealBytes = (platform::is_same<typename IteratorB::Element,
-                                          complex<double>>::value) ? 8 : 4;
-              cutlass::arch::cp_async_zfill<kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
-                dst_ptr + v, gmem_ptr, true);
+              int const kSizeRealBytes =
+                  (platform::is_same<typename IteratorB::Element,
+                                     complex<double>>::value)
+                      ? 8
+                      : 4;
+              cutlass::arch::cp_async_zfill<
+                  kSizeRealBytes, cutlass::arch::CacheOperation::Always>(
+                  dst_ptr + v, gmem_ptr, true);
               cutlass::arch::cp_async_diag<typename IteratorB::Element, true>(
-                reinterpret_cast<char *> (dst_ptr + v) + kSizeRealBytes);
+                  reinterpret_cast<char *>(dst_ptr + v) + kSizeRealBytes);
             } else {
               /* Write one (1) directly to smem*/
-              cutlass::arch::cp_async_diag<typename IteratorB::Element>(dst_ptr + v);
+              cutlass::arch::cp_async_diag<typename IteratorB::Element>(
+                  dst_ptr + v);
             }
           } else {
             // Elements that are not of diagonal
@@ -449,13 +472,15 @@ public:
     accum = src_accum;
 
     //
-    // Clear the remaining tiles of SMEM. This is a functional requirement for some kernels
-    // so that all accumulator elements outside the GEMM footprint are zero.
+    // Clear the remaining tiles of SMEM. This is a functional requirement for
+    // some kernels so that all accumulator elements outside the GEMM footprint
+    // are zero.
     //
 
     if (SharedMemoryClear == SharedMemoryClearOption::kClearLastStage) {
 
-      /// Iterator to write threadblock-scoped tile of A operand to shared memory
+      /// Iterator to write threadblock-scoped tile of A operand to shared
+      /// memory
       SmemIteratorA last_smem_iterator_A(this->smem_iterator_A_);
 
       typename IteratorA::AccessType zero_A;
@@ -476,7 +501,8 @@ public:
         ++last_smem_iterator_A;
       }
 
-      /// Iterator to write threadblock-scoped tile of B operand to shared memory
+      /// Iterator to write threadblock-scoped tile of B operand to shared
+      /// memory
       SmemIteratorB last_smem_iterator_B(this->smem_iterator_B_);
       typename IteratorB::AccessType zero_B;
 
@@ -536,9 +562,9 @@ public:
     FragmentC tmp_accum;
 
     if (platform::is_same<typename Operator::MathOperator,
-                          arch::OpMultiplyAddFastF32>::value
-      || platform::is_same<typename Operator::MathOperator,
-                           arch::OpMultiplyAddComplexFastF32>::value) {
+                          arch::OpMultiplyAddFastF32>::value ||
+        platform::is_same<typename Operator::MathOperator,
+                          arch::OpMultiplyAddComplexFastF32>::value) {
 
       tmp_accum.clear();
     }
@@ -562,11 +588,15 @@ public:
         // Load warp-level tiles from shared memory, wrapping to k offset if
         // this is the last group as the case may be.
 
-        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        
-        this->warp_tile_iterator_A_.load(warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_B_.load(warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+
+        this->warp_tile_iterator_A_.load(
+            warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B_.load(
+            warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
 
         ++this->warp_tile_iterator_A_;
         ++this->warp_tile_iterator_B_;
@@ -578,28 +608,20 @@ public:
                              warp_loaded_frag_B[warp_mma_k % 2]);
 
         if (platform::is_same<typename Operator::MathOperator,
-                              arch::OpMultiplyAddFastF32>::value
-          || platform::is_same<typename Operator::MathOperator,
-                               arch::OpMultiplyAddComplexFastF32>::value) {
+                              arch::OpMultiplyAddFastF32>::value ||
+            platform::is_same<typename Operator::MathOperator,
+                              arch::OpMultiplyAddComplexFastF32>::value) {
 
-          warp_mma(
-            tmp_accum, 
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B[warp_mma_k % 2], 
-            tmp_accum
-          );
+          warp_mma(tmp_accum, warp_transformed_frag_A[warp_mma_k % 2],
+                   warp_transformed_frag_B[warp_mma_k % 2], tmp_accum);
 
           if (warp_mma_k == 0) {
             accum = plus_accum(accum, tmp_accum);
             tmp_accum.clear();
           }
         } else {
-          warp_mma(
-            accum, 
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B[warp_mma_k % 2], 
-            accum
-          );
+          warp_mma(accum, warp_transformed_frag_A[warp_mma_k % 2],
+                   warp_transformed_frag_B[warp_mma_k % 2], accum);
         }
 
         // Issue global->shared copies for the this stage
@@ -609,8 +631,9 @@ public:
           group_start_iteration_A = warp_mma_k * Detail::kAccessesPerGroupA;
           group_start_iteration_B = warp_mma_k * Detail::kAccessesPerGroupB;
 
-          copy_tiles_and_advance(iterator_A, iterator_B, group_start_iteration_A, 
-                               group_start_iteration_B);
+          copy_tiles_and_advance(iterator_A, iterator_B,
+                                 group_start_iteration_A,
+                                 group_start_iteration_B);
         }
 
         if (warp_mma_k + 2 == Base::kWarpGemmIterations) {
@@ -620,8 +643,9 @@ public:
           group_start_iteration_B =
               (warp_mma_k + 1) * Detail::kAccessesPerGroupB;
 
-          copy_tiles_and_advance(iterator_A, iterator_B, group_start_iteration_A, 
-                               group_start_iteration_B);
+          copy_tiles_and_advance(iterator_A, iterator_B,
+                                 group_start_iteration_A,
+                                 group_start_iteration_B);
 
           // Inserts a memory fence between stages of cp.async instructions.
           cutlass::arch::cp_async_fence();
@@ -673,35 +697,35 @@ public:
                              warp_loaded_frag_A[(warp_mma_k + 1) % 2],
                              warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
       }
-
     }
 
     if (platform::is_same<typename Operator::MathOperator,
-                          arch::OpMultiplyAddFastF32>::value
-      || platform::is_same<typename Operator::MathOperator,
-                           arch::OpMultiplyAddComplexFastF32>::value) {
-      accum = plus_accum(accum, tmp_accum); 
+                          arch::OpMultiplyAddFastF32>::value ||
+        platform::is_same<typename Operator::MathOperator,
+                          arch::OpMultiplyAddComplexFastF32>::value) {
+      accum = plus_accum(accum, tmp_accum);
     }
- 
+
     if (SharedMemoryClear == SharedMemoryClearOption::kZfill) {
-      // commit and drain all pending and predicated cp.async pnz from the GEMM mainloop
+      // commit and drain all pending and predicated cp.async pnz from the GEMM
+      // mainloop
       cutlass::arch::cp_async_fence();
       cutlass::arch::cp_async_wait<0>();
       __syncthreads();
     }
 
-    // Commit and drain all pending and predicated cp.async pnz from the GEMM mainloop
+    // Commit and drain all pending and predicated cp.async pnz from the GEMM
+    // mainloop
     cutlass::arch::cp_async_fence();
     cutlass::arch::cp_async_wait<0>();
     __syncthreads();
-
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

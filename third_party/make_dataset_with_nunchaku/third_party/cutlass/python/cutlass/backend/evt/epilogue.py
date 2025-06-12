@@ -36,14 +36,13 @@ Epilogue Visitor interface for compiling, and running visitor-based epilogue.
 
 import ctypes
 
-from cuda import cuda
-from cutlass_library import DataType
-import numpy as np
-
-from cutlass.backend.epilogue import EpilogueFunctorBase
 import cutlass.backend.evt.backend
+import numpy as np
+from cuda import cuda
+from cutlass.backend.epilogue import EpilogueFunctorBase
 from cutlass.backend.frontend import TensorFrontend
 from cutlass.utils.datatypes import is_numpy_tensor
+from cutlass_library import DataType
 
 
 class EpilogueFunctorVisitor(EpilogueFunctorBase):
@@ -54,6 +53,7 @@ class EpilogueFunctorVisitor(EpilogueFunctorBase):
     :param visitor_frontend: user-provide visitor frontend
 
     """
+
     def __init__(self, cc: int, visitor, element_compute=DataType.f32) -> None:
         # Type of Emitter based on CC
         self.emit_cls = getattr(cutlass.backend.evt.backend, f"Sm{cc}Emitter")
@@ -63,8 +63,8 @@ class EpilogueFunctorVisitor(EpilogueFunctorBase):
         self.graph = visitor.dag_ir
 
         # Data types
-        self.element_epilogue = element_compute # element compute
-        self.element_output = self.graph.get_node_meta('D').underlying_impl.element
+        self.element_epilogue = element_compute  # element compute
+        self.element_output = self.graph.get_node_meta("D").underlying_impl.element
 
         # Epilogue Thread Type
         epilogue_thread_type = self.visitor.epilogue_thread_type
@@ -78,7 +78,9 @@ class EpilogueFunctorVisitor(EpilogueFunctorBase):
         if cc == 80:
             if hasattr(self.visitor, "epilogue_stages"):
                 self.epilogue_stages = self.visitor.epilogue_stages
-                assert self.epilogue_stages <= 2, "Only supports Stages <=2 in SM80 Epilogue"
+                assert (
+                    self.epilogue_stages <= 2
+                ), "Only supports Stages <=2 in SM80 Epilogue"
 
         # Epilogue Argument Type
         class _Arguments(ctypes.Structure):
@@ -93,9 +95,8 @@ class EpilogueFunctorVisitor(EpilogueFunctorBase):
                     ("stride_D", StrideBatched_)
                 ]
             """
-            _fields_ = [
-                ("output_op", epilogue_thread_type)
-            ]
+
+            _fields_ = [("output_op", epilogue_thread_type)]
 
             def __init__(self, kwargs: dict) -> None:
                 # The user-input kwargs is a dict of (name: tensors)

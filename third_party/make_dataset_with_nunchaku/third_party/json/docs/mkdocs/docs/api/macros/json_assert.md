@@ -9,7 +9,7 @@ This macro controls which code is executed for [runtime assertions](../../featur
 ## Parameters
 
 `x` (in)
-:   expression of scalar type
+: expression of scalar type
 
 ## Default definition
 
@@ -33,51 +33,55 @@ Therefore, assertions can be switched off by defining `NDEBUG`.
 
 ??? example "Example 1: default behavior"
 
-    The following code will trigger an assertion at runtime:
+````
+The following code will trigger an assertion at runtime:
 
-    ```cpp
-    #include <nlohmann/json.hpp>
-    
-    using json = nlohmann::json;
-    
-    int main()
-    {
-        const json j = {{"key", "value"}};
-        auto v = j["missing"];
-    }
-    ```
+```cpp
+#include <nlohmann/json.hpp>
 
-    Output:
+using json = nlohmann::json;
 
-    ```
-    Assertion failed: (m_value.object->find(key) != m_value.object->end()), function operator[], file json.hpp, line 2144.
-    ```
+int main()
+{
+    const json j = {{"key", "value"}};
+    auto v = j["missing"];
+}
+```
+
+Output:
+
+```
+Assertion failed: (m_value.object->find(key) != m_value.object->end()), function operator[], file json.hpp, line 2144.
+```
+````
 
 ??? example "Example 2: user-defined behavior"
 
-    The assertion reporting can be changed by defining `JSON_ASSERT(x)` differently.
+````
+The assertion reporting can be changed by defining `JSON_ASSERT(x)` differently.
 
-    ```cpp
-    #include <cstdio>
-    #include <cstdlib>
-    #define JSON_ASSERT(x) if(!(x)){fprintf(stderr, "assertion error in %s\n", __FUNCTION__); std::abort();}
-    
-    #include <nlohmann/json.hpp>
-    
-    using json = nlohmann::json;
-    
-    int main()
-    {
-        const json j = {{"key", "value"}};
-        auto v = j["missing"];
-    }
-    ```
+```cpp
+#include <cstdio>
+#include <cstdlib>
+#define JSON_ASSERT(x) if(!(x)){fprintf(stderr, "assertion error in %s\n", __FUNCTION__); std::abort();}
 
-    Output:
+#include <nlohmann/json.hpp>
 
-    ```
-    assertion error in operator[]
-    ```
+using json = nlohmann::json;
+
+int main()
+{
+    const json j = {{"key", "value"}};
+    auto v = j["missing"];
+}
+```
+
+Output:
+
+```
+assertion error in operator[]
+```
+````
 
 ## Version history
 

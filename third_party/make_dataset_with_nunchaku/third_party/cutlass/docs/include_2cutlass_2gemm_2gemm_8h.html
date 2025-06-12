@@ -58,8 +58,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
                onmouseout="return searchBox.OnSearchSelectHide()"
                alt=""/>
           <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
@@ -83,7 +83,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
+<iframe src="javascript:void(0)" frameborder="0"
         name="MSearchResults" id="MSearchResults">
 </iframe>
 </div>
@@ -104,7 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 
-<p>Defines common types used for all GEMM-like operators.  
+<p>Defines common types used for all GEMM-like operators.
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="cutlass_8h_source.html">cutlass/cutlass.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="coord_8h_source.html">cutlass/coord.h</a>&quot;</code><br />
@@ -151,9 +151,9 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a34338284023da7403c9ecbd3f406b2a6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6">cutlass::gemm::Operand</a> { <a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6a30f767aa191cd5d261e767fd78393607">cutlass::gemm::Operand::kA</a>, 
-<a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6a3e56c011b37f0bc78fb9eb175c1181c6">cutlass::gemm::Operand::kB</a>, 
-<a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6af73b7a14626c25aa554e2437ea3fc1df">cutlass::gemm::Operand::kC</a>, 
+<tr class="memitem:a34338284023da7403c9ecbd3f406b2a6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6">cutlass::gemm::Operand</a> { <a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6a30f767aa191cd5d261e767fd78393607">cutlass::gemm::Operand::kA</a>,
+<a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6a3e56c011b37f0bc78fb9eb175c1181c6">cutlass::gemm::Operand::kB</a>,
+<a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6af73b7a14626c25aa554e2437ea3fc1df">cutlass::gemm::Operand::kC</a>,
 <a class="el" href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6a64fa0b7138d2992f2e7daa5080eb5ed0">cutlass::gemm::Operand::kD</a>
  }<tr class="memdesc:a34338284023da7403c9ecbd3f406b2a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">GEMM operand enumeration: D = A * B + C.  <a href="namespacecutlass_1_1gemm.html#a34338284023da7403c9ecbd3f406b2a6">More...</a><br /></td></tr>
 </td></tr>

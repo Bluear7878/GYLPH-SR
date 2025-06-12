@@ -30,28 +30,22 @@
 #
 #################################################################################################
 
-from math import prod
 import os
 import re
 import subprocess
+from math import prod
 
 import torch
-
-from cutlass_library import (
-    DataType,
-    DataTypeSize,
-    GemmUniversalMode,
-    LayoutType,
-    OpcodeClass,
-    ShortDataTypeNames,
-    SwizzlingFunctor
-)
-
 from cutlass.backend import compiler
-from cutlass.backend.gemm_operation import GemmArguments, GemmOperationUniversal
-from cutlass.backend.reduction_operation import ReductionArguments, ReductionOperation
+from cutlass.backend.gemm_operation import (GemmArguments,
+                                            GemmOperationUniversal)
+from cutlass.backend.reduction_operation import (ReductionArguments,
+                                                 ReductionOperation)
 from cutlass.shape import GemmCoord, MatrixCoord
 from cutlass.utils.datatypes import torch_type
+from cutlass_library import (DataType, DataTypeSize, GemmUniversalMode,
+                             LayoutType, OpcodeClass, ShortDataTypeNames,
+                             SwizzlingFunctor)
 
 
 class GemmUniversalLauncher:
@@ -61,7 +55,7 @@ class GemmUniversalLauncher:
         seed=2080,
         verification=True,
         iterations=500,
-        compiler_mode= "nvcc",
+        compiler_mode="nvcc",
         **kwargs,
     ) -> None:
         self.math_operation = operation.tile_description.math_instruction.math_operation
@@ -91,12 +85,22 @@ class GemmUniversalLauncher:
 
         self.operation = operation
 
-        self.dtype_A = torch_type(operation.A.element if not self.operation.switched else self.operation.B.element)
-        self.dtype_B = torch_type(operation.B.element if not self.operation.switched else self.operation.A.element)
+        self.dtype_A = torch_type(
+            operation.A.element
+            if not self.operation.switched
+            else self.operation.B.element
+        )
+        self.dtype_B = torch_type(
+            operation.B.element
+            if not self.operation.switched
+            else self.operation.A.element
+        )
         self.dtype_C = torch_type(operation.C.element)
         self.dtype_D = torch_type(operation.epilogue_functor.element_output)
 
-        element_size = min(DataTypeSize[operation.A.element], DataTypeSize[operation.B.element])
+        element_size = min(
+            DataTypeSize[operation.A.element], DataTypeSize[operation.B.element]
+        )
 
         if element_size == 1:
             self.rand_max = 1
@@ -114,7 +118,9 @@ class GemmUniversalLauncher:
         self.seed = seed
 
         self.compute_type = operation.epilogue_functor.element_epilogue
-        self.accumulator_type = operation.tile_description.math_instruction.element_accumulator
+        self.accumulator_type = (
+            operation.tile_description.math_instruction.element_accumulator
+        )
 
     def print_problem_size(self, p, mode, batch_count):
         if mode == GemmUniversalMode.Gemm:
@@ -123,16 +129,24 @@ class GemmUniversalLauncher:
             mode = "GemmBatched"
         elif mode == GemmUniversalMode.GemmSplitKParallel:
             mode = "GemmSplitKParallel"
-        print(f"problem: {p.m}, {p.n}, {p.k}\n batch_count: {batch_count}\n mode: {mode}")
+        print(
+            f"problem: {p.m}, {p.n}, {p.k}\n batch_count: {batch_count}\n mode: {mode}"
+        )
 
     def uniform_init(self, shape, dtype, layout):
         size = prod(shape)
         if dtype.is_floating_point:
-            data = torch.ceil(torch.empty(size=(size,), dtype=dtype, device="cuda").uniform_(self.rand_min - 0.5, self.rand_max - 0.5))
+            data = torch.ceil(
+                torch.empty(size=(size,), dtype=dtype, device="cuda").uniform_(
+                    self.rand_min - 0.5, self.rand_max - 0.5
+                )
+            )
         else:
             # PyTorch does not currently support integer-typed matrix multiplications on GPU.
             # Fall back to CPU for integer type references.
-            data = torch.empty(size=(size,), dtype=dtype, device="cpu").random_(self.rand_min, self.rand_max + 1)
+            data = torch.empty(size=(size,), dtype=dtype, device="cpu").random_(
+                self.rand_min, self.rand_max + 1
+            )
 
         if dtype == torch.float64 or dtype == torch.float32:
             data = data.to("cpu")
@@ -153,7 +167,10 @@ class GemmUniversalLauncher:
         # Handle mixed-input cases by casting to the larger data type and overriding
         # to whatever the data type of the larger type is
         if self.dtype_A != self.dtype_B:
-            if DataTypeSize[self.operation.A.element] < DataTypeSize[self.operation.B.element]:
+            if (
+                DataTypeSize[self.operation.A.element]
+                < DataTypeSize[self.operation.B.element]
+            ):
                 tensor_A = tensor_A.to(self.dtype_B).to(tensor_B.device)
             else:
                 tensor_B = tensor_B.to(self.dtype_A).to(tensor_A.device)
@@ -177,12 +194,14 @@ class GemmUniversalLauncher:
         beta_torch = torch.tensor([beta], device=device).to(dtype)
 
         tmp = tensor_A @ tensor_B
-        tensor_D_ref = (alpha_torch * tmp)
+        tensor_D_ref = alpha_torch * tmp
         if tensor_C is not None:
-            tensor_D_ref += (tensor_C * beta_torch)
+            tensor_D_ref += tensor_C * beta_torch
         return tensor_D_ref.to(self.dtype_D)
 
-    def run(self, mode, problem_size, batch_count=1, split_k_slices=1, alpha=1.0, beta=0.0):
+    def run(
+        self, mode, problem_size, batch_count=1, split_k_slices=1, alpha=1.0, beta=0.0
+    ):
         torch.random.manual_seed(self.seed)
 
         # Assign an actual batch count in cases where we are not running in batched mode.
@@ -202,18 +221,30 @@ class GemmUniversalLauncher:
         tensor_A, tensor_A_ref = self.uniform_init(
             (true_batch_count, problem_size.m, problem_size.k),
             self.dtype_A,
-            self.operation.A.layout if not self.operation.switched else transpose(self.operation.B.layout),
+            (
+                self.operation.A.layout
+                if not self.operation.switched
+                else transpose(self.operation.B.layout)
+            ),
         )
         tensor_B, tensor_B_ref = self.uniform_init(
             (true_batch_count, problem_size.k, problem_size.n),
             self.dtype_B,
-            self.operation.B.layout if not self.operation.switched else transpose(self.operation.A.layout),
+            (
+                self.operation.B.layout
+                if not self.operation.switched
+                else transpose(self.operation.A.layout)
+            ),
         )
         if self.dtype_C is not None:
             tensor_C, tensor_C_ref = self.uniform_init(
                 (true_batch_count, problem_size.m, problem_size.n),
                 self.dtype_C,
-                self.operation.C.layout if not self.operation.switched else transpose(self.operation.C.layout),
+                (
+                    self.operation.C.layout
+                    if not self.operation.switched
+                    else transpose(self.operation.C.layout)
+                ),
             )
         else:
             tensor_C = None
@@ -222,7 +253,11 @@ class GemmUniversalLauncher:
         tensor_D, _ = self.uniform_init(
             (true_batch_count, problem_size.m, problem_size.n),
             self.dtype_D,
-            self.operation.C.layout if not self.operation.switched else transpose(self.operation.C.layout),
+            (
+                self.operation.C.layout
+                if not self.operation.switched
+                else transpose(self.operation.C.layout)
+            ),
         )
         tensor_D = torch.zeros_like(tensor_D)
 
@@ -283,9 +318,12 @@ class GemmUniversalLauncher:
                 beta,
             )
 
-            tensor_D_ref = tensor_D_ref.to('cuda')
+            tensor_D_ref = tensor_D_ref.to("cuda")
 
-            if self.operation.switched or self.operation.C.layout == LayoutType.ColumnMajor:
+            if (
+                self.operation.switched
+                or self.operation.C.layout == LayoutType.ColumnMajor
+            ):
                 tensor_D = tensor_D.transpose(-1, -2).contiguous()
 
             passed = tensor_D.equal(tensor_D_ref)
@@ -301,7 +339,9 @@ class GemmUniversalLauncher:
         return passed
 
 
-def test_all_gemm(operation: "GemmOperationUniversal", testcase="universal", compilation_mode="nvcc"):
+def test_all_gemm(
+    operation: "GemmOperationUniversal", testcase="universal", compilation_mode="nvcc"
+):
     passed = True
 
     minimum_operand_element_size = min(
@@ -327,14 +367,24 @@ def test_all_gemm(operation: "GemmOperationUniversal", testcase="universal", com
             alignment_m = 4
         if B_is_s8 == DataType.s8 and operation.A.layout == LayoutType.RowMajor:
             alignment_n = 4
-        if A_is_s8 and B_is_s8 and (operation.A.layout == LayoutType.RowMajor or operation.B.layout == LayoutType.ColumnMajor):
+        if (
+            A_is_s8
+            and B_is_s8
+            and (
+                operation.A.layout == LayoutType.RowMajor
+                or operation.B.layout == LayoutType.ColumnMajor
+            )
+        ):
             alignment_k = 4
 
     threadblock_k = operation.tile_description.threadblock_shape[2]
 
     assert testcase != "interleaved"
 
-    supports_split_k = operation.arch < 90 and not operation.swizzling_functor == SwizzlingFunctor.StreamK
+    supports_split_k = (
+        operation.arch < 90
+        and not operation.swizzling_functor == SwizzlingFunctor.StreamK
+    )
 
     if testcase == "multistage":
         modes = [GemmUniversalMode.Gemm]

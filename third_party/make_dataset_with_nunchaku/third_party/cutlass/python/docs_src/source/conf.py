@@ -12,17 +12,17 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('../..'))
-sys.path.insert(0, os.path.abspath('../../media/docs'))
+sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../media/docs"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'CUTLASS Python interface'
-copyright = '2023, NVIDIA'
-author = 'NVIDIA'
-release = '3.1.0'
+project = "CUTLASS Python interface"
+copyright = "2023, NVIDIA"
+author = "NVIDIA"
+release = "3.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -32,51 +32,51 @@ release = '3.1.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-        'myst_parser',
-        'nbsphinx',
-        'nbsphinx_link', 
-        'sphinx_copybutton',
-        'sphinx.ext.autodoc',
-        'sphinx.ext.autosectionlabel',
-        'sphinx.ext.autosummary',
-        'sphinx.ext.coverage',
-        'sphinx.ext.extlinks',
-        'sphinx.ext.ifconfig',
-        'sphinx.ext.intersphinx',
-        'sphinx.ext.mathjax',
-        'sphinx.ext.napoleon',
-        'sphinx.ext.viewcode',
-        'sphinx_inline_tabs',
-        ]
+    "myst_parser",
+    "nbsphinx",
+    "nbsphinx_link",
+    "sphinx_copybutton",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx_inline_tabs",
+]
 
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".md": "markdown",
 }
 
-autodoc_typehints = 'description'
+autodoc_typehints = "description"
 
 pygments_style = "sphinx"
 pygments_dark_style = "monokai"
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Ignore errors when converting notebooks
 nbsphinx_allow_errors = True
 
-language = 'en'
+language = "en"
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 html_title = "CUTLASS Python"
-html_baseurl = 'docs'
-html_theme = 'furo'
+html_baseurl = "docs"
+html_theme = "furo"
 html_theme_options = {
-	"light_logo": "cutlass-logo-small.png",
-	"dark_logo": "cutlass-logo-small.png",
+    "light_logo": "cutlass-logo-small.png",
+    "dark_logo": "cutlass-logo-small.png",
     "light_css_variables": {
         "color-brand-primary": "#76B900",
         "color-brand-content": "#76B900",

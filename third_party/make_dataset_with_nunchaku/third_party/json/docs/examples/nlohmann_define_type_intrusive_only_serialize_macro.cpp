@@ -4,8 +4,7 @@
 using json = nlohmann::json;
 using namespace nlohmann::literals;
 
-namespace ns
-{
+namespace ns {
 class person
 {
   private:
@@ -16,12 +15,14 @@ class person
   public:
     // No default constructor
     person(std::string name_, std::string address_, int age_)
-        : name(std::move(name_)), address(std::move(address_)), age(age_)
+      : name(std::move(name_))
+      , address(std::move(address_))
+      , age(age_)
     {}
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(person, name, address, age)
 };
-} // namespace ns
+}  // namespace ns
 
 int main()
 {

@@ -12,12 +12,12 @@ processing the input.
 ## Template parameters
 
 `BasicJsonType`
-:   a specialization of [`basic_json`](../basic_json/index.md)
+: a specialization of [`basic_json`](../basic_json/index.md)
 
 ## Member types
 
 - [**number_integer_t**](../basic_json/number_integer_t.md) - `BasicJsonType`'s type for numbers (integer)
-- [**number_unsigned_t**](../basic_json/number_unsigned_t.md) - `BasicJsonType`'s  type for numbers (unsigned)
+- [**number_unsigned_t**](../basic_json/number_unsigned_t.md) - `BasicJsonType`'s type for numbers (unsigned)
 - [**number_float_t**](../basic_json/number_float_t.md) - `BasicJsonType`'s type for numbers (floating-point)
 - [**string_t**](../basic_json/string_t.md) - `BasicJsonType`'s type for strings
 - [**binary_t**](../basic_json/binary_t.md) - `BasicJsonType`'s type for binary arrays

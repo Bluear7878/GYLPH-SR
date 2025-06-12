@@ -32,19 +32,12 @@
 
 import ctypes
 
-from cutlass_library import (
-    DataType,
-    KernelScheduleType
-)
 from cutlass.backend.library import DataTypeSizeBytes
+from cutlass_library import DataType, KernelScheduleType
 
 
 class GemmCoord_(ctypes.Structure):
-    _fields_ = [
-        ("m", ctypes.c_int),
-        ("n", ctypes.c_int),
-        ("k", ctypes.c_int)
-    ]
+    _fields_ = [("m", ctypes.c_int), ("n", ctypes.c_int), ("k", ctypes.c_int)]
 
     def __init__(self, m, n, k) -> None:
         self.m = m
@@ -62,7 +55,7 @@ class GemmCoordBatched_(ctypes.Structure):
         ("m", ctypes.c_int),
         ("n", ctypes.c_int),
         ("k", ctypes.c_int),
-        ("batch_count", ctypes.c_int)
+        ("batch_count", ctypes.c_int),
     ]
 
     def __init__(self, gemm_coord, batch_count) -> None:
@@ -73,18 +66,11 @@ class GemmCoordBatched_(ctypes.Structure):
 
 
 class MatrixCoord_(ctypes.Structure):
-    _fields_ = [
-        ("row", ctypes.c_int),
-        ("column", ctypes.c_int)
-    ]
+    _fields_ = [("row", ctypes.c_int), ("column", ctypes.c_int)]
 
 
 class dim3_(ctypes.Structure):
-    _fields_ = [
-        ("x", ctypes.c_int),
-        ("y", ctypes.c_int),
-        ("z", ctypes.c_int)
-    ]
+    _fields_ = [("x", ctypes.c_int), ("y", ctypes.c_int), ("z", ctypes.c_int)]
 
 
 class StrideBatched_(ctypes.Structure):
@@ -93,10 +79,8 @@ class StrideBatched_(ctypes.Structure):
     variable dimensions represent the stride along non-unit-stride dimension of the row/column major
     layout, and the batch stride. This structure encodes the two variable dimensions.
     """
-    _fields_ = [
-        ("major_stride", ctypes.c_int64),
-        ("batch_stride", ctypes.c_int64)
-    ]
+
+    _fields_ = [("major_stride", ctypes.c_int64), ("batch_stride", ctypes.c_int64)]
 
 
 class GenericMainloopArguments3x_(ctypes.Structure):
@@ -106,12 +90,13 @@ class GenericMainloopArguments3x_(ctypes.Structure):
     be used as an input to one of the more specific schedule arguments, which
     will each select those arguments relevant to the particular schedule.
     """
+
     _fields_ = [
         ("ptr_A", ctypes.c_void_p),
         ("stride_A", StrideBatched_),
         ("ptr_B", ctypes.c_void_p),
         ("stride_B", StrideBatched_),
-        ("mma_promotion_interval", ctypes.c_int)
+        ("mma_promotion_interval", ctypes.c_int),
     ]
 
 
@@ -120,7 +105,8 @@ def get_mainloop_arguments_3x(
     element_A,
     element_B,
     alignment_A: int,
-    alignment_B: int) -> ctypes.Structure:
+    alignment_B: int,
+) -> ctypes.Structure:
     """
     Returns the ctypes structure to be used for the 3.x kernel's mainloop parameters.
 
@@ -136,20 +122,24 @@ def get_mainloop_arguments_3x(
     :returns: ctypes structure to be used for the 3.x kernel's mainloop parameters
     :rtype: ctypes.Structure
     """
+
     class _MainloopArgumentsTma(ctypes.Structure):
         _fields_ = [
             ("ptr_A", ctypes.c_void_p),
             ("stride_A", StrideBatched_),
             ("ptr_B", ctypes.c_void_p),
             ("stride_B", StrideBatched_),
-            ("mma_promotion_interval", ctypes.c_int)
+            ("mma_promotion_interval", ctypes.c_int),
         ]
 
         @staticmethod
         def from_generic_mainloop_args(args: GenericMainloopArguments3x_):
             return _MainloopArgumentsTma(
-                args.ptr_A, args.stride_A, args.ptr_B, args.stride_B,
-                args.mma_promotion_interval
+                args.ptr_A,
+                args.stride_A,
+                args.ptr_B,
+                args.stride_B,
+                args.mma_promotion_interval,
             )
 
     class _MainloopArgumentsMultistage(ctypes.Structure):
@@ -163,7 +153,10 @@ def get_mainloop_arguments_3x(
         @staticmethod
         def from_generic_mainloop_args(args: GenericMainloopArguments3x_):
             return _MainloopArgumentsMultistage(
-                args.ptr_A, args.stride_A, args.ptr_B, args.stride_B,
+                args.ptr_A,
+                args.stride_A,
+                args.ptr_B,
+                args.stride_B,
             )
 
     # Currently all 3.x kernels (CpAsync and Tma) have the same argument structure.
@@ -175,17 +168,19 @@ def get_mainloop_arguments_3x(
 def get_gemm_arguments_3x(mainloop_arguments, epilogue_functor):
     _EpilogueOutputOpParams = epilogue_functor.epilogue_type
     if hasattr(epilogue_functor, "visitor"):
+
         class _EpilogueArguments(ctypes.Structure):
             _fields_ = [
                 ("epilogue", _EpilogueOutputOpParams),
                 ("arg_C", epilogue_functor.arg_c_type),
-                ("arg_D", epilogue_functor.arg_d_type)
+                ("arg_D", epilogue_functor.arg_d_type),
             ]
 
             def __init__(self, output_op, ptr_c, stride_c, ptr_d, stride_d) -> None:
                 self.epilogue = output_op
                 self.arg_C = epilogue_functor.arg_c_type(ptr_c)
                 self.arg_D = epilogue_functor.arg_d_type(ptr_d)
+
     else:
 
         class _EpilogueArguments(ctypes.Structure):
@@ -198,10 +193,7 @@ def get_gemm_arguments_3x(mainloop_arguments, epilogue_functor):
             ]
 
     class _HardwareInfo(ctypes.Structure):
-        _fields_ = [
-            ("device_id", ctypes.c_int),
-            ("sm_count", ctypes.c_int)
-        ]
+        _fields_ = [("device_id", ctypes.c_int), ("sm_count", ctypes.c_int)]
 
     class _GemmArguments(ctypes.Structure):
         _fields_ = [
@@ -210,7 +202,7 @@ def get_gemm_arguments_3x(mainloop_arguments, epilogue_functor):
             ("mainloop", mainloop_arguments),
             ("epilogue", _EpilogueArguments),
             ("hw_info", _HardwareInfo),
-            ("splits", ctypes.c_int)
+            ("splits", ctypes.c_int),
         ]
 
     return _GemmArguments, _EpilogueArguments, _EpilogueOutputOpParams, _HardwareInfo
@@ -245,7 +237,7 @@ def get_gemm_arguments(epilogue_functor):
             ("ldd", ctypes.c_longlong),
             ("ptr_gather_A_indices", ctypes.c_void_p),
             ("ptr_gather_B_indices", ctypes.c_void_p),
-            ("ptr_scatter_D_indices", ctypes.c_void_p)
+            ("ptr_scatter_D_indices", ctypes.c_void_p),
         ]
 
     return _GemmArguments, _EpilogueOutputOpParams
@@ -276,7 +268,7 @@ def get_gemm_arguments_streamk(epilogue_functor):
             ("ldb", ctypes.c_longlong),
             ("ldc", ctypes.c_longlong),
             ("ldd", ctypes.c_longlong),
-            ("avail_sms", ctypes.c_int)
+            ("avail_sms", ctypes.c_int),
         ]
 
     return _GemmArguments, _EpilogueOutputOpParams
@@ -304,7 +296,7 @@ def get_gemm_grouped_arguments(epilogue_functor):
             ("ldb", ctypes.c_void_p),
             ("ldc", ctypes.c_void_p),
             ("ldd", ctypes.c_void_p),
-            ("host_problem_sizes", ctypes.c_void_p)
+            ("host_problem_sizes", ctypes.c_void_p),
         ]
 
     return _GEMMGroupedArguments, _EpilogueOutputOpParams
@@ -334,7 +326,7 @@ class Conv2DProblemSize_(ctypes.Structure):
         ("dilation_w", ctypes.c_int),
         ("mode", ctypes.c_int),  # kCrossCorrelation: 0, kConvolution: 1
         ("split_k_slices", ctypes.c_int),
-        ("groups", ctypes.c_int)
+        ("groups", ctypes.c_int),
     ]
 
     def __init__(self, problem_size) -> None:
@@ -351,10 +343,7 @@ class Layout4D(ctypes.Structure):
 
 
 class TensorRef_(ctypes.Structure):
-    _fields_ = [
-        ("ptr", ctypes.c_void_p),
-        ("layout", Layout4D)
-    ]
+    _fields_ = [("ptr", ctypes.c_void_p), ("layout", Layout4D)]
 
     def __init__(self, tensor_ref):
         setattr(self, "ptr", tensor_ref.data())
@@ -362,10 +351,7 @@ class TensorRef_(ctypes.Structure):
 
 
 class TensorRef2D_(ctypes.Structure):
-    _fields_ = [
-        ("ptr", ctypes.c_void_p),
-        ("stride", ctypes.c_int)
-    ]
+    _fields_ = [("ptr", ctypes.c_void_p), ("stride", ctypes.c_int)]
 
 
 def get_conv2d_arguments(epilogue_functor):
@@ -381,7 +367,7 @@ def get_conv2d_arguments(epilogue_functor):
             ("ptr_D", ctypes.c_void_p),
             ("tensor_C_numel", ctypes.c_int),
             ("output_op", _EpilogueOutputOpParams),
-            ("split_k_mode", ctypes.c_int)
+            ("split_k_mode", ctypes.c_int),
         ]
 
     return _Conv2dArguments, _EpilogueOutputOpParams
@@ -413,19 +399,20 @@ def get_reduction_params(epilogue_functor):
 # Epilogue Visitor Type Factory
 ###########################################################################################
 
+
 class Empty(ctypes.Structure):
     _fields_ = []
 
     def __init__(self, *arg) -> None:
         pass
 
+
 class EmptyByte(ctypes.Structure):
-    _fields_ = [
-        ("byte", ctypes.c_byte)
-    ]
+    _fields_ = [("byte", ctypes.c_byte)]
 
     def __init__(self, *arg) -> None:
         pass
+
 
 class EBO:
     def __init__(self, index: int, type) -> None:
@@ -447,7 +434,7 @@ class EBO:
         return f"<{self.index}, {self.type}>"
 
 
-def tuple_factory_(input_tuple, dtype, constants=[0,1]):
+def tuple_factory_(input_tuple, dtype, constants=[0, 1]):
     """
     The factory function generating cute::Tuple with input tuple
     :param input_tuple: the input tuple
@@ -500,7 +487,9 @@ def tuple_factory_(input_tuple, dtype, constants=[0,1]):
                 break
 
     if additional_byte:
-        ctype_fields = [("empty_byte", EmptyByte), ] + ctype_fields
+        ctype_fields = [
+            ("empty_byte", EmptyByte),
+        ] + ctype_fields
 
     # Create the ctype tuple
     class TupleType(ctypes.Structure):
@@ -520,7 +509,8 @@ def tuple_factory_(input_tuple, dtype, constants=[0,1]):
 
     return TupleType, empty_bases
 
-def tuple_factory(input_tuple, dtype: str, constants=[0,1]):
+
+def tuple_factory(input_tuple, dtype: str, constants=[0, 1]):
     """
     The factory function generating cute::Tuple with input tuple
     :param input_tuple: the input tuple

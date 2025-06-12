@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from packaging import version
+
 # import torch._dynamo
 # torch._dynamo.config.suppress_errors = True
 # torch._dynamo.config.cache_size_limit = 512
@@ -66,7 +67,9 @@ class OpenAIHalfWrapper(IdentityWrapper):
 
 
 class ControlWrapper(nn.Module):
-    def __init__(self, diffusion_model, compile_model: bool = False, dtype=torch.float32):
+    def __init__(
+        self, diffusion_model, compile_model: bool = False, dtype=torch.float32
+    ):
         super().__init__()
         self.compile = (
             torch.compile
@@ -82,14 +85,18 @@ class ControlWrapper(nn.Module):
         self.control_model = self.compile(control_model)
 
     def forward(
-            self, x: torch.Tensor, t: torch.Tensor, c: dict, control_scale=1, **kwargs
+        self, x: torch.Tensor, t: torch.Tensor, c: dict, control_scale=1, **kwargs
     ) -> torch.Tensor:
         with torch.autocast("cuda", dtype=self.dtype):
-            control = self.control_model(x=c.get("control", None), timesteps=t, xt=x,
-                                         control_vector=c.get("control_vector", None),
-                                         mask_x=c.get("mask_x", None),
-                                         context=c.get("crossattn", None),
-                                         y=c.get("vector", None))
+            control = self.control_model(
+                x=c.get("control", None),
+                timesteps=t,
+                xt=x,
+                control_vector=c.get("control_vector", None),
+                mask_x=c.get("mask_x", None),
+                context=c.get("crossattn", None),
+                y=c.get("vector", None),
+            )
             out = self.diffusion_model(
                 x,
                 timesteps=t,
@@ -100,4 +107,3 @@ class ControlWrapper(nn.Module):
                 **kwargs,
             )
         return out.float()
-

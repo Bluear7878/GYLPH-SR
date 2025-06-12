@@ -11,7 +11,7 @@ the patch. This function applies a JSON patch in place and returns void.
 ## Parameters
 
 `json_patch` (in)
-:   JSON patch document
+: JSON patch document
 
 ## Exception safety
 
@@ -46,17 +46,19 @@ function throws an exception.
 
 ??? example
 
-    The following code shows how a JSON patch is applied to a value.
-     
-    ```cpp
-    --8<-- "examples/patch_inplace.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/patch_inplace.output"
-    ```
+````
+The following code shows how a JSON patch is applied to a value.
+
+```cpp
+--8<-- "examples/patch_inplace.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/patch_inplace.output"
+```
+````
 
 ## See also
 

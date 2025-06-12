@@ -2,16 +2,18 @@ import os
 import subprocess
 
 import pytest
-
 from nunchaku.utils import get_precision, is_turing
 
 EXAMPLES_DIR = "./examples"
 
-example_scripts = [f for f in os.listdir(EXAMPLES_DIR) if f.endswith(".py") and f.startswith("sana")]
+example_scripts = [
+    f for f in os.listdir(EXAMPLES_DIR) if f.endswith(".py") and f.startswith("sana")
+]
 
 
 @pytest.mark.skipif(
-    is_turing() or get_precision() == "fp4", reason="SANA does not support Turing GPUs or FP4 precision"
+    is_turing() or get_precision() == "fp4",
+    reason="SANA does not support Turing GPUs or FP4 precision",
 )
 @pytest.mark.parametrize("script_name", example_scripts)
 def test_example_script_runs(script_name):

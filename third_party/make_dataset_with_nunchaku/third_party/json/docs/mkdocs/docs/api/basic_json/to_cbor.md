@@ -14,22 +14,22 @@ format. CBOR is a binary serialization format which aims to be more compact than
 parse.
 
 1. Returns a byte vector containing the CBOR serialization.
-2. Writes the CBOR serialization to an output adapter.
+1. Writes the CBOR serialization to an output adapter.
 
 The exact mapping and its limitations is described on a [dedicated page](../../features/binary_formats/cbor.md).
 
 ## Parameters
 
 `j` (in)
-:   JSON value to serialize
+: JSON value to serialize
 
 `o` (in)
-:   output adapter to write serialization to
+: output adapter to write serialization to
 
 ## Return value
 
 1. CBOR serialization as byte vector
-2. (none)
+1. (none)
 
 ## Exception safety
 
@@ -43,17 +43,19 @@ Linear in the size of the JSON value `j`.
 
 ??? example
 
-    The example shows the serialization of a JSON value to a byte vector in CBOR format.
-     
-    ```cpp
-    --8<-- "examples/to_cbor.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/to_cbor.output"
-    ```
+````
+The example shows the serialization of a JSON value to a byte vector in CBOR format.
+
+```cpp
+--8<-- "examples/to_cbor.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/to_cbor.output"
+```
+````
 
 ## Version history
 

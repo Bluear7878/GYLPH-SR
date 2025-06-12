@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -33,9 +34,9 @@
   \brief CUTLASS layout visualization tool
 */
 
-#include <map>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <map>
 #include <memory>
 
 #include <cutlass/cutlass.h>
@@ -45,24 +46,24 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-std::map<std::string, std::unique_ptr<VisualizeLayoutBase> > layouts;
+std::map<std::string, std::unique_ptr<VisualizeLayoutBase>> layouts;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 void print_usage(std::ostream &out) {
 
   out << "03_visualize_layout <layout> [options]"
-    << "\n\n"
-    << "  Layouts:\n";
+      << "\n\n"
+      << "  Layouts:\n";
 
-  for (auto const & layout : layouts) {
+  for (auto const &layout : layouts) {
     out << "    " << layout.first << std::string(46 - layout.first.size(), ' ');
     layout.second->print_help(out);
     out << "\n";
   }
 
   out << "\n";
-    
+
   Options::print_usage(out);
 
   out << "\nExamples:\n\n"
@@ -108,7 +109,8 @@ int main(int argc, char const *arg[]) {
 
   RegisterLayouts(layouts);
 
-  if (argc == 1 || (std::string(arg[0]) == "-h" || std::string(arg[1]) == "--help")) {
+  if (argc == 1 ||
+      (std::string(arg[0]) == "-h" || std::string(arg[1]) == "--help")) {
     print_usage(std::cout);
     return 0;
   }
@@ -134,7 +136,7 @@ int main(int argc, char const *arg[]) {
     return -1;
   }
 
-  bool passed  = layout_it->second->visualize(options);
+  bool passed = layout_it->second->visualize(options);
   if (!passed) {
     return -1;
   }

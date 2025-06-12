@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -35,16 +36,16 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/platform/platform.h"
 
+#include "cutlass/matrix_shape.h"
 #include "cutlass/numeric_conversion.h"
 #include "cutlass/numeric_types.h"
-#include "cutlass/matrix_shape.h"
 
 #include "cutlass/arch/memory_sm75.h"
-#include "cutlass/arch/mma_sm75.h" 
+#include "cutlass/arch/mma_sm75.h"
 #include "cutlass/arch/mma_sm80.h"
 
 #include "cutlass/gemm/gemm.h"
@@ -63,7 +64,8 @@ namespace warp {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename FragmentActivations, typename FragmentVarMean, typename FragmentGammaBeta>
+template <typename FragmentActivations, typename FragmentVarMean,
+          typename FragmentGammaBeta>
 struct LayernormScaleBiasTransform {
 
   using T = typename FragmentActivations::Element;
@@ -83,29 +85,29 @@ struct LayernormScaleBiasTransform {
   using GammaBetaOperand = Array<T, MmaElements * MmaScaleBiasPair>;
 
   CUTLASS_DEVICE
-  void transform(MmaOperand &activations,
-                 VarMeanOperand const &var_mean,
+  void transform(MmaOperand &activations, VarMeanOperand const &var_mean,
                  GammaBetaOperand const &gamma_beta) {
 
 #if (defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 800))
     uint32_t *ptr_activations = reinterpret_cast<uint32_t *>(&activations);
-    uint32_t const *ptr_var_mean = reinterpret_cast<uint32_t const *>(&var_mean);
-    uint32_t const *ptr_gamma_beta = reinterpret_cast<uint32_t const *>(&gamma_beta);
+    uint32_t const *ptr_var_mean =
+        reinterpret_cast<uint32_t const *>(&var_mean);
+    uint32_t const *ptr_gamma_beta =
+        reinterpret_cast<uint32_t const *>(&gamma_beta);
 
     // Apply per channel scale+bias+relu if the data is not a special NaN
     // (0x7eff).  If it is a special NaN (0x7eff), hard code the output to 0.
 
     // We assumes the pair of FP16 are either both inbound or both out-of-bound.
     // It requires C to be an even number.
-    asm volatile(
-        "{\n\t"
-        " fma.rn.f16x2 %0, %1, %2, %3;\n"
-        " fma.rn.f16x2 %0, %4, %0, %5;\n"
-        "}\n"
-        : "=r"(ptr_activations[0])
-        : "r"(ptr_var_mean[0]), "r"(ptr_activations[0]),
-          "r"(ptr_var_mean[1]),
-          "r"(ptr_gamma_beta[0]), "r"(ptr_gamma_beta[1]));
+    asm volatile("{\n\t"
+                 " fma.rn.f16x2 %0, %1, %2, %3;\n"
+                 " fma.rn.f16x2 %0, %4, %0, %5;\n"
+                 "}\n"
+                 : "=r"(ptr_activations[0])
+                 : "r"(ptr_var_mean[0]), "r"(ptr_activations[0]),
+                   "r"(ptr_var_mean[1]), "r"(ptr_gamma_beta[0]),
+                   "r"(ptr_gamma_beta[1]));
 #else
     assert(0);
 #endif
@@ -133,7 +135,7 @@ struct LayernormScaleBiasTransform {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 } // namespace warp
-} // namespace gemm 
+} // namespace gemm
 } // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

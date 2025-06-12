@@ -1,7 +1,6 @@
-from typing import Any, Dict, Optional, Union
-
 import logging
 import os
+from typing import Any, Dict, Optional, Union
 
 import diffusers
 import torch
@@ -13,11 +12,12 @@ from packaging.version import Version
 from safetensors.torch import load_file, save_file
 from torch import nn
 
-from .utils import NunchakuModelLoaderMixin, pad_tensor
-from ..._C import QuantizedFluxModel, utils as cutils
+from ..._C import QuantizedFluxModel
+from ..._C import utils as cutils
 from ...lora.flux.nunchaku_converter import fuse_vectors, to_nunchaku
 from ...lora.flux.utils import is_nunchaku_format
 from ...utils import get_precision, load_state_dict_in_safetensors
+from .utils import NunchakuModelLoaderMixin, pad_tensor
 
 SVD_RANK = 32
 
@@ -25,7 +25,10 @@ SVD_RANK = 32
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
 # Configure logging
-logging.basicConfig(level=getattr(logging, log_level, logging.INFO), format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=getattr(logging, log_level, logging.INFO),
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 
@@ -83,13 +86,17 @@ class NunchakuFluxTransformerBlocks(nn.Module):
 
         if controlnet_block_samples is not None:
             if len(controlnet_block_samples) > 0:
-                controlnet_block_samples = torch.stack(controlnet_block_samples).to(self.device)
+                controlnet_block_samples = torch.stack(controlnet_block_samples).to(
+                    self.device
+                )
             else:
                 controlnet_block_samples = None
 
         if controlnet_single_block_samples is not None:
             if len(controlnet_single_block_samples) > 0:
-                controlnet_single_block_samples = torch.stack(controlnet_single_block_samples).to(self.device)
+                controlnet_single_block_samples = torch.stack(
+                    controlnet_single_block_samples
+                ).to(self.device)
             else:
                 controlnet_single_block_samples = None
 
@@ -98,7 +105,9 @@ class NunchakuFluxTransformerBlocks(nn.Module):
         assert image_rotary_emb.shape[1] == 1
         assert image_rotary_emb.shape[2] == 1 * (txt_tokens + img_tokens)
         # [1, tokens, head_dim / 2, 1, 2] (sincos)
-        image_rotary_emb = image_rotary_emb.reshape([1, txt_tokens + img_tokens, *image_rotary_emb.shape[3:]])
+        image_rotary_emb = image_rotary_emb.reshape(
+            [1, txt_tokens + img_tokens, *image_rotary_emb.shape[3:]]
+        )
         rotary_emb_txt = image_rotary_emb[:, :txt_tokens, ...]  # .to(self.dtype)
         rotary_emb_img = image_rotary_emb[:, txt_tokens:, ...]  # .to(self.dtype)
         rotary_emb_single = image_rotary_emb  # .to(self.dtype)
@@ -149,16 +158,22 @@ class NunchakuFluxTransformerBlocks(nn.Module):
         image_rotary_emb = image_rotary_emb.to(self.device)
 
         if controlnet_block_samples is not None:
-            controlnet_block_samples = torch.stack(controlnet_block_samples).to(self.device)
+            controlnet_block_samples = torch.stack(controlnet_block_samples).to(
+                self.device
+            )
         if controlnet_single_block_samples is not None:
-            controlnet_single_block_samples = torch.stack(controlnet_single_block_samples).to(self.device)
+            controlnet_single_block_samples = torch.stack(
+                controlnet_single_block_samples
+            ).to(self.device)
 
         assert image_rotary_emb.ndim == 6
         assert image_rotary_emb.shape[0] == 1
         assert image_rotary_emb.shape[1] == 1
         assert image_rotary_emb.shape[2] == 1 * (txt_tokens + img_tokens)
         # [1, tokens, head_dim / 2, 1, 2] (sincos)
-        image_rotary_emb = image_rotary_emb.reshape([1, txt_tokens + img_tokens, *image_rotary_emb.shape[3:]])
+        image_rotary_emb = image_rotary_emb.reshape(
+            [1, txt_tokens + img_tokens, *image_rotary_emb.shape[3:]]
+        )
         rotary_emb_txt = image_rotary_emb[:, :txt_tokens, ...]  # .to(self.dtype)
         rotary_emb_img = image_rotary_emb[:, txt_tokens:, ...]  # .to(self.dtype)
 
@@ -177,11 +192,15 @@ class NunchakuFluxTransformerBlocks(nn.Module):
         )
 
         hidden_states = hidden_states.to(original_dtype).to(original_device)
-        encoder_hidden_states = encoder_hidden_states.to(original_dtype).to(original_device)
+        encoder_hidden_states = encoder_hidden_states.to(original_dtype).to(
+            original_device
+        )
 
         return encoder_hidden_states, hidden_states
+
     def __del__(self):
         self.m.reset()
+
 
 ## copied from diffusers 0.30.3
 def rope(pos: torch.Tensor, dim: int, theta: int) -> torch.Tensor:
@@ -216,12 +235,19 @@ class EmbedND(nn.Module):
         if Version(diffusers.__version__) >= Version("0.31.0"):
             ids = ids[None, ...]
         n_axes = ids.shape[-1]
-        emb = torch.cat([rope(ids[..., i], self.axes_dim[i], self.theta) for i in range(n_axes)], dim=-3)
+        emb = torch.cat(
+            [rope(ids[..., i], self.axes_dim[i], self.theta) for i in range(n_axes)],
+            dim=-3,
+        )
         return emb.unsqueeze(1)
 
 
 def load_quantized_module(
-    path: str, device: str | torch.device = "cuda", use_fp4: bool = False, offload: bool = False, bf16: bool = True
+    path: str,
+    device: str | torch.device = "cuda",
+    use_fp4: bool = False,
+    offload: bool = False,
+    bf16: bool = True,
 ) -> QuantizedFluxModel:
     device = torch.device(device)
     assert device.type == "cuda"
@@ -274,13 +300,17 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
 
     @classmethod
     @utils.validate_hf_hub_args
-    def from_pretrained(cls, pretrained_model_name_or_path: str | os.PathLike, **kwargs):
+    def from_pretrained(
+        cls, pretrained_model_name_or_path: str | os.PathLike, **kwargs
+    ):
         device = kwargs.get("device", "cuda")
         if isinstance(device, str):
             device = torch.device(device)
         offload = kwargs.get("offload", False)
         torch_dtype = kwargs.get("torch_dtype", torch.bfloat16)
-        precision = get_precision(kwargs.get("precision", "auto"), device, pretrained_model_name_or_path)
+        precision = get_precision(
+            kwargs.get("precision", "auto"), device, pretrained_model_name_or_path
+        )
         transformer, unquantized_part_path, transformer_block_path = cls._build_model(
             pretrained_model_name_or_path, **kwargs
         )
@@ -313,12 +343,16 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
 
         return transformer
 
-    def inject_quantized_module(self, m: QuantizedFluxModel, device: str | torch.device = "cuda"):
+    def inject_quantized_module(
+        self, m: QuantizedFluxModel, device: str | torch.device = "cuda"
+    ):
         print("Injecting quantized module")
         self.pos_embed = EmbedND(dim=self.inner_dim, theta=10000, axes_dim=[16, 56, 56])
 
         ### Compatible with the original forward method
-        self.transformer_blocks = nn.ModuleList([NunchakuFluxTransformerBlocks(m, device)])
+        self.transformer_blocks = nn.ModuleList(
+            [NunchakuFluxTransformerBlocks(m, device)]
+        )
         self.single_transformer_blocks = nn.ModuleList([])
 
         return self
@@ -334,7 +368,11 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
         module = self.get_submodule(module_name)
         assert isinstance(module, nn.Linear)
         weight_shape = module.weight.shape
-        logger.info("Expand the shape of module {} from {} to {}".format(module_name, tuple(weight_shape), new_shape))
+        logger.info(
+            "Expand the shape of module {} from {} to {}".format(
+                module_name, tuple(weight_shape), new_shape
+            )
+        )
         assert new_shape[0] >= weight_shape[0] and new_shape[1] >= weight_shape[1]
         new_module = nn.Linear(
             new_shape[1],
@@ -344,12 +382,18 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
             dtype=module.weight.dtype,
         )
         new_module.weight.data.zero_()
-        new_module.weight.data[: weight_shape[0], : weight_shape[1]] = module.weight.data
-        self._unquantized_part_sd[f"{module_name}.weight"] = new_module.weight.data.clone()
+        new_module.weight.data[: weight_shape[0], : weight_shape[1]] = (
+            module.weight.data
+        )
+        self._unquantized_part_sd[f"{module_name}.weight"] = (
+            new_module.weight.data.clone()
+        )
         if new_module.bias is not None:
             new_module.bias.data.zero_()
             new_module.bias.data[: weight_shape[0]] = module.bias.data
-            self._unquantized_part_sd[f"{module_name}.bias"] = new_module.bias.data.clone()
+            self._unquantized_part_sd[f"{module_name}.bias"] = (
+                new_module.bias.data.clone()
+            )
         parent_name = ".".join(module_name.split(".")[:-1])
         parent_module = self.get_submodule(parent_name)
         parent_module.add_module(module_name.split(".")[-1], new_module)
@@ -369,7 +413,9 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
                 lora_a = v
                 lora_b = self._unquantized_part_loras[k.replace(".lora_A.", ".lora_B.")]
                 diff_shape = (lora_b.shape[0], lora_a.shape[1])
-                weight_shape = self._unquantized_part_sd[k.replace(".lora_A.", ".")].shape
+                weight_shape = self._unquantized_part_sd[
+                    k.replace(".lora_A.", ".")
+                ].shape
                 if diff_shape[0] > weight_shape[0] or diff_shape[1] > weight_shape[1]:
                     module_name = ".".join(k.split(".")[:-2])
                     self._expand_module(module_name, diff_shape)
@@ -393,18 +439,37 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
                 diff = strength * self._unquantized_part_loras[k]
                 if diff.shape[0] < v.shape[0]:
                     diff = torch.cat(
-                        [diff, torch.zeros(v.shape[0] - diff.shape[0], device=device, dtype=v.dtype)], dim=0
+                        [
+                            diff,
+                            torch.zeros(
+                                v.shape[0] - diff.shape[0], device=device, dtype=v.dtype
+                            ),
+                        ],
+                        dim=0,
                     )
                 new_state_dict[k] = v + diff
-            elif v.ndim == 2 and k.replace(".weight", ".lora_B.weight") in self._unquantized_part_loras:
-                lora_a = self._unquantized_part_loras[k.replace(".weight", ".lora_A.weight")]
-                lora_b = self._unquantized_part_loras[k.replace(".weight", ".lora_B.weight")]
+            elif (
+                v.ndim == 2
+                and k.replace(".weight", ".lora_B.weight")
+                in self._unquantized_part_loras
+            ):
+                lora_a = self._unquantized_part_loras[
+                    k.replace(".weight", ".lora_A.weight")
+                ]
+                lora_b = self._unquantized_part_loras[
+                    k.replace(".weight", ".lora_B.weight")
+                ]
 
                 if lora_a.shape[1] < v.shape[1]:
                     lora_a = torch.cat(
                         [
                             lora_a,
-                            torch.zeros(lora_a.shape[0], v.shape[1] - lora_a.shape[1], device=device, dtype=v.dtype),
+                            torch.zeros(
+                                lora_a.shape[0],
+                                v.shape[1] - lora_a.shape[1],
+                                device=device,
+                                dtype=v.dtype,
+                            ),
                         ],
                         dim=1,
                     )
@@ -412,7 +477,12 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
                     lora_b = torch.cat(
                         [
                             lora_b,
-                            torch.zeros(v.shape[0] - lora_b.shape[0], lora_b.shape[1], device=device, dtype=v.dtype),
+                            torch.zeros(
+                                v.shape[0] - lora_b.shape[0],
+                                lora_b.shape[1],
+                                device=device,
+                                dtype=v.dtype,
+                            ),
                         ],
                         dim=0,
                     )
@@ -450,7 +520,9 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
                 quantized_part_vectors[k] = state_dict.pop(k)
         if len(self._quantized_part_vectors) > 0 or len(quantized_part_vectors) > 0:
             self._quantized_part_vectors = quantized_part_vectors
-            updated_vectors = fuse_vectors(quantized_part_vectors, self._quantized_part_sd, 1)
+            updated_vectors = fuse_vectors(
+                quantized_part_vectors, self._quantized_part_sd, 1
+            )
             state_dict.update(updated_vectors)
 
         # Get the vectors from the quantized part
@@ -469,7 +541,9 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
         if len(self._unquantized_part_loras) > 0:
             self._update_unquantized_part_lora_params(strength)
         if len(self._quantized_part_vectors) > 0:
-            vector_dict = fuse_vectors(self._quantized_part_vectors, self._quantized_part_sd, strength)
+            vector_dict = fuse_vectors(
+                self._quantized_part_vectors, self._quantized_part_sd, strength
+            )
             block.m.loadDict(vector_dict, True)
 
     def reset_x_embedder(self):
@@ -484,12 +558,22 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
                 device=old_module.weight.device,
                 dtype=old_module.weight.dtype,
             )
-            new_module.weight.data.copy_(old_module.weight.data[: new_module.out_features, : new_module.in_features])
-            self._unquantized_part_sd["x_embedder.weight"] = new_module.weight.data.clone()
+            new_module.weight.data.copy_(
+                old_module.weight.data[
+                    : new_module.out_features, : new_module.in_features
+                ]
+            )
+            self._unquantized_part_sd["x_embedder.weight"] = (
+                new_module.weight.data.clone()
+            )
             if new_module.bias is not None:
                 new_module.bias.data.zero_()
-                new_module.bias.data.copy_(old_module.bias.data[: new_module.out_features])
-                self._unquantized_part_sd["x_embedder.bias"] = new_module.bias.data.clone()
+                new_module.bias.data.copy_(
+                    old_module.bias.data[: new_module.out_features]
+                )
+                self._unquantized_part_sd["x_embedder.bias"] = (
+                    new_module.bias.data.clone()
+                )
             self.x_embedder = new_module
             setattr(self.config, "in_channels", self._original_in_channels)
 
@@ -502,7 +586,9 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
         quantized_part_vectors = {}
         if len(self._quantized_part_vectors) > 0 or len(quantized_part_vectors) > 0:
             self._quantized_part_vectors = quantized_part_vectors
-            updated_vectors = fuse_vectors(quantized_part_vectors, self._quantized_part_sd, 1)
+            updated_vectors = fuse_vectors(
+                quantized_part_vectors, self._quantized_part_sd, 1
+            )
             state_dict.update(updated_vectors)
         self.transformer_blocks[0].m.loadDict(state_dict, True)
         self.reset_x_embedder()
@@ -579,8 +665,13 @@ class NunchakuFluxTransformer2dModel(FluxTransformer2DModel, NunchakuModelLoader
         ids = torch.cat((txt_ids, img_ids), dim=0)
         image_rotary_emb = self.pos_embed(ids)
 
-        if joint_attention_kwargs is not None and "ip_adapter_image_embeds" in joint_attention_kwargs:
-            ip_adapter_image_embeds = joint_attention_kwargs.pop("ip_adapter_image_embeds")
+        if (
+            joint_attention_kwargs is not None
+            and "ip_adapter_image_embeds" in joint_attention_kwargs
+        ):
+            ip_adapter_image_embeds = joint_attention_kwargs.pop(
+                "ip_adapter_image_embeds"
+            )
             ip_hidden_states = self.encoder_hid_proj(ip_adapter_image_embeds)
             joint_attention_kwargs.update({"ip_hidden_states": ip_hidden_states})
 

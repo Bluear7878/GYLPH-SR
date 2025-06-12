@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,12 +35,12 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/tensor_ref.h"
-#include "cutlass/layout/matrix.h"
 #include "cutlass/arch/mma.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/thread/mma.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/tensor_ref.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,19 +52,18 @@ namespace thread {
 
 /// MMA operation
 template <
-  /// Size of the matrix product (concept: GemmShape)
-  typename Shape_,
-  /// Number of threads participating
-  int kThreads_,
-  /// Data type of A elements
-  typename ElementA,
-  /// Data type of B elements
-  typename ElementB,
-  /// Element type of C matrix
-  typename ElementC,
-  /// Inner product operator
-  typename Operator
->
+    /// Size of the matrix product (concept: GemmShape)
+    typename Shape_,
+    /// Number of threads participating
+    int kThreads_,
+    /// Data type of A elements
+    typename ElementA,
+    /// Data type of B elements
+    typename ElementB,
+    /// Element type of C matrix
+    typename ElementC,
+    /// Inner product operator
+    typename Operator>
 struct ElementwiseInnerProduct;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,8 @@ template <
     typename ElementB_,
     /// Element type of C matrix
     typename ElementC_>
-struct ElementwiseInnerProduct<Shape_, 1, ElementA_, ElementB_, ElementC_, arch::OpMultiplyAdd> {
+struct ElementwiseInnerProduct<Shape_, 1, ElementA_, ElementB_, ElementC_,
+                               arch::OpMultiplyAdd> {
   using Shape = Shape_;
   using Operator = arch::OpMultiplyAdd;
   using ElementC = ElementC_;
@@ -97,31 +98,22 @@ struct ElementwiseInnerProduct<Shape_, 1, ElementA_, ElementB_, ElementC_, arch:
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /// Specialization of half_t
 template <>
-struct ElementwiseInnerProduct<
-  gemm::GemmShape<2, 2, 1>,
-  1,
-  half_t,
-  half_t,
-  half_t,
-  arch::OpMultiplyAdd> {
+struct ElementwiseInnerProduct<gemm::GemmShape<2, 2, 1>, 1, half_t, half_t,
+                               half_t, arch::OpMultiplyAdd> {
 
   using Shape = gemm::GemmShape<2, 2, 1>;
-  using Operator =  arch::OpMultiplyAdd;
+  using Operator = arch::OpMultiplyAdd;
   using ElementC = half_t;
 
   CUTLASS_HOST_DEVICE
-  void operator()(
-    Array<half_t, 2> &d,
-    Array<half_t, 2> const &a,
-    Array<half_t, 2> const &b,
-    Array<half_t, 2> const &c
-  ) {
+  void operator()(Array<half_t, 2> &d, Array<half_t, 2> const &a,
+                  Array<half_t, 2> const &b, Array<half_t, 2> const &c) {
 
 #if (defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 600))
 
-    __half2 const & A = reinterpret_cast<__half2 const &>(a);
-    __half2 const & B = reinterpret_cast<__half2 const &>(b);
-    __half2 const & C = reinterpret_cast<__half2 const &>(c);
+    __half2 const &A = reinterpret_cast<__half2 const &>(a);
+    __half2 const &B = reinterpret_cast<__half2 const &>(b);
+    __half2 const &C = reinterpret_cast<__half2 const &>(c);
 
     __half2 tmp_D = __hfma2(A, B, C);
 
@@ -140,36 +132,34 @@ struct ElementwiseInnerProduct<
 
 /// Structure to compute the matrix product
 template <
-  /// Size of the Gemm problem - concept: gemm::GemmShape<>
-  typename Shape,
-  /// Data type of A elements
-  typename ElementA,
-  /// Data type of B elements
-  typename ElementB,
-  /// Element type of C matrix
-  typename ElementC,
-  /// Concept: arch::OpMultiplyAdd or arch::Mma<>
-  typename Operator = arch::OpMultiplyAdd,
-  /// Used for partial specialization
-  typename Enable = bool
->
+    /// Size of the Gemm problem - concept: gemm::GemmShape<>
+    typename Shape,
+    /// Data type of A elements
+    typename ElementA,
+    /// Data type of B elements
+    typename ElementB,
+    /// Element type of C matrix
+    typename ElementC,
+    /// Concept: arch::OpMultiplyAdd or arch::Mma<>
+    typename Operator = arch::OpMultiplyAdd,
+    /// Used for partial specialization
+    typename Enable = bool>
 struct DepthwiseDirectConvElementwiseInnerProduct;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Gemplate that handles all packed matrix layouts
 template <
-  /// Size of the Gemm problem - concept: gemm::GemmShape<>
-  typename Shape_,
-  /// Data type of A elements
-  typename ElementA_,
-  /// Data type of B elements
-  typename ElementB_,
-  /// Element type of C matrix
-  typename ElementC_,
-  /// Operator used to compute GEMM
-  typename Operator_
->
+    /// Size of the Gemm problem - concept: gemm::GemmShape<>
+    typename Shape_,
+    /// Data type of A elements
+    typename ElementA_,
+    /// Data type of B elements
+    typename ElementB_,
+    /// Element type of C matrix
+    typename ElementC_,
+    /// Operator used to compute GEMM
+    typename Operator_>
 struct DepthwiseDirectConvElementwiseInnerProductGeneric {
 
   /// Size of the Gemm problem - concept: gemm::GemmShape<>
@@ -198,13 +188,8 @@ struct DepthwiseDirectConvElementwiseInnerProductGeneric {
 
   /// Instruction
   using MmaOp = cutlass::conv::thread::ElementwiseInnerProduct<
-    gemm::GemmShape<Shape::kN, Shape::kN, 1>,
-    1,
-    ElementA,
-    ElementB,
-    ElementC,
-    Operator>;
-
+      gemm::GemmShape<Shape::kN, Shape::kN, 1>, 1, ElementA, ElementB, ElementC,
+      Operator>;
 
   //
   // Methods
@@ -212,12 +197,10 @@ struct DepthwiseDirectConvElementwiseInnerProductGeneric {
 
   /// Computes a matrix product D = A * B + C
   CUTLASS_HOST_DEVICE
-  void operator()(
-    FragmentC & D,
-    FragmentA const & A,
-    FragmentB const & B,
-    FragmentC const & C) {
-    Array<ElementC, Shape::kN> *ptr_D = reinterpret_cast<Array<ElementC, Shape::kN> *>(&D);
+  void operator()(FragmentC &D, FragmentA const &A, FragmentB const &B,
+                  FragmentC const &C) {
+    Array<ElementC, Shape::kN> *ptr_D =
+        reinterpret_cast<Array<ElementC, Shape::kN> *>(&D);
     Array<ElementA, Shape::kN> const *ptr_A =
         reinterpret_cast<Array<ElementA, Shape::kN> const *>(&A);
     Array<ElementB, Shape::kN> const *ptr_B =
@@ -229,21 +212,22 @@ struct DepthwiseDirectConvElementwiseInnerProductGeneric {
     D = C;
 
     // Compute matrix product
+    CUTLASS_PRAGMA_UNROLL
+    for (int n = 0; n < Shape::kN / MmaOp::Shape::kN; ++n) {
       CUTLASS_PRAGMA_UNROLL
-      for (int n = 0; n < Shape::kN / MmaOp::Shape::kN; ++n) {
-        CUTLASS_PRAGMA_UNROLL
-        for (int m = 0; m < Shape::kM; ++m) {
+      for (int m = 0; m < Shape::kM; ++m) {
 
-          Array<ElementC, MmaOp::Shape::kN> tmpD = ptr_D[m * Shape::kN / MmaOp::Shape::kN + n];
-          Array<ElementA, MmaOp::Shape::kN> tmpA = ptr_A[m * Shape::kN / MmaOp::Shape::kN + n];
-          Array<ElementB, MmaOp::Shape::kN> tmpB = ptr_B[n];
+        Array<ElementC, MmaOp::Shape::kN> tmpD =
+            ptr_D[m * Shape::kN / MmaOp::Shape::kN + n];
+        Array<ElementA, MmaOp::Shape::kN> tmpA =
+            ptr_A[m * Shape::kN / MmaOp::Shape::kN + n];
+        Array<ElementB, MmaOp::Shape::kN> tmpB = ptr_B[n];
 
-          mma_op(tmpD, tmpA, tmpB, tmpD);
+        mma_op(tmpD, tmpA, tmpB, tmpD);
 
-          ptr_D[m * Shape::kN / MmaOp::Shape::kN + n] = tmpD;
-
-        }
+        ptr_D[m * Shape::kN / MmaOp::Shape::kN + n] = tmpD;
       }
+    }
   }
 };
 
@@ -251,22 +235,16 @@ struct DepthwiseDirectConvElementwiseInnerProductGeneric {
 
 /// Structure to compute the matrix product
 template <
-  /// Size of the Gemm problem - concept: gemm::GemmShape<>
-  typename Shape_,
+    /// Size of the Gemm problem - concept: gemm::GemmShape<>
+    typename Shape_,
     /// Data type of A elements
-  typename ElementA_,
-  /// Data type of B elements
-  typename ElementB_,
-  /// Element type of C matrix
-  typename ElementC_
->
+    typename ElementA_,
+    /// Data type of B elements
+    typename ElementB_,
+    /// Element type of C matrix
+    typename ElementC_>
 struct DepthwiseDirectConvElementwiseInnerProduct<
-  Shape_,
-  ElementA_,
-  ElementB_,
-  ElementC_,
-  arch::OpMultiplyAdd
-  > {
+    Shape_, ElementA_, ElementB_, ElementC_, arch::OpMultiplyAdd> {
   /// Size of the Gemm problem - concept: gemm::GemmShape<>
   using Shape = Shape_;
 
@@ -283,23 +261,20 @@ struct DepthwiseDirectConvElementwiseInnerProduct<
   using Operator = arch::OpMultiplyAdd;
 
   /// A operand storage
-  using FragmentA =
-      Array<ElementA, Shape::kMN>;  // output_tile_size per thread * groups_per_thread
+  using FragmentA = Array<ElementA, Shape::kMN>; // output_tile_size per thread
+                                                 // * groups_per_thread
 
   /// B operand storage
-  using FragmentB = Array<ElementB, Shape::kN>;  // 1 * groups_per_thread
+  using FragmentB = Array<ElementB, Shape::kN>; // 1 * groups_per_thread
 
   /// C operand storage
-  using FragmentC =
-      Array<ElementC, Shape::kMN>;  // output_tile_size per thread * groups_per_thread
+  using FragmentC = Array<ElementC, Shape::kMN>; // output_tile_size per thread
+                                                 // * groups_per_thread
 
   static bool const use_optimized = 0;
 
-  using ArchMmaOperator =  DepthwiseDirectConvElementwiseInnerProductGeneric<Shape,
-                                                        ElementA,
-                                                        ElementB,
-                                                        ElementC,
-                                                        Operator>;
+  using ArchMmaOperator = DepthwiseDirectConvElementwiseInnerProductGeneric<
+      Shape, ElementA, ElementB, ElementC, Operator>;
 
   //
   // Methods
@@ -307,16 +282,12 @@ struct DepthwiseDirectConvElementwiseInnerProduct<
 
   /// Computes a matrix product D = A * B + C
   CUTLASS_HOST_DEVICE
-  void operator()(
-    FragmentC & D,
-    FragmentA const & A,
-    FragmentB const & B,
-    FragmentC const & C) {
+  void operator()(FragmentC &D, FragmentA const &A, FragmentB const &B,
+                  FragmentC const &C) {
 
     ArchMmaOperator mma;
 
     mma(D, A, B, C);
-
   }
 };
 

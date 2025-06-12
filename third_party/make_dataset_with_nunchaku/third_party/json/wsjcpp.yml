@@ -8,15 +8,12 @@ issues: "https://github.com/nlohmann/json/issues"
 keywords:
   - "c++"
   - "json"
-
 repositories:
   - type: main
     url: "https://github.com/nlohmann/json"
-
 authors:
   - name: "Niels Lohmann"
     email: "mail@nlohmann.me"
-
 distribution:
   - source-file: "single_include/nlohmann/json.hpp"
     target-file: "json.hpp"

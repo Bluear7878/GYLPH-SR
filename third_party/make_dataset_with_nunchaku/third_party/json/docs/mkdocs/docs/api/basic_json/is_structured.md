@@ -5,7 +5,7 @@ constexpr bool is_structured() const noexcept;
 ```
 
 This function returns `#!cpp true` if and only if the JSON type is structured (array or object).
-    
+
 ## Return value
 
 `#!cpp true` if type is structured (array or object), `#!cpp false` otherwise.
@@ -40,17 +40,19 @@ Note that though strings are containers in C++, they are treated as primitive va
 
 ??? example
 
-    The following code exemplifies `is_structured()` for all JSON types.
-    
-    ```cpp
-    --8<-- "examples/is_structured.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/is_structured.output"
-    ```
+````
+The following code exemplifies `is_structured()` for all JSON types.
+
+```cpp
+--8<-- "examples/is_structured.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/is_structured.output"
+```
+````
 
 ## See also
 

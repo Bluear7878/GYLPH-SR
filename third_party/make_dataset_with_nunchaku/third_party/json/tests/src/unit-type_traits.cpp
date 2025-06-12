@@ -45,11 +45,11 @@ TEST_CASE("type traits")
             CHECK(is_c_string<char[]>::value);
             CHECK(is_c_string<const char[]>::value);
 
-            CHECK_FALSE(is_c_string<char(&)[]>::value);
-            CHECK_FALSE(is_c_string<const char(&)[]>::value);
+            CHECK_FALSE(is_c_string<char (&)[]>::value);
+            CHECK_FALSE(is_c_string<const char (&)[]>::value);
 
-            CHECK(is_c_string_uncvref<char(&)[]>::value);
-            CHECK(is_c_string_uncvref<const char(&)[]>::value);
+            CHECK(is_c_string_uncvref<char (&)[]>::value);
+            CHECK(is_c_string_uncvref<const char (&)[]>::value);
             // NOLINTEND(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
         }
     }

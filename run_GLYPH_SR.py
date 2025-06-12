@@ -4,36 +4,41 @@ Entry point for GLYPH-SR processing pipeline.
 Parses command-line arguments, loads models, and executes super-resolution
 and OCR-guided text restoration on input images.
 """
-import os
-import json
-import copy
 import argparse
-import yaml
-import torch
+import copy
+import json
+import os
 from dataclasses import dataclass, fields
+
+import torch
+import yaml
 from omegaconf import OmegaConf
+from peft import PeftModel
 from PIL import Image
 from transformers import BitsAndBytesConfig
-from sgm.util import instantiate_from_config
+
 from GLYPHSR.ControlNet import load_TS_ControlNet
-from GLYPHSR.OCR import get_img_describe, generate_ocr_text, get_text_position
-from GLYPHSR.util import degrade_image, PIL2Tensor, Tensor2PIL
-from llava.model.builder import load_pretrained_model
-from llava.constants import IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_TOKEN
+from GLYPHSR.OCR import generate_ocr_text, get_img_describe, get_text_position
+from GLYPHSR.util import PIL2Tensor, Tensor2PIL, degrade_image
+from llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
 from llava.conversation import conv_templates
 from llava.mm_utils import process_images
-from peft import PeftModel
+from llava.model.builder import load_pretrained_model
+from sgm.util import instantiate_from_config
 
 # Default device assignments for different model components
 SR_MODEL_CUDA = "cuda:0"
 OCR_CUDA = "cuda:1"
 VLM_CUDA = "cuda:2"
 
+
 @dataclass
 class Config:
     # Paths and I/O
-    img_path: str = "/home/delta1/Texture/GYLPH-SR/data_sample/83c09301d9bb9764_warm_color_tones.png"
-    save_dir: str = "./results"                # Output directory
+    img_path: str = (
+        "/home/delta1/Texture/GYLPH-SR/data_sample/83c09301d9bb9764_warm_color_tones.png"
+    )
+    save_dir: str = "./results"  # Output directory
     meta_filename: str = "metadata.jsonl"
     hq_meta_filename: str = "metadata_HQ.jsonl"
     neg_meta_filename: str = "metadata_with_neg.jsonl"
@@ -53,8 +58,12 @@ class Config:
     s_stage2: float = 1.0
     num_samples: int = 1
     down_factor: int = 1
-    GYLPH_pretrained_ckpt: str = "/home/delta1/Texture/TEXIR/checkpoints/best/smg/cp2.ckpt"
-    VLM_pretrained_ckpt: str = "/home/delta1/TEXTURE-Diffusion-Based-Super-Resolution-Model-for-Enhanced-TEXT-Clarity/CKPT_PTH/Llava-next"
+    GYLPH_pretrained_ckpt: str = (
+        "/home/delta1/Texture/TEXIR/checkpoints/best/smg/cp2.ckpt"
+    )
+    VLM_pretrained_ckpt: str = (
+        "/home/delta1/TEXTURE-Diffusion-Based-Super-Resolution-Model-for-Enhanced-TEXT-Clarity/CKPT_PTH/Llava-next"
+    )
 
     # Prompts
     a_prompt: str = (
@@ -120,15 +129,18 @@ def parse_args():
         default = field.default
         if isinstance(default, bool):
             # Boolean flags
-            action = 'store_true' if not default else 'store_false'
-            parser.add_argument(name, action=action,
-                                help=f"(flag) default={default}")
+            action = "store_true" if not default else "store_false"
+            parser.add_argument(name, action=action, help=f"(flag) default={default}")
         else:
             arg_type = type(default) if default is not None else str
             required = default is None
-            parser.add_argument(name, type=arg_type, default=default,
-                                required=required,
-                                help=f"type={arg_type.__name__}, default={default}")
+            parser.add_argument(
+                name,
+                type=arg_type,
+                default=default,
+                required=required,
+                help=f"type={arg_type.__name__}, default={default}",
+            )
     return parser.parse_args()
 
 
@@ -142,13 +154,12 @@ def main():
     os.makedirs(cfg.save_dir, exist_ok=True)
     meta_path = os.path.join(cfg.save_dir, cfg.meta_filename)
     if not os.path.exists(meta_path):
-        open(meta_path, 'w', encoding='utf-8').close()
-
+        open(meta_path, "w", encoding="utf-8").close()
 
     # Load prompt configuration
     if not os.path.isfile(cfg.prompt_yaml_file):
         raise FileNotFoundError(f"Prompt YAML file not found: {cfg.prompt_yaml_file}")
-    with open(cfg.prompt_yaml_file, 'r', encoding='utf-8') as f:
+    with open(cfg.prompt_yaml_file, "r", encoding="utf-8") as f:
         prompts = yaml.safe_load(f)
 
     # Prepare prompts
@@ -160,35 +171,37 @@ def main():
     # Load TS-ControlNet for GLYPH-SR
     cfg_path = cfg.yaml_file
     GYLPH_pretrained_ckpt = cfg.GYLPH_pretrained_ckpt
-    
+
     GLYPH_SR_model, _ = load_TS_ControlNet(
         cfg_path=cfg_path,
         args=cfg,
         device=SR_MODEL_CUDA,
         sign=cfg.sign,
-        pretrained=GYLPH_pretrained_ckpt
+        pretrained=GYLPH_pretrained_ckpt,
     )
     GLYPH_SR_model.eval()
 
     # Load language-vision model
     MODEL_PATH = "lmms-lab/llama3-llava-next-8b"
     conv_template = "llava_llama_3"
-    
+
     tokenizer, VLM_model, image_processor, max_length = load_pretrained_model(
-    MODEL_PATH, None, conv_template, device_map="cpu", attn_implementation=None
+        MODEL_PATH, None, conv_template, device_map="cpu", attn_implementation=None
     )
     # Load OCR model
-    OCR_model = PeftModel.from_pretrained(
-        copy.deepcopy(VLM_model),
-        cfg.VLM_pretrained_ckpt,
-        device_map=OCR_CUDA
-    ).eval().to(OCR_CUDA)
+    OCR_model = (
+        PeftModel.from_pretrained(
+            copy.deepcopy(VLM_model), cfg.VLM_pretrained_ckpt, device_map=OCR_CUDA
+        )
+        .eval()
+        .to(OCR_CUDA)
+    )
     VLM_model.eval().to(VLM_CUDA)
 
     image = Image.open(cfg.img_path)
 
     # Apply degradation as needed
-    if cfg.down_factor>1:
+    if cfg.down_factor > 1:
         degraded = degrade_image(image, down_factor=cfg.down_factor)
     else:
         degraded = image
@@ -206,7 +219,7 @@ def main():
         prompt=img_prompt,
         conv_templates=conv_templates,
         image_token_index=IMAGE_TOKEN_INDEX,
-        device=VLM_CUDA
+        device=VLM_CUDA,
     )
 
     # OCR text prediction
@@ -219,7 +232,7 @@ def main():
         conv_templates,
         conv_template,
         IMAGE_TOKEN_INDEX,
-        OCR_CUDA
+        OCR_CUDA,
     )
 
     # Get text locations
@@ -234,7 +247,7 @@ def main():
         default_image_token=DEFAULT_IMAGE_TOKEN,
         max_new_tokens=128,
         image_token_index=IMAGE_TOKEN_INDEX,
-        device=OCR_CUDA
+        device=OCR_CUDA,
     )
 
     # Prepare low-quality tensor for SR
@@ -244,8 +257,8 @@ def main():
     # Combine prompts
     a_text = cfg.a_text_prompt + cfg.a_prompt
     n_text = cfg.n_text_prompt + cfg.n_prompt
-    
-    texture_prompt_with_loc = [text_loc + ' ' + caption[0]]
+
+    texture_prompt_with_loc = [text_loc + " " + caption[0]]
 
     # Sampling
     sample_fn = getattr(GLYPH_SR_model, "ping_pong_sampling")
@@ -253,8 +266,8 @@ def main():
         LQ_img,
         caption,
         texture_prompt_with_loc,
-        image_steps=cfg.edm_steps//2,
-        text_steps=cfg.text_steps//2,
+        image_steps=cfg.edm_steps // 2,
+        text_steps=cfg.text_steps // 2,
         restoration_scale=cfg.s_stage1,
         s_churn=cfg.s_churn,
         s_noise=cfg.s_noise,
@@ -275,9 +288,9 @@ def main():
 
     # Convert tensor back to PIL and save
     output_img = Tensor2PIL(samples[0], h0, w0)
-    
+
     try:
-        with open(meta_path, 'r', encoding='utf-8') as mf:
+        with open(meta_path, "r", encoding="utf-8") as mf:
             existing = sum(1 for _ in mf)
     except FileNotFoundError:
         existing = 0
@@ -293,11 +306,10 @@ def main():
         "filename": out_filename,
         "caption": caption,
         "pred_text": pred_text,
-        "text_loc": text_loc
+        "text_loc": text_loc,
     }
-    with open(meta_path, 'a', encoding='utf-8') as mf:
-        mf.write(json.dumps(metadata, ensure_ascii=False) + '\n')
-
+    with open(meta_path, "a", encoding="utf-8") as mf:
+        mf.write(json.dumps(metadata, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

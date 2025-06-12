@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -36,10 +37,10 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
 #include "cutlass/matrix_coord.h"
 #include "cutlass/matrix_shape.h"
 #include "cutlass/tensor_ref.h"
@@ -67,9 +68,9 @@ class RegularScaleBiasVectorAccessIterator;
 ///            WriteableContiguousTileIteratorConcept
 ///
 template <typename Shape_, typename Element_>
-class RegularScaleBiasVectorAccessIterator<Shape_, Element_, layout::PitchLinear> {
- public:
-
+class RegularScaleBiasVectorAccessIterator<Shape_, Element_,
+                                           layout::PitchLinear> {
+public:
   using Shape = Shape_;
   using Element = Element_;
   using Layout = layout::PitchLinear;
@@ -85,24 +86,24 @@ class RegularScaleBiasVectorAccessIterator<Shape_, Element_, layout::PitchLinear
   static int const kThreads = Shape::kContiguous / kElementsPerAccess;
   using AccessType = Array<Element, kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
 
-  /// Internal pointer 
+  /// Internal pointer
   AccessType *pointer_;
 
   /// Internal byte offset
   Index byte_offset_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   RegularScaleBiasVectorAccessIterator(
-      TensorRef scale_bias_ref,  ///< Pointer to the start of the scale and bias
-                                 ///< vector
-      int thread_id              ///< ID of each participating thread
+      TensorRef scale_bias_ref, ///< Pointer to the start of the scale and bias
+                                ///< vector
+      int thread_id             ///< ID of each participating thread
       )
       : byte_offset_(0) {
     // Per-thread offset in logical coordinates of tensor
@@ -129,8 +130,7 @@ class RegularScaleBiasVectorAccessIterator<Shape_, Element_, layout::PitchLinear
   CUTLASS_DEVICE
   AccessType *get() const {
 
-    char *access_byte_ptr =
-        reinterpret_cast<char *>(pointer_);
+    char *access_byte_ptr = reinterpret_cast<char *>(pointer_);
 
     return reinterpret_cast<AccessType *>(access_byte_ptr + byte_offset_);
   }
@@ -167,11 +167,8 @@ class RegularScaleBiasVectorAccessIterator<Shape_, Element_, layout::PitchLinear
 ///            WriteableContiguousTileIteratorConcept
 ///
 template <typename Shape_, typename Element_>
-class RegularScaleBiasVectorAccessIterator<
-    Shape_, Element_,
-    layout::RowMajor> {
- public:
-
+class RegularScaleBiasVectorAccessIterator<Shape_, Element_, layout::RowMajor> {
+public:
   using Shape = Shape_;
   using Element = Element_;
   using Layout = layout::RowMajor;
@@ -189,18 +186,17 @@ class RegularScaleBiasVectorAccessIterator<
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
-
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   RegularScaleBiasVectorAccessIterator(
-      TensorRef scale_bias_ref,  ///< Pointer to the start of the scale and bias
-                                 ///< vector
-      int thread_id              ///< ID of each participating thread
+      TensorRef scale_bias_ref, ///< Pointer to the start of the scale and bias
+                                ///< vector
+      int thread_id             ///< ID of each participating thread
       )
       : iterator_({scale_bias_ref.data(), scale_bias_ref.stride()}, thread_id) {
   }
@@ -246,8 +242,8 @@ class RegularScaleBiasVectorAccessIterator<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform 
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,26 +18,28 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
     \brief Defines a structure containing strides and a pointer to tensor data.
 
-    TensorView is derived from TensorRef and contributes bounds to the tensor's index space. Thus,
-    it is a complete mathematical object and may be used in tensor algorithms. It is decoupled from
-    data storage and is therefore lightweight and may be embedded in larger tensor objects or
-    memory structures.
+    TensorView is derived from TensorRef and contributes bounds to the tensor's
+   index space. Thus, it is a complete mathematical object and may be used in
+   tensor algorithms. It is decoupled from data storage and is therefore
+   lightweight and may be embedded in larger tensor objects or memory
+   structures.
 
-    See cutlass/tensor_ref.h for more details about the mapping of the logical tensor index space to
-    linear memory.
+    See cutlass/tensor_ref.h for more details about the mapping of the logical
+   tensor index space to linear memory.
 */
 
 #pragma once
@@ -54,14 +56,13 @@ namespace cutlass {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <
-  /// Data type of element stored within tensor
-  typename Element_,
-  /// Maps a Coord<Rank_> in the logical tensor index space to the internal n-D array
-  typename Layout_
->
+    /// Data type of element stored within tensor
+    typename Element_,
+    /// Maps a Coord<Rank_> in the logical tensor index space to the internal
+    /// n-D array
+    typename Layout_>
 class TensorView : public TensorRef<Element_, Layout_> {
- public:
-
+public:
   /// Base tensor reference
   using Base = cutlass::TensorRef<Element_, Layout_>;
 
@@ -96,85 +97,74 @@ class TensorView : public TensorRef<Element_, Layout_> {
   using Stride = typename Layout::Stride;
 
   /// TensorView pointing to constant memory
-  using ConstTensorView = TensorView<
-    typename platform::remove_const<Element>::type const,
-    Layout>;
+  using ConstTensorView =
+      TensorView<typename platform::remove_const<Element>::type const, Layout>;
 
   /// TensorView pointing to non-constant memory
-  using NonConstTensorView = TensorView<
-    typename platform::remove_const<Element>::type,
-    Layout>;
+  using NonConstTensorView =
+      TensorView<typename platform::remove_const<Element>::type, Layout>;
 
-  /// Require at least rank=1. Mathematically, a rank=0 tensor would be considered to be a
-  /// scalar, but degenerate cases such as these are difficult to accommodate without
-  /// extensive C++ metaprogramming or support for zero-length arrays.
+  /// Require at least rank=1. Mathematically, a rank=0 tensor would be
+  /// considered to be a scalar, but degenerate cases such as these are
+  /// difficult to accommodate without extensive C++ metaprogramming or support
+  /// for zero-length arrays.
   static_assert(kRank > 0, "Cannot define a zero-rank TensorRef");
 
- private:
-
+private:
   /// View extent
   TensorCoord extent_;
 
- public:
-
+public:
   //
   // Methods
   //
 
   /// Constructs a TensorView object
   CUTLASS_HOST_DEVICE
-  TensorView() { }
+  TensorView() {}
 
   /// Constructs a TensorView object
   CUTLASS_HOST_DEVICE
   TensorView(
-    Element *ptr,                         ///< pointer to start of tensor
-    Layout const &layout,                 ///< layout object containing stride and mapping function
-    TensorCoord const &extent             ///< size of the view in logical coordinates
-  ):
-    Base(ptr, layout), extent_(extent) {
-  
-  }
+      Element *ptr, ///< pointer to start of tensor
+      Layout const
+          &layout, ///< layout object containing stride and mapping function
+      TensorCoord const &extent ///< size of the view in logical coordinates
+      )
+      : Base(ptr, layout), extent_(extent) {}
 
   /// Constructs a TensorView object
   CUTLASS_HOST_DEVICE
   TensorView(
-    TensorRef const &ref,                 ///< pointer and layout object referencing a tensor
-    TensorCoord const &extent             ///< logical size of tensor
-  ):
-    Base(ref), extent_(extent) {
-  
-  }
+      TensorRef const &ref, ///< pointer and layout object referencing a tensor
+      TensorCoord const &extent ///< logical size of tensor
+      )
+      : Base(ref), extent_(extent) {}
 
   /// Converting constructor from TensorRef to non-constant data.
   CUTLASS_HOST_DEVICE
-  TensorView(
-    NonConstTensorView const &view        ///< TensorView to non-const data
-  ):
-    Base(view), extent_(view.extent_) { }
+  TensorView(NonConstTensorView const &view ///< TensorView to non-const data
+             )
+      : Base(view), extent_(view.extent_) {}
 
   /// Updates the pointer and layout object
   CUTLASS_HOST_DEVICE
-  void reset(Element* ptr, Layout const &layout, TensorCoord const &extent) {
+  void reset(Element *ptr, Layout const &layout, TensorCoord const &extent) {
     Base::reset(ptr, layout);
     this->resize(extent);
   }
 
   /// Updates the pointer
   CUTLASS_HOST_DEVICE
-  void reset(Element* ptr) {
-    Base::reset(ptr);
-  }
+  void reset(Element *ptr) { Base::reset(ptr); }
 
   /// Changes the size of the view without affecting pointer or layout
   CUTLASS_HOST_DEVICE
-  void resize(TensorCoord const &extent) {
-    this->extent_ = extent;
-  }
+  void resize(TensorCoord const &extent) { this->extent_ = extent; }
 
   /// Returns the extent of the view (the size along each logical dimension).
   CUTLASS_HOST_DEVICE
-  TensorCoord const& extent() const { return extent_; }
+  TensorCoord const &extent() const { return extent_; }
 
   /// Returns the extent along a particular logical dimension.
   CUTLASS_HOST_DEVICE
@@ -182,13 +172,11 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns the number of logical elements
   CUTLASS_HOST_DEVICE
-  LongIndex size() const {
-    return extent_.product();
-  }
+  LongIndex size() const { return extent_.product(); }
 
   /// Determines whether a location is within a tensor
   CUTLASS_HOST_DEVICE
-  bool contains(TensorCoord const& coord) const {
+  bool contains(TensorCoord const &coord) const {
     CUTLASS_PRAGMA_UNROLL
     for (int dim = 0; dim < kRank; ++dim) {
       if (!(coord[dim] >= 0 && coord[dim] < extent(dim))) {
@@ -200,9 +188,7 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns a TensorRef pointing to the first element of the tensor.
   CUTLASS_HOST_DEVICE
-  TensorRef ref() const {
-    return TensorRef(this->data(), this->layout());
-  }
+  TensorRef ref() const { return TensorRef(this->data(), this->layout()); }
 
   /// Returns a TensorRef pointing to the first element of the tensor.
   CUTLASS_HOST_DEVICE
@@ -218,9 +204,10 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns a Tensor_view given location and size quantities
   CUTLASS_HOST_DEVICE
-  TensorView subview(
-    TensorCoord extent,                               ///< extent of the resulting view
-    TensorCoord const& location = TensorCoord()       ///< resulting view's origin within the old view
+  TensorView
+  subview(TensorCoord extent, ///< extent of the resulting view
+          TensorCoord const &location =
+              TensorCoord() ///< resulting view's origin within the old view
   ) const {
 
     TensorView result(this->ref(), extent.clamp(extent_ - location));
@@ -230,14 +217,12 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns the number of scalar elements needed to store tensor.
   CUTLASS_HOST_DEVICE
-  size_t capacity() const {
-    return Base::layout().capacity(extent_);
-  }
+  size_t capacity() const { return Base::layout().capacity(extent_); }
 
   /// Returns a TensorView offset by a given amount
   CUTLASS_HOST_DEVICE
-  TensorView operator+(
-    TensorCoord const& b            ///< offset in the logical coordinate space of the tensor
+  TensorView operator+(TensorCoord const &b ///< offset in the logical
+                                            ///< coordinate space of the tensor
   ) const {
 
     TensorView result(*this);
@@ -247,8 +232,9 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns a TensorRef offset by a given amount
   CUTLASS_HOST_DEVICE
-  TensorView& operator+=(
-    TensorCoord const& b            ///< offset in the logical coordinate space of the tensor
+  TensorView &
+  operator+=(TensorCoord const
+                 &b ///< offset in the logical coordinate space of the tensor
   ) {
 
     this->add_pointer_offset(this->offset(b));
@@ -257,8 +243,8 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns a TensorRef offset by a given amount
   CUTLASS_HOST_DEVICE
-  TensorView operator-(
-    TensorCoord const& b            ///< offset in the logical coordinate space of the tensor
+  TensorView operator-(TensorCoord const &b ///< offset in the logical
+                                            ///< coordinate space of the tensor
   ) const {
 
     TensorRef result(*this);
@@ -268,8 +254,9 @@ class TensorView : public TensorRef<Element_, Layout_> {
 
   /// Returns a TensorRef offset by a given amount
   CUTLASS_HOST_DEVICE
-  TensorView& operator-=(
-    TensorCoord const& b            ///< offset in the logical coordinate space of the tensor
+  TensorView &
+  operator-=(TensorCoord const
+                 &b ///< offset in the logical coordinate space of the tensor
   ) {
 
     this->add_pointer_offset(-this->offset(b));
@@ -280,18 +267,14 @@ class TensorView : public TensorRef<Element_, Layout_> {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Constructs a TensorRef, deducing types from arguments.
-template <
-  typename Element,
-  typename Layout
->
-CUTLASS_HOST_DEVICE TensorView<Element, Layout> make_TensorView(
-  Element *ptr, 
-  Layout const &layout,
-  typename Layout::TensorCoord const &extent) {
+template <typename Element, typename Layout>
+CUTLASS_HOST_DEVICE TensorView<Element, Layout>
+make_TensorView(Element *ptr, Layout const &layout,
+                typename Layout::TensorCoord const &extent) {
 
   return TensorView<Element, Layout>(ptr, layout, extent);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace cutlass
+} // namespace cutlass

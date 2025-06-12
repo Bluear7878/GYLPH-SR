@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,26 +18,26 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
-#include "cutlass_unit_test.h"
 #include "cutlass/trace.h"
+#include "cutlass_unit_test.h"
 
 #include "cute/algorithm/tuple_algorithms.hpp"
 #include "cute/container/array.hpp"
 #include "cute/container/tuple.hpp"
 
-TEST(CuTe_core, Reverse_Tuple)
-{
+TEST(CuTe_core, Reverse_Tuple) {
   using cute::get;
 
   {
@@ -77,9 +77,12 @@ TEST(CuTe_core, Reverse_Tuple)
     const auto t = cute::make_tuple(cute::Int<1>{}, cute::Int<2>{}, 3);
     auto t_r = cute::reverse(t);
     static_assert(cute::tuple_size_v<decltype(t_r)> == 3);
-    static_assert(cute::is_same_v<cute::remove_cvref_t<decltype(get<0>(t_r))>, int>);
-    static_assert(cute::is_same_v<cute::remove_cvref_t<decltype(get<1>(t_r))>, cute::Int<2>>);
-    static_assert(cute::is_same_v<cute::remove_cvref_t<decltype(get<2>(t_r))>, cute::Int<1>>);
+    static_assert(
+        cute::is_same_v<cute::remove_cvref_t<decltype(get<0>(t_r))>, int>);
+    static_assert(cute::is_same_v<cute::remove_cvref_t<decltype(get<1>(t_r))>,
+                                  cute::Int<2>>);
+    static_assert(cute::is_same_v<cute::remove_cvref_t<decltype(get<2>(t_r))>,
+                                  cute::Int<1>>);
 
     EXPECT_EQ(get<0>(t_r), 3);
     EXPECT_EQ(get<1>(t_r), cute::Int<2>{});
@@ -87,8 +90,7 @@ TEST(CuTe_core, Reverse_Tuple)
   }
 }
 
-TEST(CuTe_core, Reverse_Array)
-{
+TEST(CuTe_core, Reverse_Array) {
   using cute::get;
 
   {

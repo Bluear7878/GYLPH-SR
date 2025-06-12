@@ -29,25 +29,27 @@ See also the documentation on [element access](element_access/index.md).
 
 ??? example "Example 1: Missing object key"
 
-    The following code will trigger an assertion at runtime:
+````
+The following code will trigger an assertion at runtime:
 
-    ```cpp
-    #include <nlohmann/json.hpp>
-    
-    using json = nlohmann::json;
-    
-    int main()
-    {
-        const json j = {{"key", "value"}};
-        auto v = j["missing"];
-    }
-    ```
+```cpp
+#include <nlohmann/json.hpp>
 
-    Output:
+using json = nlohmann::json;
 
-    ```
-    Assertion failed: (m_value.object->find(key) != m_value.object->end()), function operator[], file json.hpp, line 2144.
-    ```
+int main()
+{
+    const json j = {{"key", "value"}};
+    auto v = j["missing"];
+}
+```
+
+Output:
+
+```
+Assertion failed: (m_value.object->find(key) != m_value.object->end()), function operator[], file json.hpp, line 2144.
+```
+````
 
 ### Constructing from an uninitialized iterator range
 
@@ -56,25 +58,27 @@ uninitialized iterator is undefined behavior and yields a runtime assertion.
 
 ??? example "Example 2: Uninitialized iterator range"
 
-    The following code will trigger an assertion at runtime:
+````
+The following code will trigger an assertion at runtime:
 
-    ```cpp
-    #include <nlohmann/json.hpp>
-    
-    using json = nlohmann::json;
-    
-    int main()
-    {
-        json::iterator it1, it2;
-        json j(it1, it2);
-    }
-    ```
+```cpp
+#include <nlohmann/json.hpp>
 
-    Output:
+using json = nlohmann::json;
 
-    ```
-    Assertion failed: (m_object != nullptr), function operator++, file iter_impl.hpp, line 368.
-    ```
+int main()
+{
+    json::iterator it1, it2;
+    json j(it1, it2);
+}
+```
+
+Output:
+
+```
+Assertion failed: (m_object != nullptr), function operator++, file iter_impl.hpp, line 368.
+```
+````
 
 ### Operations on uninitialized iterators
 
@@ -83,25 +87,27 @@ behavior and yields a runtime assertion.
 
 ??? example "Example 3: Uninitialized iterator"
 
-    The following code will trigger an assertion at runtime:
+````
+The following code will trigger an assertion at runtime:
 
-    ```cpp
-    #include <nlohmann/json.hpp>
-    
-    using json = nlohmann::json;
-    
-    int main()
-    {
-      json::iterator it;
-      ++it;
-    }
-    ```
+```cpp
+#include <nlohmann/json.hpp>
 
-    Output:
+using json = nlohmann::json;
 
-    ```
-    Assertion failed: (m_object != nullptr), function operator++, file iter_impl.hpp, line 368.
-    ```
+int main()
+{
+  json::iterator it;
+  ++it;
+}
+```
+
+Output:
+
+```
+Assertion failed: (m_object != nullptr), function operator++, file iter_impl.hpp, line 368.
+```
+````
 
 ### Reading from a null `FILE` pointer
 
@@ -110,22 +116,24 @@ calling `#!cpp std::fopen` on a nonexistent file.
 
 ??? example "Example 4: Uninitialized iterator"
 
-    The following code will trigger an assertion at runtime:
+````
+The following code will trigger an assertion at runtime:
 
-    ```cpp
-    #include <nlohmann/json.hpp>
-    
-    using json = nlohmann::json;
-    
-    int main()
-    {
-      std::FILE* f = std::fopen("nonexistent_file.json", "r");
-      json j = json::parse(f);
-    }
-    ```
+```cpp
+#include <nlohmann/json.hpp>
 
-    Output:
+using json = nlohmann::json;
 
-    ```
-    Assertion failed: (m_file != nullptr), function file_input_adapter, file input_adapters.hpp, line 55.
-    ```
+int main()
+{
+  std::FILE* f = std::fopen("nonexistent_file.json", "r");
+  json j = json::parse(f);
+}
+```
+
+Output:
+
+```
+Assertion failed: (m_file != nullptr), function file_input_adapter, file input_adapters.hpp, line 55.
+```
+````

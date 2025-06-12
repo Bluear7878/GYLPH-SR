@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -66,15 +67,13 @@ namespace threadblock {
 
 template <typename Mma>
 __global__ void kernel_mma_planar_complex(
-  cutlass::gemm::GemmCoord problem_size,
-  typename Mma::IteratorA::Params params_A,
-  typename Mma::IteratorA::Element *ptr_A,
-  int64_t imaginary_stride_A,
-  typename Mma::IteratorB::Params params_B,
-  typename Mma::IteratorB::Element *ptr_B,
-  int64_t imaginary_stride_B,
-  typename Mma::ElementC *ptr_C, 
-  typename Mma::LayoutC::Stride::Index ldc, int64_t imaginary_stride_C) {
+    cutlass::gemm::GemmCoord problem_size,
+    typename Mma::IteratorA::Params params_A,
+    typename Mma::IteratorA::Element *ptr_A, int64_t imaginary_stride_A,
+    typename Mma::IteratorB::Params params_B,
+    typename Mma::IteratorB::Element *ptr_B, int64_t imaginary_stride_B,
+    typename Mma::ElementC *ptr_C, typename Mma::LayoutC::Stride::Index ldc,
+    int64_t imaginary_stride_C) {
 
   // Shared storage needed by threadblock-scoped matrix multiply-accumulate
   __shared__ typename Mma::SharedStorage shared_storage;
@@ -94,21 +93,21 @@ __global__ void kernel_mma_planar_complex(
 
   // Construct iterators to A operand
   typename Mma::IteratorA iterator_A_real(params_A, ptr_A,
-                                     {problem_size.m(), problem_size.k()},
-                                     tb_thread_id, tb_offset_A);
-  
+                                          {problem_size.m(), problem_size.k()},
+                                          tb_thread_id, tb_offset_A);
+
   typename Mma::IteratorA iterator_A_imag(params_A, ptr_A + imaginary_stride_A,
-                                     {problem_size.m(), problem_size.k()},
-                                     tb_thread_id, tb_offset_A);
-  
+                                          {problem_size.m(), problem_size.k()},
+                                          tb_thread_id, tb_offset_A);
+
   // Construct iterators to B operand
   typename Mma::IteratorB iterator_B_real(params_B, ptr_B,
-                                     {problem_size.k(), problem_size.n()},
-                                     tb_thread_id, tb_offset_B);
+                                          {problem_size.k(), problem_size.n()},
+                                          tb_thread_id, tb_offset_B);
 
   typename Mma::IteratorB iterator_B_imag(params_B, ptr_B + imaginary_stride_B,
-                                     {problem_size.k(), problem_size.n()},
-                                     tb_thread_id, tb_offset_B);
+                                          {problem_size.k(), problem_size.n()},
+                                          tb_thread_id, tb_offset_B);
 
   int warp_id = threadIdx.y;
   int lane_id = threadIdx.x;
@@ -120,19 +119,20 @@ __global__ void kernel_mma_planar_complex(
 
   accum.clear();
 
-  int gemm_k_iterations = (problem_size.k() + Mma::Shape::kK - 1) / Mma::Shape::kK;
+  int gemm_k_iterations =
+      (problem_size.k() + Mma::Shape::kK - 1) / Mma::Shape::kK;
 
   // Compute threadblock-scoped matrix multiply-add
-  mma(gemm_k_iterations, accum, iterator_A_real, iterator_A_imag, iterator_B_real, iterator_B_imag, accum);
+  mma(gemm_k_iterations, accum, iterator_A_real, iterator_A_imag,
+      iterator_B_real, iterator_B_imag, accum);
 
   // Output results
   typename Mma::Operator::IteratorC iterator_C({ptr_C, ldc}, lane_id);
 
-  iterator_C.add_tile_offset(
-      {(tb_tile_offset.m() * Mma::WarpCount::kM) +
-           (warp_id % Mma::WarpCount::kM),
-       (tb_tile_offset.n() * Mma::WarpCount::kN) +
-           (warp_id / Mma::WarpCount::kM)});
+  iterator_C.add_tile_offset({(tb_tile_offset.m() * Mma::WarpCount::kM) +
+                                  (warp_id % Mma::WarpCount::kM),
+                              (tb_tile_offset.n() * Mma::WarpCount::kN) +
+                                  (warp_id / Mma::WarpCount::kM)});
 
   iterator_C.store(accum.real);
 
@@ -163,10 +163,8 @@ struct TestbedPlanarComplex {
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
   static int const Stages = Mma::kStages;
-  static cutlass::arch::CacheOperation::Kind const CacheOpA =
-      Mma::kCacheOpA;
-  static cutlass::arch::CacheOperation::Kind const CacheOpB =
-      Mma::kCacheOpB;
+  static cutlass::arch::CacheOperation::Kind const CacheOpA = Mma::kCacheOpA;
+  static cutlass::arch::CacheOperation::Kind const CacheOpB = Mma::kCacheOpB;
 
   //
   // Data members
@@ -184,8 +182,7 @@ struct TestbedPlanarComplex {
   //
 
   /// Allocates workspace in device memory
-  TestbedPlanarComplex(int m, int n, int k)
-      : problem_size(m, n, k) {
+  TestbedPlanarComplex(int m, int n, int k) : problem_size(m, n, k) {
 
     matrix_A.reset(cutlass::make_Coord(m, k));
     matrix_B.reset(cutlass::make_Coord(k, n));
@@ -194,8 +191,8 @@ struct TestbedPlanarComplex {
   }
 
   /// Runs the test
-  bool run(
-      dim3 grid, dim3 block,
+  bool
+  run(dim3 grid, dim3 block,
       cutlass::Distribution::Kind init_A = cutlass::Distribution::Uniform,
       cutlass::Distribution::Kind init_B = cutlass::Distribution::Uniform) {
 
@@ -204,7 +201,7 @@ struct TestbedPlanarComplex {
     //
 
     if (init_A == cutlass::Distribution::Uniform) {
-      
+
       int scope_max = 8;
       int scope_min = -8;
 
@@ -219,9 +216,9 @@ struct TestbedPlanarComplex {
       uint64_t seed = 7;
       cutlass::reference::host::TensorFillRandomUniform(
           matrix_A.host_view(), seed, scope_max, scope_min, 0);
-      
+
     } else if (init_A == cutlass::Distribution::Sequential) {
-      
+
       for (int i = 0; i < matrix_A.capacity() * 2; ++i) {
         matrix_A.host_data()[i] = cutlass::half_t(float(i % 5) - 2);
       }
@@ -230,14 +227,13 @@ struct TestbedPlanarComplex {
                                                     matrix_A.capacity() * 2);
       */
     } else if (init_A == cutlass::Distribution::Identity) {
-      //cutlass::reference::host::TensorFillIdentity(matrix_A.host_view());
+      // cutlass::reference::host::TensorFillIdentity(matrix_A.host_view());
     } else {
       return false;
     }
 
     if (init_B == cutlass::Distribution::Uniform) {
 
-      
       int scope_max = 8;
       int scope_min = -8;
 
@@ -252,7 +248,6 @@ struct TestbedPlanarComplex {
       uint64_t seed = 7;
       cutlass::reference::host::TensorFillRandomUniform(
           matrix_B.host_view(), seed + 16, scope_max, scope_min, 0);
-      
 
     } else if (init_B == cutlass::Distribution::Sequential) {
 
@@ -263,10 +258,9 @@ struct TestbedPlanarComplex {
         matrix_B.host_data()[i] = cutlass::half_t(float((i + 3) % 5) - 2);
       }
 
-
     } else if (init_B == cutlass::Distribution::Identity) {
 
-      //cutlass::reference::host::TensorFillIdentity(matrix_B.host_view());
+      // cutlass::reference::host::TensorFillIdentity(matrix_B.host_view());
 
     } else {
       return false;
@@ -280,18 +274,11 @@ struct TestbedPlanarComplex {
     typename IteratorB::Params params_B(matrix_B.layout());
 
     test::gemm::threadblock::kernel_mma_planar_complex<Mma><<<grid, block>>>(
-        problem_size, 
-        params_A, 
-        matrix_A.device_data(),
-        matrix_A.imaginary_stride(),
-        params_B,
-        matrix_B.device_data(), 
-        matrix_B.imaginary_stride(),
-        matrix_C_computed.device_data(),
-        matrix_C_computed.layout().stride(0), 
-        matrix_C_computed.imaginary_stride()
-      );
-
+        problem_size, params_A, matrix_A.device_data(),
+        matrix_A.imaginary_stride(), params_B, matrix_B.device_data(),
+        matrix_B.imaginary_stride(), matrix_C_computed.device_data(),
+        matrix_C_computed.layout().stride(0),
+        matrix_C_computed.imaginary_stride());
 
     //
     // Check error code
@@ -303,40 +290,32 @@ struct TestbedPlanarComplex {
 
     matrix_C_computed.sync_host();
 
-    cutlass::reference::host::GemmPlanarComplex<
-      ElementA, LayoutA,
-      ElementB, LayoutB,
-      ElementC, LayoutC,
-      ElementAccumulator
-    >(
-      problem_size,
-      cutlass::complex<ElementAccumulator>(ElementAccumulator(1)),
-      matrix_A.host_ref(),
-      Mma::kTransformA,
-      matrix_B.host_ref(),
-      Mma::kTransformB,
-      cutlass::complex<ElementAccumulator>(ElementAccumulator(0)),
-      matrix_C_reference.host_ref(),
-      matrix_C_reference.host_ref()
-    );
-    
+    cutlass::reference::host::GemmPlanarComplex<ElementA, LayoutA, ElementB,
+                                                LayoutB, ElementC, LayoutC,
+                                                ElementAccumulator>(
+        problem_size,
+        cutlass::complex<ElementAccumulator>(ElementAccumulator(1)),
+        matrix_A.host_ref(), Mma::kTransformA, matrix_B.host_ref(),
+        Mma::kTransformB,
+        cutlass::complex<ElementAccumulator>(ElementAccumulator(0)),
+        matrix_C_reference.host_ref(), matrix_C_reference.host_ref());
+
     bool passed = cutlass::reference::host::TensorEquals(
-      matrix_C_computed.host_view(), 
-      matrix_C_reference.host_view()
-    );
+        matrix_C_computed.host_view(), matrix_C_reference.host_view());
 
     EXPECT_TRUE(passed);
 
     if (!passed) {
       std::ofstream output("mma_pipelined_testbed_errors.txt");
 
-      output
-        << "A:\n" << matrix_A.host_view() << "\n"
-        << "B:\n" << matrix_B.host_view() << "\n"
-        << "Reference:\n"
-        << matrix_C_reference.host_view() << "\n"
-        << "Computed:\n"
-        << matrix_C_computed.host_view() << "\n";
+      output << "A:\n"
+             << matrix_A.host_view() << "\n"
+             << "B:\n"
+             << matrix_B.host_view() << "\n"
+             << "Reference:\n"
+             << matrix_C_reference.host_view() << "\n"
+             << "Computed:\n"
+             << matrix_C_computed.host_view() << "\n";
     }
 
     return passed;
@@ -345,6 +324,6 @@ struct TestbedPlanarComplex {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace test
+} // namespace threadblock
+} // namespace gemm
+} // namespace test

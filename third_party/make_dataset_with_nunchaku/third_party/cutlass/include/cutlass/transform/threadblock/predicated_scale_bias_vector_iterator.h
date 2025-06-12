@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,23 +18,26 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief Templates calculating the address and predicates to the load of scale and bias vectors.
+    \brief Templates calculating the address and predicates to the load of scale
+   and bias vectors.
 
     This iterator uses masks to guard out-of-bounds accesses.
 
-    This can be used to load var and mean vectors in layernorm which is loop invariant.
+    This can be used to load var and mean vectors in layernorm which is loop
+   invariant.
 
     A precomputed "Params" object minimizes the amount of state that must be
    stored in registers, and integer addition is used to advance the pointer
@@ -63,9 +66,7 @@ namespace threadblock {
 
 /// PredicatedScaleBiasVectorIterator
 ///
-template <typename WarpShape,
-          typename Element,
-          typename Layout>
+template <typename WarpShape, typename Element, typename Layout>
 class PredicatedScaleBiasVectorIterator;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,11 +74,9 @@ class PredicatedScaleBiasVectorIterator;
 /// Specialization of PredicatedTileIterator for wgrad pitch-linear data.
 ///
 template <typename WarpShape_, typename Element_>
-class PredicatedScaleBiasVectorIterator<WarpShape_,
-                                        Element_,
+class PredicatedScaleBiasVectorIterator<WarpShape_, Element_,
                                         layout::PitchLinear> {
- public:
-
+public:
   using WarpShape = WarpShape_;
   using Element = Element_;
   using Layout = layout::PitchLinear;
@@ -99,9 +98,10 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
   static int const kIterations = WarpShape::kContiguous / 8;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<__half2, 2 * kIterations * kElementsPerAccess>;
+  using Fragment =
+      cutlass::Array<__half2, 2 * kIterations * kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
@@ -115,7 +115,7 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
 
   int32_t thread_offset_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -130,8 +130,7 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
       int thread_id,
       /// Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : problem_size_(problem_size),
-        scale_pointer_(scale_pointer),
+      : problem_size_(problem_size), scale_pointer_(scale_pointer),
         bias_pointer_(bias_pointer) {
 
     thread_offset_ = threadblock_offset.contiguous() + (thread_id % 32) / 4;
@@ -148,14 +147,14 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
       ConstPointer bias_pointer,
       ///< ID of each participating thread
       int thread_id)
-      : PredicatedScaleBiasVectorIterator(problem_size,
-                                          scale_pointer, bias_pointer,
-                                          thread_id, make_Coord(0, 0)) {}
+      : PredicatedScaleBiasVectorIterator(problem_size, scale_pointer,
+                                          bias_pointer, thread_id,
+                                          make_Coord(0, 0)) {}
 
-  /// Advances an iterator along logical dimensions of matrix in units of whole warp tiles
+  /// Advances an iterator along logical dimensions of matrix in units of whole
+  /// warp tiles
   CUTLASS_DEVICE
-  void add_tile_offset(
-      TensorCoord const &tile_offset) {
+  void add_tile_offset(TensorCoord const &tile_offset) {
 
     thread_offset_ += (WarpShape::kContiguous * tile_offset.contiguous());
   }
@@ -171,28 +170,18 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
     CUTLASS_PRAGMA_UNROLL
     for (int c = 0; c < kIterations; ++c) {
 
-      cutlass::arch::global_load<
-        __half,
-        sizeof(AccessType)
-      >(
-        frag_ptr[c * 2].x,
-        scale_pointer_ + thread_offset_ + c * 8,
-        (thread_offset_ + c * 8) < problem_size_ 
-      );
+      cutlass::arch::global_load<__half, sizeof(AccessType)>(
+          frag_ptr[c * 2].x, scale_pointer_ + thread_offset_ + c * 8,
+          (thread_offset_ + c * 8) < problem_size_);
     }
 
     // load bias
     CUTLASS_PRAGMA_UNROLL
     for (int c = 0; c < kIterations; ++c) {
 
-      cutlass::arch::global_load<
-        __half,
-        sizeof(AccessType)
-      >(
-        frag_ptr[c * 2 + 1].x,
-        bias_pointer_ + thread_offset_ + c * 8,
-        (thread_offset_ + c * 8) < problem_size_ 
-      );
+      cutlass::arch::global_load<__half, sizeof(AccessType)>(
+          frag_ptr[c * 2 + 1].x, bias_pointer_ + thread_offset_ + c * 8,
+          (thread_offset_ + c * 8) < problem_size_);
     }
 
     // duplicate scale
@@ -210,9 +199,7 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment &frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -224,13 +211,10 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <typename WarpShape_,
-          typename Element_>
-class PredicatedScaleBiasVectorIterator<WarpShape_,
-                                        Element_,
+template <typename WarpShape_, typename Element_>
+class PredicatedScaleBiasVectorIterator<WarpShape_, Element_,
                                         layout::RowMajor> {
- public:
-
+public:
   using WarpShape = WarpShape_;
   using Element = Element_;
   using Layout = layout::RowMajor;
@@ -246,16 +230,14 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
   using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedScaleBiasVectorIterator<
-      layout::PitchLinearShape<WarpShape::kColumn, WarpShape::kRow>,
-      Element,
+      layout::PitchLinearShape<WarpShape::kColumn, WarpShape::kRow>, Element,
       layout::PitchLinear>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
   static int const kElementsPerAccess = UnderlyingIterator::kElementsPerAccess;
   using Fragment = typename UnderlyingIterator::Fragment;
 
-
- private:
+private:
   //
   // Data members
   //
@@ -263,7 +245,7 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -278,22 +260,21 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
       int thread_id,
       ///< Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : iterator_(problem_size, scale_pointer, bias_pointer,
-                  thread_id,
+      : iterator_(problem_size, scale_pointer, bias_pointer, thread_id,
                   layout::PitchLinearCoord(threadblock_offset.column(),
                                            threadblock_offset.row())) {}
 
   /// Construct a PredicatedTileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   PredicatedScaleBiasVectorIterator(
-      int problem_size,  ///< Extent of tensor
-      ConstPointer scale_pointer,  ///< Pointer to the start of the scale vector
-      ConstPointer bias_pointer,   ///< Pointer to the start of the bias vector
-      int thread_id                ///< ID of each participating thread
+      int problem_size,           ///< Extent of tensor
+      ConstPointer scale_pointer, ///< Pointer to the start of the scale vector
+      ConstPointer bias_pointer,  ///< Pointer to the start of the bias vector
+      int thread_id               ///< ID of each participating thread
       )
-      : PredicatedScaleBiasVectorIterator(problem_size,
-                                          scale_pointer, bias_pointer,
-                                          thread_id, make_Coord(0, 0)) {}
+      : PredicatedScaleBiasVectorIterator(problem_size, scale_pointer,
+                                          bias_pointer, thread_id,
+                                          make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -314,15 +295,13 @@ class PredicatedScaleBiasVectorIterator<WarpShape_,
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment &frag) {
-    iterator_.load(frag);
-  }
+  void load(Fragment &frag) { iterator_.load(frag); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform 
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

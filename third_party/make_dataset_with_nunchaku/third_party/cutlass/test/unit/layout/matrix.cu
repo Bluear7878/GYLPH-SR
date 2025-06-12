@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,16 +18,17 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-**************************************************************************************************/
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
+ *
+ **************************************************************************************************/
 /*! \file
 \brief unit tests for matrix layout
 */
@@ -43,59 +44,62 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 namespace test {
 namespace layout {
-  void test_row_major_layout(int row_size, int column_size, int ldm) {
-    cutlass::layout::RowMajor row_major(ldm);
+void test_row_major_layout(int row_size, int column_size, int ldm) {
+  cutlass::layout::RowMajor row_major(ldm);
 
-    // test pointer offset
-    for (int row_idx = 0; row_idx < row_size; row_idx++) {
-      for (int column_idx = 0; column_idx < column_size; column_idx++) {
-        cutlass::MatrixCoord matrix_coord(row_idx, column_idx);
-        auto ptr_offset = row_major(matrix_coord);
-        decltype(ptr_offset) reference_offset = row_idx * ldm + column_idx;
-        EXPECT_EQ(ptr_offset, reference_offset);
-      }
+  // test pointer offset
+  for (int row_idx = 0; row_idx < row_size; row_idx++) {
+    for (int column_idx = 0; column_idx < column_size; column_idx++) {
+      cutlass::MatrixCoord matrix_coord(row_idx, column_idx);
+      auto ptr_offset = row_major(matrix_coord);
+      decltype(ptr_offset) reference_offset = row_idx * ldm + column_idx;
+      EXPECT_EQ(ptr_offset, reference_offset);
     }
-
-    // test stride
-    EXPECT_EQ(row_major.stride()[0], ldm);
-
-    // test capacity
-    auto capacity = row_major.capacity(cutlass::MatrixCoord(row_size, column_size));
-    decltype(capacity) reference_capacity = row_size * ldm;
-    EXPECT_EQ(capacity, reference_capacity);
-
-    // test packed
-    auto packed = row_major.packed(cutlass::MatrixCoord(row_size, column_size));
-    // the packed matrix's stride is the same with column size
-    EXPECT_EQ(packed.stride()[0], column_size);
   }
 
-  void test_column_major_layout(int row_size, int column_size, int ldm) {
-    cutlass::layout::ColumnMajor column_major(ldm);
+  // test stride
+  EXPECT_EQ(row_major.stride()[0], ldm);
 
-    // test pointer offset
-    for (int row_idx = 0; row_idx < row_size; row_idx++) {
-      for (int column_idx = 0; column_idx < column_size; column_idx++) {
-        cutlass::MatrixCoord matrix_coord(row_idx, column_idx);
-        auto ptr_offset = column_major(matrix_coord);
-        decltype(ptr_offset) reference_offset = row_idx + column_idx * ldm;
-        EXPECT_EQ(ptr_offset, reference_offset);
-      }
+  // test capacity
+  auto capacity =
+      row_major.capacity(cutlass::MatrixCoord(row_size, column_size));
+  decltype(capacity) reference_capacity = row_size * ldm;
+  EXPECT_EQ(capacity, reference_capacity);
+
+  // test packed
+  auto packed = row_major.packed(cutlass::MatrixCoord(row_size, column_size));
+  // the packed matrix's stride is the same with column size
+  EXPECT_EQ(packed.stride()[0], column_size);
+}
+
+void test_column_major_layout(int row_size, int column_size, int ldm) {
+  cutlass::layout::ColumnMajor column_major(ldm);
+
+  // test pointer offset
+  for (int row_idx = 0; row_idx < row_size; row_idx++) {
+    for (int column_idx = 0; column_idx < column_size; column_idx++) {
+      cutlass::MatrixCoord matrix_coord(row_idx, column_idx);
+      auto ptr_offset = column_major(matrix_coord);
+      decltype(ptr_offset) reference_offset = row_idx + column_idx * ldm;
+      EXPECT_EQ(ptr_offset, reference_offset);
     }
-
-    // test stride
-    EXPECT_EQ(column_major.stride()[0], ldm);
-
-    // test capacity
-    auto capacity = column_major.capacity(cutlass::MatrixCoord(row_size, column_size));
-    decltype(capacity) reference_capacity = column_size * ldm;
-    EXPECT_EQ(capacity, reference_capacity);
-
-    // test packed
-    auto packed = column_major.packed(cutlass::MatrixCoord(row_size, column_size));
-    // the packed matrix's stride is the same with row size
-    EXPECT_EQ(packed.stride()[0], row_size);
   }
+
+  // test stride
+  EXPECT_EQ(column_major.stride()[0], ldm);
+
+  // test capacity
+  auto capacity =
+      column_major.capacity(cutlass::MatrixCoord(row_size, column_size));
+  decltype(capacity) reference_capacity = column_size * ldm;
+  EXPECT_EQ(capacity, reference_capacity);
+
+  // test packed
+  auto packed =
+      column_major.packed(cutlass::MatrixCoord(row_size, column_size));
+  // the packed matrix's stride is the same with row size
+  EXPECT_EQ(packed.stride()[0], row_size);
+}
 
 } // namespace layout
 } // namespace test
@@ -140,11 +144,12 @@ TEST(Layout_Matrix, general_matrix) {
     }
   }
 
-  cutlass::TensorView<int, cutlass::layout::GeneralMatrix> canonical({tensor.host_data(), layout}, extent);
+  cutlass::TensorView<int, cutlass::layout::GeneralMatrix> canonical(
+      {tensor.host_data(), layout}, extent);
 
   // Uncomment this to view
   //
-  //std::cout << canonical << std::endl;
+  // std::cout << canonical << std::endl;
   //
 }
 

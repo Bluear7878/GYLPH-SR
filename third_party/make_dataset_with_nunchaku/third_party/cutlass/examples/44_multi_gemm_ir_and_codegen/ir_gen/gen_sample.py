@@ -30,11 +30,14 @@
 #
 #################################################################################################
 
-import helper 
 import gen_ir as ir
+import helper
+
 
 class gen_test:
-    def __init__(self, fuse_gemm_info, gen_class_name, user_header_file, output_dir = "../"):
+    def __init__(
+        self, fuse_gemm_info, gen_class_name, user_header_file, output_dir="../"
+    ):
         self.fuse_gemm_info = fuse_gemm_info
         self.gen_class_name = gen_class_name
         self.user_header_file = user_header_file
@@ -43,23 +46,21 @@ class gen_test:
 
     def gen_cpp_sample(self):
         code = "/* Auto Generated code - Do not edit.*/\n"
-        code +=  "#include <stdio.h> \n"
+        code += "#include <stdio.h> \n"
 
-        code += "#include \"cutlass/gemm/device/gemm_batched.h\" \n"
-        code += "#include \"cutlass/cutlass.h\" \n"
+        code += '#include "cutlass/gemm/device/gemm_batched.h" \n'
+        code += '#include "cutlass/cutlass.h" \n'
 
-        code += "#include \"../cutlass_irrelevant.h\" \n"
-        code += "#include \"../cutlass_verify.h\" \n"
+        code += '#include "../cutlass_irrelevant.h" \n'
+        code += '#include "../cutlass_verify.h" \n'
 
-        code += "#include \"leaky_bias.h\" \n"
+        code += '#include "leaky_bias.h" \n'
 
-        code +=  "#include \"utils.h\" \n"
-        
-
+        code += '#include "utils.h" \n'
 
         code += "int main(int args, char * argv[]) {\n"
         code += "    " + "int M = atoi(argv[1]);\n"
-        code += "    " + "int K0 = " + str(self.fuse_gemm_info[0]['mnk'][0]) + ";\n"
+        code += "    " + "int K0 = " + str(self.fuse_gemm_info[0]["mnk"][0]) + ";\n"
         code += "    " + "if(args == 3);\n"
         code += "    " + "    " + "K0 = atoi(argv[2]);\n"
         code += "    " + "int B = 1;\n"
@@ -75,42 +76,102 @@ class gen_test:
         code += "using ElementCompute = cutlass::half_t;\n"
 
         for i in range(self.b2b_num):
-            code += "    " + helper.var_idx("ElementCompute alpha", i) + " = ElementCompute(1);\n"
-            addbias = helper.get_epilogue_add_bias_or_not( self.fuse_gemm_info[i])
+            code += (
+                "    "
+                + helper.var_idx("ElementCompute alpha", i)
+                + " = ElementCompute(1);\n"
+            )
+            addbias = helper.get_epilogue_add_bias_or_not(self.fuse_gemm_info[i])
             if addbias:
-                code += "    " + helper.var_idx("ElementCompute beta", i) + " = ElementCompute(1);\n"
+                code += (
+                    "    "
+                    + helper.var_idx("ElementCompute beta", i)
+                    + " = ElementCompute(1);\n"
+                )
             else:
-                code += "    " + helper.var_idx("ElementCompute beta", i) + " = ElementCompute(0);\n"
+                code += (
+                    "    "
+                    + helper.var_idx("ElementCompute beta", i)
+                    + " = ElementCompute(0);\n"
+                )
 
         code += "    " + "size_t flops = 0;\n"
 
         for i in range(self.b2b_num):
-            m = self.fuse_gemm_info[i]['mnk'][0]
-            n = self.fuse_gemm_info[i]['mnk'][1]
-            k = self.fuse_gemm_info[i]['mnk'][2]
+            m = self.fuse_gemm_info[i]["mnk"][0]
+            n = self.fuse_gemm_info[i]["mnk"][1]
+            k = self.fuse_gemm_info[i]["mnk"][2]
 
             bias_shape = helper.get_epilogue_bias_shape(self.fuse_gemm_info[i])
-            
+
             this_k = "K0"
-            if (i > 0):
+            if i > 0:
                 this_k = str(k)
 
-            code += "    " + "flops += size_t(2) * size_t(M) * size_t(B) * " + "size_t(" + str(n) + ") * size_t(" + this_k + ");\n"
+            code += (
+                "    "
+                + "flops += size_t(2) * size_t(M) * size_t(B) * "
+                + "size_t("
+                + str(n)
+                + ") * size_t("
+                + this_k
+                + ");\n"
+            )
 
-            code += "    " + helper.var_idx("cutlass::gemm::GemmCoord problem_size_", i) + "(" + "M" + ", " + str(n) + ", " + this_k + ");\n"
+            code += (
+                "    "
+                + helper.var_idx("cutlass::gemm::GemmCoord problem_size_", i)
+                + "("
+                + "M"
+                + ", "
+                + str(n)
+                + ", "
+                + this_k
+                + ");\n"
+            )
 
-            code += "    " + helper.var_idx("memory_unit<cutlass::half_t> Mat_A", i) + helper.var_idx("(B * problem_size_", i) + helper.var_idx(".m() * problem_size_", i) + ".k());\n"
-            code += "    " + helper.var_idx("memory_unit<cutlass::half_t> Mat_B", i) + helper.var_idx("(B * problem_size_", i) + helper.var_idx(".n() * problem_size_", i) + ".k());\n"
-            code += "    " + helper.var_idx("memory_unit<cutlass::half_t> Mat_C", i) + "(B * " + str(bias_shape[0]) + " * " + str(bias_shape[1]) + ");\n"
-            code += "    " + helper.var_idx("memory_unit<cutlass::half_t> Mat_D_cutlass_ref", i) + helper.var_idx("(B * problem_size_", i) + helper.var_idx(".m() * problem_size_", i) + ".n());\n"
+            code += (
+                "    "
+                + helper.var_idx("memory_unit<cutlass::half_t> Mat_A", i)
+                + helper.var_idx("(B * problem_size_", i)
+                + helper.var_idx(".m() * problem_size_", i)
+                + ".k());\n"
+            )
+            code += (
+                "    "
+                + helper.var_idx("memory_unit<cutlass::half_t> Mat_B", i)
+                + helper.var_idx("(B * problem_size_", i)
+                + helper.var_idx(".n() * problem_size_", i)
+                + ".k());\n"
+            )
+            code += (
+                "    "
+                + helper.var_idx("memory_unit<cutlass::half_t> Mat_C", i)
+                + "(B * "
+                + str(bias_shape[0])
+                + " * "
+                + str(bias_shape[1])
+                + ");\n"
+            )
+            code += (
+                "    "
+                + helper.var_idx("memory_unit<cutlass::half_t> Mat_D_cutlass_ref", i)
+                + helper.var_idx("(B * problem_size_", i)
+                + helper.var_idx(".m() * problem_size_", i)
+                + ".n());\n"
+            )
 
             code += "    " + helper.var_idx("Mat_A", i) + ".init();\n"
             code += "    " + helper.var_idx("Mat_B", i) + ".init();\n"
             code += "    " + helper.var_idx("Mat_C", i) + ".init();\n"
 
-
-
-        code += "    " + helper.var_idx("memory_unit<cutlass::half_t> Mat_D", self.b2b_num - 1) +  helper.var_idx("(B * problem_size_", i) + helper.var_idx(".m() * problem_size_",self.b2b_num - 1) + ".n());\n"
+        code += (
+            "    "
+            + helper.var_idx("memory_unit<cutlass::half_t> Mat_D", self.b2b_num - 1)
+            + helper.var_idx("(B * problem_size_", i)
+            + helper.var_idx(".m() * problem_size_", self.b2b_num - 1)
+            + ".n());\n"
+        )
 
         params = []
         params.append("M")
@@ -120,10 +181,10 @@ class gen_test:
         for i in range(self.b2b_num):
             params.append(helper.var_idx("Mat_B", i) + ".device_ptr")
             params.append(helper.var_idx("Mat_C", i) + ".device_ptr")
-            if i != self.b2b_num-1:
+            if i != self.b2b_num - 1:
                 params.append(helper.var_idx("Mat_D_cutlass_ref", i) + ".device_ptr")
         params.append(helper.var_idx("Mat_D", self.b2b_num - 1) + ".device_ptr")
-    
+
         code += "    " + "Param arguments = {\n"
         code += "    " + "    " + "M,\n"
         code += "    " + "    " + "K0,\n"
@@ -132,11 +193,25 @@ class gen_test:
         code += "    " + "    " + "reinterpret_cast<const void*>(Mat_A0.device_ptr),\n"
         cnt = 1
         for i in range(self.b2b_num):
-            bias_flag = helper.get_epilogue_add_bias_or_not( self.fuse_gemm_info[i])
-            code += "    " + "    " + "reinterpret_cast<const void*>(" + helper.var_idx("Mat_B", i) + ".device_ptr" + "),\n"
+            bias_flag = helper.get_epilogue_add_bias_or_not(self.fuse_gemm_info[i])
+            code += (
+                "    "
+                + "    "
+                + "reinterpret_cast<const void*>("
+                + helper.var_idx("Mat_B", i)
+                + ".device_ptr"
+                + "),\n"
+            )
             cnt += 1
             if bias_flag:
-                code += "    " + "    " + "reinterpret_cast<const void*>(" + helper.var_idx("Mat_C", i) + ".device_ptr" + "),\n"
+                code += (
+                    "    "
+                    + "    "
+                    + "reinterpret_cast<const void*>("
+                    + helper.var_idx("Mat_C", i)
+                    + ".device_ptr"
+                    + "),\n"
+                )
                 cnt += 1
             else:
                 code += "    " + "    " + "reinterpret_cast<const void*>(NULL),\n"
@@ -146,70 +221,171 @@ class gen_test:
             for arg in epilogue_args:
                 arg_value = str(arg[2])
 
-                code +=  "    " + "    " + helper.type_2_cutlass_type(acc_tp)  + "(" + arg_value + "),\n"
+                code += (
+                    "    "
+                    + "    "
+                    + helper.type_2_cutlass_type(acc_tp)
+                    + "("
+                    + arg_value
+                    + "),\n"
+                )
 
             if i != self.b2b_num - 1:
-                code += "    " + "    " + "reinterpret_cast<void*>(" + helper.var_idx("Mat_D_cutlass_ref", i) + ".device_ptr" + "),\n"
+                code += (
+                    "    "
+                    + "    "
+                    + "reinterpret_cast<void*>("
+                    + helper.var_idx("Mat_D_cutlass_ref", i)
+                    + ".device_ptr"
+                    + "),\n"
+                )
             else:
-                code += "    " + "    " + "reinterpret_cast<void*>(" + helper.var_idx("Mat_D", i) + ".device_ptr" + ")};\n"
-
-
-
+                code += (
+                    "    "
+                    + "    "
+                    + "reinterpret_cast<void*>("
+                    + helper.var_idx("Mat_D", i)
+                    + ".device_ptr"
+                    + ")};\n"
+                )
 
         code += "    " + "TI(FUSED_CUTLASS);\n"
         code += "    " + "for(int i = 0; i < 100; i++){\n"
         code += "    " + "    " + "one_api(arguments, sm, NULL);\n"
 
         code += "    " + "}\n"
-        code += "    " + "TO(FUSED_CUTLASS, \"FUSED_CUTLASS\", 100);\n"
+        code += "    " + 'TO(FUSED_CUTLASS, "FUSED_CUTLASS", 100);\n'
 
         code += "\n"
 
         for i in range(self.b2b_num):
             code_this = ""
 
-            N_str = str(self.fuse_gemm_info[i]['mnk'][1])
+            N_str = str(self.fuse_gemm_info[i]["mnk"][1])
 
-            code_this += "    " + helper.var_idx("typename Gemm", i) + helper.var_idx("::Arguments arguments_", i) + "{\n"
+            code_this += (
+                "    "
+                + helper.var_idx("typename Gemm", i)
+                + helper.var_idx("::Arguments arguments_", i)
+                + "{\n"
+            )
             code_this += "    " + "    " + helper.var_idx("problem_size_", i) + ",\n"
-            ldmA = str(self.fuse_gemm_info[i]['mnk'][2])
+            ldmA = str(self.fuse_gemm_info[i]["mnk"][2])
             if i == 0:
                 ldmA = "K0"
-            ldmB = str(self.fuse_gemm_info[i]['mnk'][2])
+            ldmB = str(self.fuse_gemm_info[i]["mnk"][2])
             if i == 0:
                 ldmB = "K0"
-            ldmC = str(self.fuse_gemm_info[i]['mnk'][1])
+            ldmC = str(self.fuse_gemm_info[i]["mnk"][1])
 
             ldmBias = str(helper.get_epilogue_bias_ldm(self.fuse_gemm_info[i]))
 
-            if self.fuse_gemm_info[i]['A_format'] is 'Col':
+            if self.fuse_gemm_info[i]["A_format"] is "Col":
                 ldmA = "M"
-            if self.fuse_gemm_info[i]['B_format'] is 'Row':
-                ldmB = str(self.fuse_gemm_info[i]['mnk'][1])
-            if self.fuse_gemm_info[i]['C_format'] is 'Col':
+            if self.fuse_gemm_info[i]["B_format"] is "Row":
+                ldmB = str(self.fuse_gemm_info[i]["mnk"][1])
+            if self.fuse_gemm_info[i]["C_format"] is "Col":
                 ldmC = "M"
 
             if i == 0:
-                code_this += "    " + "    " + "{reinterpret_cast<" + helper.type_2_cutlass_type(self.fuse_gemm_info[i]['A_tp']) + "*>(" + helper.var_idx("Mat_A", i) + ".device_ptr), " + ldmA + "}, " + "M * " + ldmA + ",\n"
+                code_this += (
+                    "    "
+                    + "    "
+                    + "{reinterpret_cast<"
+                    + helper.type_2_cutlass_type(self.fuse_gemm_info[i]["A_tp"])
+                    + "*>("
+                    + helper.var_idx("Mat_A", i)
+                    + ".device_ptr), "
+                    + ldmA
+                    + "}, "
+                    + "M * "
+                    + ldmA
+                    + ",\n"
+                )
             else:
-                code_this += "    " + "    " + "{reinterpret_cast<" + helper.type_2_cutlass_type(self.fuse_gemm_info[i]['A_tp']) + "*>(" + helper.var_idx("Mat_D_cutlass_ref", i - 1) + ".device_ptr), " + ldmA + "}, " + "M * " + ldmA + ",\n"
+                code_this += (
+                    "    "
+                    + "    "
+                    + "{reinterpret_cast<"
+                    + helper.type_2_cutlass_type(self.fuse_gemm_info[i]["A_tp"])
+                    + "*>("
+                    + helper.var_idx("Mat_D_cutlass_ref", i - 1)
+                    + ".device_ptr), "
+                    + ldmA
+                    + "}, "
+                    + "M * "
+                    + ldmA
+                    + ",\n"
+                )
 
-            code_this += "    " + "    " + "{reinterpret_cast<" + helper.type_2_cutlass_type(self.fuse_gemm_info[i]['B_tp']) + "*>(" + helper.var_idx("Mat_B", i) + ".device_ptr), " + ldmB + "}, " + N_str + " * " + ldmB + ",\n"
-            
+            code_this += (
+                "    "
+                + "    "
+                + "{reinterpret_cast<"
+                + helper.type_2_cutlass_type(self.fuse_gemm_info[i]["B_tp"])
+                + "*>("
+                + helper.var_idx("Mat_B", i)
+                + ".device_ptr), "
+                + ldmB
+                + "}, "
+                + N_str
+                + " * "
+                + ldmB
+                + ",\n"
+            )
+
             M_bias = str(helper.get_epilogue_bias_shape(self.fuse_gemm_info[i])[0])
 
-            code_this += "    " + "    " + "{reinterpret_cast<" + helper.type_2_cutlass_type(self.fuse_gemm_info[i]['C_tp']) + "*>(" + helper.var_idx("Mat_C", i) + ".device_ptr), " + ldmBias + "}, " + M_bias + " * " + N_str + ",\n"
-            code_this += "    " + "    " + "{reinterpret_cast<" + helper.type_2_cutlass_type(self.fuse_gemm_info[i]['C_tp']) + "*>(" + helper.var_idx("Mat_D_cutlass_ref", i) + ".device_ptr), " + ldmC + "}, " + "M * " + ldmC + ",\n"
-            code_this += "    " + "    " + "{ " + helper.var_idx("alpha", i) + ", " + helper.var_idx("beta", i) 
-            for epilogue_arg in  helper.get_epilogue_args(self.fuse_gemm_info[i]):
+            code_this += (
+                "    "
+                + "    "
+                + "{reinterpret_cast<"
+                + helper.type_2_cutlass_type(self.fuse_gemm_info[i]["C_tp"])
+                + "*>("
+                + helper.var_idx("Mat_C", i)
+                + ".device_ptr), "
+                + ldmBias
+                + "}, "
+                + M_bias
+                + " * "
+                + N_str
+                + ",\n"
+            )
+            code_this += (
+                "    "
+                + "    "
+                + "{reinterpret_cast<"
+                + helper.type_2_cutlass_type(self.fuse_gemm_info[i]["C_tp"])
+                + "*>("
+                + helper.var_idx("Mat_D_cutlass_ref", i)
+                + ".device_ptr), "
+                + ldmC
+                + "}, "
+                + "M * "
+                + ldmC
+                + ",\n"
+            )
+            code_this += (
+                "    "
+                + "    "
+                + "{ "
+                + helper.var_idx("alpha", i)
+                + ", "
+                + helper.var_idx("beta", i)
+            )
+            for epilogue_arg in helper.get_epilogue_args(self.fuse_gemm_info[i]):
                 arg_value = str(epilogue_arg[2])
-                code_this += ", " + helper.type_2_cutlass_type(self.fuse_gemm_info[i]['Acc_tp']) + "(" + str(arg_value) + ")"
+                code_this += (
+                    ", "
+                    + helper.type_2_cutlass_type(self.fuse_gemm_info[i]["Acc_tp"])
+                    + "("
+                    + str(arg_value)
+                    + ")"
+                )
             code_this += "    " + " },\n"
             code_this += "    " + "    " + "B};\n"
 
             code += code_this
-
-
 
         code += "    " + "TI(UNFUSED_CUTLASS);\n"
         code += "    " + "for(int i = 0; i < 100; i++){\n"
@@ -219,12 +395,19 @@ class gen_test:
         code += "    " + "    " + "    " + "NULL);\n"
 
         code += "    " + "}\n"
-        code += "    " + "TO(UNFUSED_CUTLASS, \"UNFUSED_CUTLASS\", 100);\n"
+        code += "    " + 'TO(UNFUSED_CUTLASS, "UNFUSED_CUTLASS", 100);\n'
 
-        code += "    " + helper.var_idx("Mat_D_cutlass_ref", self.b2b_num - 1) + ".d2h();\n"
+        code += (
+            "    " + helper.var_idx("Mat_D_cutlass_ref", self.b2b_num - 1) + ".d2h();\n"
+        )
         code += "    " + helper.var_idx("Mat_D", self.b2b_num - 1) + ".d2h();\n"
-        code += "    " + helper.var_idx("check_result(Mat_D_cutlass_ref", self.b2b_num - 1) + helper.var_idx(".host_ptr, Mat_D", self.b2b_num - 1) \
-                       + helper.var_idx(".host_ptr, Mat_D", self.b2b_num - 1) + ".elements);\n"
+        code += (
+            "    "
+            + helper.var_idx("check_result(Mat_D_cutlass_ref", self.b2b_num - 1)
+            + helper.var_idx(".host_ptr, Mat_D", self.b2b_num - 1)
+            + helper.var_idx(".host_ptr, Mat_D", self.b2b_num - 1)
+            + ".elements);\n"
+        )
 
         code += "\n\n}\n"
 

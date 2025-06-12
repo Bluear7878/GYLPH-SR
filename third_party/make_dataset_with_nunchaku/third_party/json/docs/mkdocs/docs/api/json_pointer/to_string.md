@@ -22,17 +22,19 @@ ptr == json_pointer(ptr.to_string());
 
 ??? example
 
-    The example shows the result of `to_string`.
-     
-    ```cpp
-    --8<-- "examples/json_pointer__to_string.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/json_pointer__to_string.output"
-    ```
+````
+The example shows the result of `to_string`.
+
+```cpp
+--8<-- "examples/json_pointer__to_string.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/json_pointer__to_string.output"
+```
+````
 
 ## Version history
 

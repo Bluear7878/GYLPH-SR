@@ -11,18 +11,35 @@ from utils import get_pipeline
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-p", "--precision", type=str, default="int4", choices=["int4", "bf16"], help="Which precision to use"
+        "-p",
+        "--precision",
+        type=str,
+        default="int4",
+        choices=["int4", "bf16"],
+        help="Which precision to use",
     )
 
-    parser.add_argument("-t", "--num-inference-steps", type=int, default=20, help="Number of inference steps")
-    parser.add_argument("-g", "--guidance-scale", type=float, default=5, help="Guidance scale")
+    parser.add_argument(
+        "-t",
+        "--num-inference-steps",
+        type=int,
+        default=20,
+        help="Number of inference steps",
+    )
+    parser.add_argument(
+        "-g", "--guidance-scale", type=float, default=5, help="Guidance scale"
+    )
     parser.add_argument("--pag-scale", type=float, default=2.0, help="PAG scale")
     parser.add_argument("--height", type=int, default=1024, help="Height of the image")
     parser.add_argument("--width", type=int, default=1024, help="Width of the image")
 
     # Test related
-    parser.add_argument("--warmup-times", type=int, default=2, help="Number of warmup times")
-    parser.add_argument("--test-times", type=int, default=10, help="Number of test times")
+    parser.add_argument(
+        "--warmup-times", type=int, default=2, help="Number of warmup times"
+    )
+    parser.add_argument(
+        "--test-times", type=int, default=10, help="Number of test times"
+    )
     parser.add_argument(
         "--mode",
         type=str,
@@ -31,7 +48,10 @@ def get_args() -> argparse.Namespace:
         help="Measure mode: end-to-end latency or per-step latency",
     )
     parser.add_argument(
-        "--ignore_ratio", type=float, default=0.2, help="Ignored ratio of the slowest and fastest steps"
+        "--ignore_ratio",
+        type=float,
+        default=0.2,
+        help="Ignored ratio of the slowest and fastest steps",
     )
 
     args = parser.parse_args()

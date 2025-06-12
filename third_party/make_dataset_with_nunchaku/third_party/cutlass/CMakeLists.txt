@@ -75,7 +75,7 @@ if(CUTLASS_NATIVE_CUDA)
 else()
   list(APPEND CUTLASS_CUDA_NVCC_FLAGS --std=c++17)
 endif()
-  
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX install CACHE PATH "Default installation location." FORCE)
 endif()
@@ -194,7 +194,7 @@ if (${CUTLASS_NVCC_VERBOSE})
 endif()
 
 #
-# CUTLASS NAMESPACE 
+# CUTLASS NAMESPACE
 #
 set(CUTLASS_NAMESPACE "cutlass" CACHE STRING "Top level namespace of CUTLASS")
 
@@ -337,8 +337,8 @@ if(CUDA_COMPILER MATCHES "[Cc]lang")
     message(FATAL_ERROR "Clang CUDA compilation requires Clang CXX compilation. Currently CMAKE_CXX_COMPILER is ${CMAKE_CXX_COMPILER_ID}" )
   endif()
 
-  # There are numerous Clang versions that can work with each CUDA toolkit and the 
-  # the checks are not very useful so we are turning them off and using testing to 
+  # There are numerous Clang versions that can work with each CUDA toolkit and the
+  # the checks are not very useful so we are turning them off and using testing to
   # ensure the various combinations work properly.
 
   list(APPEND CUTLASS_CUDA_CLANG_FLAGS --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
@@ -364,7 +364,7 @@ if(CUDA_COMPILER MATCHES "[Cc]lang")
   link_libraries(nvidia::cuda_driver)
 endif()
 
-# Support for 128-bit integers if using NVIDIA C++ compiler 
+# Support for 128-bit integers if using NVIDIA C++ compiler
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "PGI" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "NVHPC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Mint128 ")
 endif()
@@ -372,24 +372,24 @@ endif()
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
   # CMake 3.18 added support for CUDA_ARCHITECTURES target property. We will use this
   # property for CMake 3.18+, so we request the NEW behavior for correct compatibility.
-  # https://cmake.org/cmake/help/v3.18/policy/CMP0104.html#policy:CMP0104 
+  # https://cmake.org/cmake/help/v3.18/policy/CMP0104.html#policy:CMP0104
   cmake_policy(SET CMP0104 NEW)
 endif()
 
 if (MSVC)
-  
+
   # MSVC by default does not apply the correct __cplusplus version as specified by the C++ standard
-  # because MSVC is not a completely compliant implementation. This option forces MSVC to use the 
+  # because MSVC is not a completely compliant implementation. This option forces MSVC to use the
   # appropriate value given the requested --std option. This fixes a compilation issue mismatch
   # between GCC/Clang and MSVC.
   #
   # error : a constexpr function cannot have a nonliteral return type "dim3"
-  # 
+  #
   # See https://developercommunity.visualstudio.com/t/msvc-incorrectly-defines-cplusplus/139261
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus")
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler  /Zc:__cplusplus")
-  
+
 endif()
 
 # Some tests require this build option in order to link.
@@ -427,7 +427,7 @@ function(cutlass_apply_cuda_gencode_flags TARGET)
     list(JOIN CODES "," CODES_STR)
     list(APPEND NVCC_FLAGS -gencode=arch=compute_${ARCH},code=[${CODES_STR}])
   endforeach()
- 
+
   if (NOT __SM_ARCHS)
     if (CUDA_COMPILER MATCHES "[Cc]lang")
       target_compile_options(
@@ -462,7 +462,7 @@ function(cutlass_apply_cuda_gencode_flags TARGET)
 
 endfunction()
 
-# Cache the flags so they are available when the function below is called anywhere globally. 
+# Cache the flags so they are available when the function below is called anywhere globally.
 
 set(__CUTLASS_CUDA_FLAGS ${CUTLASS_CUDA_FLAGS} CACHE INTERNAL "")
 set(__CUTLASS_CUDA_FLAGS_RELEASE ${CUTLASS_CUDA_FLAGS_RELEASE} CACHE INTERNAL "")
@@ -685,23 +685,23 @@ set(CUTLASS_CTEST_TEMPLATE_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/CTestTestfile.co
 set(CUTLASS_CTEST_GENERATED_FILES "" CACHE INTERNAL "")
 
 function(cutlass_add_executable_tests NAME TARGET)
-# 
-# Generates test rules for `make test`, `make test_all`, and `ctest` invoked from either the 
+#
+# Generates test rules for `make test`, `make test_all`, and `ctest` invoked from either the
 # <CMAKE_BINARY_DIR> or the <CMAKE_INSTALL_PREFIX>/<CUTLASS_TEST_INSTALL_PREFIX> after installation.
-# 
+#
 # NAME: The base name for the test. Can be run with `make <NAME>` or `ctest -R 'c<NAME>'`.
 # TARGET: The target corresponding to the executable under test.
 # DISABLE_EXECUTABLE_INSTALL_RULE: An option, if given, that disables creating an install rule for TARGET.
 # DEPENDS: A list of targets or files on which this test is dependent.
 # DEPENDEES: A list of targets which should depend on this test.
 # TEST_COMMAND_OPTIONS: A list of variables (i.e. by reference params) which contain command line arguments
-#   to pass to the test executable. A unique test is generated for each set of 
+#   to pass to the test executable. A unique test is generated for each set of
 #   options given. If this option is not used, a single test with no arguments is generated.
-# TEST_COMMAND_OPTIONS_PREFIX: If provided, is added as a prefix to each TEST_COMMAND_OPTIONS value for 
+# TEST_COMMAND_OPTIONS_PREFIX: If provided, is added as a prefix to each TEST_COMMAND_OPTIONS value for
 #   generating the full variable name to be referenced.
 # RESULT_CACHE_FILE: A file to be installed alongside the test executable with pre-computed
 #   test results to speed up test runtime.
-# 
+#
 
   set(options DISABLE_EXECUTABLE_INSTALL_RULE)
   set(oneValueArgs DISABLE_TESTS RESULT_CACHE_FILE TEST_COMMAND_OPTIONS_PREFIX)
@@ -727,9 +727,9 @@ function(cutlass_add_executable_tests NAME TARGET)
   endif()
 
   if (NOT __DISABLE_EXECUTABLE_INSTALL_RULE AND CUTLASS_INSTALL_TESTS)
-  
+
     # file(RELATIVE_PATH CMAKE_CURRENT_BINARY_RELATIVE_DIR ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-  
+
     install(
       TARGETS ${TARGET}
       RUNTIME DESTINATION ${CUTLASS_TEST_INSTALL_BINDIR}
@@ -743,7 +743,7 @@ function(cutlass_add_executable_tests NAME TARGET)
        )
 
     endif()
-  
+
   endif()
 
   if (NOT __TEST_COMMAND_OPTIONS)
@@ -777,10 +777,10 @@ function(cutlass_add_executable_tests NAME TARGET)
       string(TOLOWER "${NAME}" TEST_NAME)
     endif()
 
-    # The following rigmarole is needed to deal with spaces and possible quotes in 
+    # The following rigmarole is needed to deal with spaces and possible quotes in
     # command line arguments. The options are passed "by reference" as the actual
     # variable names holding the real options. We then expand these in a way that
-    # preserves any quotes. Note, they have to be in this order for it to work for 
+    # preserves any quotes. Note, they have to be in this order for it to work for
     # all the use cases below.
 
     set(TEST_COMMAND_OPTIONS ${${__TEST_COMMAND_OPTIONS_PREFIX}${CMD_OPTIONS_VAR}})
@@ -810,7 +810,7 @@ function(cutlass_add_executable_tests NAME TARGET)
   endforeach()
 
   # To run the tests from an install package with tests enabled, we need to generate test files
-  # that don't rely on the current directory structure in build.  
+  # that don't rely on the current directory structure in build.
 
   set(TEST_NAME c${NAME})
   set(TEST_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/ctest/${TEST_NAME})
@@ -829,14 +829,14 @@ function(cutlass_add_executable_tests NAME TARGET)
   # The following line imports the tests for immediate run via `make test`.
 
   include(${TEST_GEN_DIR}/CTestTestfile.${TEST_NAME}.cmake)
- 
+
   set(CUTLASS_CTEST_GENERATED_FILES ${CUTLASS_CTEST_GENERATED_FILES};ctest/${TEST_NAME}/CTestTestfile.${TEST_NAME}.cmake CACHE INTERNAL "")
 
     if (CUTLASS_INSTALL_TESTS)
 
-    file(GENERATE 
-      OUTPUT "${TEST_GEN_DIR}/CTestTestfile.${TEST_NAME}.install.cmake" 
-      INPUT "${TEST_GEN_DIR}/CTestTestfile.${TEST_NAME}.install.cmake.in" 
+    file(GENERATE
+      OUTPUT "${TEST_GEN_DIR}/CTestTestfile.${TEST_NAME}.install.cmake"
+      INPUT "${TEST_GEN_DIR}/CTestTestfile.${TEST_NAME}.install.cmake.in"
       )
 
     install(
@@ -894,13 +894,13 @@ endif()
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/NvidiaCutlassConfigVersion.cmake 
+  ${CMAKE_CURRENT_BINARY_DIR}/NvidiaCutlassConfigVersion.cmake
   COMPATIBILITY AnyNewerVersion)
 
 install(
-  FILES 
+  FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NvidiaCutlassConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/NvidiaCutlassConfigVersion.cmake 
+    ${CMAKE_CURRENT_BINARY_DIR}/NvidiaCutlassConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NvidiaCutlass/
   )
 
@@ -914,4 +914,3 @@ install(
 ################################################################################
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/NvidiaCutlassPackageConfig.cmake)
-

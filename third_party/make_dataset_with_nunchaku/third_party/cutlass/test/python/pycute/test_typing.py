@@ -36,6 +36,7 @@ Unit tests for pycute.typing
 
 import logging
 import unittest
+
 from pycute import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,9 +52,10 @@ class TestTyping(unittest.TestCase):
 
     def test_typing(self):
         self.helper_test_typing(int, 1, Integer, True)
-        self.helper_test_typing(float, 1., Integer, False)
-        self.helper_test_typing(str, 'hi', Integer, False)
+        self.helper_test_typing(float, 1.0, Integer, False)
+        self.helper_test_typing(str, "hi", Integer, False)
         self.helper_test_typing(bool, False, Integer, False)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

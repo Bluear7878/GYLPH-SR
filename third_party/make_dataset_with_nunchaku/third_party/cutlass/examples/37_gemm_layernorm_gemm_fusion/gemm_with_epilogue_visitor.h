@@ -29,7 +29,7 @@
  *
  **************************************************************************************************/
 /*! \file
-    \brief GEMM kernel to support the epilogue visitor model 
+    \brief GEMM kernel to support the epilogue visitor model
     for customized layernorm partial reduction epilogue fusion.
 
     This source file will likely be moved to `include/cutlass/gemm/kernel/` in the future once

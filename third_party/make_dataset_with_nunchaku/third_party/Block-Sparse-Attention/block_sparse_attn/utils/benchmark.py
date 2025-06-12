@@ -6,7 +6,14 @@ import torch.utils.benchmark as benchmark
 
 
 def benchmark_forward(
-    fn, *inputs, repeats=10, desc="", verbose=True, amp=False, amp_dtype=torch.float16, **kwinputs
+    fn,
+    *inputs,
+    repeats=10,
+    desc="",
+    verbose=True,
+    amp=False,
+    amp_dtype=torch.float16,
+    **kwinputs,
 ):
     """Use Pytorch Benchmark on the forward pass of an arbitrary function."""
     if verbose:
@@ -105,7 +112,13 @@ def benchmark_combined(
 
     t = benchmark.Timer(
         stmt="f(grad, *inputs, **kwinputs)",
-        globals={"f": f, "fn": fn, "inputs": inputs, "grad": grad, "kwinputs": kwinputs},
+        globals={
+            "f": f,
+            "fn": fn,
+            "inputs": inputs,
+            "grad": grad,
+            "kwinputs": kwinputs,
+        },
         num_threads=torch.get_num_threads(),
     )
     m = t.timeit(repeats)

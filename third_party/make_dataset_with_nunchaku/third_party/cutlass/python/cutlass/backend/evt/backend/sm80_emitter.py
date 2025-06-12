@@ -28,14 +28,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#################################################################################################  
+#################################################################################################
 
 """
 Emitter for Sm80 Epilogue Visitor
 """
 
-from cutlass.backend.evt.backend.emitter_base import FusionCallbacks
 from cutlass.backend import GemmOperationUniversal
+from cutlass.backend.evt.backend.emitter_base import FusionCallbacks
 
 
 class Sm80Emitter:

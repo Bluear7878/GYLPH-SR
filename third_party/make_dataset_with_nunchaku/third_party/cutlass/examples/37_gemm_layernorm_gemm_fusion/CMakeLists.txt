@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   37_gemm_layernorm_gemm_fusion
   gemm_layernorm.cu
   )
-

@@ -38,14 +38,16 @@ import ctypes
 
 from cutlass.backend.c_types import tuple_factory
 from cutlass.backend.epilogue import dtype2ctype, to_ctype_value
-from cutlass.backend.evt.ir.node import NodeBase, ImplBase
+from cutlass.backend.evt.ir.node import ImplBase, NodeBase
 
 
 class LoadImplBase(ImplBase):
     """
     Base class for load node implementations
     """
+
     reserved_names = ["accum", "C"]
+
     def __init__(self, node) -> None:
         super().__init__(node)
         self.element = node.element
@@ -67,6 +69,7 @@ class LoadSrcImpl(LoadImplBase):
     """
     Load C implementation
     """
+
     @property
     def name_camel(self) -> str:
         return "TensorC"
@@ -75,11 +78,10 @@ class LoadSrcImpl(LoadImplBase):
     def argument_type_c(self):
         stride_mnl = self.get_stride_mnl()
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
+
         class _Argument(ctypes.Structure):
-            _fields_ = [
-                ("ptr_C", ctypes.c_void_p),
-                ("stride_C", tuple_type)
-            ]
+            _fields_ = [("ptr_C", ctypes.c_void_p), ("stride_C", tuple_type)]
+
             def __init__(self, ptr) -> None:
                 self.ptr_C = ptr
                 self.stride_C = tuple_type(stride_mnl)
@@ -95,18 +97,21 @@ class AuxLoadImpl(LoadImplBase):
     """
     Load arbitrary tensor
     """
+
     @property
     def argument_type(self):
         stride_mnl = self.get_stride_mnl()
         name = self.name
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
         element_type = self.element
+
         class _Argument(ctypes.Structure):
             _fields_ = [
                 ("ptr_aux", ctypes.c_void_p),
                 ("null_default", dtype2ctype[element_type]),
-                ("dAux", tuple_type)
+                ("dAux", tuple_type),
             ]
+
             def __init__(self, kwargs) -> None:
                 ptr = kwargs[name]
                 self.ptr_aux = ptr
@@ -120,8 +125,12 @@ class AuxLoadImpl(LoadImplBase):
         if node.name in LoadImplBase.reserved_names:
             return False
         strideMN = node.tensor.stride[-2:]
-        if (strideMN[0] == 1 and strideMN[1] != 0 or
-            strideMN[0] != 0 and strideMN[1] == 1 ):
+        if (
+            strideMN[0] == 1
+            and strideMN[1] != 0
+            or strideMN[0] != 0
+            and strideMN[1] == 1
+        ):
             return True
         else:
             return False
@@ -131,6 +140,7 @@ class RowBroadcastImpl(LoadImplBase):
     """
     Broadcast a row vector
     """
+
     def __init__(self, node) -> None:
         super().__init__(node)
         self.stride_dtype = "int"
@@ -141,12 +151,14 @@ class RowBroadcastImpl(LoadImplBase):
         name = self.name
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
         element_type = self.element
+
         class _Argument(ctypes.Structure):
             _fields_ = [
                 ("ptr_row", ctypes.c_void_p),
                 ("null_default", dtype2ctype[element_type]),
-                ("dRow", tuple_type)
+                ("dRow", tuple_type),
             ]
+
             def __init__(self, kwargs) -> None:
                 ptr = kwargs[name]
                 self.ptr_row = ptr
@@ -171,6 +183,7 @@ class ColumnBroadcastImpl(LoadImplBase):
     """
     Broadcast a column vector
     """
+
     def __init__(self, node) -> None:
         super().__init__(node)
         self.stride_dtype = "int"
@@ -181,12 +194,14 @@ class ColumnBroadcastImpl(LoadImplBase):
         name = self.name
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
         element_type = self.element
+
         class _Argument(ctypes.Structure):
             _fields_ = [
                 ("ptr_col", ctypes.c_void_p),
                 ("null_default", dtype2ctype[element_type]),
-                ("dCol", tuple_type)
+                ("dCol", tuple_type),
             ]
+
             def __init__(self, kwargs) -> None:
                 ptr = kwargs[name]
                 self.ptr_col = int(ptr)
@@ -211,6 +226,7 @@ class ScalarBroadcastImpl(LoadImplBase):
     """
     Broadcast a scalar
     """
+
     def __init__(self, node) -> None:
         super().__init__(node)
         self.stride_dtype = "int"
@@ -224,24 +240,28 @@ class ScalarBroadcastImpl(LoadImplBase):
 
         if self.tensor.is_constant:
             value = self.tensor.value
+
             class _Argument(ctypes.Structure):
                 _fields_ = [
                     ("scalars", dtype2ctype[element_type]),
                     ("scalar_ptrs", ctypes.c_void_p),
-                    ("dScalar", tuple_type)
+                    ("dScalar", tuple_type),
                 ]
+
                 def __init__(self, kwargs) -> None:
                     self.scalars = to_ctype_value(value, element_type)
                     self.scalar_ptrs = 0
                     self.dScalar = tuple_type(stride_mnl)
 
         else:
+
             class _Argument(ctypes.Structure):
                 _fields_ = [
                     ("scalars", dtype2ctype[element_type]),
                     ("scalar_ptrs", ctypes.c_void_p),
-                    ("dScalar", tuple_type)
+                    ("dScalar", tuple_type),
                 ]
+
                 def __init__(self, kwargs) -> None:
                     scalar_or_ptr = kwargs[name]
                     if isinstance(scalar_or_ptr, float):
@@ -270,12 +290,17 @@ class LoadNode(NodeBase):
     """
     Load Node
     """
+
     cnt = 0
     possible_impls = [
-        AccumulatorImpl, LoadSrcImpl, AuxLoadImpl,
-        RowBroadcastImpl, ColumnBroadcastImpl,
-        ScalarBroadcastImpl
+        AccumulatorImpl,
+        LoadSrcImpl,
+        AuxLoadImpl,
+        RowBroadcastImpl,
+        ColumnBroadcastImpl,
+        ScalarBroadcastImpl,
     ]
+
     def __init__(self, name: str) -> None:
         if name is None:
             name = f"load{LoadNode.cnt}"

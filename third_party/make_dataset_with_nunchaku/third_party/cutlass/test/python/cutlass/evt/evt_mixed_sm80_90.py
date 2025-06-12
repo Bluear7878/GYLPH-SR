@@ -62,7 +62,9 @@ class TestEVTMixedSM90(EVTTestCaseBase):
             aligments = [2, 4, 8]
         else:
             # Sm90 EVT currently only supports 128-bit alignment
-            aligments = [8,]
+            aligments = [
+                8,
+            ]
         for align in aligments:
             for m, n, k, l in self.get_problem_sizes(align):
                 example_inputs = {
@@ -76,7 +78,7 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                     "D": self.fake_tensor(self.element, (l, m, n)),
                     "F": self.fake_tensor(self.element, (l, m, n)),
                     "F_row_max": self.fake_tensor(DataType.f32, (n,)),
-                    "E_col_max": self.fake_tensor(DataType.f32, (m, 1))
+                    "E_col_max": self.fake_tensor(DataType.f32, (m, 1)),
                 }
 
                 launcher = EVTTestBed(self.element, evt_mixed_dag, example_inputs)
@@ -107,7 +109,7 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                     "D": self.fake_tensor(np.float32, (l, m, n)),
                     "F": self.fake_tensor(np.float32, (l, m, n)),
                     "F_row_max": self.fake_tensor(np.float32, (n,)),
-                    "E_col_max": self.fake_tensor(np.float32, (m, 1))
+                    "E_col_max": self.fake_tensor(np.float32, (m, 1)),
                 }
                 launcher = EVTTestBed(DataType.f32, evt_mixed_dag, example_inputs)
                 input_keys = ["alpha", "C", "beta", "aux", "cbias", "rbias"]
@@ -136,10 +138,12 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                 "D": self.fake_tensor(self.element, (l, m, n)),
                 "F": self.fake_tensor(self.element, (l, m, n)),
                 "F_row_max": self.fake_tensor(DataType.f32, (n,)),
-                "E_col_max": self.fake_tensor(DataType.f32, (m, 1))
+                "E_col_max": self.fake_tensor(DataType.f32, (m, 1)),
             }
 
-            launcher = EVTTestBed(self.element, evt_mixed_dag, example_inputs, epilogue_stages=2)
+            launcher = EVTTestBed(
+                self.element, evt_mixed_dag, example_inputs, epilogue_stages=2
+            )
             input_keys = ["alpha", "C", "beta", "aux", "cbias", "rbias"]
             result_keys = ["D", "F", "F_row_max", "E_col_max"]
             launcher.verify((m, n, k), input_keys, result_keys, l)
@@ -166,15 +170,21 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                 "D": self.fake_tensor(self.element, (l, m, n)),
                 "F": self.fake_tensor(self.element, (l, m, n)),
                 "F_row_max": self.fake_tensor(DataType.f32, (n,)),
-                "E_col_max": self.fake_tensor(DataType.f32, (m, 1))
+                "E_col_max": self.fake_tensor(DataType.f32, (m, 1)),
             }
 
             tile_description = {
                 "threadblock_shape": [128, 128, 64],
-                "warp_count": [2, 2, 2]
+                "warp_count": [2, 2, 2],
             }
 
-            launcher = EVTTestBed(self.element, evt_mixed_dag, example_inputs, tile_description=tile_description, epilogue_stages=2)
+            launcher = EVTTestBed(
+                self.element,
+                evt_mixed_dag,
+                example_inputs,
+                tile_description=tile_description,
+                epilogue_stages=2,
+            )
             input_keys = ["alpha", "C", "beta", "aux", "cbias", "rbias"]
             result_keys = ["D", "F", "F_row_max", "E_col_max"]
             launcher.verify((m, n, k), input_keys, result_keys, l)
@@ -193,7 +203,7 @@ class TestEVTMixedSM90(EVTTestCaseBase):
         tile_description = {
             "threadblock_shape": [128, 128, 32],
             "warp_count": [2, 2, 1],
-            "stages": 3
+            "stages": 3,
         }
         tds = [None, tile_description]
         for td in tds:
@@ -210,7 +220,7 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                         "D": self.fake_tensor(self.element, (m, n)),
                         "F": self.fake_tensor(self.element, (m, n)),
                         "F_row_max": self.fake_tensor(DataType.f32, (n,)),
-                        "E_col_max": self.fake_tensor(DataType.f32, (m, 1))
+                        "E_col_max": self.fake_tensor(DataType.f32, (m, 1)),
                     }
                 else:
                     example_inputs = {
@@ -224,18 +234,26 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                         "D": self.fake_tensor(self.element, (l, m, n)),
                         "F": self.fake_tensor(self.element, (l, m, n)),
                         "F_row_max": self.fake_tensor(DataType.f32, (n,)),
-                        "E_col_max": self.fake_tensor(DataType.f32, (m, 1))
+                        "E_col_max": self.fake_tensor(DataType.f32, (m, 1)),
                     }
 
                 if td is not None:
                     launcher = EVTTestBed(
-                        self.element, evt_mixed_dag, example_inputs,
+                        self.element,
+                        evt_mixed_dag,
+                        example_inputs,
                         tile_description=td,
-                        swizzling_functor=ThreadblockSwizzleStreamK, backend="torch")
+                        swizzling_functor=ThreadblockSwizzleStreamK,
+                        backend="torch",
+                    )
                 else:
                     launcher = EVTTestBed(
-                        self.element, evt_mixed_dag, example_inputs,
-                        swizzling_functor=ThreadblockSwizzleStreamK, backend="torch")
+                        self.element,
+                        evt_mixed_dag,
+                        example_inputs,
+                        swizzling_functor=ThreadblockSwizzleStreamK,
+                        backend="torch",
+                    )
 
                 input_keys = ["alpha", "C", "beta", "aux", "cbias", "rbias"]
                 result_keys = ["D", "F", "F_row_max", "E_col_max"]
@@ -262,7 +280,7 @@ class TestEVTMixedSM90(EVTTestCaseBase):
                 "D": self.fake_tensor(self.element, (m, n)),
                 "F": self.fake_tensor(self.element, (m, n)),
                 "F_row_max": self.fake_tensor(DataType.f32, (n,)),
-                "E_col_max": self.fake_tensor(DataType.f32, (m, 1))
+                "E_col_max": self.fake_tensor(DataType.f32, (m, 1)),
             }
 
             launcher = EVTTestBed(self.element, evt_mixed_dag_no_batch, example_inputs)
@@ -270,5 +288,6 @@ class TestEVTMixedSM90(EVTTestCaseBase):
             result_keys = ["D", "F", "F_row_max", "E_col_max"]
             launcher.verify((m, n, k), input_keys, result_keys, 1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

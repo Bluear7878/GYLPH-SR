@@ -48,4 +48,3 @@ add_custom_target(
   test_unit_gemm_threadblock
   test_unit_gemm_device
   )
-

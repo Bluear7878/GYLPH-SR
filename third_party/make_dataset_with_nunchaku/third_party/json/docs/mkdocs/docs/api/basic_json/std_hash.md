@@ -1,4 +1,4 @@
-# <small>std::</small>hash<nlohmann::basic_json\>
+# <small>std::</small>hash<nlohmann::basic_json%5C>
 
 ```cpp
 namespace std {
@@ -14,19 +14,21 @@ type of the JSON value is taken into account to have different hash values for `
 
 ??? example
 
-    The example shows how to calculate hash values for different JSON values.
-     
-    ```cpp
-    --8<-- "examples/std_hash.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/std_hash.output"
-    ```
+````
+The example shows how to calculate hash values for different JSON values.
 
-    Note the output is platform-dependent.
+```cpp
+--8<-- "examples/std_hash.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/std_hash.output"
+```
+
+Note the output is platform-dependent.
+````
 
 ## Version history
 

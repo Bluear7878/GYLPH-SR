@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,41 +18,42 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief 
-      Default kernel-level SYMM/HEMM definitions combine threadblock-scoped matrix multiply-add with
-      the appropriate threadblock-scoped epilogue.
+    \brief
+      Default kernel-level SYMM/HEMM definitions combine threadblock-scoped
+   matrix multiply-add with the appropriate threadblock-scoped epilogue.
 
-  
+
 */
 
 #pragma once
 
 #include "cutlass/blas3.h"
 
-#include "cutlass/layout/matrix.h"
 #include "cutlass/arch/wmma.h"
+#include "cutlass/layout/matrix.h"
 
-#include "cutlass/epilogue/threadblock/epilogue.h"
 #include "cutlass/epilogue/thread/linear_combination.h"
+#include "cutlass/epilogue/threadblock/epilogue.h"
 
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/kernel/symm_universal.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_mma.h"
-#include "cutlass/gemm/threadblock/default_multistage_trmm_complex.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_multistage_mma_complex.h"
+#include "cutlass/gemm/threadblock/default_multistage_trmm_complex.h"
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
 #include "cutlass/epilogue/threadblock/default_epilogue_complex_tensor_op.h"
@@ -60,8 +61,7 @@
 
 #if defined(CUTLASS_ARCH_WMMA_ENABLED)
 #include "cutlass/epilogue/threadblock/default_epilogue_wmma_tensor_op.h"
-#endif //CUTLASS_ARCH_WMMA_ENABLED
-
+#endif // CUTLASS_ARCH_WMMA_ENABLED
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -153,50 +153,43 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultSymmComplex<
-  ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC, 
-  layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm90, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  Operator, SplitKSerial, BlasMode::kSymmetric> {
+    ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC,
+    layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp, arch::Sm90,
+    ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+    ThreadblockSwizzle, Stages, Operator, SplitKSerial, BlasMode::kSymmetric> {
 
   static BlasMode const kBlasMode = BlasMode::kSymmetric;
   // Complex Transform don't appply to A or B for SYMM
-  static ComplexTransform const TransformA = ComplexTransform::kNone; 
-  static ComplexTransform const TransformB = ComplexTransform::kNone; 
+  static ComplexTransform const TransformA = ComplexTransform::kNone;
+  static ComplexTransform const TransformB = ComplexTransform::kNone;
 
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
   /// TRMM - with diagonal: alpha * A * B or alpha * B * A
-	static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
-  using Mma1 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-      ElementA, LayoutA, 
-      ElementB, LayoutB, 
-      kSideModeA, kFillModeA, kDiagTypeMma1, 
-      ElementAccumulator, layout::RowMajor, 
-      arch::OpClassTensorOp, arch::Sm90,
-      ThreadblockShape, WarpShape, InstructionShape,
-      Stages, TransformA, TransformB, Operator>::ThreadblockMma;
+  static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
+  using Mma1 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutA, ElementB, LayoutB, kSideModeA, kFillModeA,
+          kDiagTypeMma1, ElementAccumulator, layout::RowMajor,
+          arch::OpClassTensorOp, arch::Sm90, ThreadblockShape, WarpShape,
+          InstructionShape, Stages, TransformA, TransformB,
+          Operator>::ThreadblockMma;
 
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
   /// TRMM - withOUT diagonal: alpha * AT * B or alpha * B * AT
-	static const DiagType kDiagTypeMma2 = DiagType::kZero;
+  static const DiagType kDiagTypeMma2 = DiagType::kZero;
   using LayoutAMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                typename layout::LayoutTranspose<LayoutA>::type, 
-                                LayoutA
-                              >::type;
+      (kSideModeA == SideMode::kLeft),
+      typename layout::LayoutTranspose<LayoutA>::type, LayoutA>::type;
   using LayoutBMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                LayoutB, 
-                                typename layout::LayoutTranspose<LayoutB>::type
-                              >::type; 
-	using Mma2 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-			ElementA, LayoutAMma2, 
-			ElementB, LayoutBMma2, 
-			kSideModeA, InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, 
-			ElementAccumulator, layout::RowMajor, 
-			arch::OpClassTensorOp, arch::Sm90,
-			ThreadblockShape, WarpShape, InstructionShape,
-			Stages, TransformA, TransformB, Operator>::ThreadblockMma;
+      (kSideModeA == SideMode::kLeft), LayoutB,
+      typename layout::LayoutTranspose<LayoutB>::type>::type;
+  using Mma2 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutAMma2, ElementB, LayoutBMma2, kSideModeA,
+          InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, ElementAccumulator,
+          layout::RowMajor, arch::OpClassTensorOp, arch::Sm90, ThreadblockShape,
+          WarpShape, InstructionShape, Stages, TransformA, TransformB,
+          Operator>::ThreadblockMma;
 
   /// Define the epilogue
   using Epilogue =
@@ -205,8 +198,9 @@ struct DefaultSymmComplex<
           EpilogueOutputOp::kCount, Operator>::Epilogue;
 
   /// Define the kernel-level Symm operator.
-  using SymmKernel = kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle, kSideModeA, kFillModeA>;
-
+  using SymmKernel =
+      kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle,
+                            kSideModeA, kFillModeA>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,55 +241,50 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultSymmComplex<
-  ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC, 
-  layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm90, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  Operator, SplitKSerial, BlasMode::kHermitian> {
+    ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC,
+    layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp, arch::Sm90,
+    ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+    ThreadblockSwizzle, Stages, Operator, SplitKSerial, BlasMode::kHermitian> {
 
   static BlasMode const kBlasMode = BlasMode::kHermitian;
 
-
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
   /// TRMM - with diagonal: alpha * A * B or alpha * B * A
-	static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
-  static ComplexTransform const TransformAMma1 = ComplexTransform::kNone; 
-  static ComplexTransform const TransformBMma1 = ComplexTransform::kNone; 
-  using Mma1 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-      ElementA, LayoutA, 
-      ElementB, LayoutB, 
-      kSideModeA, kFillModeA, kDiagTypeMma1, 
-      ElementAccumulator, layout::RowMajor, 
-      arch::OpClassTensorOp, arch::Sm90,
-      ThreadblockShape, WarpShape, InstructionShape,
-      Stages, TransformAMma1, TransformBMma1, Operator, BlasMode::kHermitian>::ThreadblockMma;
+  static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
+  static ComplexTransform const TransformAMma1 = ComplexTransform::kNone;
+  static ComplexTransform const TransformBMma1 = ComplexTransform::kNone;
+  using Mma1 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutA, ElementB, LayoutB, kSideModeA, kFillModeA,
+          kDiagTypeMma1, ElementAccumulator, layout::RowMajor,
+          arch::OpClassTensorOp, arch::Sm90, ThreadblockShape, WarpShape,
+          InstructionShape, Stages, TransformAMma1, TransformBMma1, Operator,
+          BlasMode::kHermitian>::ThreadblockMma;
 
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
-  /// TRMM - withOUT diagonal - with conjugate transpose: alpha * AT * B or alpha * B * AT
-	static const DiagType kDiagTypeMma2 = DiagType::kZero;
+  /// TRMM - withOUT diagonal - with conjugate transpose: alpha * AT * B or
+  /// alpha * B * AT
+  static const DiagType kDiagTypeMma2 = DiagType::kZero;
   using LayoutAMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                typename layout::LayoutTranspose<LayoutA>::type, 
-                                LayoutA
-                              >::type;
+      (kSideModeA == SideMode::kLeft),
+      typename layout::LayoutTranspose<LayoutA>::type, LayoutA>::type;
   using LayoutBMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                LayoutB, 
-                                typename layout::LayoutTranspose<LayoutB>::type
-                              >::type;
-  static ComplexTransform const TransformAMma2 = (kSideModeA == SideMode::kLeft) ? 
-                                              ComplexTransform::kConjugate : ComplexTransform::kNone;
-  static ComplexTransform const TransformBMma2 = (kSideModeA == SideMode::kLeft) ? 
-                                              ComplexTransform::kNone : ComplexTransform::kConjugate;
+      (kSideModeA == SideMode::kLeft), LayoutB,
+      typename layout::LayoutTranspose<LayoutB>::type>::type;
+  static ComplexTransform const TransformAMma2 =
+      (kSideModeA == SideMode::kLeft) ? ComplexTransform::kConjugate
+                                      : ComplexTransform::kNone;
+  static ComplexTransform const TransformBMma2 =
+      (kSideModeA == SideMode::kLeft) ? ComplexTransform::kNone
+                                      : ComplexTransform::kConjugate;
 
-	using Mma2 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-			ElementA, LayoutAMma2, 
-			ElementB, LayoutBMma2, 
-			kSideModeA, InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, 
-			ElementAccumulator, layout::RowMajor, 
-			arch::OpClassTensorOp, arch::Sm90,
-			ThreadblockShape, WarpShape, InstructionShape,
-			Stages, TransformAMma2, TransformBMma2, Operator>::ThreadblockMma;
+  using Mma2 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutAMma2, ElementB, LayoutBMma2, kSideModeA,
+          InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, ElementAccumulator,
+          layout::RowMajor, arch::OpClassTensorOp, arch::Sm90, ThreadblockShape,
+          WarpShape, InstructionShape, Stages, TransformAMma2, TransformBMma2,
+          Operator>::ThreadblockMma;
 
   /// Define the epilogue
   using Epilogue =
@@ -304,8 +293,9 @@ struct DefaultSymmComplex<
           EpilogueOutputOp::kCount, Operator>::Epilogue;
 
   /// Define the kernel-level Symm operator.
-  using SymmKernel = kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle, kSideModeA, kFillModeA>;
-
+  using SymmKernel =
+      kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle,
+                            kSideModeA, kFillModeA>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -346,50 +336,43 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultSymmComplex<
-  ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC, 
-  layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm80, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  Operator, SplitKSerial, BlasMode::kSymmetric> {
+    ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC,
+    layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp, arch::Sm80,
+    ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+    ThreadblockSwizzle, Stages, Operator, SplitKSerial, BlasMode::kSymmetric> {
 
   static BlasMode const kBlasMode = BlasMode::kSymmetric;
   // Complex Transform don't appply to A or B for SYMM
-  static ComplexTransform const TransformA = ComplexTransform::kNone; 
-  static ComplexTransform const TransformB = ComplexTransform::kNone; 
+  static ComplexTransform const TransformA = ComplexTransform::kNone;
+  static ComplexTransform const TransformB = ComplexTransform::kNone;
 
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
   /// TRMM - with diagonal: alpha * A * B or alpha * B * A
-	static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
-  using Mma1 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-      ElementA, LayoutA, 
-      ElementB, LayoutB, 
-      kSideModeA, kFillModeA, kDiagTypeMma1, 
-      ElementAccumulator, layout::RowMajor, 
-      arch::OpClassTensorOp, arch::Sm80,
-      ThreadblockShape, WarpShape, InstructionShape,
-      Stages, TransformA, TransformB, Operator>::ThreadblockMma;
+  static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
+  using Mma1 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutA, ElementB, LayoutB, kSideModeA, kFillModeA,
+          kDiagTypeMma1, ElementAccumulator, layout::RowMajor,
+          arch::OpClassTensorOp, arch::Sm80, ThreadblockShape, WarpShape,
+          InstructionShape, Stages, TransformA, TransformB,
+          Operator>::ThreadblockMma;
 
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
   /// TRMM - withOUT diagonal: alpha * AT * B or alpha * B * AT
-	static const DiagType kDiagTypeMma2 = DiagType::kZero;
+  static const DiagType kDiagTypeMma2 = DiagType::kZero;
   using LayoutAMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                typename layout::LayoutTranspose<LayoutA>::type, 
-                                LayoutA
-                              >::type;
+      (kSideModeA == SideMode::kLeft),
+      typename layout::LayoutTranspose<LayoutA>::type, LayoutA>::type;
   using LayoutBMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                LayoutB, 
-                                typename layout::LayoutTranspose<LayoutB>::type
-                              >::type; 
-	using Mma2 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-			ElementA, LayoutAMma2, 
-			ElementB, LayoutBMma2, 
-			kSideModeA, InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, 
-			ElementAccumulator, layout::RowMajor, 
-			arch::OpClassTensorOp, arch::Sm80,
-			ThreadblockShape, WarpShape, InstructionShape,
-			Stages, TransformA, TransformB, Operator>::ThreadblockMma;
+      (kSideModeA == SideMode::kLeft), LayoutB,
+      typename layout::LayoutTranspose<LayoutB>::type>::type;
+  using Mma2 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutAMma2, ElementB, LayoutBMma2, kSideModeA,
+          InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, ElementAccumulator,
+          layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+          WarpShape, InstructionShape, Stages, TransformA, TransformB,
+          Operator>::ThreadblockMma;
 
   /// Define the epilogue
   using Epilogue =
@@ -398,8 +381,9 @@ struct DefaultSymmComplex<
           EpilogueOutputOp::kCount, Operator>::Epilogue;
 
   /// Define the kernel-level Symm operator.
-  using SymmKernel = kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle, kSideModeA, kFillModeA>;
-
+  using SymmKernel =
+      kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle,
+                            kSideModeA, kFillModeA>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -440,55 +424,50 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultSymmComplex<
-  ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC, 
-  layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm80, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  Operator, SplitKSerial, BlasMode::kHermitian> {
+    ElementA, LayoutA, kSideModeA, kFillModeA, ElementB, LayoutB, ElementC,
+    layout::RowMajor, ElementAccumulator, arch::OpClassTensorOp, arch::Sm80,
+    ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+    ThreadblockSwizzle, Stages, Operator, SplitKSerial, BlasMode::kHermitian> {
 
   static BlasMode const kBlasMode = BlasMode::kHermitian;
 
-
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
   /// TRMM - with diagonal: alpha * A * B or alpha * B * A
-	static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
-  static ComplexTransform const TransformAMma1 = ComplexTransform::kNone; 
-  static ComplexTransform const TransformBMma1 = ComplexTransform::kNone; 
-  using Mma1 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-      ElementA, LayoutA, 
-      ElementB, LayoutB, 
-      kSideModeA, kFillModeA, kDiagTypeMma1, 
-      ElementAccumulator, layout::RowMajor, 
-      arch::OpClassTensorOp, arch::Sm80,
-      ThreadblockShape, WarpShape, InstructionShape,
-      Stages, TransformAMma1, TransformBMma1, Operator, BlasMode::kHermitian>::ThreadblockMma;
+  static const DiagType kDiagTypeMma1 = DiagType::kNonUnit;
+  static ComplexTransform const TransformAMma1 = ComplexTransform::kNone;
+  static ComplexTransform const TransformBMma1 = ComplexTransform::kNone;
+  using Mma1 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutA, ElementB, LayoutB, kSideModeA, kFillModeA,
+          kDiagTypeMma1, ElementAccumulator, layout::RowMajor,
+          arch::OpClassTensorOp, arch::Sm80, ThreadblockShape, WarpShape,
+          InstructionShape, Stages, TransformAMma1, TransformBMma1, Operator,
+          BlasMode::kHermitian>::ThreadblockMma;
 
   /// Define the threadblock-scoped triagular matrix multiply-accumulate
-  /// TRMM - withOUT diagonal - with conjugate transpose: alpha * AT * B or alpha * B * AT
-	static const DiagType kDiagTypeMma2 = DiagType::kZero;
+  /// TRMM - withOUT diagonal - with conjugate transpose: alpha * AT * B or
+  /// alpha * B * AT
+  static const DiagType kDiagTypeMma2 = DiagType::kZero;
   using LayoutAMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                typename layout::LayoutTranspose<LayoutA>::type, 
-                                LayoutA
-                              >::type;
+      (kSideModeA == SideMode::kLeft),
+      typename layout::LayoutTranspose<LayoutA>::type, LayoutA>::type;
   using LayoutBMma2 = typename platform::conditional<
-                                (kSideModeA == SideMode::kLeft), 
-                                LayoutB, 
-                                typename layout::LayoutTranspose<LayoutB>::type
-                              >::type;
-  static ComplexTransform const TransformAMma2 = (kSideModeA == SideMode::kLeft) ? 
-                                              ComplexTransform::kConjugate : ComplexTransform::kNone;
-  static ComplexTransform const TransformBMma2 = (kSideModeA == SideMode::kLeft) ? 
-                                              ComplexTransform::kNone : ComplexTransform::kConjugate;
+      (kSideModeA == SideMode::kLeft), LayoutB,
+      typename layout::LayoutTranspose<LayoutB>::type>::type;
+  static ComplexTransform const TransformAMma2 =
+      (kSideModeA == SideMode::kLeft) ? ComplexTransform::kConjugate
+                                      : ComplexTransform::kNone;
+  static ComplexTransform const TransformBMma2 =
+      (kSideModeA == SideMode::kLeft) ? ComplexTransform::kNone
+                                      : ComplexTransform::kConjugate;
 
-	using Mma2 = typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
-			ElementA, LayoutAMma2, 
-			ElementB, LayoutBMma2, 
-			kSideModeA, InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, 
-			ElementAccumulator, layout::RowMajor, 
-			arch::OpClassTensorOp, arch::Sm80,
-			ThreadblockShape, WarpShape, InstructionShape,
-			Stages, TransformAMma2, TransformBMma2, Operator>::ThreadblockMma;
+  using Mma2 =
+      typename cutlass::gemm::threadblock::DefaultMultistageTrmmComplex<
+          ElementA, LayoutAMma2, ElementB, LayoutBMma2, kSideModeA,
+          InvertFillMode<kFillModeA>::mode, kDiagTypeMma2, ElementAccumulator,
+          layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+          WarpShape, InstructionShape, Stages, TransformAMma2, TransformBMma2,
+          Operator>::ThreadblockMma;
 
   /// Define the epilogue
   using Epilogue =
@@ -497,12 +476,13 @@ struct DefaultSymmComplex<
           EpilogueOutputOp::kCount, Operator>::Epilogue;
 
   /// Define the kernel-level Symm operator.
-  using SymmKernel = kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle, kSideModeA, kFillModeA>;
-
+  using SymmKernel =
+      kernel::SymmUniversal<Mma1, Mma2, Epilogue, ThreadblockSwizzle,
+                            kSideModeA, kFillModeA>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass

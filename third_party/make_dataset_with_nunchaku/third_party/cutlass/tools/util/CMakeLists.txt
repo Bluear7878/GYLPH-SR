@@ -52,4 +52,3 @@ install(
   TARGETS cutlass_tools_util_includes
   EXPORT NvidiaCutlass
   )
-

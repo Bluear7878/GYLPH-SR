@@ -1,36 +1,39 @@
 #pragma once
 
-#include "interop/torch.h"
-#include "Serialization.h"
 #include "Linear.h"
+#include "Serialization.h"
 #include "debug.h"
+#include "interop/torch.h"
 #include "module.h"
 
 class QuantizedGEMM88 : public ModuleWrapper<GEMM_W8A8> {
 public:
-    void init(int64_t in_features, int64_t out_features, bool bias, bool bf16, int8_t deviceId) {
-        spdlog::info("Initializing QuantizedGEMM88");
-        
-        size_t val = 0;
-        checkCUDA(cudaDeviceSetLimit(cudaLimitStackSize, 8192));
-        checkCUDA(cudaDeviceGetLimit(&val, cudaLimitStackSize));
-        spdlog::debug("Stack={}", val);
+  void init(int64_t in_features, int64_t out_features, bool bias, bool bf16,
+            int8_t deviceId) {
+    spdlog::info("Initializing QuantizedGEMM88");
 
-        net = std::make_unique<GEMM_W8A8>((int)in_features, (int)out_features, bias, bf16 ? Tensor::BF16 : Tensor::FP16, Device::cuda((int)deviceId));
-    }
+    size_t val = 0;
+    checkCUDA(cudaDeviceSetLimit(cudaLimitStackSize, 8192));
+    checkCUDA(cudaDeviceGetLimit(&val, cudaLimitStackSize));
+    spdlog::debug("Stack={}", val);
 
-    torch::Tensor forward(torch::Tensor x) {
-        checkModel();
+    net = std::make_unique<GEMM_W8A8>((int)in_features, (int)out_features, bias,
+                                      bf16 ? Tensor::BF16 : Tensor::FP16,
+                                      Device::cuda((int)deviceId));
+  }
 
-        std::cerr << "QuantizedGEMM88 forward" << std::endl;
+  torch::Tensor forward(torch::Tensor x) {
+    checkModel();
 
-        x = x.contiguous();
+    std::cerr << "QuantizedGEMM88 forward" << std::endl;
 
-        Tensor result = net->forward(from_torch(x));
-        
-        torch::Tensor output = to_torch(result);
-        Tensor::synchronizeDevice();
+    x = x.contiguous();
 
-        return output;
-    }
+    Tensor result = net->forward(from_torch(x));
+
+    torch::Tensor output = to_torch(result);
+    Tensor::synchronizeDevice();
+
+    return output;
+  }
 };

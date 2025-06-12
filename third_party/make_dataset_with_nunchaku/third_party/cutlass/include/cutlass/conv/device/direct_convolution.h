@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /* \file
@@ -36,9 +37,9 @@
 
 #include <limits>
 
+#include "cutlass/conv/convolution.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
-#include "cutlass/conv/convolution.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,10 +49,8 @@ namespace device {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename DirectConvolutionKernel_>
-class DirectConvolution {
+template <typename DirectConvolutionKernel_> class DirectConvolution {
 public:
-
   using UnderlyingKernel = DirectConvolutionKernel_;
 
   using ElementA = typename UnderlyingKernel::ElementA;
@@ -73,38 +72,40 @@ public:
   static int const kConvDim = UnderlyingKernel::kConvDim;
   using WarpMmaOperator = typename UnderlyingKernel::WarpMmaOperator;
   using ArchMmaOperator = typename UnderlyingKernel::ArchMmaOperator;
-  using MathOperator = typename UnderlyingKernel::MathOperator; 
+  using MathOperator = typename UnderlyingKernel::MathOperator;
 
-  static cutlass::conv::Operator const kConvolutionalOperator = UnderlyingKernel::kConvolutionalOperator;
-  static cutlass::conv::IteratorAlgorithm const kIteratorAlgorithm = UnderlyingKernel::kIteratorAlgorithm;
-  static cutlass::conv::StrideSupport const kStrideSupport = UnderlyingKernel::kStrideSupport;
-  static cutlass::conv::GroupMode const kGroupMode = UnderlyingKernel::kGroupMode;
+  static cutlass::conv::Operator const kConvolutionalOperator =
+      UnderlyingKernel::kConvolutionalOperator;
+  static cutlass::conv::IteratorAlgorithm const kIteratorAlgorithm =
+      UnderlyingKernel::kIteratorAlgorithm;
+  static cutlass::conv::StrideSupport const kStrideSupport =
+      UnderlyingKernel::kStrideSupport;
+  static cutlass::conv::GroupMode const kGroupMode =
+      UnderlyingKernel::kGroupMode;
 
-  static int const kWarpCount = 
-    (ThreadblockShape::kM / WarpShape::kM) * 
-    (ThreadblockShape::kN / WarpShape::kN) *
-    (ThreadblockShape::kK / WarpShape::kK);
+  static int const kWarpCount = (ThreadblockShape::kM / WarpShape::kM) *
+                                (ThreadblockShape::kN / WarpShape::kN) *
+                                (ThreadblockShape::kK / WarpShape::kK);
 
   /// Argument structure
   using Arguments = typename UnderlyingKernel::Arguments;
 
   using ReorderKernel = typename UnderlyingKernel::ReorderKernel;
 
- private:
-
+private:
   /// Kernel parameters object
   typename UnderlyingKernel::Params params_;
 
 public:
-
   /// Constructs Implicit GEMM
-  DirectConvolution() { }
+  DirectConvolution() {}
 
   /// Determines whether the Implicit GEMM can execute the given problem.
   static Status can_implement(Arguments const &args) {
 
     // dispatch to iterators
-    Status status = UnderlyingKernel::Mma::IteratorA::can_implement(args.problem_size);
+    Status status =
+        UnderlyingKernel::Mma::IteratorA::can_implement(args.problem_size);
     if (Status::kSuccess != status) {
       return status;
     }
@@ -120,32 +121,31 @@ public:
 
     // C and K should be multiple of groups
     if (args.problem_size.K != args.problem_size.groups &&
-      args.problem_size.C != args.problem_size.groups) {
+        args.problem_size.C != args.problem_size.groups) {
       return Status::kErrorInvalidProblem;
     }
-    
 
-    static int const kAlignmentC = UnderlyingKernel::Epilogue::OutputTileIterator::kElementsPerAccess;
+    static int const kAlignmentC =
+        UnderlyingKernel::Epilogue::OutputTileIterator::kElementsPerAccess;
     if (kConvolutionalOperator == conv::Operator::kFprop) {
       if (args.problem_size.K % kAlignmentC)
         return Status::kErrorMisalignedOperand;
     } else if (kConvolutionalOperator == conv::Operator::kDgrad) {
-       if (args.problem_size.C % kAlignmentC)
+      if (args.problem_size.C % kAlignmentC)
         return Status::kErrorMisalignedOperand;
     } else if (kConvolutionalOperator == conv::Operator::kWgrad) {
-       if (args.problem_size.C % kAlignmentC)
+      if (args.problem_size.C % kAlignmentC)
         return Status::kErrorMisalignedOperand;
     }
 
     // Determine grid shape
     ThreadblockSwizzle threadblock_swizzle;
 
-    dim3 grid = threadblock_swizzle.get_grid_shape(
-      threadblock_swizzle.get_tiled_shape(
-        kConvolutionalOperator,
-        args.problem_size,
-        {ThreadblockShape::kM, ThreadblockShape::kN, ThreadblockShape::kK},
-        args.problem_size.split_k_slices));
+    dim3 grid =
+        threadblock_swizzle.get_grid_shape(threadblock_swizzle.get_tiled_shape(
+            kConvolutionalOperator, args.problem_size,
+            {ThreadblockShape::kM, ThreadblockShape::kN, ThreadblockShape::kK},
+            args.problem_size.split_k_slices));
 
     if (!(grid.y <= std::numeric_limits<uint16_t>::max() &&
           grid.z <= std::numeric_limits<uint16_t>::max())) {
@@ -157,34 +157,28 @@ public:
   }
 
   /// Gets the workspace size
-  static size_t get_workspace_size(Arguments const &args) {  
-    return 0;
-  }
+  static size_t get_workspace_size(Arguments const &args) { return 0; }
 
   /// Initializes GEMM state from arguments.
-  Status initialize(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
+
     // initialize the params structure from the arguments
-    params_ = typename UnderlyingKernel::Params(
-    	args,
-    	static_cast<int *>(workspace)
-    );
-    
+    params_ =
+        typename UnderlyingKernel::Params(args, static_cast<int *>(workspace));
+
     int smem_size = int(sizeof(typename UnderlyingKernel::SharedStorage));
 
     if (smem_size >= (48 << 10)) {
-      cudaError_t result = cudaFuncSetAttribute(cutlass::Kernel<UnderlyingKernel>,
-                                    cudaFuncAttributeMaxDynamicSharedMemorySize,
-                                    smem_size);
+      cudaError_t result = cudaFuncSetAttribute(
+          cutlass::Kernel<UnderlyingKernel>,
+          cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size);
 
       if (result != cudaSuccess) {
         return Status::kErrorInternal;
       }
     }
-    
+
     return Status::kSuccess;
   }
 
@@ -197,7 +191,8 @@ public:
     params_.ptr_C = args.ref_C.data();
     params_.ptr_D = args.ref_D.data();
     params_.output_op = args.output_op;
-    params_.ptr_reordered_B = args.ref_reordered_B.data();;
+    params_.ptr_reordered_B = args.ref_reordered_B.data();
+    ;
     params_.semaphore = static_cast<int *>(workspace);
 
     return Status::kSuccess;
@@ -224,12 +219,14 @@ public:
     int smem_size = int(params_.get_smem_size());
 
     // Make sure we can use that much shared memory.
-    cudaError_t status = 
-        cudaFuncSetAttribute(cutlass::Kernel<UnderlyingKernel>, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size);
+    cudaError_t status = cudaFuncSetAttribute(
+        cutlass::Kernel<UnderlyingKernel>,
+        cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size);
     if (status != cudaSuccess)
       return Status::kErrorInternal;
 
-    cutlass::Kernel<UnderlyingKernel><<<grid, block, smem_size, stream>>>(params_);
+    cutlass::Kernel<UnderlyingKernel>
+        <<<grid, block, smem_size, stream>>>(params_);
 
     cudaError_t result = cudaGetLastError();
 
@@ -237,18 +234,14 @@ public:
   }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
+
     Status status = initialize(args, workspace, stream);
-    
+
     if (status == Status::kSuccess) {
       status = run(stream);
     }
@@ -261,8 +254,8 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}
-}
-}
+} // namespace device
+} // namespace conv
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

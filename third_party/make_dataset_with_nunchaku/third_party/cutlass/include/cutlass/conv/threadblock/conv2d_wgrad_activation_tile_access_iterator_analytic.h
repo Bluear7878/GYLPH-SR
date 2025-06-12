@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,40 +18,42 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing loading of convolution tiles mapped to GEMM B (activation tile) 
-    matrix from memory.
+    \brief Templates implementing loading of convolution tiles mapped to GEMM B
+   (activation tile) matrix from memory.
 
     This iterator assumes TensorNHWC layout of tensors in Global Memory.
 
-    The iterator is specialized for each of the three convolution operators: forward propagation (Fprop),
-    backward data gradient (Dgrad), and backward weight gradient (Wgrad). 
+    The iterator is specialized for each of the three convolution operators:
+   forward propagation (Fprop), backward data gradient (Dgrad), and backward
+   weight gradient (Wgrad).
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/conv/conv2d_problem_size.h"
+#include "cutlass/conv/convolution.h"
+#include "cutlass/conv/threadblock/conv2d_params.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/layout/tensor.h"
 #include "cutlass/predicate_vector.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
-#include "cutlass/layout/pitch_linear.h"
-#include "cutlass/layout/tensor.h"
-#include "cutlass/layout/matrix.h"
-#include "cutlass/conv/convolution.h"
-#include "cutlass/conv/conv2d_problem_size.h"
-#include "cutlass/conv/threadblock/conv2d_params.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,15 +63,11 @@ namespace threadblock {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Shape_,
-  typename Element_,
-  typename ThreadMap_,
-  typename AccessType_ = cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>
->
+template <typename Shape_, typename Element_, typename ThreadMap_,
+          typename AccessType_ =
+              cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>>
 class Conv2dWgradActivationTileAccessIteratorAnalytic {
 public:
-
   //
   // Types
   //
@@ -82,18 +80,21 @@ public:
   using TensorCoord = typename Layout::TensorCoord;
   using Index = typename Layout::Index;
   using LongIndex = typename Layout::LongIndex;
-  static IteratorAlgorithm const kIteratorAlgorithm = conv::IteratorAlgorithm::kAnalytic;
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      conv::IteratorAlgorithm::kAnalytic;
   static StrideSupport const kStrideSupport = conv::StrideSupport::kStrided;
   static int const kConvDim = 2;
   using ConvProblemSize = typename conv::Conv2dProblemSize;
- 
-  static int const kAccessesPerVector = ThreadMap::kElementsPerAccess / AccessType::kElements;
-  
-  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements), 
-    "Vectors implied by the thread map must be divisible by the access type.");
- 
+
+  static int const kAccessesPerVector =
+      ThreadMap::kElementsPerAccess / AccessType::kElements;
+
+  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements),
+                "Vectors implied by the thread map must be divisible by the "
+                "access type.");
+
   static_assert(sizeof_bits<Element>::value >= 8,
-    "WGRAD requires elements of size 8b or greater.");
+                "WGRAD requires elements of size 8b or greater.");
 
   //
   // Parameters structure
@@ -102,7 +103,6 @@ public:
   using Params = Conv2dAnalyticParams<Layout>;
 
 private:
-
   Params const &params_;
   Conv2dProblemSize const &problem_size_;
   LongIndex iteration_contiguous_;
@@ -110,7 +110,8 @@ private:
   LongIndex iteration_vector_;
   char const *pointer_;
 
-  // Filter postion (r,s,c) in contiguous dimension stays constant for each gemm_iteration_k
+  // Filter postion (r,s,c) in contiguous dimension stays constant for each
+  // gemm_iteration_k
   int filter_r_[ThreadMap::Iterations::kContiguous];
   int filter_s_[ThreadMap::Iterations::kContiguous];
   int filter_c_[ThreadMap::Iterations::kContiguous];
@@ -118,28 +119,23 @@ private:
   int offset_npq_[ThreadMap::Iterations::kStrided];
 
 public:
-
   CUTLASS_HOST_DEVICE
   Conv2dWgradActivationTileAccessIteratorAnalytic(
-    Params const &params, 
-    Conv2dProblemSize const &problem_size,
-    Element const *ptr,
-    int thread_idx,
-    MatrixCoord const &threadblock_offset = MatrixCoord()
-  ):
-    params_(params), 
-    problem_size_(problem_size), 
-    pointer_(reinterpret_cast<char const *>(ptr))
-  {
+      Params const &params, Conv2dProblemSize const &problem_size,
+      Element const *ptr, int thread_idx,
+      MatrixCoord const &threadblock_offset = MatrixCoord())
+      : params_(params), problem_size_(problem_size),
+        pointer_(reinterpret_cast<char const *>(ptr)) {
 
-    layout::PitchLinearCoord thread_coord = ThreadMap::initial_offset(thread_idx);
-    
+    layout::PitchLinearCoord thread_coord =
+        ThreadMap::initial_offset(thread_idx);
+
     // initialize r,s,c filter position for every contiguous iteration
     CUTLASS_PRAGMA_UNROLL
-    for(int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
+    for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
 
-      int rsc_offset = threadblock_offset.column() + thread_coord.contiguous()
-                        + c * ThreadMap::Delta::kContiguous;
+      int rsc_offset = threadblock_offset.column() + thread_coord.contiguous() +
+                       c * ThreadMap::Delta::kContiguous;
 
       filter_r_[c] = rsc_offset / (problem_size_.S * problem_size_.C);
       int residual = rsc_offset % (problem_size_.S * problem_size_.C);
@@ -151,9 +147,9 @@ public:
     // initialize n, p, q offset for every strided iteration
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
-    
-      offset_npq_[s] = threadblock_offset.row() + thread_coord.strided() 
-                      + s * ThreadMap::Delta::kStrided;   
+
+      offset_npq_[s] = threadblock_offset.row() + thread_coord.strided() +
+                       s * ThreadMap::Delta::kStrided;
     }
   }
 
@@ -162,7 +158,8 @@ public:
   void set_iteration_index(Index index) {
     iteration_vector_ = index % kAccessesPerVector;
     int residual_access = index / kAccessesPerVector;
-    iteration_contiguous_ = residual_access % ThreadMap::Iterations::kContiguous;
+    iteration_contiguous_ =
+        residual_access % ThreadMap::Iterations::kContiguous;
     iteration_strided_ = residual_access / ThreadMap::Iterations::kContiguous;
   }
 
@@ -174,7 +171,7 @@ public:
 
   CUTLASS_HOST_DEVICE
   void advance() {
-    
+
     // moves to the next GEMM-K offset (offset_npq_) in GEMM-B by a CTA-K tile
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
@@ -182,8 +179,8 @@ public:
     }
   }
 
-  /// Returns the coordinate in the activation tensor x that is currently pointed to
-  /// by the iterator.
+  /// Returns the coordinate in the activation tensor x that is currently
+  /// pointed to by the iterator.
   CUTLASS_HOST_DEVICE
   TensorCoord at() const {
     int r, s, c;
@@ -193,30 +190,38 @@ public:
       c = filter_c_[iteration_contiguous_];
       r = filter_r_[iteration_contiguous_];
       s = filter_s_[iteration_contiguous_];
-    }  
-    else {
+    } else {
       /// Multiple access to support non-128b alignment in contiguous dimension
-      c = (filter_c_[iteration_contiguous_] + iteration_vector_ * AccessType::kElements) % problem_size_.C;
-      int wrap_c = (filter_c_[iteration_contiguous_] + iteration_vector_ * AccessType::kElements) / problem_size_.C;
+      c = (filter_c_[iteration_contiguous_] +
+           iteration_vector_ * AccessType::kElements) %
+          problem_size_.C;
+      int wrap_c = (filter_c_[iteration_contiguous_] +
+                    iteration_vector_ * AccessType::kElements) /
+                   problem_size_.C;
       s = (filter_s_[iteration_contiguous_] + wrap_c) % problem_size_.S;
-      int wrap_s = (filter_s_[iteration_contiguous_] + wrap_c) / problem_size_.S;
+      int wrap_s =
+          (filter_s_[iteration_contiguous_] + wrap_c) / problem_size_.S;
       r = filter_r_[iteration_contiguous_] + wrap_s;
-    } 
+    }
 
     if (problem_size_.mode == Mode::kConvolution) {
       r = (problem_size_.R - 1 - r);
       s = (problem_size_.S - 1 - s);
     }
 
-    int n = offset_npq_[iteration_strided_] / (problem_size_.P * problem_size_.Q);
-    int residual = offset_npq_[iteration_strided_] % (problem_size_.P * problem_size_.Q);
-    
+    int n =
+        offset_npq_[iteration_strided_] / (problem_size_.P * problem_size_.Q);
+    int residual =
+        offset_npq_[iteration_strided_] % (problem_size_.P * problem_size_.Q);
+
     int p = residual / problem_size_.Q;
     int q = residual % problem_size_.Q;
-   
-    int h = p * problem_size_.stride_h - problem_size_.pad_h + r * problem_size_.dilation_h;
-    int w = q * problem_size_.stride_w - problem_size_.pad_w + s * problem_size_.dilation_w;
- 
+
+    int h = p * problem_size_.stride_h - problem_size_.pad_h +
+            r * problem_size_.dilation_h;
+    int w = q * problem_size_.stride_w - problem_size_.pad_w +
+            s * problem_size_.dilation_w;
+
     return TensorCoord(n, h, w, c);
   }
 
@@ -225,9 +230,9 @@ public:
   bool valid() const {
     TensorCoord coord = at();
 
-    return coord.n() < problem_size_.N &&
-      coord.h() >= 0 && coord.h() < problem_size_.H &&
-      coord.w() >= 0 && coord.w() < problem_size_.W;
+    return coord.n() < problem_size_.N && coord.h() >= 0 &&
+           coord.h() < problem_size_.H && coord.w() >= 0 &&
+           coord.w() < problem_size_.W;
   }
 
   /// Returns a pointer to the vector starting at the current coordinate
@@ -237,7 +242,8 @@ public:
     TensorCoord coord = at();
     LongIndex offset = params_.layout(coord);
 
-    return reinterpret_cast<AccessType const *>(pointer_ + offset * sizeof_bits<Element>::value / 8);
+    return reinterpret_cast<AccessType const *>(
+        pointer_ + offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Increments to the next memory access
@@ -259,7 +265,7 @@ public:
       return *this;
     }
     iteration_strided_ = 0;
- 
+
     return *this;
   }
 

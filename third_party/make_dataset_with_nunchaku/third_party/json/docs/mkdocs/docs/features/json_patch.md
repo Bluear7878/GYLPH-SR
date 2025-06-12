@@ -8,17 +8,19 @@ by executing all operations from the patch.
 
 ??? example
 
-    The following code shows how a JSON patch is applied to a value.
+````
+The following code shows how a JSON patch is applied to a value.
 
-    ```cpp
-    --8<-- "examples/patch.cpp"
-    ```
-    
-    Output:
+```cpp
+--8<-- "examples/patch.cpp"
+```
 
-    ```json
-    --8<-- "examples/patch.output"
-    ```
+Output:
+
+```json
+--8<-- "examples/patch.output"
+```
+````
 
 ## Diff
 
@@ -26,22 +28,26 @@ The library can also calculate a JSON patch (i.e., a **diff**) given two JSON va
 
 !!! success "Invariant"
 
-    For two JSON values *source* and *target*, the following code yields always true:
+````
+For two JSON values *source* and *target*, the following code yields always true:
 
-    ```cüü
-    source.patch(diff(source, target)) == target;
-    ```
+```cüü
+source.patch(diff(source, target)) == target;
+```
+````
 
 ??? example
 
-    The following code shows how a JSON patch is created as a diff for two JSON values.
+````
+The following code shows how a JSON patch is created as a diff for two JSON values.
 
-    ```cpp
-    --8<-- "examples/diff.cpp"
-    ```
-    
-    Output:
+```cpp
+--8<-- "examples/diff.cpp"
+```
 
-    ```json
-    --8<-- "examples/diff.output"
-    ```
+Output:
+
+```json
+--8<-- "examples/diff.output"
+```
+````

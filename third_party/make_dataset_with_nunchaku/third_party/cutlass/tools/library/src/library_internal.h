@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,42 +18,46 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
-/*! 
+/*!
   \file
 
-  \brief CUTLASS Library is an object-oriented approach to managing operations implemented by CUTLASS.
+  \brief CUTLASS Library is an object-oriented approach to managing operations
+  implemented by CUTLASS.
 
   Generally,
-    
-    description   - compile-time constant parameters used to instantiate an operation
 
-    configuration - runtime parameters with computationally expensive initialization 
-    
-    arguments     - runtime parameters that may be passed to an initialized operation with low
-                    computational overhead
+    description   - compile-time constant parameters used to instantiate an
+  operation
+
+    configuration - runtime parameters with computationally expensive
+  initialization
+
+    arguments     - runtime parameters that may be passed to an initialized
+  operation with low computational overhead
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/complex.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
 #include "cutlass/arch/mma.h"
+#include "cutlass/complex.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/matrix.h"
+#include "cutlass/numeric_types.h"
 
-#include "cutlass/library/library.h"
 #include "cutlass/library/arch_mappings.h"
+#include "cutlass/library/library.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,15 +136,15 @@ template <> struct NumericTypeMap<double> {
   static NumericTypeID const kId = NumericTypeID::kF64;
 };
 
-template <> struct NumericTypeMap<cutlass::complex<cutlass::half_t> > {
+template <> struct NumericTypeMap<cutlass::complex<cutlass::half_t>> {
   static NumericTypeID const kId = NumericTypeID::kCF16;
 };
 
-template <> struct NumericTypeMap<cutlass::complex<float> > {
+template <> struct NumericTypeMap<cutlass::complex<float>> {
   static NumericTypeID const kId = NumericTypeID::kCF32;
 };
 
-template <> struct NumericTypeMap<cutlass::complex<double> > {
+template <> struct NumericTypeMap<cutlass::complex<double>> {
   static NumericTypeID const kId = NumericTypeID::kCF64;
 };
 
@@ -174,29 +178,34 @@ template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddSaturate> {
   static MathOperationID const kId = MathOperationID::kMultiplyAddSaturate;
 };
 
-template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddMixedInputUpcast> {
-  static MathOperationID const kId = MathOperationID::kMultiplyAddMixedInputUpcast;
+template <>
+struct MathOperationMap<cutlass::arch::OpMultiplyAddMixedInputUpcast> {
+  static MathOperationID const kId =
+      MathOperationID::kMultiplyAddMixedInputUpcast;
 };
 
 template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddComplex> {
   static MathOperationID const kId = MathOperationID::kMultiplyAddComplex;
 };
 
-template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddGaussianComplex> {
-  static MathOperationID const kId = MathOperationID::kMultiplyAddGaussianComplex;
+template <>
+struct MathOperationMap<cutlass::arch::OpMultiplyAddGaussianComplex> {
+  static MathOperationID const kId =
+      MathOperationID::kMultiplyAddGaussianComplex;
 };
 
 template <> struct MathOperationMap<cutlass::arch::OpXorPopc> {
   static MathOperationID const kId = MathOperationID::kXorPopc;
 };
 
-
 template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddFastF32> {
   static MathOperationID const kId = MathOperationID::kMultiplyAddFastF32;
 };
 
-template <> struct MathOperationMap<cutlass::arch::OpMultiplyAddComplexFastF32> {
-  static MathOperationID const kId = MathOperationID::kMultiplyAddComplexFastF32;
+template <>
+struct MathOperationMap<cutlass::arch::OpMultiplyAddComplexFastF32> {
+  static MathOperationID const kId =
+      MathOperationID::kMultiplyAddComplexFastF32;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,16 +309,18 @@ template <> struct OpcodeClassMap<arch::OpClassWmmaTensorOp> {
 template <cutlass::ComplexTransform Transform> struct ComplexTransformMap;
 
 template <> struct ComplexTransformMap<cutlass::ComplexTransform::kNone> {
-  static cutlass::library::ComplexTransform const kId = cutlass::library::ComplexTransform::kNone;
+  static cutlass::library::ComplexTransform const kId =
+      cutlass::library::ComplexTransform::kNone;
 };
 
 template <> struct ComplexTransformMap<cutlass::ComplexTransform::kConjugate> {
-  static cutlass::library::ComplexTransform const kId = cutlass::library::ComplexTransform::kConjugate;
+  static cutlass::library::ComplexTransform const kId =
+      cutlass::library::ComplexTransform::kConjugate;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <cutlass::conv::Mode  T> struct ConvModeMap;
+template <cutlass::conv::Mode T> struct ConvModeMap;
 
 template <> struct ConvModeMap<conv::Mode::kCrossCorrelation> {
   static ConvModeID const kId = ConvModeID::kCrossCorrelation;
@@ -319,8 +330,7 @@ template <> struct ConvModeMap<conv::Mode::kConvolution> {
   static ConvModeID const kId = ConvModeID::kConvolution;
 };
 
-
-template <cutlass::conv::Operator  T> struct ConvKindMap;
+template <cutlass::conv::Operator T> struct ConvKindMap;
 
 template <> struct ConvKindMap<conv::Operator::kFprop> {
   static ConvKind const kId = ConvKind::kFprop;
@@ -334,8 +344,7 @@ template <> struct ConvKindMap<conv::Operator::kWgrad> {
   static ConvKind const kId = ConvKind::kWgrad;
 };
 
-
-template <cutlass::conv::IteratorAlgorithm  T> struct IteratorAlgorithmMap;
+template <cutlass::conv::IteratorAlgorithm T> struct IteratorAlgorithmMap;
 
 template <> struct IteratorAlgorithmMap<conv::IteratorAlgorithm::kAnalytic> {
   static IteratorAlgorithmID const kId = IteratorAlgorithmID::kAnalytic;
@@ -345,7 +354,8 @@ template <> struct IteratorAlgorithmMap<conv::IteratorAlgorithm::kOptimized> {
   static IteratorAlgorithmID const kId = IteratorAlgorithmID::kOptimized;
 };
 
-template <> struct IteratorAlgorithmMap<conv::IteratorAlgorithm::kFixedChannels> {
+template <>
+struct IteratorAlgorithmMap<conv::IteratorAlgorithm::kFixedChannels> {
   static IteratorAlgorithmID const kId = IteratorAlgorithmID::kFixedChannels;
 };
 
@@ -362,7 +372,8 @@ TensorDescription make_TensorDescription(int alignment = 1) {
   desc.element = NumericTypeMap<Element>::kId;
   desc.layout = LayoutMap<Layout>::kId;
   desc.alignment = alignment;
-  desc.log_extent_range = int(sizeof(typename Layout::TensorCoord::Index) - 1) * 8;
+  desc.log_extent_range =
+      int(sizeof(typename Layout::TensorCoord::Index) - 1) * 8;
   desc.log_stride_range = int(sizeof(typename Layout::Stride::Index) - 1) * 8;
 
   return desc;

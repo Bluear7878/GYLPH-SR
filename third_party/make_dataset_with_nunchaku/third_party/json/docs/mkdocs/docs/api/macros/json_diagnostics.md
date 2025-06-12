@@ -9,7 +9,7 @@ Possible values are `1` to enable or `0` to disable (default).
 
 When enabled, exception messages contain a [JSON Pointer](../json_pointer/json_pointer.md) to the JSON value that
 triggered the exception. Note that enabling this macro increases the size of every JSON value by one pointer and adds
-some  runtime overhead.
+some runtime overhead.
 
 ## Default definition
 
@@ -25,50 +25,58 @@ When the macro is not defined, the library will define it to its default value.
 
 !!! note "ABI compatibility"
 
-    As of version 3.11.0, this macro is no longer required to be defined consistently throughout a codebase to avoid
-    One Definition Rule (ODR) violations, as the value of this macro is encoded in the namespace, resulting in distinct
-    symbol names. 
-    
-    This allows different parts of a codebase to use different versions or configurations of this library without
-    causing improper behavior.
-    
-    Where possible, it is still recommended that all code define this the same way for maximum interoperability.
+```
+As of version 3.11.0, this macro is no longer required to be defined consistently throughout a codebase to avoid
+One Definition Rule (ODR) violations, as the value of this macro is encoded in the namespace, resulting in distinct
+symbol names.
+
+This allows different parts of a codebase to use different versions or configurations of this library without
+causing improper behavior.
+
+Where possible, it is still recommended that all code define this the same way for maximum interoperability.
+```
 
 !!! hint "CMake option"
 
-    Diagnostic messages can also be controlled with the CMake option
-    [`JSON_Diagnostics`](../../integration/cmake.md#json_diagnostics) (`OFF` by default)
-    which defines `JSON_DIAGNOSTICS` accordingly.
+```
+Diagnostic messages can also be controlled with the CMake option
+[`JSON_Diagnostics`](../../integration/cmake.md#json_diagnostics) (`OFF` by default)
+which defines `JSON_DIAGNOSTICS` accordingly.
+```
 
 ## Examples
 
 ??? example "Example 1: default behavior"
 
-    ```cpp
-    --8<-- "examples/diagnostics_standard.cpp"
-    ```
-    
-    Output:
+````
+```cpp
+--8<-- "examples/diagnostics_standard.cpp"
+```
 
-    ```
-    --8<-- "examples/diagnostics_standard.output"
-    ```
+Output:
 
-    This exception can be hard to debug if storing the value `#!c "12"` and accessing it is further apart.
+```
+--8<-- "examples/diagnostics_standard.output"
+```
+
+This exception can be hard to debug if storing the value `#!c "12"` and accessing it is further apart.
+````
 
 ??? example "Example 2: extended diagnostic messages"
 
-    ```cpp
-    --8<-- "examples/diagnostics_extended.cpp"
-    ```
-    
-    Output:
+````
+```cpp
+--8<-- "examples/diagnostics_extended.cpp"
+```
 
-    ```
-    --8<-- "examples/diagnostics_extended.output"
-    ```
+Output:
 
-    Now the exception message contains a JSON Pointer `/address/housenumber` that indicates which value has the wrong type.
+```
+--8<-- "examples/diagnostics_extended.output"
+```
+
+Now the exception message contains a JSON Pointer `/address/housenumber` that indicates which value has the wrong type.
+````
 
 ## Version history
 

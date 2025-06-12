@@ -13,4 +13,3 @@ SINGLE_INPUTS: aaa in
 SINGLE_INPUTS: bbb in
 SINGLE_INPUTS: NOTE: fuzzing was not performed, you have only
 SINGLE_INPUTS: executed the target code on a fixed set of inputs.
-

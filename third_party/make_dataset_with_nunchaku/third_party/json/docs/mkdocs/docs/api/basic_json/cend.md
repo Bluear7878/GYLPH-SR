@@ -24,17 +24,19 @@ Constant.
 
 ??? example
 
-    The following code shows an example for `cend()`.
-    
-    ```cpp
-    --8<-- "examples/cend.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/cend.output"
-    ```
+````
+The following code shows an example for `cend()`.
+
+```cpp
+--8<-- "examples/cend.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/cend.output"
+```
+````
 
 ## Version history
 

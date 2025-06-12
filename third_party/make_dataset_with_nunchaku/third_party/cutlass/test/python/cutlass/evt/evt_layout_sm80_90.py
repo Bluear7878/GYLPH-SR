@@ -53,6 +53,7 @@ class TestEVTLayoutSM90(EVTTestCaseBase):
         """
         Returning a tensor with shape [m, n]
         """
+
         def evt_permute(accum, alpha, C):
             F = alpha * accum
             F_permute = permute(F, indices=(0, 2, 1))
@@ -79,6 +80,7 @@ class TestEVTLayoutSM90(EVTTestCaseBase):
         """
         Returning a tensor with shape [m, n]
         """
+
         def evt_permute(accum, alpha, C):
             F = alpha * accum
             F_permute = permute(F, indices=(0, 2, 1))
@@ -104,6 +106,7 @@ class TestEVTLayoutSM90(EVTTestCaseBase):
         """
         Returning a tensor with shape [m, n]
         """
+
         def evt_permute(accum, alpha, C):
             F = alpha * accum
             F_permute = permute(F, indices=(1, 0, 2))
@@ -128,6 +131,7 @@ class TestEVTLayoutSM90(EVTTestCaseBase):
         """
         Test reshape
         """
+
         def evt_reshape(accum, alpha, TensorE):
             F = alpha * accum
             E_reshape = reshape(TensorE, new_shape=(512, 1))
@@ -150,6 +154,7 @@ class TestEVTLayoutSM90(EVTTestCaseBase):
         """
         Test reshape
         """
+
         def evt_reshape(accum, alpha, TensorE):
             F = alpha * accum
             F_reshape = reshape(F, new_shape=(2, 3, 512, 256))
@@ -169,5 +174,5 @@ class TestEVTLayoutSM90(EVTTestCaseBase):
         launcher.verify(self.problem_size, input_keys, result_keys, self.l)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

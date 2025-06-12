@@ -4,8 +4,7 @@
 using json = nlohmann::json;
 using namespace nlohmann::literals;
 
-namespace ns
-{
+namespace ns {
 struct person
 {
     std::string name;
@@ -14,7 +13,7 @@ struct person
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(person, name, address, age)
-} // namespace ns
+}  // namespace ns
 
 int main()
 {

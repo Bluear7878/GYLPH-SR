@@ -31,10 +31,18 @@ class MultiImageDataset(data.Dataset):
     def __init__(self, gen_dirpath: str, ref_dirpath: str | datasets.Dataset):
         super(data.Dataset, self).__init__()
         self.gen_names = sorted(
-            [name for name in os.listdir(gen_dirpath) if name.endswith(".png") or name.endswith(".jpg")]
+            [
+                name
+                for name in os.listdir(gen_dirpath)
+                if name.endswith(".png") or name.endswith(".jpg")
+            ]
         )
         self.ref_names = sorted(
-            [name for name in os.listdir(ref_dirpath) if name.endswith(".png") or name.endswith(".jpg")]
+            [
+                name
+                for name in os.listdir(ref_dirpath)
+                if name.endswith(".png") or name.endswith(".jpg")
+            ]
         )
         self.gen_dirpath, self.ref_dirpath = gen_dirpath, ref_dirpath
 
@@ -59,13 +67,21 @@ class MultiImageDataset(data.Dataset):
 
 
 def compute_lpips(
-    ref_dirpath: str, gen_dirpath: str, batch_size: int = 4, num_workers: int = 0, device: str | torch.device = "cuda"
+    ref_dirpath: str,
+    gen_dirpath: str,
+    batch_size: int = 4,
+    num_workers: int = 0,
+    device: str | torch.device = "cuda",
 ) -> float:
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     metric = LearnedPerceptualImagePatchSimilarity(normalize=True).to(device)
     dataset = MultiImageDataset(gen_dirpath, ref_dirpath)
     dataloader = data.DataLoader(
-        dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False, drop_last=False
+        dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        shuffle=False,
+        drop_last=False,
     )
     with torch.no_grad():
         desc = (os.path.basename(gen_dirpath)) + " LPIPS"

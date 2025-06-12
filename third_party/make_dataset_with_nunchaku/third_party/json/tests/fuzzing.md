@@ -60,13 +60,13 @@ To use afl++, you need to pass `-fsanitize=fuzzer` as `FUZZER_ENGINE`. It will b
 re-use the same code written for libFuzzer with afl++. Furthermore, set `afl-clang-fast++` as compiler.
 
 ```shell
-CXX=afl-clang-fast++ make fuzzers FUZZER_ENGINE="-fsanitize=fuzzer" 
+CXX=afl-clang-fast++ make fuzzers FUZZER_ENGINE="-fsanitize=fuzzer"
 ```
 
 Then the fuzzer is called like this in the `tests` directory:
 
 ```shell
-afl-fuzz -i corpus_cbor -o out  -- ./parse_cbor_fuzzer 
+afl-fuzz -i corpus_cbor -o out  -- ./parse_cbor_fuzzer
 ```
 
 The fuzzer should be able to run indefinitely without crashing. In case of a crash, the tested input is written to the

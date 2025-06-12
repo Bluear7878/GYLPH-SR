@@ -33,22 +33,15 @@
 import os
 import sys
 
-from . import conv2d_operation
-from . import conv3d_operation
-from . import gemm_operation
+from . import conv2d_operation, conv3d_operation, gemm_operation
 
-if '-m' not in sys.argv:
+if "-m" not in sys.argv:
     # Do not import generator when running python -m cutlass_library.generator to
     # avoid double-import warnings
     from . import generator
 
-from . import library
-from . import manifest
-from . import rank_2k_operation
-from . import rank_k_operation
-from . import symm_operation
-from . import trmm_operation
-
+from . import (library, manifest, rank_2k_operation, rank_k_operation,
+               symm_operation, trmm_operation)
 # Make enum types from library.py accessible via cutlass_library.*
 from .library import *
 
@@ -56,8 +49,8 @@ from .library import *
 # Check first if the path cotains a `source` subdirectory -- this will
 # be the case when the package has been installed via pip. Otherwise,
 # default to the root of CUTLASS.
-install_source_path = os.path.join(__path__[0], 'source')
+install_source_path = os.path.join(__path__[0], "source")
 if os.path.isdir(install_source_path):
     source_path = install_source_path
 else:
-    source_path = os.path.join(__path__[0], '../..')
+    source_path = os.path.join(__path__[0], "../..")

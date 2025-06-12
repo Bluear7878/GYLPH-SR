@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,21 +18,23 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
   \brief Epilogue for Depthwise convoltuion
 
-  The epilogue rearranges the result of a matrix product through shared memory to match canonical
-  tensor layouts in global memory. Epilogues support conversion and reduction operations.
+  The epilogue rearranges the result of a matrix product through shared memory
+  to match canonical tensor layouts in global memory. Epilogues support
+  conversion and reduction operations.
 
 */
 
@@ -55,21 +57,27 @@ namespace threadblock {
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Epilogue operator
-template <typename Shape_,                   ///< Shape of threadblock tile (concept: GemmShape)
-          typename ThreadOutputShape_,       /// Size of the matrix to load (concept: TensorNHWC)
-          typename ThreadBlockOutputShape_,  /// Size of the matrix to load (concept: TensorNHWC)
-          typename WarpMmaOperator_,         ///< Warp-level MMA operator (concept:
-                                             ///< gemm::warp::MmaTensorOp)
-          typename OutputTileIterator_,      ///< Tile iterator reading and writing output tensors
-          typename AccumulatorFragmentIterator_,  ///< Fragment iterator selecting accumulators
-          typename WarpTileIterator_,    ///< Warp-scoped tile iterator writing accumulators to SMEM
-          typename SharedLoadIterator_,  ///< Threadblock-scoped tile iterator loading from SMEM
-          typename OutputOp_,            ///< Output operator
-          typename Padding_  ///< Padding added to SMEM allocation to avoid bank conflicts (concept:
-                             ///< MatrixShape)
+template <typename Shape_, ///< Shape of threadblock tile (concept: GemmShape)
+          typename ThreadOutputShape_, /// Size of the matrix to load (concept:
+                                       /// TensorNHWC)
+          typename ThreadBlockOutputShape_, /// Size of the matrix to load
+                                            /// (concept: TensorNHWC)
+          typename WarpMmaOperator_,    ///< Warp-level MMA operator (concept:
+                                        ///< gemm::warp::MmaTensorOp)
+          typename OutputTileIterator_, ///< Tile iterator reading and writing
+                                        ///< output tensors
+          typename AccumulatorFragmentIterator_, ///< Fragment iterator
+                                                 ///< selecting accumulators
+          typename WarpTileIterator_,   ///< Warp-scoped tile iterator writing
+                                        ///< accumulators to SMEM
+          typename SharedLoadIterator_, ///< Threadblock-scoped tile iterator
+                                        ///< loading from SMEM
+          typename OutputOp_,           ///< Output operator
+          typename Padding_ ///< Padding added to SMEM allocation to avoid bank
+                            ///< conflicts (concept: MatrixShape)
           >
 class EpilogueDepthwise {
- public:
+public:
   using Shape = Shape_;
   using WarpShape = typename WarpMmaOperator_::Shape;
   using ThreadOutputShape = ThreadOutputShape_;
@@ -101,32 +109,35 @@ class EpilogueDepthwise {
   using TensorRef = typename OutputTileIterator::TensorRef;
 
   /// Tensor reference to sync tensor
-  using SyncTensorRef = typename cutlass::TensorRef<int, cutlass::layout::PackedVectorLayout>;
+  using SyncTensorRef =
+      typename cutlass::TensorRef<int, cutlass::layout::PackedVectorLayout>;
 
   /// Const tensor reference to source tensor
   using ConstTensorRef = typename OutputTileIterator::ConstTensorRef;
 
   /// Array type used to output
-  using OutputAccessType =
-      Array<typename OutputTileIterator::Element, OutputTileIterator::kElementsPerAccess>;
+  using OutputAccessType = Array<typename OutputTileIterator::Element,
+                                 OutputTileIterator::kElementsPerAccess>;
 
   /// Array type used by output functor
-  using AccumulatorAccessType =
-      Array<typename WarpTileIterator::Element, OutputTileIterator::kElementsPerAccess>;
+  using AccumulatorAccessType = Array<typename WarpTileIterator::Element,
+                                      OutputTileIterator::kElementsPerAccess>;
 
   /// Number of warps
   using WarpCount =
       gemm::GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN>;
 
- public:
-  static_assert(SharedLoadIterator::Fragment::kElements ==
-  OutputTileIterator::Fragment::kElements,
-    "Mismatch between shared load iterator and output tile iterator.");
+public:
+  static_assert(
+      SharedLoadIterator::Fragment::kElements ==
+          OutputTileIterator::Fragment::kElements,
+      "Mismatch between shared load iterator and output tile iterator.");
 
   static_assert(OutputTileIterator::kElementsPerAccess,
                 "OutputTileIterator::kElementsPerAccess must not be zero.");
 
-  static_assert(!(OutputTileIterator::Fragment::kElements % OutputTileIterator::kElementsPerAccess),
+  static_assert(!(OutputTileIterator::Fragment::kElements %
+                  OutputTileIterator::kElementsPerAccess),
                 "Divisibility");
 
   /// Shared storage allocation needed by the epilogue
@@ -145,7 +156,8 @@ class EpilogueDepthwise {
     using Layout = typename WarpTileIterator::Layout;
 
     /// Logical shape of the shared memory tile written to by all warps.
-    using Shape = MatrixShape<ThreadBlockOutputShape::kNHW, ThreadBlockOutputShape::kC>;
+    using Shape =
+        MatrixShape<ThreadBlockOutputShape::kNHW, ThreadBlockOutputShape::kC>;
 
     /// Shape of the shared memory allocation for the epilogue
     using StorageShape = MatrixShape<Shape::kRow, Shape::kColumn>;
@@ -167,11 +179,12 @@ class EpilogueDepthwise {
     /// Returns a tensor reference to the shared memory buffer
     CUTLASS_DEVICE
     TensorRef reference() {
-      return TensorRef(storage.data(), Layout::packed({StorageShape::kRow, StorageShape::kColumn}));
+      return TensorRef(storage.data(), Layout::packed({StorageShape::kRow,
+                                                       StorageShape::kColumn}));
     }
   };
 
- private:
+private:
   /// Loads fragment from shared memory aligned with output tensor
   SharedLoadIterator shared_load_iterator_;
 
@@ -182,31 +195,34 @@ class EpilogueDepthwise {
   int thread_idx;
   int warp_idx;
   int lane_idx;
-  int warp_m, warp_n;  // warp coordinates within a cta
-  int tid_m, tid_n;    // thread coordinates within a warp
+  int warp_m, warp_n; // warp coordinates within a cta
+  int tid_m, tid_n;   // thread coordinates within a warp
 
- public:
+public:
   /// Constructor
   CUTLASS_DEVICE
-  EpilogueDepthwise(SharedStorage &shared_storage,  ///< Shared storage object
-                    int thread_idx_,                ///< ID of a thread within the threadblock
-                    int warp_idx_,                  ///< ID of warp within threadblock
-                    int lane_idx_                   ///< Id of thread within warp
+  EpilogueDepthwise(SharedStorage &shared_storage, ///< Shared storage object
+                    int thread_idx_, ///< ID of a thread within the threadblock
+                    int warp_idx_,   ///< ID of warp within threadblock
+                    int lane_idx_    ///< Id of thread within warp
                     )
-      : thread_idx(thread_idx_),
-        warp_idx(warp_idx_),
-        lane_idx(lane_idx_),
+      : thread_idx(thread_idx_), warp_idx(warp_idx_), lane_idx(lane_idx_),
         shared_load_iterator_(shared_storage.reference(), thread_idx_),
-        warp_tile_iterator_(shared_storage.reference(), thread_idx_, lane_idx_) {}
+        warp_tile_iterator_(shared_storage.reference(), thread_idx_,
+                            lane_idx_) {}
 
   /// Streams the result to global memory
   CUTLASS_DEVICE
-  void operator()(OutputOp const &output_op,                ///< Output operator
-                  OutputTileIterator destination_iterator,  ///< Tile iterator for destination
-                  AccumulatorTile const &accumulators,  ///< Complete warp-level accumulator tile
-                  OutputTileIterator source_iterator,   ///< Threadblock tile coordinate in GEMM (in
-                                                        ///< units of threadblock tiles)
-                  const int smem_base_offset) {         ///< SMEM base offset for epilogue operation
+  void operator()(
+      OutputOp const &output_op, ///< Output operator
+      OutputTileIterator
+          destination_iterator, ///< Tile iterator for destination
+      AccumulatorTile const
+          &accumulators, ///< Complete warp-level accumulator tile
+      OutputTileIterator
+          source_iterator,          ///< Threadblock tile coordinate in GEMM (in
+                                    ///< units of threadblock tiles)
+      const int smem_base_offset) { ///< SMEM base offset for epilogue operation
     // initiate the smem base offset for different output tile.
     warp_tile_iterator_.set_smem_base_address(smem_base_offset);
 
@@ -215,18 +231,23 @@ class EpilogueDepthwise {
     if (!output_op.is_source_needed()) {
       compute_source_not_needed_(output_op, destination_iterator, accumulators);
     } else {
-      compute_source_needed_(output_op, destination_iterator, accumulators, source_iterator);
+      compute_source_needed_(output_op, destination_iterator, accumulators,
+                             source_iterator);
     }
   }
 
- private:
+private:
   /// Streams the result to global memory
   CUTLASS_DEVICE
   void compute_source_needed_(
-      OutputOp const &output_op,                ///< Output operator
-      OutputTileIterator destination_iterator,  ///< Tile iterator for destination
-      AccumulatorTile const &accumulators,      ///< Complete warp-level accumulator tile
-      OutputTileIterator source_iterator) {     ///< Threadblock tile coordinate in GEMM (in units of threadblock tiles)
+      OutputOp const &output_op, ///< Output operator
+      OutputTileIterator
+          destination_iterator, ///< Tile iterator for destination
+      AccumulatorTile const
+          &accumulators, ///< Complete warp-level accumulator tile
+      OutputTileIterator
+          source_iterator) { ///< Threadblock tile coordinate in GEMM (in units
+                             ///< of threadblock tiles)
 
     typename OutputTileIterator::Fragment source_fragment;
 
@@ -246,7 +267,8 @@ class EpilogueDepthwise {
 
     typename OutputTileIterator::Fragment output_fragment;
 
-    apply_output_operator_(output_fragment, output_op, aligned_accum_fragment, source_fragment);
+    apply_output_operator_(output_fragment, output_op, aligned_accum_fragment,
+                           source_fragment);
 
     // Store to GMEM
     destination_iterator.store(output_fragment);
@@ -255,9 +277,12 @@ class EpilogueDepthwise {
   /// Streams the result to global memory
   CUTLASS_DEVICE
   void compute_source_not_needed_(
-      OutputOp const &output_op,                ///< Output operator
-      OutputTileIterator destination_iterator,  ///< Tile iterator for destination
-      AccumulatorTile const &accumulators) {    ///< Threadblock tile coordinate in GEMM (in units of threadblock tiles)
+      OutputOp const &output_op, ///< Output operator
+      OutputTileIterator
+          destination_iterator, ///< Tile iterator for destination
+      AccumulatorTile const
+          &accumulators) { ///< Threadblock tile coordinate in GEMM (in units of
+                           ///< threadblock tiles)
 
     // store to smem
     warp_tile_iterator_.store(accumulators);
@@ -271,7 +296,8 @@ class EpilogueDepthwise {
 
     typename OutputTileIterator::Fragment output_fragment;
 
-    apply_output_operator_source_not_needed_(output_fragment, output_op, aligned_accum_fragment);
+    apply_output_operator_source_not_needed_(output_fragment, output_op,
+                                             aligned_accum_fragment);
 
     // Store to GMEM
     destination_iterator.store(output_fragment);
@@ -280,22 +306,23 @@ class EpilogueDepthwise {
   /// Helper to invoke the output functor over each vector of output
   CUTLASS_DEVICE
   void apply_output_operator_(
-    typename OutputTileIterator::Fragment &output_fragment,
-    OutputOp const &output_op,                    ///< Output operator
-    typename SharedLoadIterator::Fragment const &aligned_accum_fragment,
-    typename OutputTileIterator::Fragment const &source_fragment) {
-      
-    OutputAccessType *output_frag_ptr = 
-      reinterpret_cast<OutputAccessType *>(&output_fragment);
+      typename OutputTileIterator::Fragment &output_fragment,
+      OutputOp const &output_op, ///< Output operator
+      typename SharedLoadIterator::Fragment const &aligned_accum_fragment,
+      typename OutputTileIterator::Fragment const &source_fragment) {
 
-    AccumulatorAccessType const *compute_frag_ptr = 
-      reinterpret_cast<AccumulatorAccessType const *>(&aligned_accum_fragment);
+    OutputAccessType *output_frag_ptr =
+        reinterpret_cast<OutputAccessType *>(&output_fragment);
 
-    OutputAccessType const *source_frag_ptr = 
-      reinterpret_cast<OutputAccessType const *>(&source_fragment);
+    AccumulatorAccessType const *compute_frag_ptr =
+        reinterpret_cast<AccumulatorAccessType const *>(
+            &aligned_accum_fragment);
 
-    int const kOutputOpIterations = 
-      OutputTileIterator::Fragment::kElements / OutputTileIterator::kElementsPerAccess;
+    OutputAccessType const *source_frag_ptr =
+        reinterpret_cast<OutputAccessType const *>(&source_fragment);
+
+    int const kOutputOpIterations = OutputTileIterator::Fragment::kElements /
+                                    OutputTileIterator::kElementsPerAccess;
 
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kOutputOpIterations; ++i) {
@@ -308,15 +335,17 @@ class EpilogueDepthwise {
   CUTLASS_DEVICE
   void apply_output_operator_source_not_needed_(
       typename OutputTileIterator::Fragment &output_fragment,
-      OutputOp const &output_op,  ///< Output operator
+      OutputOp const &output_op, ///< Output operator
       typename SharedLoadIterator::Fragment const &aligned_accum_fragment) {
-    OutputAccessType *output_frag_ptr = reinterpret_cast<OutputAccessType *>(&output_fragment);
+    OutputAccessType *output_frag_ptr =
+        reinterpret_cast<OutputAccessType *>(&output_fragment);
 
     AccumulatorAccessType const *compute_frag_ptr =
-        reinterpret_cast<AccumulatorAccessType const *>(&aligned_accum_fragment);
+        reinterpret_cast<AccumulatorAccessType const *>(
+            &aligned_accum_fragment);
 
-    int const kOutputOpIterations =
-        OutputTileIterator::Fragment::kElements / OutputTileIterator::kElementsPerAccess;
+    int const kOutputOpIterations = OutputTileIterator::Fragment::kElements /
+                                    OutputTileIterator::kElementsPerAccess;
 
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kOutputOpIterations; ++i) {
@@ -328,8 +357,8 @@ class EpilogueDepthwise {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace epilogue
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace epilogue
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

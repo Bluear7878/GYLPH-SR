@@ -38,13 +38,15 @@ from copy import deepcopy
 
 from cutlass.backend.evt.ir import DAGIR, LayoutNode
 from cutlass.backend.evt.passes.pass_manager import EVTPassBase
-from cutlass.backend.evt.passes.pass_shape_type_propagation import PassShapeTypePropagation
+from cutlass.backend.evt.passes.pass_shape_type_propagation import \
+    PassShapeTypePropagation
 
 
 class PassLayoutManipulateElimination(EVTPassBase):
     """
     Eliminate layout manipulation nodes
     """
+
     dependencies = [PassShapeTypePropagation]
 
     def __init__(self, dag_ir: DAGIR) -> None:
@@ -54,13 +56,15 @@ class PassLayoutManipulateElimination(EVTPassBase):
     def call(self):
         self.layout_nodes_worklist = self.get_all_layout_nodes()
         # Run while loop utill all layout nodes are eliminated
-        while(len(self.layout_nodes_worklist) > 0):
+        while len(self.layout_nodes_worklist) > 0:
             node = self.layout_nodes_worklist.pop(0)
             # for node in layout_nodes:
             # Step 1: get the propagation direction
             direction = self.get_propagation_direction(node)
             self.visited = []
-            getattr(self, f"propagate_to_{direction}")(self.dag_ir.get_node_meta(node), node)
+            getattr(self, f"propagate_to_{direction}")(
+                self.dag_ir.get_node_meta(node), node
+            )
             # Eliminate the current node
             input_node = self.dag_ir.get_all_inputs(node)[0]
             self.dag_ir.replace_all_uses_with(node, input_node)
@@ -84,9 +88,15 @@ class PassLayoutManipulateElimination(EVTPassBase):
         self.get_influenced_inputs(node)
         nodes_influenced_dir_inputs = self.visited
 
-        if "accum" in nodes_influenced_dir_users and "accum" not in nodes_influenced_dir_inputs:
+        if (
+            "accum" in nodes_influenced_dir_users
+            and "accum" not in nodes_influenced_dir_inputs
+        ):
             return "inputs"
-        elif "accum" not in nodes_influenced_dir_users and "accum" in nodes_influenced_dir_inputs:
+        elif (
+            "accum" not in nodes_influenced_dir_users
+            and "accum" in nodes_influenced_dir_inputs
+        ):
             return "users"
         else:
             raise RuntimeError("Unsolved propagation direction")

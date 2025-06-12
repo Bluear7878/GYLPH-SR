@@ -33,25 +33,19 @@
 import ctypes
 from typing import Union
 
-from cuda import cuda, cudart
-import numpy as np
-
-from cutlass_library import (
-    DataTypeNames,
-    DataTypeSize,
-    DataTypeTag,
-    LayoutType,
-    SubstituteTemplate
-)
-
 import cutlass
-from cutlass.backend.c_types import MatrixCoord_, TensorRef2D_, get_reduction_params
+import numpy as np
+from cuda import cuda, cudart
+from cutlass.backend.c_types import (MatrixCoord_, TensorRef2D_,
+                                     get_reduction_params)
 from cutlass.backend.frontend import NumpyFrontend, TorchFrontend
 from cutlass.backend.library import TensorDescription
 from cutlass.backend.memory_manager import DevicePtrWrapper
 from cutlass.backend.operation import ExecutableOperation, LaunchConfiguration
 from cutlass.shape import MatrixCoord
 from cutlass.utils.datatypes import is_numpy_tensor, is_torch_tensor
+from cutlass_library import (DataTypeNames, DataTypeSize, DataTypeTag,
+                             LayoutType, SubstituteTemplate)
 
 
 class ReductionOperation:
@@ -198,7 +192,7 @@ class ReductionArguments:
                 if hasattr(self, attr):
                     buf = getattr(self, attr)
                     if isinstance(buf, DevicePtrWrapper):
-                        err, = cudart.cudaFree(buf.ptr)
+                        (err,) = cudart.cudaFree(buf.ptr)
                         if err != cudart.cudaError_t.cudaSuccess:
                             raise RuntimeError(f"cudaFree failed with error {err}")
                         del buf
@@ -426,7 +420,9 @@ struct ${operation_name}${operation_suffix}:
       """
 
     def emit(self, operation: ReductionOperation):
-        vector_length_bits = min(operation.C.alignment * DataTypeSize[operation.C.element], 128)
+        vector_length_bits = min(
+            operation.C.alignment * DataTypeSize[operation.C.element], 128
+        )
         epilogue_vector_length = vector_length_bits // DataTypeSize[operation.C.element]
 
         values = {

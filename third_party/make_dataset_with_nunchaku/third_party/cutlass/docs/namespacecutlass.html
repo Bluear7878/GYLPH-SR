@@ -58,8 +58,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
                onmouseout="return searchBox.OnSearchSelectHide()"
                alt=""/>
           <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onfocus="searchBox.OnSearchFieldFocus(true)"
+               onblur="searchBox.OnSearchFieldFocus(false)"
                onkeyup="searchBox.OnSearchFieldChange(event)"/>
           </span><span class="right">
             <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
@@ -83,7 +83,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
+<iframe src="javascript:void(0)" frameborder="0"
         name="MSearchResults" id="MSearchResults">
 </iframe>
 </div>
@@ -422,43 +422,43 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a59f08b1b99c4d52257b962d35ba55cde"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#a59f08b1b99c4d52257b962d35ba55cde">ComplexTransform</a> { <a class="el" href="namespacecutlass.html#a59f08b1b99c4d52257b962d35ba55cdea35c3ace1970663a16e5c65baa5941b13">ComplexTransform::kNone</a>, 
+<tr class="memitem:a59f08b1b99c4d52257b962d35ba55cde"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#a59f08b1b99c4d52257b962d35ba55cde">ComplexTransform</a> { <a class="el" href="namespacecutlass.html#a59f08b1b99c4d52257b962d35ba55cdea35c3ace1970663a16e5c65baa5941b13">ComplexTransform::kNone</a>,
 <a class="el" href="namespacecutlass.html#a59f08b1b99c4d52257b962d35ba55cdea8be1522542c86e700b5e787b1aabc70b">ComplexTransform::kConjugate</a>
  }<tr class="memdesc:a59f08b1b99c4d52257b962d35ba55cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeraed type describing a transformation on a complex value.  <a href="namespacecutlass.html#a59f08b1b99c4d52257b962d35ba55cde">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:a59f08b1b99c4d52257b962d35ba55cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5a88c5840a28a9e0206b9cc7812a18d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18d">Status</a> { <br />
-&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da8c632159fa131f09d04f94e3cbcd8782">Status::kSuccess</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18daa4867e1466f5d067dbec566abfe5a67a">Status::kErrorMisalignedOperand</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da7fa8ed49e2d3f7e9af8ad025cdca548c">Status::kErrorInvalidLayout</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da58c16acfe39125423ff22c907487ba2c">Status::kErrorInvalidProblem</a>, 
+&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da8c632159fa131f09d04f94e3cbcd8782">Status::kSuccess</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18daa4867e1466f5d067dbec566abfe5a67a">Status::kErrorMisalignedOperand</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da7fa8ed49e2d3f7e9af8ad025cdca548c">Status::kErrorInvalidLayout</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da58c16acfe39125423ff22c907487ba2c">Status::kErrorInvalidProblem</a>,
 <br />
-&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da3af1f6b1c6965aa925910b89e4152ab8">Status::kErrorNotSupported</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da6467125354474c5cff2f3c920abb7d3f">Status::kErrorWorkspaceNull</a>, 
-<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da4d3b5847a0b17037c6b69faf8b1d4d71">Status::kErrorInternal</a>, 
+&#160;&#160;<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da3af1f6b1c6965aa925910b89e4152ab8">Status::kErrorNotSupported</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da6467125354474c5cff2f3c920abb7d3f">Status::kErrorWorkspaceNull</a>,
+<a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18da4d3b5847a0b17037c6b69faf8b1d4d71">Status::kErrorInternal</a>,
 <a class="el" href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18dab10913c938482a8aa4ba85b7a1116cb4">Status::kInvalid</a>
 <br />
  }<tr class="memdesc:ac5a88c5840a28a9e0206b9cc7812a18d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Status code returned by CUTLASS operations.  <a href="namespacecutlass.html#ac5a88c5840a28a9e0206b9cc7812a18d">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:ac5a88c5840a28a9e0206b9cc7812a18d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af99b012f0e1795ca7dc167b7b109dd19"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19">MatrixLayout</a> { <a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19abbcb6d9641fe76477dcbe3b209efa7ca">MatrixLayout::kColumnMajor</a>, 
+<tr class="memitem:af99b012f0e1795ca7dc167b7b109dd19"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19">MatrixLayout</a> { <a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19abbcb6d9641fe76477dcbe3b209efa7ca">MatrixLayout::kColumnMajor</a>,
 <a class="el" href="namespacecutlass.html#af99b012f0e1795ca7dc167b7b109dd19a1ebc644af759b214a70279505401a0b9">MatrixLayout::kRowMajor</a>
  }</td></tr>
 <tr class="separator:af99b012f0e1795ca7dc167b7b109dd19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7e605b25da48d89f98764c12d50b467"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467">MatrixTransform</a> { <a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a35c3ace1970663a16e5c65baa5941b13">MatrixTransform::kNone</a>, 
-<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a0b1273062aff94c51d1d2788bc9052d2">MatrixTransform::kTranspose</a>, 
-<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a8be1522542c86e700b5e787b1aabc70b">MatrixTransform::kConjugate</a>, 
+<tr class="memitem:ab7e605b25da48d89f98764c12d50b467"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467">MatrixTransform</a> { <a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a35c3ace1970663a16e5c65baa5941b13">MatrixTransform::kNone</a>,
+<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a0b1273062aff94c51d1d2788bc9052d2">MatrixTransform::kTranspose</a>,
+<a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a8be1522542c86e700b5e787b1aabc70b">MatrixTransform::kConjugate</a>,
 <a class="el" href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467a01311591f8ae2ee4658df72786ed1050">MatrixTransform::kHermitian</a>
  }<tr class="memdesc:ab7e605b25da48d89f98764c12d50b467"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transformation applied to matrix operands.  <a href="namespacecutlass.html#ab7e605b25da48d89f98764c12d50b467">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:ab7e605b25da48d89f98764c12d50b467"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aabe6b8ce223bf05f65a4721a3f5447a6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6">FloatRoundStyle</a> { <br />
-&#160;&#160;<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a71ab01baac7b3594fa75191a065de802">FloatRoundStyle::round_indeterminate</a>, 
-<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a85e71d1c7477469da0e44a8cf7a644fa">FloatRoundStyle::round_toward_zero</a>, 
-<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a280b2492e1afdb76d63ad6a4cd4f38d7">FloatRoundStyle::round_to_nearest</a>, 
-<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a5202e179145325d6e7b16dc66351e729">FloatRoundStyle::round_toward_infinity</a>, 
+&#160;&#160;<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a71ab01baac7b3594fa75191a065de802">FloatRoundStyle::round_indeterminate</a>,
+<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a85e71d1c7477469da0e44a8cf7a644fa">FloatRoundStyle::round_toward_zero</a>,
+<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a280b2492e1afdb76d63ad6a4cd4f38d7">FloatRoundStyle::round_to_nearest</a>,
+<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a5202e179145325d6e7b16dc66351e729">FloatRoundStyle::round_toward_infinity</a>,
 <br />
-&#160;&#160;<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6ab8d591c42fa5ce43cc43e50153ec8a1b">FloatRoundStyle::round_toward_neg_infinity</a>, 
+&#160;&#160;<a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6ab8d591c42fa5ce43cc43e50153ec8a1b">FloatRoundStyle::round_toward_neg_infinity</a>,
 <a class="el" href="namespacecutlass.html#aabe6b8ce223bf05f65a4721a3f5447a6a3d484cc14220848a89c785aaaab88a98">FloatRoundStyle::round_half_ulp_truncate</a>
 <br />
  }</td></tr>

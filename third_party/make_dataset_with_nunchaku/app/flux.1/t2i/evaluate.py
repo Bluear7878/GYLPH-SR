@@ -2,26 +2,51 @@ import argparse
 import os
 
 import torch
+from data import get_dataset
 from tqdm import tqdm
 
-from data import get_dataset
 from utils import get_pipeline, hash_str_to_int
 
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-m", "--model", type=str, default="schnell", choices=["schnell", "dev"], help="Which FLUX.1 model to use"
+        "-m",
+        "--model",
+        type=str,
+        default="schnell",
+        choices=["schnell", "dev"],
+        help="Which FLUX.1 model to use",
     )
     parser.add_argument(
-        "-p", "--precision", type=str, default="int4", choices=["int4", "fp4", "bf16"], help="Which precision to use"
+        "-p",
+        "--precision",
+        type=str,
+        default="int4",
+        choices=["int4", "fp4", "bf16"],
+        help="Which precision to use",
     )
     parser.add_argument(
-        "-d", "--datasets", type=str, nargs="*", default=["MJHQ", "DCI"], help="The benchmark datasets to evaluate on."
+        "-d",
+        "--datasets",
+        type=str,
+        nargs="*",
+        default=["MJHQ", "DCI"],
+        help="The benchmark datasets to evaluate on.",
     )
-    parser.add_argument("-t", "--num-inference-steps", type=int, default=4, help="Number of inference steps")
-    parser.add_argument("-g", "--guidance-scale", type=float, default=0, help="Guidance scale.")
-    parser.add_argument("-o", "--output-root", type=str, default=None, help="Image output path")
+    parser.add_argument(
+        "-t",
+        "--num-inference-steps",
+        type=int,
+        default=4,
+        help="Number of inference steps",
+    )
+    parser.add_argument(
+        "-g", "--guidance-scale", type=float, default=0, help="Guidance scale."
+    )
+    parser.add_argument(
+        "-o", "--output-root", type=str, default=None, help="Image output path"
+    )
     parser.add_argument(
         "--chunk-step",
         type=int,
@@ -47,8 +72,12 @@ def main():
     assert args.chunk_step > 0
     assert 0 <= args.chunk_start < args.chunk_step
 
-    pipeline = get_pipeline(model_name=args.model, precision=args.precision, device="cuda")
-    pipeline.set_progress_bar_config(desc="Sampling", leave=False, dynamic_ncols=True, position=1)
+    pipeline = get_pipeline(
+        model_name=args.model, precision=args.precision, device="cuda"
+    )
+    pipeline.set_progress_bar_config(
+        desc="Sampling", leave=False, dynamic_ncols=True, position=1
+    )
 
     output_root = args.output_root
     if output_root is None:
@@ -59,7 +88,9 @@ def main():
         os.makedirs(output_dirname, exist_ok=True)
         dataset = get_dataset(name=dataset_name, max_dataset_size=8)
         if args.chunk_step > 1:
-            dataset = dataset.select(range(args.chunk_start, len(dataset), args.chunk_step))
+            dataset = dataset.select(
+                range(args.chunk_start, len(dataset), args.chunk_step)
+            )
         for row in tqdm(dataset):
             filename = row["filename"]
             prompt = row["prompt"]

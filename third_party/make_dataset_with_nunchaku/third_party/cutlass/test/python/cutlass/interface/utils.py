@@ -33,6 +33,8 @@
 """
 Helper functions & classes for interface test
 """
+
+
 class ExpectException:
     """
     Utility class to assert that an exception was raised when expected
@@ -50,7 +52,8 @@ class ExpectException:
     :param message: message to print if an exception is raised when not expected or vice versa
     :type message: str
     """
-    def __init__(self, exception_expected: bool, message: str = '', verify_msg=False):
+
+    def __init__(self, exception_expected: bool, message: str = "", verify_msg=False):
         self.exception_expected = exception_expected
         self.message = message
         self.verify_msg = verify_msg
@@ -63,7 +66,9 @@ class ExpectException:
         assert self.exception_expected == exception_raised, self.message
         if self.verify_msg:
             exc_message = f"{exc_type.__name__}: {exc_val}"
-            assert exc_message == self.message, f"expect error message {self.message}, got {exc_message}"
+            assert (
+                exc_message == self.message
+            ), f"expect error message {self.message}, got {exc_message}"
 
         # Suppress the exception
         return True

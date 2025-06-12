@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,26 +18,28 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
-/*! 
+/*!
   \file
-  \brief Defines an unsigned 128b integer with several operators to support 64-bit integer division.
+  \brief Defines an unsigned 128b integer with several operators to support
+  64-bit integer division.
 */
 /*
-  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However, certain
-         existing integrations of CUTLASS require C++11 host compilers.
+  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However,
+  certain existing integrations of CUTLASS require C++11 host compilers.
 
-         Until this requirement can be lifted, certain headers with this annotation are required
-         to be remain consistent with C++11 syntax.
+         Until this requirement can be lifted, certain headers with this
+  annotation are required to be remain consistent with C++11 syntax.
 
          C++11 compatibility is enforced by `cutlass_test_unit_core_cpp11`.
 */
@@ -46,17 +48,18 @@
 #if defined(__CUDACC_RTC__)
 #include <cuda/std/cstdint>
 #else
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <cmath>
-#include <type_traits>
 #include <stdexcept>
+#include <type_traits>
 #endif
 
 #include "cutlass/cutlass.h"
 
 /// Optionally enable GCC's built-in type
-#if (defined(__x86_64) || defined (__aarch64__)) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
+#if (defined(__x86_64) || defined(__aarch64__)) && !defined(__CUDA_ARCH__) &&  \
+    defined(__GNUC__)
 #define CUTLASS_UINT128_NATIVE
 #elif defined(_MSC_VER) && defined(_M_AMD64) && !defined(__CUDA_ARCH__)
 #define CUTLASS_INT128_ARITHMETIC
@@ -81,16 +84,17 @@ struct uint128_t {
 
     hilo() = default;
 
-    CUTLASS_HOST_DEVICE hilo(uint64_t lo_, uint64_t hi_):lo(lo_), hi(hi_) {}
+    CUTLASS_HOST_DEVICE hilo(uint64_t lo_, uint64_t hi_) : lo(lo_), hi(hi_) {}
   };
 
-  // Use a union to store either low and high parts or, if present, a built-in 128b integer type.
+  // Use a union to store either low and high parts or, if present, a built-in
+  // 128b integer type.
   union {
     struct hilo hilo_;
 
-    #if defined(CUTLASS_UINT128_NATIVE)
+#if defined(CUTLASS_UINT128_NATIVE)
     unsigned __int128 native;
-    #endif // defined(CUTLASS_UINT128_NATIVE)
+#endif // defined(CUTLASS_UINT128_NATIVE)
   };
 
   //
@@ -102,32 +106,28 @@ struct uint128_t {
 
   /// Constructor from uint64
   CUTLASS_HOST_DEVICE
-  uint128_t(uint64_t lo_): hilo_(lo_, 0) { }
+  uint128_t(uint64_t lo_) : hilo_(lo_, 0) {}
 
   /// Constructor from two 64b unsigned integers
   CUTLASS_HOST_DEVICE
-  uint128_t(uint64_t lo_, uint64_t hi_): hilo_(lo_, hi_) {
+  uint128_t(uint64_t lo_, uint64_t hi_) : hilo_(lo_, hi_) {}
 
-  }
-
-  /// Optional constructor from native value
-  #if defined(CUTLASS_UINT128_NATIVE)
-  uint128_t(unsigned __int128 value): native(value) { }
-  #endif
+/// Optional constructor from native value
+#if defined(CUTLASS_UINT128_NATIVE)
+  uint128_t(unsigned __int128 value) : native(value) {}
+#endif
 
   /// Lossily cast to uint64
   CUTLASS_HOST_DEVICE
-  explicit operator uint64_t() const {
-    return hilo_.lo;
-  }
+  explicit operator uint64_t() const { return hilo_.lo; }
 
   CUTLASS_HOST_DEVICE
   static void exception() {
 #if defined(__CUDA_ARCH__)
-  asm volatile ("  brkpt;\n");
+    asm volatile("  brkpt;\n");
 #else
-  // throw std::runtime_error("Not yet implemented.");
-  abort();
+    // throw std::runtime_error("Not yet implemented.");
+    abort();
 #endif
   }
 
@@ -152,7 +152,8 @@ struct uint128_t {
     y.native = native - rhs.native;
 #else
     y.hilo_.lo = hilo_.lo - rhs.hilo_.lo;
-    y.hilo_.hi = hilo_.hi - rhs.hilo_.hi - (rhs.hilo_.lo && y.hilo_.lo > hilo_.lo);
+    y.hilo_.hi =
+        hilo_.hi - rhs.hilo_.hi - (rhs.hilo_.lo && y.hilo_.lo > hilo_.lo);
 #endif
     return y;
   }
@@ -233,15 +234,12 @@ struct uint128_t {
   uint128_t operator<<(int sh) const {
     if (sh == 0) {
       return *this;
-    }
-    else if (sh >= kPartSize) {
+    } else if (sh >= kPartSize) {
       return uint128_t(0, hilo_.lo << (sh - kPartSize));
-    }
-    else {
-      return uint128_t(
-        (hilo_.lo << sh),
-        (hilo_.hi << sh) | uint64_t(hilo_.lo >> (kPartSize - sh))
-      );
+    } else {
+      return uint128_t((hilo_.lo << sh),
+                       (hilo_.hi << sh) |
+                           uint64_t(hilo_.lo >> (kPartSize - sh)));
     }
   }
 
@@ -250,15 +248,11 @@ struct uint128_t {
   uint128_t operator>>(int sh) const {
     if (sh == 0) {
       return *this;
-    }
-    else if (sh >= kPartSize) {
+    } else if (sh >= kPartSize) {
       return uint128_t((hilo_.hi >> (sh - kPartSize)), 0);
-    }
-    else {
-      return uint128_t(
-        (hilo_.lo >> sh) | (hilo_.hi << (kPartSize - sh)),
-        (hilo_.hi >> sh)
-      );
+    } else {
+      return uint128_t((hilo_.lo >> sh) | (hilo_.hi << (kPartSize - sh)),
+                       (hilo_.hi >> sh));
     }
   }
 };

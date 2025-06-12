@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -97,8 +98,8 @@ template <
     SharedMemoryClearOption SharedMemoryClear = SharedMemoryClearOption::kNone,
     /// Used for partial specialization
     typename Enable = bool>
-class DualMmaMultistage : 
-  public DualMmaBase<Shape_, Policy0_, Policy1_, Stages> {
+class DualMmaMultistage
+    : public DualMmaBase<Shape_, Policy0_, Policy1_, Stages> {
 public:
   ///< Base class
   using Base = DualMmaBase<Shape_, Policy0_, Policy1_, Stages>;
@@ -138,7 +139,7 @@ public:
 
   /// Minimum architecture is Sm80 to support cp.async
   using ArchTag = arch::Sm80;
-  
+
   /// Complex transform on A operand
   static ComplexTransform const kTransformA = Operator0::kTransformA;
 
@@ -162,15 +163,16 @@ public:
 
     /// Number of cp.async instructions to load on group of operand A
     static int const kAccessesPerGroupA =
-        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// Number of cp.async instructions to load on group of operand B
     static int const kAccessesPerGroupB =
-        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
   };
 
- private:
-
+private:
   using WarpLoadedFragmentA = typename Operator0::FragmentA;
   using WarpLoadedFragmentB0 = typename Operator0::FragmentB;
   using WarpLoadedFragmentB1 = typename Operator1::FragmentB;
@@ -178,8 +180,7 @@ public:
   using WarpTransformedFragmentB0 = typename Operator0::TransformedFragmentB;
   using WarpTransformedFragmentB1 = typename Operator1::TransformedFragmentB;
 
- private:
-
+private:
   //
   // Data members
   //
@@ -192,7 +193,6 @@ public:
   SmemIteratorB1 smem_iterator_B1_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   DualMmaMultistage(
@@ -203,13 +203,11 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      Base(shared_storage, thread_idx, warp_idx, lane_idx),
-      smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
-      smem_iterator_B0_(shared_storage.operand_B0_ref(), thread_idx),
-      smem_iterator_B1_(shared_storage.operand_B1_ref(), thread_idx)
-  {
+      int lane_idx)
+      : Base(shared_storage, thread_idx, warp_idx, lane_idx),
+        smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
+        smem_iterator_B0_(shared_storage.operand_B0_ref(), thread_idx),
+        smem_iterator_B1_(shared_storage.operand_B1_ref(), thread_idx) {
     // Compute warp location within threadblock tile by mapping the warp_id to
     // three coordinates:
     //   _m: the warp's position within the threadblock along the M dimension
@@ -232,8 +230,9 @@ public:
   }
 
   CUTLASS_DEVICE
-  void copy_tiles_and_advance(IteratorA &iterator_A, IteratorB0 &iterator_B0, IteratorB1 &iterator_B1,
-                              int group_start_A = 0, int group_start_B = 0) {
+  void copy_tiles_and_advance(IteratorA &iterator_A, IteratorB0 &iterator_B0,
+                              IteratorB1 &iterator_B1, int group_start_A = 0,
+                              int group_start_B = 0) {
     iterator_A.set_iteration_index(group_start_A *
                                    IteratorA::kAccessesPerVector);
     this->smem_iterator_A_.set_iteration_index(group_start_A);
@@ -258,8 +257,8 @@ public:
             cutlass::arch::cp_async_zfill<kSrcBytes, kCacheOpA>(
                 dst_ptr + v, gmem_ptr, iterator_A.valid());
           } else {
-            cutlass::arch::cp_async<kSrcBytes, kCacheOpA>(
-                dst_ptr + v, gmem_ptr, iterator_A.valid());
+            cutlass::arch::cp_async<kSrcBytes, kCacheOpA>(dst_ptr + v, gmem_ptr,
+                                                          iterator_A.valid());
           }
 
           ++iterator_A;
@@ -270,9 +269,9 @@ public:
     }
 
     iterator_B0.set_iteration_index(group_start_B *
-                                   IteratorB0::kAccessesPerVector);
+                                    IteratorB0::kAccessesPerVector);
     iterator_B1.set_iteration_index(group_start_B *
-                                   IteratorB1::kAccessesPerVector);
+                                    IteratorB1::kAccessesPerVector);
     this->smem_iterator_B0_.set_iteration_index(group_start_B);
     this->smem_iterator_B1_.set_iteration_index(group_start_B);
 
@@ -296,8 +295,8 @@ public:
             cutlass::arch::cp_async_zfill<kSrcBytes, kCacheOpB>(
                 dst_ptr + v, gmem_ptr, iterator_B0.valid());
           } else {
-            cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(
-                dst_ptr + v, gmem_ptr, iterator_B0.valid());
+            cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(dst_ptr + v, gmem_ptr,
+                                                          iterator_B0.valid());
           }
 
           ++iterator_B0;
@@ -325,8 +324,8 @@ public:
             cutlass::arch::cp_async_zfill<kSrcBytes, kCacheOpB>(
                 dst_ptr + v, gmem_ptr, iterator_B1.valid());
           } else {
-            cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(
-                dst_ptr + v, gmem_ptr, iterator_B1.valid());
+            cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(dst_ptr + v, gmem_ptr,
+                                                          iterator_B1.valid());
           }
 
           ++iterator_B1;
@@ -342,17 +341,13 @@ public:
       ///< problem size of GEMM
       int gemm_k_iterations,
       ///< destination accumulator tile
-      FragmentC &accum0,
-      FragmentC &accum1,
+      FragmentC &accum0, FragmentC &accum1,
       ///< iterator over A operand in global memory
       IteratorA iterator_A,
       ///< iterator over B operand in global memory
-      IteratorB0 iterator_B0,
-      IteratorB1 iterator_B1,
+      IteratorB0 iterator_B0, IteratorB1 iterator_B1,
       ///< initial value of accumulator
-      FragmentC const &src_accum0,
-      FragmentC const &src_accum1
-    ) {
+      FragmentC const &src_accum0, FragmentC const &src_accum1) {
 
     //
     // Prologue
@@ -463,13 +458,15 @@ public:
     accum1 = src_accum1;
 
     //
-    // Clear the remaining tiles of SMEM. This is a functional requirement for some kernels
-    // so that all accumulator elements outside the GEMM footprint are zero.
+    // Clear the remaining tiles of SMEM. This is a functional requirement for
+    // some kernels so that all accumulator elements outside the GEMM footprint
+    // are zero.
     //
 
     if (SharedMemoryClear == SharedMemoryClearOption::kClearLastStage) {
 
-      /// Iterator to write threadblock-scoped tile of A operand to shared memory
+      /// Iterator to write threadblock-scoped tile of A operand to shared
+      /// memory
       SmemIteratorA last_smem_iterator_A(this->smem_iterator_A_);
 
       typename IteratorA::AccessType zero_A;
@@ -493,7 +490,8 @@ public:
       typename IteratorB0::AccessType zero_B;
       zero_B.clear();
 
-      /// Iterator to write threadblock-scoped tile of B0 operand to shared memory
+      /// Iterator to write threadblock-scoped tile of B0 operand to shared
+      /// memory
       SmemIteratorB0 last_smem_iterator_B0(this->smem_iterator_B0_);
       last_smem_iterator_B0.set_iteration_index(0);
 
@@ -509,7 +507,8 @@ public:
         ++last_smem_iterator_B0;
       }
 
-      /// Iterator to write threadblock-scoped tile of B1 operand to shared memory
+      /// Iterator to write threadblock-scoped tile of B1 operand to shared
+      /// memory
       SmemIteratorB1 last_smem_iterator_B1(this->smem_iterator_B1_);
       last_smem_iterator_B1.set_iteration_index(0);
 
@@ -575,9 +574,9 @@ public:
     FragmentC tmp_accum0, tmp_accum1;
 
     if (platform::is_same<typename Operator0::MathOperator,
-                          arch::OpMultiplyAddFastF32>::value
-      || platform::is_same<typename Operator0::MathOperator,
-                           arch::OpMultiplyAddComplexFastF32>::value) {
+                          arch::OpMultiplyAddFastF32>::value ||
+        platform::is_same<typename Operator0::MathOperator,
+                          arch::OpMultiplyAddComplexFastF32>::value) {
 
       tmp_accum0.clear();
       tmp_accum1.clear();
@@ -602,13 +601,19 @@ public:
         // Load warp-level tiles from shared memory, wrapping to k offset if
         // this is the last group as the case may be.
 
-        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B0_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B1_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        
-        this->warp_tile_iterator_A_.load(warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_B0_.load(warp_loaded_frag_B0[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_B1_.load(warp_loaded_frag_B1[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+        this->warp_tile_iterator_B0_.set_kgroup_index(
+            (warp_mma_k + 1) % Base::kWarpGemmIterations);
+        this->warp_tile_iterator_B1_.set_kgroup_index(
+            (warp_mma_k + 1) % Base::kWarpGemmIterations);
+
+        this->warp_tile_iterator_A_.load(
+            warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B0_.load(
+            warp_loaded_frag_B0[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B1_.load(
+            warp_loaded_frag_B1[(warp_mma_k + 1) % 2]);
 
         ++this->warp_tile_iterator_A_;
         ++this->warp_tile_iterator_B0_;
@@ -626,22 +631,14 @@ public:
         }
 
         if (platform::is_same<typename Operator0::MathOperator,
-                              arch::OpMultiplyAddFastF32>::value
-          || platform::is_same<typename Operator0::MathOperator,
-                               arch::OpMultiplyAddComplexFastF32>::value) {
+                              arch::OpMultiplyAddFastF32>::value ||
+            platform::is_same<typename Operator0::MathOperator,
+                              arch::OpMultiplyAddComplexFastF32>::value) {
 
-          warp_mma0(
-            tmp_accum0,
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B0[warp_mma_k % 2], 
-            tmp_accum0
-          );
-          warp_mma1(
-            tmp_accum1,
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B1[warp_mma_k % 2], 
-            tmp_accum1
-          );
+          warp_mma0(tmp_accum0, warp_transformed_frag_A[warp_mma_k % 2],
+                    warp_transformed_frag_B0[warp_mma_k % 2], tmp_accum0);
+          warp_mma1(tmp_accum1, warp_transformed_frag_A[warp_mma_k % 2],
+                    warp_transformed_frag_B1[warp_mma_k % 2], tmp_accum1);
 
           if (warp_mma_k == 0) {
             accum0 = plus_accum(accum0, tmp_accum0);
@@ -650,18 +647,10 @@ public:
             tmp_accum1.clear();
           }
         } else {
-          warp_mma0(
-            accum0,
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B0[warp_mma_k % 2],
-            accum0
-          );
-          warp_mma1(
-            accum1,
-            warp_transformed_frag_A[warp_mma_k % 2],
-            warp_transformed_frag_B1[warp_mma_k % 2],
-            accum1
-          );
+          warp_mma0(accum0, warp_transformed_frag_A[warp_mma_k % 2],
+                    warp_transformed_frag_B0[warp_mma_k % 2], accum0);
+          warp_mma1(accum1, warp_transformed_frag_A[warp_mma_k % 2],
+                    warp_transformed_frag_B1[warp_mma_k % 2], accum1);
         }
 
         // Issue global->shared copies for the this stage
@@ -671,8 +660,9 @@ public:
           group_start_iteration_A = warp_mma_k * Detail::kAccessesPerGroupA;
           group_start_iteration_B = warp_mma_k * Detail::kAccessesPerGroupB;
 
-          copy_tiles_and_advance(iterator_A, iterator_B0, iterator_B1, group_start_iteration_A, 
-                               group_start_iteration_B);
+          copy_tiles_and_advance(iterator_A, iterator_B0, iterator_B1,
+                                 group_start_iteration_A,
+                                 group_start_iteration_B);
         }
 
         if (warp_mma_k + 2 == Base::kWarpGemmIterations) {
@@ -682,13 +672,15 @@ public:
           group_start_iteration_B =
               (warp_mma_k + 1) * Detail::kAccessesPerGroupB;
 
-          copy_tiles_and_advance(iterator_A, iterator_B0, iterator_B1, group_start_iteration_A, 
-                               group_start_iteration_B);
+          copy_tiles_and_advance(iterator_A, iterator_B0, iterator_B1,
+                                 group_start_iteration_A,
+                                 group_start_iteration_B);
 
           // Inserts a memory fence between stages of cp.async instructions.
           cutlass::arch::cp_async_fence();
 
-          // Waits until stages up to the previous (kStages-2)th stage have committed.
+          // Waits until stages up to the previous (kStages-2)th stage have
+          // committed.
           arch::cp_async_wait<Base::kStages - 2>();
           __syncthreads();
 
@@ -748,18 +740,18 @@ public:
                               warp_loaded_frag_B1[(warp_mma_k + 1) % 2]);
         }
       }
-
     }
 
     if (platform::is_same<typename Operator0::MathOperator,
-                          arch::OpMultiplyAddFastF32>::value
-      || platform::is_same<typename Operator0::MathOperator,
-                           arch::OpMultiplyAddComplexFastF32>::value) {
-      accum0 = plus_accum(accum0, tmp_accum0); 
-      accum1 = plus_accum(accum1, tmp_accum1); 
+                          arch::OpMultiplyAddFastF32>::value ||
+        platform::is_same<typename Operator0::MathOperator,
+                          arch::OpMultiplyAddComplexFastF32>::value) {
+      accum0 = plus_accum(accum0, tmp_accum0);
+      accum1 = plus_accum(accum1, tmp_accum1);
     }
- 
-    // commit and drain all pending and predicated cp.async pnz from the GEMM mainloop
+
+    // commit and drain all pending and predicated cp.async pnz from the GEMM
+    // mainloop
     cutlass::arch::cp_async_fence();
     cutlass::arch::cp_async_wait<0>();
     __syncthreads();
@@ -768,8 +760,8 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

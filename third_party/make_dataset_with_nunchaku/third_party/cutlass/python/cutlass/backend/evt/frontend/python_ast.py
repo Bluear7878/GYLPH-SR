@@ -38,12 +38,11 @@ import ast
 import inspect
 import textwrap
 
-from cutlass_library import DataType
-
 import cutlass
-from cutlass.backend.evt.frontend.frontend_base import EVTFrontendBase
 from cutlass.backend.epilogue import relu
+from cutlass.backend.evt.frontend.frontend_base import EVTFrontendBase
 from cutlass.backend.library import FunctionalOp
+from cutlass_library import DataType
 
 
 class PythonASTFrontend(EVTFrontendBase, ast.NodeVisitor):
@@ -73,7 +72,7 @@ class PythonASTFrontend(EVTFrontendBase, ast.NodeVisitor):
             "relu": relu.binding_type,
             "multiply_add": FunctionalOp.MultiplyAdd,
             "sum": (FunctionalOp.Plus, FunctionalOp.AtomicAdd),
-            "max": (FunctionalOp.Maximum, FunctionalOp.AtomicMaximum)
+            "max": (FunctionalOp.Maximum, FunctionalOp.AtomicMaximum),
         }
         return mapping[op]
 

@@ -34,10 +34,10 @@
 Utility functions for interacting with the device
 """
 
-from cuda import cuda, cudart
-
 import cutlass
-from cutlass.utils.datatypes import is_cupy_tensor, is_numpy_tensor, is_torch_tensor
+from cuda import cuda, cudart
+from cutlass.utils.datatypes import (is_cupy_tensor, is_numpy_tensor,
+                                     is_torch_tensor)
 
 
 def check_cuda_errors(result: list):

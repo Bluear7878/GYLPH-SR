@@ -16,7 +16,9 @@ def rotate_half(x):
     return torch.cat((-x2, x1), dim=-1)
 
 
-def apply_rotary_pos_emb_vision(tensor: torch.Tensor, freqs: torch.Tensor) -> torch.Tensor:
+def apply_rotary_pos_emb_vision(
+    tensor: torch.Tensor, freqs: torch.Tensor
+) -> torch.Tensor:
     orig_dtype = tensor.dtype
     tensor = tensor.float()
     cos = freqs.cos()
@@ -35,7 +37,9 @@ class VisionRotaryEmbedding(nn.Module):
         self.register_buffer("inv_freq", inv_freq, persistent=False)
 
     def forward(self, seqlen: int) -> torch.Tensor:
-        seq = torch.arange(seqlen, device=self.inv_freq.device, dtype=self.inv_freq.dtype)
+        seq = torch.arange(
+            seqlen, device=self.inv_freq.device, dtype=self.inv_freq.dtype
+        )
         freqs = torch.outer(seq, self.inv_freq)
         return freqs
 
@@ -44,7 +48,7 @@ class MLCDVisionConfig(CLIPVisionConfig):
 
     model_type = "mlcd_vision_model"
 
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
@@ -74,11 +78,12 @@ class MLCDVisionEmbeddings(torch.nn.Module):
         self.num_patches = (self.image_size // self.patch_size) ** 2
         self.num_positions = self.num_patches + 1
 
-
     def forward(self, pixel_values: torch.FloatTensor) -> torch.Tensor:
         batch_size = pixel_values.shape[0]
         target_dtype = self.patch_embedding.weight.dtype
-        patch_embeds = self.patch_embedding(pixel_values.to(dtype=target_dtype))  # shape = [*, width, grid, grid]
+        patch_embeds = self.patch_embedding(
+            pixel_values.to(dtype=target_dtype)
+        )  # shape = [*, width, grid, grid]
         patch_embeds = patch_embeds.flatten(2).transpose(1, 2)
 
         class_embeds = self.class_embedding.expand(batch_size, 1, -1)
@@ -115,18 +120,23 @@ class MLCDSdpaAttention(torch.nn.Module):
         self.v_proj = nn.Linear(self.embed_dim, self.embed_dim)
         self.out_proj = nn.Linear(self.embed_dim, self.embed_dim)
 
-
     def forward(
         self,
         hidden_states: torch.Tensor,
         rotary_pos_emb: torch.Tensor,
-        ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         """Input shape: Batch x Seq x Hidden Size"""
-        batch_size, seq_length , hidden_size = hidden_states.size()
+        batch_size, seq_length, hidden_size = hidden_states.size()
         # Each of shape: [batch_size, seq_length, num_heads, head_dim]
-        q = self.q_proj(hidden_states).reshape((batch_size, seq_length, self.num_heads, self.head_dim))
-        k = self.k_proj(hidden_states).reshape((batch_size, seq_length, self.num_heads, self.head_dim))
-        v = self.v_proj(hidden_states).reshape((batch_size, seq_length, self.num_heads, self.head_dim))
+        q = self.q_proj(hidden_states).reshape(
+            (batch_size, seq_length, self.num_heads, self.head_dim)
+        )
+        k = self.k_proj(hidden_states).reshape(
+            (batch_size, seq_length, self.num_heads, self.head_dim)
+        )
+        v = self.v_proj(hidden_states).reshape(
+            (batch_size, seq_length, self.num_heads, self.head_dim)
+        )
         q = apply_rotary_pos_emb_vision(q, rotary_pos_emb)
         k = apply_rotary_pos_emb_vision(k, rotary_pos_emb)
         q = q.permute(0, 2, 1, 3).contiguous()
@@ -136,10 +146,16 @@ class MLCDSdpaAttention(torch.nn.Module):
         # k (batch_size, num_heads, seq_length, head_dim)
         # v (batch_size, num_heads, seq_length, head_dim)
         attn_output = F.scaled_dot_product_attention(q, k, v, None, dropout_p=0.0)
-        attn_output = attn_output.permute(2, 0, 1, 3).contiguous()  # [seq_length, batch_size, num_heads, head_dim]
-        attn_output = attn_output.view(seq_length, batch_size, -1)  # [seq_length, batch_size, embedding_dim]
+        attn_output = attn_output.permute(
+            2, 0, 1, 3
+        ).contiguous()  # [seq_length, batch_size, num_heads, head_dim]
+        attn_output = attn_output.view(
+            seq_length, batch_size, -1
+        )  # [seq_length, batch_size, embedding_dim]
         attn_output = self.out_proj(attn_output)
-        attn_output = attn_output.permute(1, 0, 2).contiguous()  # [batch_size, seq_length, embedding_dim]
+        attn_output = attn_output.permute(
+            1, 0, 2
+        ).contiguous()  # [batch_size, seq_length, embedding_dim]
         return attn_output, None
 
 
@@ -167,7 +183,7 @@ class MLCDEncoderLayer(nn.Module):
         residual = hidden_states
 
         hidden_states = self.layer_norm1(hidden_states)
-        
+
         hidden_states = self.self_attn(
             hidden_states=hidden_states,
             rotary_pos_emb=rotary_pos_emb,
@@ -197,7 +213,9 @@ class MLCDEncoder(nn.Module):
     def __init__(self, config: MLCDVisionConfig):
         super().__init__()
         self.config = config
-        self.layers = nn.ModuleList([MLCDEncoderLayer(config) for _ in range(config.num_hidden_layers)])
+        self.layers = nn.ModuleList(
+            [MLCDEncoderLayer(config) for _ in range(config.num_hidden_layers)]
+        )
         self.gradient_checkpointing = False
 
     def forward(
@@ -238,9 +256,13 @@ class MLCDEncoder(nn.Module):
         """
 
         output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+            output_hidden_states
+            if output_hidden_states is not None
+            else self.config.output_hidden_states
         )
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = (
+            return_dict if return_dict is not None else self.config.use_return_dict
+        )
 
         encoder_states = () if output_hidden_states else None
 
@@ -250,15 +272,10 @@ class MLCDEncoder(nn.Module):
                 encoder_states = encoder_states + (hidden_states,)
             if self.gradient_checkpointing and self.training:
                 layer_outputs = self._gradient_checkpointing_func(
-                    encoder_layer.__call__,
-                    hidden_states,
-                    rotary_pos_emb
+                    encoder_layer.__call__, hidden_states, rotary_pos_emb
                 )
             else:
-                layer_outputs = encoder_layer(
-                    hidden_states,
-                    rotary_pos_emb
-                )
+                layer_outputs = encoder_layer(hidden_states, rotary_pos_emb)
 
             hidden_states = layer_outputs[0]
 
@@ -266,9 +283,13 @@ class MLCDEncoder(nn.Module):
             encoder_states = encoder_states + (hidden_states,)
 
         if not return_dict:
-            return tuple(v for v in [hidden_states, encoder_states, None] if v is not None)
+            return tuple(
+                v for v in [hidden_states, encoder_states, None] if v is not None
+            )
         return BaseModelOutput(
-            last_hidden_state=hidden_states, hidden_states=encoder_states, attentions=None,
+            last_hidden_state=hidden_states,
+            hidden_states=encoder_states,
+            attentions=None,
         )
 
 
@@ -283,9 +304,12 @@ class MLCDVisionTransformer(nn.Module):
         self.encoder = MLCDEncoder(config)
         self.post_layernorm = nn.LayerNorm(embed_dim, eps=config.layer_norm_eps)
 
-        self.vision_rotary_embedding = VisionRotaryEmbedding(config.hidden_size // config.num_attention_heads // 2)
-        self.class_pos_emb = nn.Parameter(torch.randn(1, config.hidden_size // config.num_attention_heads // 2))
-
+        self.vision_rotary_embedding = VisionRotaryEmbedding(
+            config.hidden_size // config.num_attention_heads // 2
+        )
+        self.class_pos_emb = nn.Parameter(
+            torch.randn(1, config.hidden_size // config.num_attention_heads // 2)
+        )
 
     def rot_pos_emb(self, grid_thw):
         pos_ids = []
@@ -306,7 +330,6 @@ class MLCDVisionTransformer(nn.Module):
         rotary_pos_emb = rotary_pos_emb_full[pos_ids].flatten(1)
         return rotary_pos_emb
 
-
     def forward(
         self,
         pixel_values: Optional[torch.FloatTensor] = None,
@@ -319,15 +342,25 @@ class MLCDVisionTransformer(nn.Module):
 
         """
 
-        twh = (1, pixel_values.size(3) // self.config.patch_size, pixel_values.size(2) // self.config.patch_size)
-        rotary_pos_emb = self.rot_pos_emb(torch.tensor([twh], device=pixel_values.device))
+        twh = (
+            1,
+            pixel_values.size(3) // self.config.patch_size,
+            pixel_values.size(2) // self.config.patch_size,
+        )
+        rotary_pos_emb = self.rot_pos_emb(
+            torch.tensor([twh], device=pixel_values.device)
+        )
         rotary_pos_emb = torch.cat([self.class_pos_emb, rotary_pos_emb], dim=0)
 
         # output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+            output_hidden_states
+            if output_hidden_states is not None
+            else self.config.output_hidden_states
         )
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = (
+            return_dict if return_dict is not None else self.config.use_return_dict
+        )
 
         if pixel_values is None:
             raise ValueError("You have to specify pixel_values")
@@ -363,6 +396,7 @@ class MLCDPreTrainedModel(PreTrainedModel):
     An abstract class to handle weights initialization and a simple interface for downloading and loading pretrained
     models.
     """
+
     config_class = MLCDVisionConfig
     base_model_prefix = "mlcd"
     supports_gradient_checkpointing = True
@@ -374,11 +408,20 @@ class MLCDPreTrainedModel(PreTrainedModel):
         factor = self.config.initializer_factor
         if isinstance(module, MLCDVisionEmbeddings):
             factor = self.config.initializer_factor
-            nn.init.normal_(module.class_embedding, mean=0.0, std=module.embed_dim**-0.5 * factor)
-            nn.init.normal_(module.patch_embedding.weight, std=module.config.initializer_range * factor)
+            nn.init.normal_(
+                module.class_embedding, mean=0.0, std=module.embed_dim**-0.5 * factor
+            )
+            nn.init.normal_(
+                module.patch_embedding.weight,
+                std=module.config.initializer_range * factor,
+            )
         elif isinstance(module, MLCDSdpaAttention):
             factor = self.config.initializer_factor
-            in_proj_std = (module.embed_dim**-0.5) * ((2 * module.config.num_hidden_layers) ** -0.5) * factor
+            in_proj_std = (
+                (module.embed_dim**-0.5)
+                * ((2 * module.config.num_hidden_layers) ** -0.5)
+                * factor
+            )
             out_proj_std = (module.embed_dim**-0.5) * factor
             nn.init.normal_(module.q_proj.weight, std=in_proj_std)
             nn.init.normal_(module.k_proj.weight, std=in_proj_std)
@@ -386,11 +429,14 @@ class MLCDPreTrainedModel(PreTrainedModel):
             nn.init.normal_(module.out_proj.weight, std=out_proj_std)
         elif isinstance(module, MLCDMLP):
             factor = self.config.initializer_factor
-            in_proj_std = (module.config.hidden_size**-0.5) * ((2 * module.config.num_hidden_layers) ** -0.5) * factor
+            in_proj_std = (
+                (module.config.hidden_size**-0.5)
+                * ((2 * module.config.num_hidden_layers) ** -0.5)
+                * factor
+            )
             fc_std = (2 * module.config.hidden_size) ** -0.5 * factor
             nn.init.normal_(module.fc1.weight, std=fc_std)
             nn.init.normal_(module.fc2.weight, std=in_proj_std)
-
 
         if isinstance(module, nn.LayerNorm):
             module.bias.data.zero_()
@@ -442,7 +488,9 @@ class MLCDVisionModel(MLCDPreTrainedModel):
         >>> last_hidden_state = outputs.last_hidden_state
         >>> pooled_output = outputs.pooler_output  # pooled CLS states
         ```"""
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = (
+            return_dict if return_dict is not None else self.config.use_return_dict
+        )
 
         return self.vision_model(
             pixel_values=pixel_values,

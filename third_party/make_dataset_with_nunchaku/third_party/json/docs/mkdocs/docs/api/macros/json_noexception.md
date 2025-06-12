@@ -27,14 +27,16 @@ available for MSVC if exceptions are disabled, see [#2824](https://github.com/nl
 
 ??? example
 
-    The code below switches off exceptions in the library.
+````
+The code below switches off exceptions in the library.
 
-    ```cpp
-    #define JSON_NOEXCEPTION 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_NOEXCEPTION 1
+#include <nlohmann/json.hpp>
 
-    ...
-    ```
+...
+```
+````
 
 ## See also
 

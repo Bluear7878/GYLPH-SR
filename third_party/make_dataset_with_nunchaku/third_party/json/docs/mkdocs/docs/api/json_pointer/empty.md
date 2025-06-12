@@ -22,17 +22,19 @@ Constant.
 
 ??? example
 
-    The example shows the result of `empty` for different JSON Pointers.
-     
-    ```cpp
-    --8<-- "examples/json_pointer__empty.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/json_pointer__empty.output"
-    ```
+````
+The example shows the result of `empty` for different JSON Pointers.
+
+```cpp
+--8<-- "examples/json_pointer__empty.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/json_pointer__empty.output"
+```
+````
 
 ## Version history
 

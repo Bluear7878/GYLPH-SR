@@ -1,24 +1,22 @@
-from typing import List
-import torch
+import os
 import subprocess
 import sys
 import tempfile
-import os
+from typing import List
+
 import numpy as np
+import torch
 
-
-TORCH_DTYPE_NAME = {
-    torch.float32: "f32",
-    torch.float16: "f16",
-    torch.bfloat16: "b16"
-}
+TORCH_DTYPE_NAME = {torch.float32: "f32", torch.float16: "f16", torch.bfloat16: "b16"}
 NAME_TORCH_DTYPE = {v: k for k, v in TORCH_DTYPE_NAME.items()}
+
 
 def _tensor_from_storage(tensor: torch.Tensor, dtype) -> torch.Tensor:
     # PyTorch >= 2.0
-    if hasattr(tensor, 'untyped_storage'):
+    if hasattr(tensor, "untyped_storage"):
         return torch.tensor([], dtype=dtype).set_(tensor.untyped_storage())
     return torch.tensor([], dtype=dtype).set_(tensor.storage().untyped())
+
 
 class PipedSubprocess:
     def __init__(self, binary: str) -> None:
@@ -26,7 +24,14 @@ class PipedSubprocess:
         self.tempdir_ctx = tempfile.TemporaryDirectory()
 
     def __enter__(self) -> "PipedSubprocess":
-        self.subp = subprocess.Popen(self.binary, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=sys.stderr, text=True, bufsize=0)
+        self.subp = subprocess.Popen(
+            self.binary,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            text=True,
+            bufsize=0,
+        )
         self.tempdir = self.tempdir_ctx.__enter__()
         self.file_counter = 0
         return self
@@ -42,10 +47,16 @@ class PipedSubprocess:
         for a in args:
             self.subp.stdin.write(str(a) + " ")
 
-    def writeTensor(self, tensor: torch.Tensor, name: str, stride_names: List[str]) -> None:
+    def writeTensor(
+        self, tensor: torch.Tensor, name: str, stride_names: List[str]
+    ) -> None:
         print(f"Py ->C++: {TORCH_DTYPE_NAME[tensor.dtype]}:{name}")
         tensor_u8 = _tensor_from_storage(tensor, torch.uint8)
-        self.write("tensor_begin", f"{TORCH_DTYPE_NAME[tensor.dtype]}:{name}", tensor_u8.shape[0])
+        self.write(
+            "tensor_begin",
+            f"{TORCH_DTYPE_NAME[tensor.dtype]}:{name}",
+            tensor_u8.shape[0],
+        )
         filename = self.temp_filename(f"{name}.tensor")
         assert tensor.storage_offset() == 0
         with open(filename, "wb+") as fd:
@@ -74,7 +85,7 @@ class PipedSubprocess:
             # `np.array` is not strictly needed, but avoids a torch warning
             tensor_u8 = torch.frombuffer(np.array(data), dtype=torch.uint8, count=u8len)
         self.readExpect("tensor_end")
-        
+
         tensor = _tensor_from_storage(tensor_u8, dtype)
         strides = []
         for sn in stride_name:
@@ -99,14 +110,13 @@ class PipedSubprocess:
         # Skip initial whitespace
         while True:
             r = self.subp.stdout.read(1)
-            if r not in [' ', "\n"]:
+            if r not in [" ", "\n"]:
                 read_all.append(r)
                 break
         # Read data
         while True:
             r = self.subp.stdout.read(1)
-            if r in [' ', "\n"]:
+            if r in [" ", "\n"]:
                 break
             read_all.append(r)
-        return ''.join(read_all)
-        
+        return "".join(read_all)

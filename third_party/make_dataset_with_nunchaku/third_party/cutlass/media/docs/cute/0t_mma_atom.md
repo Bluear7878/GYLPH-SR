@@ -12,7 +12,7 @@ We do this in two steps.
 
 1. We wrap each MMA's PTX instruction in an "Operation" struct.
 
-2. For each Operation struct, we define a "Traits" struct
+1. For each Operation struct, we define a "Traits" struct
    that defines all of the meta-information needed to use the Operation.
 
 ## CuTe MMA Atoms
@@ -37,20 +37,20 @@ and the `Layout`s of threads and values within the operation.
 The `MMA_Traits` struct takes the Operation as a template parameter.
 CuTe specializes `MMA_Traits` for each Operation type that it supports.
 
-Together, these two types comprise an "Atom" that decouples the complexity of thread and data layouts from the call site of the PTX instruction.  The Atom's Traits struct exposes information that is relevant to a single MMA operation, no matter the granularity at which it operates.
+Together, these two types comprise an "Atom" that decouples the complexity of thread and data layouts from the call site of the PTX instruction. The Atom's Traits struct exposes information that is relevant to a single MMA operation, no matter the granularity at which it operates.
 
 CuTe MMA atoms expose the semantics of a single MMA operation.
 This is true regardless of the hardware level at which the MMA operates.
 CuTe supports MMA atoms that operate at a variety of hardware levels,
 including
 
-* a single thread (e.g., fused multiply-add (FMA) instruction);
+- a single thread (e.g., fused multiply-add (FMA) instruction);
 
-* a quadpair (Volta);
+- a quadpair (Volta);
 
-* a single warp (Ampere); and
+- a single warp (Ampere); and
 
-* a warpgroup (Hopper).
+- a warpgroup (Hopper).
 
 ### Operation structs
 
@@ -64,32 +64,32 @@ directory, in header files starting with `mma`.
 
 A CuTe Operation struct's name encodes information about
 
-* its first supported architecture,
+- its first supported architecture,
 
-* the M, N, and K dimensions that it accepts,
+- the M, N, and K dimensions that it accepts,
 
-* the types that it takes, and
+- the types that it takes, and
 
-* the expected A and B layouts.
+- the expected A and B layouts.
 
 For example, the Volta section below will refer to the
 `SM70_8x8x4_F32F16F16F32_NT` Operation struct defined in
 [`include/cute/arch/mma_sm70.hpp`](../../../include/cute/arch/mma_sm70.hpp).
 
-* "SM70" refers to Volta.
+- "SM70" refers to Volta.
 
-* "8x8x4" refers to M = 8, N = 8, and K = 4,
+- "8x8x4" refers to M = 8, N = 8, and K = 4,
   the dimensions of the MMA operation that the quadpair performs
   (see below).
 
-* "F32F16F16F32" refers to the element types
+- "F32F16F16F32" refers to the element types
   of the four matrix operands A, B, C, and D.
   An MMA computes D = C + A * B,
   so we read the types from left to right:
   D is F32 (`float`), A is F16 (half),
   B is F16 (half), and C is F32 (`float`).
 
-* "NT" means that A is M-major (not transposed)
+- "NT" means that A is M-major (not transposed)
   and B is N-major (transposed).
 
 #### Contents
@@ -112,7 +112,7 @@ using CRegisters = float[8];
 ```
 
 This shows how many values each thread will pass into the PTX instruction
-for each of the matrices A, B, C, and D.  For this Operation,
+for each of the matrices A, B, C, and D. For this Operation,
 each thread passes 8 F32 values each for C and D (hence `float[8]`),
 and 4 F16 values each for A and B (hence `uint32_t[2]`;
 the instruction packs two 16-bit F16 values
@@ -142,24 +142,24 @@ directory, in header files starting with `mma_traits`.
 
 An `MMA_Traits` specialization defines the following public type aliases.
 
-* `ElementDVal`: Compute type of the D matrix
+- `ElementDVal`: Compute type of the D matrix
 
-* `ElementAVal`: Compute type of the A matrix
+- `ElementAVal`: Compute type of the A matrix
 
-* `ElementBVal`: Compute type of the B matrix
+- `ElementBVal`: Compute type of the B matrix
 
-* `ElementCVal`: Compute type of the C matrix
+- `ElementCVal`: Compute type of the C matrix
 
-* `Shape_MNK`: Logical MxNxK shape of the MMA operation
+- `Shape_MNK`: Logical MxNxK shape of the MMA operation
 
-* `ThrID`: Logical thread mapping within the single MMA operation
+- `ThrID`: Logical thread mapping within the single MMA operation
   (specifying the quadpair, warp, or warpgroup view)
 
-* `ALayout`: Mapping of (thread,value) pairs to the logical MxK A matrix
+- `ALayout`: Mapping of (thread,value) pairs to the logical MxK A matrix
 
-* `BLayout`: Mapping of (thread,value) pairs to the logical NxK B matrix
+- `BLayout`: Mapping of (thread,value) pairs to the logical NxK B matrix
 
-* `CLayout`: Mapping of (thread,value) pairs to the logical MxN C matrix
+- `CLayout`: Mapping of (thread,value) pairs to the logical MxN C matrix
 
 #### Example
 
@@ -234,7 +234,7 @@ If the 32 threads in a warp are logically indexed by [0 ... 31], then the above 
                        Stride<_1,_16>>;
 ```
 
-Again, this layout function maps the logical thread id [0,8) of the MMA operation onto the quadpair thread index [0,4)U[16,20) of a warp.
+Again, this layout function maps the logical thread id \[0,8) of the MMA operation onto the quadpair thread index \[0,4)U\[16,20) of a warp.
 
 ### Accumulator Mapping
 
@@ -249,7 +249,7 @@ The metainformation of this single instruction level view is what we want to enc
 We can start constructing a `CLayout` from the picture above. As with any CuTe layout, it is a pair of `Shape` and corresponding `Stride`. Let us just look at the shape for now. We know that the HMMA uses 8 threads each of which own 8 values. Therefore, the shape of our mapping must have a size of 8 along two modes. With this, we have
 
 ```cpp
-  // (T8,V8) -> (m,n) 
+  // (T8,V8) -> (m,n)
   using CLayout = Layout<Shape <_8, _8>,
                          Stride<_?, _?>;  // Stride to be filled in below
 ```
@@ -260,15 +260,16 @@ This is not to be confused with the logical 8x8 shape of the C matrix. This is 8
 (logical_thr_id, logical_val_id) -> (m, n) == m + n * M
 ```
 
-With this in place, we can start thinking about how to construct the strides in `CLayout`. Let's begin by looking at the strides between threads. Note that 
-* `(T0,V0)` is located at `(m,n) = (0,0) = 0`
-* `(T1,V0)` is located at `(m,n) = (1,0) = 1`
-* `(T2,V0)` is located at `(m,n) = (0,2) = 16`
-* `(T3,V0)` is located at `(m,n) = (1,2) = 17`
-* `(T4,V0)` is located at `(m,n) = (4,0) = 4`
-* `(T5,V0)` is located at `(m,n) = (5,0) = 5`
-* `(T6,V0)` is located at `(m,n) = (4,2) = 20`
-* `(T7,V0)` is located at `(m,n) = (5,2) = 21`
+With this in place, we can start thinking about how to construct the strides in `CLayout`. Let's begin by looking at the strides between threads. Note that
+
+- `(T0,V0)` is located at `(m,n) = (0,0) = 0`
+- `(T1,V0)` is located at `(m,n) = (1,0) = 1`
+- `(T2,V0)` is located at `(m,n) = (0,2) = 16`
+- `(T3,V0)` is located at `(m,n) = (1,2) = 17`
+- `(T4,V0)` is located at `(m,n) = (4,0) = 4`
+- `(T5,V0)` is located at `(m,n) = (5,0) = 5`
+- `(T6,V0)` is located at `(m,n) = (4,2) = 20`
+- `(T7,V0)` is located at `(m,n) = (5,2) = 21`
 
 where `T4`,`T5`,`T6`,`T7` are the 4th,5th,6th,7th logical thread id of the MMA corresponding to thread indices of 16,17,18,19 of the warp (recorded in the `ThrID` mapping!).
 
@@ -279,15 +280,16 @@ We note that the pattern can be transcribed to a layout. We can find the positio
                          Stride<Stride<_1, _16, _4>, _?>;
 ```
 
-With the exact same approach, we can construct the stride along the `logical value id` mode. 
-* `(T0,V0)` is located at `(m,n) = (0,0) = 0`
-* `(T0,V1)` is located at `(m,n) = (0,1) = 8`
-* `(T0,V2)` is located at `(m,n) = (2,0) = 2`
-* `(T0,V3)` is located at `(m,n) = (2,1) = 10`
-* `(T0,V4)` is located at `(m,n) = (0,4) = 32`
-* `(T0,V5)` is located at `(m,n) = (0,5) = 40`
-* `(T0,V6)` is located at `(m,n) = (2,4) = 34`
-* `(T0,V7)` is located at `(m,n) = (2,5) = 42`
+With the exact same approach, we can construct the stride along the `logical value id` mode.
+
+- `(T0,V0)` is located at `(m,n) = (0,0) = 0`
+- `(T0,V1)` is located at `(m,n) = (0,1) = 8`
+- `(T0,V2)` is located at `(m,n) = (2,0) = 2`
+- `(T0,V3)` is located at `(m,n) = (2,1) = 10`
+- `(T0,V4)` is located at `(m,n) = (0,4) = 32`
+- `(T0,V5)` is located at `(m,n) = (0,5) = 40`
+- `(T0,V6)` is located at `(m,n) = (2,4) = 34`
+- `(T0,V7)` is located at `(m,n) = (2,5) = 42`
 
 We note that this pattern can also be transcribed to a layout. We can find the position of the 8 values via
 
@@ -317,7 +319,7 @@ A and B matrix layouts depend on whether the sources are transposed or not. The 
 Let's look at the TN layout for A matrix first (right side in the diagram). Again, there are the same 8 logical threads, but each threads owns only 4 elements this time. The shape of `ALayout` will then be `Shape<_8, _4>`. As for the strides, we again need a similar mapping between `(m, k) == m + k * M`. Looking down the `M` mode, we go from `(T0, V0)` to `(T1, V0)` which is a stride of 1 for all 8 threads. For the `K` mode, as we go across, we go from `(T0, V0)` to `(T0, V1)`, which makes a stride of 8 for all 4 values. Therefore, the A layout is:
 
 ```cpp
-  // (T8,V4) -> (m,k) 
+  // (T8,V4) -> (m,k)
   using ALayout = Layout<Shape <_8,_4>,
                          Stride<_1,_8>>;
 ```
@@ -325,7 +327,7 @@ Let's look at the TN layout for A matrix first (right side in the diagram). Agai
 Source B layout is constructed similarly for the TN HMMA, except that we want write it as `(N,K)` rather than `(K,N)` for convenience. For the strides, as we go across the `N` mode, we go from `(T0, V0)` to `(T1, V0)`, making this a stride of 1 for all 8 threads. As we go down the `K` mode, `(T0, V0)` to `(T0, V1)` which is a stride of 8 for all 4 values. So the B layout is the same as A:
 
 ```cpp
-  // (T8,V4) -> (n,k) 
+  // (T8,V4) -> (n,k)
   using BLayout = Layout<Shape <_8,_4>,
                          Stride<_1,_8>>;
 ```
@@ -365,6 +367,7 @@ using ThrID = Layout<_128, _1>;
 Accumulators are mapped hierarchically in GMMA, starting from the concept of a core matrix and building up to a layout for the whole C matrix tile. Let's look at this core matrix first. We only consider fp16 accumulators here, but extensions of fp32 accumulators as trivial as we will see later.
 
 Each core matrix has the layout as shown in the diagram below.
+
 <p align="center">
   <img src="../../images/cute/gmma_coremat_cd_fp16.png" alt="gmma_coremat_cd_fp16.png" height="600"/>
 </p>
@@ -403,7 +406,7 @@ using CLayout = Layout<Shape <Shape <  _4, _8, ...>, Shape < _2, _2>>,
                        Stride<Stride<_128, _1, ...>, Stride<_64, _8>>>;
 ```
 
-Finally, we get this entire pattern repeating four times, once for each warp, down the `M`-mode starting at `(m,n) = (16,0) = 16`. where two core matrices that belong to the same warp are stacked on top of each other. This makes the size of the final sub-mode of M 4. As for the stride, this time we go to `(T32, V0)`, which makes it a stride of 32. 
+Finally, we get this entire pattern repeating four times, once for each warp, down the `M`-mode starting at `(m,n) = (16,0) = 16`. where two core matrices that belong to the same warp are stacked on top of each other. This makes the size of the final sub-mode of M 4. As for the stride, this time we go to `(T32, V0)`, which makes it a stride of 32.
 
 ```cpp
 // (T128,V4) -> (M64,N8)

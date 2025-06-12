@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   26_ampere_wgrad_mainloop_fusion
   ampere_wgrad_mainloop_fusion.cu
   )
-

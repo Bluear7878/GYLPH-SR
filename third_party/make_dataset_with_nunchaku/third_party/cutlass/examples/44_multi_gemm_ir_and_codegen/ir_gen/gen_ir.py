@@ -32,7 +32,6 @@
 
 import helper
 
-
 indentation = "    "
 
 
@@ -50,7 +49,7 @@ def gen_namespace(namespace, codeBody):
     return code_gen
 
 
-def gen_expression(type, lval, rval = None):
+def gen_expression(type, lval, rval=None):
     code_gen = ""
     code_gen += append_word(type)
     code_gen += append_word(lval)
@@ -60,18 +59,18 @@ def gen_expression(type, lval, rval = None):
     return code_gen
 
 
-def gen_class(name, codeBody, inheritance_code = None):
+def gen_class(name, codeBody, inheritance_code=None):
     code_gen = ""
     if inheritance_code is None:
         code_gen = "class " + name + "{\n"
     else:
-        code_gen = "class " + name + " : "+ inheritance_code + "{\n"
+        code_gen = "class " + name + " : " + inheritance_code + "{\n"
     code_gen += codeBody
     code_gen += "}; // class " + name + "\n"
     return code_gen
 
 
-def gen_struct(name, codeBody, specialized = None):
+def gen_struct(name, codeBody, specialized=None):
     specialized_code = ""
     if specialized is not None:
         specialized_code = "<" + specialized + ">"
@@ -81,7 +80,7 @@ def gen_struct(name, codeBody, specialized = None):
     return code_gen
 
 
-def gen_template_arg(arg_type, arg_name, default_val = None):
+def gen_template_arg(arg_type, arg_name, default_val=None):
     rval = None
     if default_val is not None:
         rval = str(default_val)
@@ -102,7 +101,7 @@ def gen_template_arg(arg_type, arg_name, default_val = None):
     return code_gen
 
 
-def gen_template_args(args, set_default = True):
+def gen_template_args(args, set_default=True):
     arg_len = len(args)
     cnt = 1
     code_gen = ""
@@ -121,7 +120,7 @@ def gen_template_args(args, set_default = True):
     return code_gen
 
 
-def gen_template_head(args, set_default = True):
+def gen_template_head(args, set_default=True):
     code_gen = "template <\n"
     code_gen += gen_template_args(args, set_default)
     code_gen += ">\n"
@@ -149,22 +148,28 @@ def export_template_args(args):
     return code_gen
 
 
-def gen_template_class(class_name, args, codeBody, set_default = True, inheritance_code = None):
+def gen_template_class(
+    class_name, args, codeBody, set_default=True, inheritance_code=None
+):
     code_gen = ""
 
     code_gen += gen_template_head(args, set_default)
-    code_gen += gen_class(class_name, export_template_args(args) + codeBody, inheritance_code)
+    code_gen += gen_class(
+        class_name, export_template_args(args) + codeBody, inheritance_code
+    )
 
     return code_gen
 
 
-def gen_template_struct(struct_name, args, codeBody, speicalized = None, set_default = True, export_args = True):
+def gen_template_struct(
+    struct_name, args, codeBody, speicalized=None, set_default=True, export_args=True
+):
     code_gen = ""
     code_gen += gen_template_head(args, set_default)
     code = export_template_args(args) + codeBody
     if export_args is False:
         code = codeBody
-    code_gen += gen_struct(struct_name, code , speicalized)
+    code_gen += gen_struct(struct_name, code, speicalized)
 
     return code_gen
 
@@ -183,7 +188,7 @@ def gen_declare_template_struct(name, *params):
     return code
 
 
-def filtered_param(params, name_and_value_pair, keep_ = False):
+def filtered_param(params, name_and_value_pair, keep_=False):
     rtn_template_args = []
     speicalized_template_args = []
 
@@ -193,19 +198,18 @@ def filtered_param(params, name_and_value_pair, keep_ = False):
             param_name = param[1]
         else:
             param_name = param[0]
-        
+
         hit_flag = False
         set_value = ""
         for n_v_pair in name_and_value_pair:
-            
+
             filter_name = n_v_pair[0]
             set_value = n_v_pair[1]
 
-            if param_name == (filter_name + "_") or param_name == filter_name :
+            if param_name == (filter_name + "_") or param_name == filter_name:
                 hit_flag = True
                 break
 
-            
         if hit_flag is False:
             rtn_template_args.append(param)
 
@@ -217,20 +221,19 @@ def filtered_param(params, name_and_value_pair, keep_ = False):
             else:
                 speicalized_template_args.append(param_name)
 
-    
     specialized_template_arg_str = helper.list_2_string(speicalized_template_args)
-    
+
     return rtn_template_args, specialized_template_arg_str
 
-            
-def gen_func(func_name, arg_lists, code_body, only_declare = False, with_cudaStream = True):
+
+def gen_func(func_name, arg_lists, code_body, only_declare=False, with_cudaStream=True):
     code = "void " + func_name + "(\n"
     for arg in arg_lists:
         arg_tp = arg[0]
         arg_nm = arg[1]
         code += "    " + arg_tp + " " + arg_nm + ",\n"
     code += "cudaStream_t stream)"
-    if only_declare :
+    if only_declare:
         return code
     code += "{\n"
 
@@ -239,11 +242,11 @@ def gen_func(func_name, arg_lists, code_body, only_declare = False, with_cudaStr
     return code
 
 
-def indent_level(code, level = 0):
+def indent_level(code, level=0):
     rtn_code = ""
     for i in range(level):
         rtn_code += "    "
-    
+
     rtn_code += code
 
     return rtn_code

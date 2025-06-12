@@ -28,17 +28,19 @@ Constant.
 
 ??? example
 
-    The following code shows how to query a binary value.
-     
-    ```cpp
-    --8<-- "examples/get_binary.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/get_binary.output"
-    ```
+````
+The following code shows how to query a binary value.
+
+```cpp
+--8<-- "examples/get_binary.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/get_binary.output"
+```
+````
 
 ## Version history
 

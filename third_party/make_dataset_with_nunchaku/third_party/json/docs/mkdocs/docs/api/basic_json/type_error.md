@@ -43,17 +43,19 @@ class basic_json::type_error #FFFF00 {}
 
 ??? example
 
-    The following code shows how a `type_error` exception can be caught.
-    
-    ```cpp
-    --8<-- "examples/type_error.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/type_error.output"
-    ```
+````
+The following code shows how a `type_error` exception can be caught.
+
+```cpp
+--8<-- "examples/type_error.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/type_error.output"
+```
+````
 
 ## See also
 

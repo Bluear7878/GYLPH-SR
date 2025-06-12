@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,40 +18,43 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing loading of convolution tiles mapped to GEMM B (filter tile) 
-    matrix from memory.
+    \brief Templates implementing loading of convolution tiles mapped to GEMM B
+   (filter tile) matrix from memory.
 
-    This iterator assumes TensorNHWC or TensorCxRSKx<Interleave> layout of tensors in Global Memory.
+    This iterator assumes TensorNHWC or TensorCxRSKx<Interleave> layout of
+   tensors in Global Memory.
 
-    The iterator is specialized for each of the three convolution operators: forward propagation (Fprop),
-    backward data gradient (Dgrad), and backward weight gradient (Wgrad). 
+    The iterator is specialized for each of the three convolution operators:
+   forward propagation (Fprop), backward data gradient (Dgrad), and backward
+   weight gradient (Wgrad).
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/conv/conv2d_problem_size.h"
+#include "cutlass/conv/convolution.h"
+#include "cutlass/conv/threadblock/conv2d_params.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/layout/tensor.h"
 #include "cutlass/predicate_vector.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
-#include "cutlass/layout/pitch_linear.h"
-#include "cutlass/layout/tensor.h"
-#include "cutlass/layout/matrix.h"
-#include "cutlass/conv/convolution.h"
-#include "cutlass/conv/conv2d_problem_size.h"
-#include "cutlass/conv/threadblock/conv2d_params.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,17 +64,13 @@ namespace threadblock {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Shape_,
-  typename Element_,
-  typename Layout_,
-  typename ThreadMap_,
-  typename AccessType_ = cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>,
-  conv::GroupMode GroupMode_ = conv::GroupMode::kNone
->
+template <typename Shape_, typename Element_, typename Layout_,
+          typename ThreadMap_,
+          typename AccessType_ =
+              cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>,
+          conv::GroupMode GroupMode_ = conv::GroupMode::kNone>
 class Conv2dFpropFilterTileAccessIteratorAnalytic {
 public:
-  
   //
   // Types
   //
@@ -85,22 +84,25 @@ public:
   using TensorCoord = typename Layout::TensorCoord;
   using Index = typename Layout::Index;
   using LongIndex = typename Layout::LongIndex;
-  static IteratorAlgorithm const kIteratorAlgorithm = conv::IteratorAlgorithm::kAnalytic;
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      conv::IteratorAlgorithm::kAnalytic;
   static StrideSupport const kStrideSupport = conv::StrideSupport::kStrided;
   static int const kConvDim = 2;
   using ConvProblemSize = typename conv::Conv2dProblemSize;
   static conv::GroupMode const kGroupMode = GroupMode_;
- 
-  static int const kAccessesPerVector = ThreadMap::kElementsPerAccess / AccessType::kElements;
-  
-  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements), 
-    "Vectors implied by the thread map must be divisible by the access type.");
- 
+
+  static int const kAccessesPerVector =
+      ThreadMap::kElementsPerAccess / AccessType::kElements;
+
+  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements),
+                "Vectors implied by the thread map must be divisible by the "
+                "access type.");
+
   //
   // Simplifying assertions
   //
   static_assert(ThreadMap::Iterations::kContiguous == 1,
-    "Require Iterations::kContiguous == 1");
+                "Require Iterations::kContiguous == 1");
 
   //
   // Parameters structure
@@ -109,7 +111,6 @@ public:
   using Params = Conv2dAnalyticParams<Layout>;
 
 private:
-
   Params const &params_;
   Conv2dProblemSize const &problem_size_;
   LongIndex iteration_contiguous_;
@@ -122,7 +123,7 @@ private:
   int filter_c_;
   int filter_c_init_;
   int crs_cnt_;
-  int crs_per_group_;  
+  int crs_per_group_;
   int group_idx_offset_c_;
   int channels_per_group_;
 
@@ -130,44 +131,42 @@ private:
   int group_idx_offset_k_[ThreadMap::Iterations::kStrided];
 
 public:
-
   CUTLASS_HOST_DEVICE
   Conv2dFpropFilterTileAccessIteratorAnalytic(
-    Params const &params, 
-    Conv2dProblemSize const &problem_size,
-    Element const *ptr,
-    int thread_idx,
-    MatrixCoord const &threadblock_offset = MatrixCoord()
-  ):
-    params_(params), 
-    problem_size_(problem_size), 
-    pointer_(reinterpret_cast<char const *>(ptr)), 
-    crs_cnt_(0),
-    group_idx_offset_c_(0),
-    filter_r_(0),
-    filter_s_(0),
-    filter_c_(0) {
+      Params const &params, Conv2dProblemSize const &problem_size,
+      Element const *ptr, int thread_idx,
+      MatrixCoord const &threadblock_offset = MatrixCoord())
+      : params_(params), problem_size_(problem_size),
+        pointer_(reinterpret_cast<char const *>(ptr)), crs_cnt_(0),
+        group_idx_offset_c_(0), filter_r_(0), filter_s_(0), filter_c_(0) {
 
-    layout::PitchLinearCoord thread_coord = ThreadMap::initial_offset(thread_idx);
+    layout::PitchLinearCoord thread_coord =
+        ThreadMap::initial_offset(thread_idx);
 
     filter_c_ = threadblock_offset.row() + thread_coord.contiguous();
 
     if (kGroupMode != conv::GroupMode::kNone) {
       filter_c_init_ = filter_c_;
-      if (kGroupMode == conv::GroupMode::kDepthwise){
+      if (kGroupMode == conv::GroupMode::kDepthwise) {
         channels_per_group_ = 1;
         crs_per_group_ = problem_size_.S * problem_size_.R;
       } else {
         channels_per_group_ = problem_size_.C / problem_size_.groups;
-        crs_per_group_ = problem_size_.S * problem_size_.R * ((channels_per_group_ + Shape::kRow - 1) / Shape::kRow);
+        crs_per_group_ =
+            problem_size_.S * problem_size_.R *
+            ((channels_per_group_ + Shape::kRow - 1) / Shape::kRow);
       }
     }
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
-      offset_k_[s] = threadblock_offset.column() + thread_coord.strided() + s * ThreadMap::Delta::kStrided;
-      if (kGroupMode != conv::GroupMode::kNone && kGroupMode != conv::GroupMode::kDepthwise) {
-        group_idx_offset_k_[s] = (thread_coord.strided() + s * ThreadMap::Delta::kStrided) / (problem_size_.K / problem_size_.groups);
+      offset_k_[s] = threadblock_offset.column() + thread_coord.strided() +
+                     s * ThreadMap::Delta::kStrided;
+      if (kGroupMode != conv::GroupMode::kNone &&
+          kGroupMode != conv::GroupMode::kDepthwise) {
+        group_idx_offset_k_[s] =
+            (thread_coord.strided() + s * ThreadMap::Delta::kStrided) /
+            (problem_size_.K / problem_size_.groups);
       }
     }
 
@@ -179,7 +178,8 @@ public:
   void set_iteration_index(Index index) {
     iteration_vector_ = index % kAccessesPerVector;
     int residual_access = index / kAccessesPerVector;
-    iteration_contiguous_ = residual_access % ThreadMap::Iterations::kContiguous;
+    iteration_contiguous_ =
+        residual_access % ThreadMap::Iterations::kContiguous;
     iteration_strided_ = residual_access / ThreadMap::Iterations::kContiguous;
   }
 
@@ -201,7 +201,7 @@ public:
       return;
     }
     filter_s_ = 0;
-    
+
     ++filter_r_;
     if (filter_r_ < problem_size_.R) {
       return;
@@ -244,7 +244,8 @@ public:
     if (kGroupMode == conv::GroupMode::kNone) {
       return coord.n() < problem_size_.K && coord.c() < problem_size_.C;
     } else if (kGroupMode == conv::GroupMode::kDepthwise) {
-      return coord.n() < problem_size_.K && coord.c() < 1; // channels_per_group_ is always equal to ONE.
+      return coord.n() < problem_size_.K &&
+             coord.c() < 1; // channels_per_group_ is always equal to ONE.
     } else {
       return coord.n() < problem_size_.K && coord.c() < channels_per_group_ &&
              group_idx_offset_c_ == group_idx_offset_k_[iteration_strided_];
@@ -257,8 +258,9 @@ public:
 
     TensorCoord coord = at();
     LongIndex offset = params_.layout(coord);
-    
-    return reinterpret_cast<AccessType const *>(pointer_ + offset * sizeof_bits<Element>::value / 8);
+
+    return reinterpret_cast<AccessType const *>(
+        pointer_ + offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Increments to the next memory access
@@ -275,13 +277,13 @@ public:
       return *this;
     }
     iteration_contiguous_ = 0;
-    
+
     ++iteration_strided_;
     if (iteration_strided_ < ThreadMap::Iterations::kStrided) {
       return *this;
     }
     iteration_strided_ = 0;
- 
+
     return *this;
   }
 

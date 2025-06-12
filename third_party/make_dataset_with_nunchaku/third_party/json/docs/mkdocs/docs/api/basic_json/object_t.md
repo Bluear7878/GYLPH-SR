@@ -10,6 +10,7 @@ using object_t = ObjectType<StringType,
 The type used to store JSON objects.
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes JSON objects as follows:
+
 > An object is an unordered collection of zero or more name/value pairs, where a name is a string and a value is a
 > string, number, boolean, null, object, or array.
 
@@ -18,14 +19,14 @@ To store objects in C++, a type is defined by the template parameters described 
 ## Template parameters
 
 `ObjectType`
-:   the container to store objects (e.g., `std::map` or `std::unordered_map`)
+: the container to store objects (e.g., `std::map` or `std::unordered_map`)
 
 `StringType`
-:   the type of the keys or names (e.g., `std::string`). The comparison function `std::less<StringType>` is used to
-    order elements inside the container.
+: the type of the keys or names (e.g., `std::string`). The comparison function `std::less<StringType>` is used to
+order elements inside the container.
 
 `AllocatorType`
-:   the allocator to use for objects (e.g., `std::allocator`)
+: the allocator to use for objects (e.g., `std::allocator`)
 
 ## Notes
 
@@ -74,6 +75,7 @@ behavior:
 #### Limits
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) specifies:
+
 > An implementation may set limits on the maximum depth of nesting.
 
 In this class, the object's limit of nesting is not explicitly constrained. However, a maximum depth of nesting may be
@@ -97,17 +99,19 @@ objects.
 
 ??? example
 
-    The following code shows that `object_t` is by default, a typedef to `#!cpp std::map<json::string_t, json>`.
-     
-    ```cpp
-    --8<-- "examples/object_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/object_t.output"
-    ```
+````
+The following code shows that `object_t` is by default, a typedef to `#!cpp std::map<json::string_t, json>`.
+
+```cpp
+--8<-- "examples/object_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/object_t.output"
+```
+````
 
 ## Version history
 

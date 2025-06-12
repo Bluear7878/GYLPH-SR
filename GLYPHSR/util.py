@@ -1,15 +1,18 @@
-import os
-import torch
-import re
-import math
-import torch.nn.functional as F
 import json
+import math
+import os
+import re
+
 import cv2
 import numpy as np
+import torch
+import torch.nn.functional as F
+from omegaconf import OmegaConf
 from PIL import Image
 from torch.nn.functional import interpolate
-from omegaconf import OmegaConf
+
 from sgm.util import instantiate_from_config
+
 
 #####################CUSTOMRIZED#####################
 def degrade_image(img_pil: Image.Image, down_factor: float = 1.5) -> Image.Image:
@@ -25,12 +28,13 @@ def degrade_image(img_pil: Image.Image, down_factor: float = 1.5) -> Image.Image
 
 
 def load_metadata(meta_path: str):
-    with open(meta_path, 'r', encoding='utf-8') as f:
+    with open(meta_path, "r", encoding="utf-8") as f:
         for line in f:
             yield json.loads(line)
 
+
 def remove_special_chars_and_merge(text):
-    cleaned_text = re.sub(r'[^\w\s]', '', text)
+    cleaned_text = re.sub(r"[^\w\s]", "", text)
     merged_text = " ".join(cleaned_text.split())
     return merged_text
 
@@ -41,12 +45,12 @@ def beam_search_topk_per_step(step_topk, beam_size):
 
     for step_candidates in step_topk:
         new_beam = []
-        for (prev_seq, prev_logprob) in beam:
+        for prev_seq, prev_logprob in beam:
             for c in step_candidates:
-                if c['prob'] <= 0.0:
+                if c["prob"] <= 0.0:
                     continue
-                token_str = c['token_str']
-                prob = c['prob']
+                token_str = c["token_str"]
+                prob = c["prob"]
                 new_seq = remove_special_chars_and_merge(prev_seq + token_str)
                 new_logprob = prev_logprob + math.log(prob)
                 new_beam.append((new_seq, new_logprob))
@@ -55,7 +59,8 @@ def beam_search_topk_per_step(step_topk, beam_size):
         beam = new_beam[:beam_size]
 
     return beam
-    
+
+
 def get_beam_search_results(outputs, tokenizer, top_k, beams_num):
 
     token_probs = []
@@ -68,13 +73,10 @@ def get_beam_search_results(outputs, tokenizer, top_k, beams_num):
             token_id = topk_indices[i].item()
             token_str = tokenizer.decode([token_id], skip_special_tokens=True)
             prob = topk_probs[i].item()
-            topk_data.append({
-                "token_id": token_id,
-                "token_str": token_str,
-                "prob": round(prob, 4)
-            })
+            topk_data.append(
+                {"token_id": token_id, "token_str": token_str, "prob": round(prob, 4)}
+            )
         token_probs.append(topk_data)
-
 
     beam_results = beam_search_topk_per_step(token_probs, beam_size=beams_num)
     beam_results_list = [repr(seq).lstrip("\\n") for seq, _ in beam_results]
@@ -88,14 +90,14 @@ def get_beam_search_results(outputs, tokenizer, top_k, beams_num):
 
     # Combine all lines into a single prompt string.
     prompt = " ".join(prompt_lines)
-    
-    return token_probs, beam_results_list,prompt
+
+    return token_probs, beam_results_list, prompt
 
 
 def PIL2Tensor(img, upscale=1, min_size=1024, fix_resize=None):
-    '''
+    """
     PIL.Image -> Tensor[C, H, W], RGB, [-1, 1]
-    '''
+    """
     # size
     w, h = img.size
     w *= upscale
@@ -118,13 +120,20 @@ def PIL2Tensor(img, upscale=1, min_size=1024, fix_resize=None):
     x = torch.tensor(x, dtype=torch.float32).permute(2, 0, 1)
     return x, h0, w0
 
+
 def Tensor2PIL(x, h0, w0):
-    '''
+    """
     Tensor[C, H, W], RGB, [-1, 1] -> PIL.Image
-    '''
+    """
     x = x.unsqueeze(0)
-    x = interpolate(x, size=(h0, w0), mode='bicubic')
-    x = (x.squeeze(0).permute(1, 2, 0) * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
+    x = interpolate(x, size=(h0, w0), mode="bicubic")
+    x = (
+        (x.squeeze(0).permute(1, 2, 0) * 127.5 + 127.5)
+        .cpu()
+        .numpy()
+        .clip(0, 255)
+        .astype(np.uint8)
+    )
     return Image.fromarray(x)
 
 
@@ -160,7 +169,11 @@ def upscale_image(input_image, upscale, min_size=None, unit_resolution=64):
             H *= _upsacle
     H = int(np.round(H / unit_resolution)) * unit_resolution
     W = int(np.round(W / unit_resolution)) * unit_resolution
-    img = cv2.resize(input_image, (W, H), interpolation=cv2.INTER_LANCZOS4 if upscale > 1 else cv2.INTER_AREA)
+    img = cv2.resize(
+        input_image,
+        (W, H),
+        interpolation=cv2.INTER_LANCZOS4 if upscale > 1 else cv2.INTER_AREA,
+    )
     img = img.round().clip(0, 255).astype(np.uint8)
     return img
 
@@ -174,16 +187,19 @@ def fix_resize(input_image, size=512, unit_resolution=64):
     W *= upscale
     H = int(np.round(H / unit_resolution)) * unit_resolution
     W = int(np.round(W / unit_resolution)) * unit_resolution
-    img = cv2.resize(input_image, (W, H), interpolation=cv2.INTER_LANCZOS4 if upscale > 1 else cv2.INTER_AREA)
+    img = cv2.resize(
+        input_image,
+        (W, H),
+        interpolation=cv2.INTER_LANCZOS4 if upscale > 1 else cv2.INTER_AREA,
+    )
     img = img.round().clip(0, 255).astype(np.uint8)
     return img
 
 
-
 def Numpy2Tensor(img):
-    '''
+    """
     np.array[H, w, C] [0, 255] -> Tensor[C, H, W], RGB, [-1, 1]
-    '''
+    """
     # size
     img = np.array(img) / 255 * 2 - 1
     img = torch.tensor(img, dtype=torch.float32).permute(2, 0, 1)
@@ -191,23 +207,23 @@ def Numpy2Tensor(img):
 
 
 def Tensor2Numpy(x, h0=None, w0=None):
-    '''
+    """
     Tensor[C, H, W], RGB, [-1, 1] -> PIL.Image
-    '''
+    """
     if h0 is not None and w0 is not None:
         x = x.unsqueeze(0)
-        x = interpolate(x, size=(h0, w0), mode='bicubic')
+        x = interpolate(x, size=(h0, w0), mode="bicubic")
         x = x.squeeze(0)
     x = (x.permute(1, 2, 0) * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
     return x
 
 
 def convert_dtype(dtype_str):
-    if dtype_str == 'fp32':
+    if dtype_str == "fp32":
         return torch.float32
-    elif dtype_str == 'fp16':
+    elif dtype_str == "fp16":
         return torch.float16
-    elif dtype_str == 'bf16':
+    elif dtype_str == "bf16":
         return torch.bfloat16
     else:
         raise NotImplementedError

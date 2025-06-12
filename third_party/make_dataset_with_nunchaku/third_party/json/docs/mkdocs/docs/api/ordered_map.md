@@ -12,16 +12,16 @@ A minimal map-like container that preserves insertion order for use within [`nlo
 ## Template parameters
 
 `Key`
-:   key type
+: key type
 
 `T`
-:   mapped type
+: mapped type
 
 `IgnoredLess`
-:   comparison function (ignored and only added to ensure compatibility with `#!cpp std::map`)
+: comparison function (ignored and only added to ensure compatibility with `#!cpp std::map`)
 
 `Allocator`
-:   allocator type
+: allocator type
 
 ## Member types
 
@@ -33,6 +33,7 @@ A minimal map-like container that preserves insertion order for use within [`nlo
 - **size_type**
 - **value_type**
 - **key_compare** - key comparison function
+
 ```cpp
 std::equal_to<Key>  // until C++14
 
@@ -44,7 +45,7 @@ std::equal_to<>     // since C++14
 - (constructor)
 - (destructor)
 - **emplace**
-- **operator\[\]**
+- **operator[]**
 - **at**
 - **erase**
 - **count**
@@ -55,17 +56,19 @@ std::equal_to<>     // since C++14
 
 ??? example
 
-    The example shows the different behavior of `std::map` and `nlohmann::ordered_map`.
-     
-    ```cpp
-    --8<-- "examples/ordered_map.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/ordered_map.output"
-    ```
+````
+The example shows the different behavior of `std::map` and `nlohmann::ordered_map`.
+
+```cpp
+--8<-- "examples/ordered_map.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/ordered_map.output"
+```
+````
 
 ## See also
 

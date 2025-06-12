@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -47,8 +48,8 @@
 #include "cutlass/util/host_tensor.h"
 #include "cutlass/util/reference/host/gemm.h"
 #include "cutlass/util/reference/host/tensor_compare.h"
-#include "cutlass/util/reference/host/tensor_norm.h"
 #include "cutlass/util/reference/host/tensor_fill.h"
+#include "cutlass/util/reference/host/tensor_norm.h"
 #include "cutlass/util/tensor_view_io.h"
 
 namespace test {
@@ -58,13 +59,14 @@ namespace threadblock {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename Mma>
-__global__ void kernel_multistage_mma(cutlass::gemm::GemmCoord problem_size,
-                                      typename Mma::IteratorA::Params params_A,
-                                      typename Mma::IteratorA::TensorRef ref_A,
-                                      typename Mma::IteratorB::Params params_B,
-                                      typename Mma::IteratorB::TensorRef ref_B,
-                                      typename Mma::ElementC *ptr_C, 
-                                      typename Mma::LayoutC::Stride::Index ldc) {
+__global__ void
+kernel_multistage_mma(cutlass::gemm::GemmCoord problem_size,
+                      typename Mma::IteratorA::Params params_A,
+                      typename Mma::IteratorA::TensorRef ref_A,
+                      typename Mma::IteratorB::Params params_B,
+                      typename Mma::IteratorB::TensorRef ref_B,
+                      typename Mma::ElementC *ptr_C,
+                      typename Mma::LayoutC::Stride::Index ldc) {
   // Shared storage needed by threadblock-scoped matrix multiply-accumulate
 
   // Dynamic shared memory base pointer
@@ -105,7 +107,8 @@ __global__ void kernel_multistage_mma(cutlass::gemm::GemmCoord problem_size,
 
   accum.clear();
 
-  int gemm_k_iterations = (problem_size.k() + Mma::Shape::kK - 1) / Mma::Shape::kK;
+  int gemm_k_iterations =
+      (problem_size.k() + Mma::Shape::kK - 1) / Mma::Shape::kK;
 
   // Compute threadblock-scoped matrix multiply-add
   mma(gemm_k_iterations, accum, iterator_A, iterator_B, accum);
@@ -113,11 +116,10 @@ __global__ void kernel_multistage_mma(cutlass::gemm::GemmCoord problem_size,
   // Output results
   typename Mma::Operator::IteratorC iterator_C({ptr_C, ldc}, threadIdx.x);
 
-  iterator_C.add_tile_offset(
-      {(tb_tile_offset.m() * Mma::WarpCount::kM) +
-           (warp_id % Mma::WarpCount::kM),
-       (tb_tile_offset.n() * Mma::WarpCount::kN) +
-           (warp_id / Mma::WarpCount::kM)});
+  iterator_C.add_tile_offset({(tb_tile_offset.m() * Mma::WarpCount::kM) +
+                                  (warp_id % Mma::WarpCount::kM),
+                              (tb_tile_offset.n() * Mma::WarpCount::kN) +
+                                  (warp_id / Mma::WarpCount::kM)});
 
   iterator_C.store(accum);
 }
@@ -218,8 +220,8 @@ struct Testbed {
   }
 
   /// Runs the test
-  bool run(
-      dim3 grid, dim3 block,
+  bool
+  run(dim3 grid, dim3 block,
       cutlass::Distribution::Kind init_A = cutlass::Distribution::Uniform,
       cutlass::Distribution::Kind init_B = cutlass::Distribution::Uniform) {
 
@@ -302,7 +304,8 @@ struct Testbed {
 
       if (result != cudaSuccess) {
         if (CUTLASS_TEST_UNIT_ENABLE_WARNINGS) {
-          std::cerr << "Test waived due to insufficient CUDA device." << std::endl;
+          std::cerr << "Test waived due to insufficient CUDA device."
+                    << std::endl;
         }
         return true;
       }
@@ -313,7 +316,8 @@ struct Testbed {
 
       if (result != cudaSuccess) {
         if (CUTLASS_TEST_UNIT_ENABLE_WARNINGS) {
-          std::cerr << "Test waived due to insufficient CUDA device." << std::endl;
+          std::cerr << "Test waived due to insufficient CUDA device."
+                    << std::endl;
         }
         return true;
       }
@@ -336,11 +340,12 @@ struct Testbed {
     matrix_C_computed.sync_host();
 
     cutlass::reference::host::Gemm<ElementA, LayoutA, ElementB, LayoutB,
-                                   ElementC, LayoutC, ElementC, ElementC> reference_gemm;
+                                   ElementC, LayoutC, ElementC, ElementC>
+        reference_gemm;
 
-    reference_gemm(
-        problem_size, ElementC(alpha), matrix_A.host_view(),
-        matrix_B.host_view(), ElementC(beta), matrix_C_reference.host_view());
+    reference_gemm(problem_size, ElementC(alpha), matrix_A.host_view(),
+                   matrix_B.host_view(), ElementC(beta),
+                   matrix_C_reference.host_view());
 
     bool passed = cutlass::reference::host::TensorEquals(
         matrix_C_computed.host_view(), matrix_C_reference.host_view());
@@ -348,18 +353,22 @@ struct Testbed {
     EXPECT_TRUE(passed);
 
     if (!passed && CUTLASS_TEST_UNIT_ENABLE_WARNINGS) {
-      std::cout
-        << __FILE__ << ":" << __LINE__ << "  "
-        << "A:\n" << matrix_A.host_view() << "\n"
-        << "B:\n" << matrix_B.host_view() << "\n"
-        << "Reference:\n"
-        << matrix_C_reference.host_view() << "\n"
-        << "Computed:\n"
-        << matrix_C_computed.host_view() << "\n";
+      std::cout << __FILE__ << ":" << __LINE__ << "  "
+                << "A:\n"
+                << matrix_A.host_view() << "\n"
+                << "B:\n"
+                << matrix_B.host_view() << "\n"
+                << "Reference:\n"
+                << matrix_C_reference.host_view() << "\n"
+                << "Computed:\n"
+                << matrix_C_computed.host_view() << "\n";
     }
 
-    EXPECT_GT(cutlass::reference::host::TensorNorm(matrix_C_reference.host_view()), 0);
-    EXPECT_GT(cutlass::reference::host::TensorNorm(matrix_C_computed.host_view()), 0);
+    EXPECT_GT(
+        cutlass::reference::host::TensorNorm(matrix_C_reference.host_view()),
+        0);
+    EXPECT_GT(
+        cutlass::reference::host::TensorNorm(matrix_C_computed.host_view()), 0);
 
     return passed;
   }
@@ -367,6 +376,6 @@ struct Testbed {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace test
+} // namespace threadblock
+} // namespace gemm
+} // namespace test

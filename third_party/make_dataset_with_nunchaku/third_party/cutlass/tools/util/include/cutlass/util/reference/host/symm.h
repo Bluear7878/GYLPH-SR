@@ -30,8 +30,8 @@
  **************************************************************************************************/
 /*! \file
     \brief Reference implementation for SYMM update in host-side code.
-    
-    
+
+
 
 */
 
@@ -81,15 +81,15 @@ void compute_symm(
   static_assert(
     LayoutA::kRank == 2 &&
     LayoutB::kRank == 2 &&
-    LayoutC::kRank == 2, 
+    LayoutC::kRank == 2,
     "Tensors must be of rank 2");
 
   static_assert(SideModeA != SideMode::kInvalid
                 , "Side Mode can either be Left or Right.");
 
   static_assert(
-    FillModeA == FillMode::kLower || 
-    FillModeA == FillMode::kUpper, 
+    FillModeA == FillMode::kLower ||
+    FillModeA == FillMode::kUpper,
     "Fill Mode can either be Lower or Upper.");
 
   using CompareOp_w_diag =  typename TrMatrixCompareOp<FillModeA, DiagType::kNonUnit>::Type;
@@ -135,12 +135,12 @@ void compute_symm(
 
               // A x B or B x A (with diagonal)
               if (SideModeA == SideMode::kLeft) {
-                a_1 = (compare_op_1(row, k_block)) ? 
+                a_1 = (compare_op_1(row, k_block)) ?
                       (tensor_a.at(MatrixCoord(row, k_block))) : ElementA();
                 b_1 = tensor_b.at(MatrixCoord(k_block, col));
               } else if (SideModeA == SideMode::kRight) {
                 a_1 = tensor_b.at(MatrixCoord(row, k_block));
-                b_1 = (compare_op_1(k_block, col)) ? 
+                b_1 = (compare_op_1(k_block, col)) ?
                       tensor_a.at(MatrixCoord(k_block, col)) : ElementA();
               }
 
@@ -151,12 +151,12 @@ void compute_symm(
 
               // A^T x B or B x A^T (without diagonal)
               if (SideModeA == SideMode::kLeft) {
-                a_2 = (compare_op_2(k_block, row)) ? 
+                a_2 = (compare_op_2(k_block, row)) ?
                       (tensor_a.at(MatrixCoord(k_block, row))) : ElementA();
                 b_2 = tensor_b.at(MatrixCoord(k_block, col));
               } else if (SideModeA == SideMode::kRight) {
                 a_2 = tensor_b.at(MatrixCoord(row, k_block));
-                b_2 = (compare_op_2(col, k_block)) ? 
+                b_2 = (compare_op_2(col, k_block)) ?
                       tensor_a.at(MatrixCoord(col, k_block)) : ElementA();
               }
 
@@ -239,9 +239,9 @@ struct Symm;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Partial specialization for multiply-add
-template <typename ElementA, typename LayoutA, 
+template <typename ElementA, typename LayoutA,
           SideMode SideModeA, FillMode FillModeA,
-          typename ElementB, typename LayoutB, 
+          typename ElementB, typename LayoutB,
           typename ElementC, typename LayoutC,
           typename ScalarType, typename ComputeType>
 struct Symm<ElementA, LayoutA, SideModeA, FillModeA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
@@ -260,7 +260,7 @@ struct Symm<ElementA, LayoutA, SideModeA, FillModeA, ElementB, LayoutB, ElementC
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
         problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, initial_accum);
   }
-  
+
   void operator()(gemm::GemmCoord problem_size, ScalarType alpha,
                   TensorRef<ElementA, LayoutA> tensor_a,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,

@@ -25,17 +25,19 @@ Constant.
 
 ??? example
 
-    The following code shows an example for `end()`.
-    
-    ```cpp
-    --8<-- "examples/end.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/end.output"
-    ```
+````
+The following code shows an example for `end()`.
+
+```cpp
+--8<-- "examples/end.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/end.output"
+```
+````
 
 ## Version history
 

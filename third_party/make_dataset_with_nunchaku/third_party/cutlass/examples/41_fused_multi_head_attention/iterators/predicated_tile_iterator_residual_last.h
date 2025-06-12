@@ -140,14 +140,9 @@ namespace threadblock {
 // }
 ///
 ///
-template <
-    typename Shape,
-    typename Element,
-    typename Layout,
-    int AdvanceRank,
-    typename ThreadMap,
-    int AccessSize = ThreadMap::kElementsPerAccess,
-    bool Gather = false>
+template <typename Shape, typename Element, typename Layout, int AdvanceRank,
+          typename ThreadMap, int AccessSize = ThreadMap::kElementsPerAccess,
+          bool Gather = false>
 class PredicatedTileIteratorResidualLast;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,22 +154,12 @@ class PredicatedTileIteratorResidualLast;
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize,
-    bool Gather>
-class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::PitchLinear,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    Gather> {
- public:
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize, bool Gather>
+class PredicatedTileIteratorResidualLast<Shape_, Element_, layout::PitchLinear,
+                                         AdvanceRank, ThreadMap_, AccessSize,
+                                         Gather> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may advance along the "
@@ -193,63 +178,55 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   /// Type used for internal memory accesses
-  using AccessType = AlignedArray<
-      Element,
-      AccessSize,
-      (AccessSize * sizeof_bits<Element>::value / 8)>;
+  using AccessType =
+      AlignedArray<Element, AccessSize,
+                   (AccessSize * sizeof_bits<Element>::value / 8)>;
 
   /// Underlying iterator to compute the addresses
   using TileAccessIterator = PredicatedTileAccessIteratorResidualLast<
-      Shape,
-      Element,
-      Layout,
-      kAdvanceRank,
-      ThreadMap,
-      AccessType,
-      Gather>;
+      Shape, Element, Layout, kAdvanceRank, ThreadMap, AccessType, Gather>;
 
   static int const kAccessesPerVector = TileAccessIterator::kAccessesPerVector;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename TileAccessIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   public:
+  public:
     using Base = typename TileAccessIterator::Params::Base;
 
     friend PredicatedTileIteratorResidualLast;
 
-   private:
+  private:
     /// Parameters object
     typename TileAccessIterator::Params params_;
 
-   public:
+  public:
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout) : params_(layout) {}
+    Params(Layout const &layout) : params_(layout) {}
 
     CUTLASS_HOST_DEVICE
     Params() {}
 
     CUTLASS_HOST_DEVICE
-    Params(Base const& base) : params_(base) {}
+    Params(Base const &base) : params_(base) {}
   };
 
- private:
+private:
   /// Internal pointer type permits fast address arithmetic
-  using BytePointer = char*;
+  using BytePointer = char *;
 
- private:
+private:
   //
   // Data members
   //
@@ -257,13 +234,13 @@ class PredicatedTileIteratorResidualLast<
   /// Data member to the tile access iterator
   TileAccessIterator address_iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
       /// Precomputed parameters object
-      Params const& params,
+      Params const &params,
       /// Pointer to start of tensor
       Pointer pointer,
       /// Extent of tensor
@@ -271,32 +248,23 @@ class PredicatedTileIteratorResidualLast<
       /// ID of each participating thread
       int thread_id,
       /// Initial offset of threadblock
-      TensorCoord const& threadblock_offset,
+      TensorCoord const &threadblock_offset,
       /// Gather indices
-      int const* indices = nullptr)
-      : address_iterator_(
-            params.params_,
-            pointer,
-            extent,
-            thread_id,
-            threadblock_offset,
-            indices) {}
+      int const *indices = nullptr)
+      : address_iterator_(params.params_, pointer, extent, thread_id,
+                          threadblock_offset, indices) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -311,7 +279,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     if (kAdvanceRank)
       address_iterator_.add_tile_offset({0, 1});
     else
@@ -335,9 +303,7 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    address_iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { address_iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
   void set_residual_tile(bool enable) {
@@ -346,31 +312,25 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    address_iterator_.enable_mask();
-  }
+  void enable_mask() { address_iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    address_iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { address_iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    address_iterator_.get_mask(mask);
+  void get_mask(Mask &mask) { address_iterator_.get_mask(mask); }
+
+  CUTLASS_DEVICE
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
+    load_with_byte_offset(frag,
+                          pointer_offset * sizeof_bits<Element>::value / 8);
   }
 
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
-    load_with_byte_offset(
-        frag, pointer_offset * sizeof_bits<Element>::value / 8);
-  }
-
-  CUTLASS_DEVICE
-  void load_with_byte_offset(Fragment& frag, LongIndex byte_offset) {
-    AccessType* frag_ptr = reinterpret_cast<AccessType*>(&frag);
+  void load_with_byte_offset(Fragment &frag, LongIndex byte_offset) {
+    AccessType *frag_ptr = reinterpret_cast<AccessType *>(&frag);
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
@@ -378,16 +338,16 @@ class PredicatedTileIteratorResidualLast<
       for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
         CUTLASS_PRAGMA_UNROLL
         for (int v = 0; v < kAccessesPerVector; ++v) {
-          int idx = v +
-              kAccessesPerVector * (c + s * ThreadMap::Iterations::kContiguous);
+          int idx = v + kAccessesPerVector *
+                            (c + s * ThreadMap::Iterations::kContiguous);
 
           address_iterator_.set_iteration_index(idx);
-          char const* byte_ptr =
-              reinterpret_cast<char const*>(address_iterator_.get()) +
+          char const *byte_ptr =
+              reinterpret_cast<char const *>(address_iterator_.get()) +
               byte_offset;
 
-          AccessType const* access_ptr =
-              reinterpret_cast<AccessType const*>(byte_ptr);
+          AccessType const *access_ptr =
+              reinterpret_cast<AccessType const *>(byte_ptr);
 
           cutlass::arch::global_load<AccessType, sizeof(AccessType)>(
               frag_ptr[idx], access_ptr, address_iterator_.valid());
@@ -400,22 +360,20 @@ class PredicatedTileIteratorResidualLast<
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_byte_offset(frag, 0);
+  void load(Fragment &frag) { load_with_byte_offset(frag, 0); }
+
+  /// Store a fragment to memory
+  CUTLASS_DEVICE
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
+    store_with_byte_offset(frag,
+                           pointer_offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
-    store_with_byte_offset(
-        frag, pointer_offset * sizeof_bits<Element>::value / 8);
-  }
-
-  /// Store a fragment to memory
-  CUTLASS_DEVICE
-  void store_with_byte_offset(Fragment const& frag, LongIndex byte_offset) {
+  void store_with_byte_offset(Fragment const &frag, LongIndex byte_offset) {
     address_iterator_.set_iteration_index(0);
-    AccessType const* frag_ptr = reinterpret_cast<AccessType const*>(&frag);
+    AccessType const *frag_ptr = reinterpret_cast<AccessType const *>(&frag);
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
@@ -423,12 +381,12 @@ class PredicatedTileIteratorResidualLast<
       for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
         CUTLASS_PRAGMA_UNROLL
         for (int v = 0; v < kAccessesPerVector; ++v) {
-          int idx = v +
-              kAccessesPerVector * (c + s * ThreadMap::Iterations::kContiguous);
+          int idx = v + kAccessesPerVector *
+                            (c + s * ThreadMap::Iterations::kContiguous);
 
-          char* byte_ptr =
-              reinterpret_cast<char*>(address_iterator_.get()) + byte_offset;
-          AccessType* access_ptr = reinterpret_cast<AccessType*>(byte_ptr);
+          char *byte_ptr =
+              reinterpret_cast<char *>(address_iterator_.get()) + byte_offset;
+          AccessType *access_ptr = reinterpret_cast<AccessType *>(byte_ptr);
 
           if (address_iterator_.valid()) {
             *access_ptr = frag_ptr[idx];
@@ -441,9 +399,7 @@ class PredicatedTileIteratorResidualLast<
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_byte_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_byte_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -455,22 +411,12 @@ class PredicatedTileIteratorResidualLast<
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize,
-    bool Gather>
-class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::ColumnMajor,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    Gather> {
- public:
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize, bool Gather>
+class PredicatedTileIteratorResidualLast<Shape_, Element_, layout::ColumnMajor,
+                                         AdvanceRank, ThreadMap_, AccessSize,
+                                         Gather> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -489,51 +435,46 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedTileIteratorResidualLast<
-      layout::PitchLinearShape<Shape::kRow, Shape::kColumn>,
-      Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 0 : 1),
-      ThreadMap,
-      AccessSize,
+      layout::PitchLinearShape<Shape::kRow, Shape::kColumn>, Element,
+      layout::PitchLinear, (kAdvanceRank == 0 ? 0 : 1), ThreadMap, AccessSize,
       Gather>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename UnderlyingIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileIteratorResidualLast;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout)
+    Params(Layout const &layout)
         : params_(layout::PitchLinear(layout.stride(0))) {}
 
     CUTLASS_HOST_DEVICE
-    Params(typename UnderlyingIterator::Params::Base const& base)
+    Params(typename UnderlyingIterator::Params::Base const &base)
         : params_(base) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -541,45 +482,38 @@ class PredicatedTileIteratorResidualLast<
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id, ///< ID of each participating thread
-      TensorCoord const& threadblock_offset, ///< Initial offset of threadblock
-      int const* indices =
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id,        ///< ID of each participating thread
+      TensorCoord const &threadblock_offset, ///< Initial offset of threadblock
+      int const *indices =
           nullptr ///< gather/scatter indices, note no support for
                   ///< gather/scatter at this specialization
       )
-      : iterator_(
-            params.params_,
-            pointer,
-            layout::PitchLinearCoord(extent.row(), extent.column()),
-            thread_id,
-            layout::PitchLinearCoord(
-                threadblock_offset.row(),
-                threadblock_offset.column()),
-            indices) {}
+      : iterator_(params.params_, pointer,
+                  layout::PitchLinearCoord(extent.row(), extent.column()),
+                  thread_id,
+                  layout::PitchLinearCoord(threadblock_offset.row(),
+                                           threadblock_offset.column()),
+                  indices) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -594,7 +528,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     ++iterator_;
     return *this;
   }
@@ -614,68 +548,54 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
-  void set_residual_tile(bool enable) {
-    iterator_.set_residual_tile(enable);
-  }
+  void set_residual_tile(bool enable) { iterator_.set_residual_tile(enable); }
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    iterator_.enable_mask();
-  }
+  void enable_mask() { iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    iterator_.get_mask(mask);
-  }
+  void get_mask(Mask &mask) { iterator_.get_mask(mask); }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
     iterator_.load_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_byte_offset(Fragment& frag, LongIndex byte_offset) {
+  void load_with_byte_offset(Fragment &frag, LongIndex byte_offset) {
     iterator_.load_with_byte_offset(frag, byte_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
     iterator_.store_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_byte_offset(Fragment const& frag, LongIndex byte_offset) {
+  void store_with_byte_offset(Fragment const &frag, LongIndex byte_offset) {
     iterator_.store_with_byte_offset(frag, byte_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_pointer_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -687,22 +607,12 @@ class PredicatedTileIteratorResidualLast<
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize,
-    bool Gather>
-class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::RowMajor,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    Gather> {
- public:
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize, bool Gather>
+class PredicatedTileIteratorResidualLast<Shape_, Element_, layout::RowMajor,
+                                         AdvanceRank, ThreadMap_, AccessSize,
+                                         Gather> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -721,51 +631,46 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedTileIteratorResidualLast<
-      layout::PitchLinearShape<Shape::kColumn, Shape::kRow>,
-      Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 1 : 0),
-      ThreadMap,
-      AccessSize,
+      layout::PitchLinearShape<Shape::kColumn, Shape::kRow>, Element,
+      layout::PitchLinear, (kAdvanceRank == 0 ? 1 : 0), ThreadMap, AccessSize,
       Gather>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename UnderlyingIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileIteratorResidualLast;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout)
+    Params(Layout const &layout)
         : params_(layout::PitchLinear(layout.stride(0))) {}
 
     CUTLASS_HOST_DEVICE
-    Params(typename UnderlyingIterator::Params::Base const& base)
+    Params(typename UnderlyingIterator::Params::Base const &base)
         : params_(base) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -773,43 +678,36 @@ class PredicatedTileIteratorResidualLast<
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id, ///< ID of each participating thread
-      TensorCoord const& threadblock_offset, ///< Initial offset of threadblock
-      int const* indices = nullptr ///< Gather indices
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id,        ///< ID of each participating thread
+      TensorCoord const &threadblock_offset, ///< Initial offset of threadblock
+      int const *indices = nullptr           ///< Gather indices
       )
-      : iterator_(
-            params.params_,
-            pointer,
-            layout::PitchLinearCoord(extent.column(), extent.row()),
-            thread_id,
-            layout::PitchLinearCoord(
-                threadblock_offset.column(),
-                threadblock_offset.row()),
-            indices) {}
+      : iterator_(params.params_, pointer,
+                  layout::PitchLinearCoord(extent.column(), extent.row()),
+                  thread_id,
+                  layout::PitchLinearCoord(threadblock_offset.column(),
+                                           threadblock_offset.row()),
+                  indices) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -824,7 +722,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     ++iterator_;
     return *this;
   }
@@ -844,68 +742,54 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
-  void set_residual_tile(bool enable) {
-    iterator_.set_residual_tile(enable);
-  }
+  void set_residual_tile(bool enable) { iterator_.set_residual_tile(enable); }
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    iterator_.enable_mask();
-  }
+  void enable_mask() { iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    iterator_.get_mask(mask);
-  }
+  void get_mask(Mask &mask) { iterator_.get_mask(mask); }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
     iterator_.load_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_byte_offset(Fragment& frag, LongIndex byte_offset) {
+  void load_with_byte_offset(Fragment &frag, LongIndex byte_offset) {
     iterator_.load_with_byte_offset(frag, byte_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
     iterator_.store_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_byte_offset(Fragment const& frag, LongIndex byte_offset) {
+  void store_with_byte_offset(Fragment const &frag, LongIndex byte_offset) {
     iterator_.store_with_byte_offset(frag, byte_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_pointer_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -917,21 +801,12 @@ class PredicatedTileIteratorResidualLast<
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize>
-class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::AffineRankN<2>,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    false> {
- public:
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize>
+class PredicatedTileIteratorResidualLast<Shape_, Element_,
+                                         layout::AffineRankN<2>, AdvanceRank,
+                                         ThreadMap_, AccessSize, false> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may advance along the "
@@ -950,57 +825,50 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   /// Type used for internal memory accesses
-  using AccessType = AlignedArray<
-      Element,
-      AccessSize,
-      (AccessSize * sizeof_bits<Element>::value / 8)>;
+  using AccessType =
+      AlignedArray<Element, AccessSize,
+                   (AccessSize * sizeof_bits<Element>::value / 8)>;
 
   /// Underlying iterator to compute the addresses
   using TileAccessIterator = PredicatedTileAccessIteratorResidualLast<
-      Shape,
-      Element,
-      Layout,
-      kAdvanceRank,
-      ThreadMap,
-      AccessType>;
+      Shape, Element, Layout, kAdvanceRank, ThreadMap, AccessType>;
 
   static int const kAccessesPerVector = TileAccessIterator::kAccessesPerVector;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename TileAccessIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   public:
+  public:
     friend PredicatedTileIteratorResidualLast;
 
-   private:
+  private:
     /// Parameters object
     typename TileAccessIterator::Params params_;
 
-   public:
+  public:
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout) : params_(layout) {}
+    Params(Layout const &layout) : params_(layout) {}
 
     CUTLASS_HOST_DEVICE
     Params() {}
   };
 
- private:
+private:
   /// Internal pointer type permits fast address arithmetic
-  using BytePointer = char*;
+  using BytePointer = char *;
 
- private:
+private:
   //
   // Data members
   //
@@ -1008,13 +876,13 @@ class PredicatedTileIteratorResidualLast<
   /// Data member to the tile access iterator
   TileAccessIterator address_iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
       /// Precomputed parameters object
-      Params const& params,
+      Params const &params,
       /// Pointer to start of tensor
       Pointer pointer,
       /// Extent of tensor
@@ -1022,33 +890,25 @@ class PredicatedTileIteratorResidualLast<
       /// ID of each participating thread
       int thread_id,
       /// Initial offset of threadblock
-      TensorCoord const& threadblock_offset,
-      int const* indices =
+      TensorCoord const &threadblock_offset,
+      int const *indices =
           nullptr ///< gather/scatter indices, note no support for
                   ///< gather/scatter at this specialization
       )
-      : address_iterator_(
-            params.params_,
-            pointer,
-            extent,
-            thread_id,
-            threadblock_offset) {}
+      : address_iterator_(params.params_, pointer, extent, thread_id,
+                          threadblock_offset) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -1063,7 +923,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     if (kAdvanceRank)
       address_iterator_.add_tile_offset(make_Coord(0, 1));
     else
@@ -1087,9 +947,7 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    address_iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { address_iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
   void set_residual_tile(bool enable) {
@@ -1098,31 +956,25 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    address_iterator_.enable_mask();
-  }
+  void enable_mask() { address_iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    address_iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { address_iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    address_iterator_.get_mask(mask);
+  void get_mask(Mask &mask) { address_iterator_.get_mask(mask); }
+
+  CUTLASS_DEVICE
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
+    load_with_byte_offset(frag,
+                          pointer_offset * sizeof_bits<Element>::value / 8);
   }
 
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
-    load_with_byte_offset(
-        frag, pointer_offset * sizeof_bits<Element>::value / 8);
-  }
-
-  CUTLASS_DEVICE
-  void load_with_byte_offset(Fragment& frag, LongIndex byte_offset) {
-    AccessType* frag_ptr = reinterpret_cast<AccessType*>(&frag);
+  void load_with_byte_offset(Fragment &frag, LongIndex byte_offset) {
+    AccessType *frag_ptr = reinterpret_cast<AccessType *>(&frag);
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
@@ -1130,16 +982,16 @@ class PredicatedTileIteratorResidualLast<
       for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
         CUTLASS_PRAGMA_UNROLL
         for (int v = 0; v < kAccessesPerVector; ++v) {
-          int idx = v +
-              kAccessesPerVector * (c + s * ThreadMap::Iterations::kContiguous);
+          int idx = v + kAccessesPerVector *
+                            (c + s * ThreadMap::Iterations::kContiguous);
 
           address_iterator_.set_iteration_index(idx);
-          char const* byte_ptr =
-              reinterpret_cast<char const*>(address_iterator_.get()) +
+          char const *byte_ptr =
+              reinterpret_cast<char const *>(address_iterator_.get()) +
               byte_offset;
 
-          AccessType const* access_ptr =
-              reinterpret_cast<AccessType const*>(byte_ptr);
+          AccessType const *access_ptr =
+              reinterpret_cast<AccessType const *>(byte_ptr);
 
           cutlass::arch::global_load<AccessType, sizeof(AccessType)>(
               frag_ptr[idx], access_ptr, address_iterator_.valid());
@@ -1152,22 +1004,20 @@ class PredicatedTileIteratorResidualLast<
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_byte_offset(frag, 0);
+  void load(Fragment &frag) { load_with_byte_offset(frag, 0); }
+
+  /// Store a fragment to memory
+  CUTLASS_DEVICE
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
+    store_with_byte_offset(frag,
+                           pointer_offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
-    store_with_byte_offset(
-        frag, pointer_offset * sizeof_bits<Element>::value / 8);
-  }
-
-  /// Store a fragment to memory
-  CUTLASS_DEVICE
-  void store_with_byte_offset(Fragment const& frag, LongIndex byte_offset) {
+  void store_with_byte_offset(Fragment const &frag, LongIndex byte_offset) {
     address_iterator_.set_iteration_index(0);
-    AccessType const* frag_ptr = reinterpret_cast<AccessType const*>(&frag);
+    AccessType const *frag_ptr = reinterpret_cast<AccessType const *>(&frag);
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
@@ -1175,12 +1025,12 @@ class PredicatedTileIteratorResidualLast<
       for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
         CUTLASS_PRAGMA_UNROLL
         for (int v = 0; v < kAccessesPerVector; ++v) {
-          int idx = v +
-              kAccessesPerVector * (c + s * ThreadMap::Iterations::kContiguous);
+          int idx = v + kAccessesPerVector *
+                            (c + s * ThreadMap::Iterations::kContiguous);
 
-          char* byte_ptr =
-              reinterpret_cast<char*>(address_iterator_.get()) + byte_offset;
-          AccessType* access_ptr = reinterpret_cast<AccessType*>(byte_ptr);
+          char *byte_ptr =
+              reinterpret_cast<char *>(address_iterator_.get()) + byte_offset;
+          AccessType *access_ptr = reinterpret_cast<AccessType *>(byte_ptr);
 
           if (address_iterator_.valid()) {
             *access_ptr = frag_ptr[idx];
@@ -1193,9 +1043,7 @@ class PredicatedTileIteratorResidualLast<
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_byte_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_byte_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1208,21 +1056,12 @@ class PredicatedTileIteratorResidualLast<
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize>
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize>
 class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::AffineRank2ColumnMajor,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    false> {
- public:
+    Shape_, Element_, layout::AffineRank2ColumnMajor, AdvanceRank, ThreadMap_,
+    AccessSize, false> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -1241,47 +1080,43 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   // Map to the underlying AffineRankN<2> layout
   using UnderlyingIterator = PredicatedTileIteratorResidualLast<
-      layout::PitchLinearShape<Shape::kRow, Shape::kColumn>,
-      Element,
-      layout::AffineRankN<2>,
-      (kAdvanceRank == 0 ? 0 : 1),
-      ThreadMap,
+      layout::PitchLinearShape<Shape::kRow, Shape::kColumn>, Element,
+      layout::AffineRankN<2>, (kAdvanceRank == 0 ? 0 : 1), ThreadMap,
       AccessSize>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename UnderlyingIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileIteratorResidualLast;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
     /// Construct the Params object given an AffineRankN<2> tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout)
+    Params(Layout const &layout)
         : params_(layout::AffineRankN<2>(layout.stride(0), layout.stride(1))) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -1289,44 +1124,37 @@ class PredicatedTileIteratorResidualLast<
   /// Underlying AffineRankN<2> tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id, ///< ID of each participating thread
-      TensorCoord const& threadblock_offset, ///< Initial offset of threadblock
-      int const* indices =
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id,        ///< ID of each participating thread
+      TensorCoord const &threadblock_offset, ///< Initial offset of threadblock
+      int const *indices =
           nullptr ///< gather/scatter indices, note no support for
                   ///< gather/scatter at this specialization
       )
-      : iterator_(
-            params.params_,
-            pointer,
-            layout::PitchLinearCoord(extent.row(), extent.column()),
-            thread_id,
-            layout::PitchLinearCoord(
-                threadblock_offset.row(),
-                threadblock_offset.column())) {}
+      : iterator_(params.params_, pointer,
+                  layout::PitchLinearCoord(extent.row(), extent.column()),
+                  thread_id,
+                  layout::PitchLinearCoord(threadblock_offset.row(),
+                                           threadblock_offset.column())) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -1341,7 +1169,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     ++iterator_;
     return *this;
   }
@@ -1361,68 +1189,54 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
-  void set_residual_tile(bool enable) {
-    iterator_.set_residual_tile(enable);
-  }
+  void set_residual_tile(bool enable) { iterator_.set_residual_tile(enable); }
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    iterator_.enable_mask();
-  }
+  void enable_mask() { iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    iterator_.get_mask(mask);
-  }
+  void get_mask(Mask &mask) { iterator_.get_mask(mask); }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
     iterator_.load_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_byte_offset(Fragment& frag, LongIndex byte_offset) {
+  void load_with_byte_offset(Fragment &frag, LongIndex byte_offset) {
     iterator_.load_with_byte_offset(frag, byte_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
     iterator_.store_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_byte_offset(Fragment const& frag, LongIndex byte_offset) {
+  void store_with_byte_offset(Fragment const &frag, LongIndex byte_offset) {
     iterator_.store_with_byte_offset(frag, byte_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_pointer_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1435,21 +1249,12 @@ class PredicatedTileIteratorResidualLast<
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize>
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize>
 class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::AffineRank2RowMajor,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    false> {
- public:
+    Shape_, Element_, layout::AffineRank2RowMajor, AdvanceRank, ThreadMap_,
+    AccessSize, false> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -1468,47 +1273,43 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   // Map to the underlying AffineRankN<2> layout
   using UnderlyingIterator = PredicatedTileIteratorResidualLast<
-      layout::PitchLinearShape<Shape::kColumn, Shape::kRow>,
-      Element,
-      layout::AffineRankN<2>,
-      (kAdvanceRank == 0 ? 1 : 0),
-      ThreadMap,
+      layout::PitchLinearShape<Shape::kColumn, Shape::kRow>, Element,
+      layout::AffineRankN<2>, (kAdvanceRank == 0 ? 1 : 0), ThreadMap,
       AccessSize>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename UnderlyingIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileIteratorResidualLast;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
     /// Construct the Params object given an AffineRankN<2> tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout)
+    Params(Layout const &layout)
         : params_(layout::AffineRankN<2>(layout.stride(1), layout.stride(0))) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -1516,44 +1317,37 @@ class PredicatedTileIteratorResidualLast<
   /// Underlying AffineRankN<2> tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id, ///< ID of each participating thread
-      TensorCoord const& threadblock_offset, ///< Initial offset of threadblock
-      int const* indices =
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id,        ///< ID of each participating thread
+      TensorCoord const &threadblock_offset, ///< Initial offset of threadblock
+      int const *indices =
           nullptr ///< gather/scatter indices, note no support for
                   ///< gather/scatter at this specialization
       )
-      : iterator_(
-            params.params_,
-            pointer,
-            layout::PitchLinearCoord(extent.column(), extent.row()),
-            thread_id,
-            layout::PitchLinearCoord(
-                threadblock_offset.column(),
-                threadblock_offset.row())) {}
+      : iterator_(params.params_, pointer,
+                  layout::PitchLinearCoord(extent.column(), extent.row()),
+                  thread_id,
+                  layout::PitchLinearCoord(threadblock_offset.column(),
+                                           threadblock_offset.row())) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -1568,7 +1362,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     ++iterator_;
     return *this;
   }
@@ -1588,68 +1382,54 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
-  void set_residual_tile(bool enable) {
-    iterator_.set_residual_tile(enable);
-  }
+  void set_residual_tile(bool enable) { iterator_.set_residual_tile(enable); }
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    iterator_.enable_mask();
-  }
+  void enable_mask() { iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    iterator_.get_mask(mask);
-  }
+  void get_mask(Mask &mask) { iterator_.get_mask(mask); }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
     iterator_.load_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_byte_offset(Fragment& frag, LongIndex byte_offset) {
+  void load_with_byte_offset(Fragment &frag, LongIndex byte_offset) {
     iterator_.load_with_byte_offset(frag, byte_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
     iterator_.store_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_byte_offset(Fragment const& frag, LongIndex byte_offset) {
+  void store_with_byte_offset(Fragment const &frag, LongIndex byte_offset) {
     iterator_.store_with_byte_offset(frag, byte_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_pointer_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1663,22 +1443,12 @@ class PredicatedTileIteratorResidualLast<
 ///            MaskedTileIteratorConcept
 ///
 
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize,
-    int InterleavedK>
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize, int InterleavedK>
 class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::ColumnMajorInterleaved<InterleavedK>,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    false> {
- public:
+    Shape_, Element_, layout::ColumnMajorInterleaved<InterleavedK>, AdvanceRank,
+    ThreadMap_, AccessSize, false> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -1698,52 +1468,47 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedTileIteratorResidualLast<
-      layout::PitchLinearShape<
-          Shape::kRow * kInterleavedK,
-          Shape::kColumn / kInterleavedK>,
-      Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 0 : 1),
-      ThreadMap,
+      layout::PitchLinearShape<Shape::kRow * kInterleavedK,
+                               Shape::kColumn / kInterleavedK>,
+      Element, layout::PitchLinear, (kAdvanceRank == 0 ? 0 : 1), ThreadMap,
       AccessSize>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename UnderlyingIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileIteratorResidualLast;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout)
+    Params(Layout const &layout)
         : params_(layout::PitchLinear(layout.stride(0))) {}
 
     CUTLASS_HOST_DEVICE
-    Params(typename UnderlyingIterator::Params::Base const& base)
+    Params(typename UnderlyingIterator::Params::Base const &base)
         : params_(base) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -1751,13 +1516,13 @@ class PredicatedTileIteratorResidualLast<
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
       /// Precomputed parameters object
-      Params const& params,
+      Params const &params,
       /// Pointer to start of tensor
       Pointer pointer,
       /// Extent of tensor
@@ -1765,37 +1530,30 @@ class PredicatedTileIteratorResidualLast<
       /// ID of each participating thread
       int thread_id,
       /// Initial offset of threadblock
-      TensorCoord const& threadblock_offset,
-      int const* indices =
+      TensorCoord const &threadblock_offset,
+      int const *indices =
           nullptr ///< gather/scatter indices, note no support for
                   ///< gather/scatter at this specialization
       )
-      : iterator_(
-            params.params_,
-            pointer,
-            layout::PitchLinearCoord(
-                extent.row() * kInterleavedK,
-                extent.column() / kInterleavedK),
-            thread_id,
-            layout::PitchLinearCoord(
-                threadblock_offset.row() * kInterleavedK,
-                threadblock_offset.column() / kInterleavedK)) {}
+      : iterator_(params.params_, pointer,
+                  layout::PitchLinearCoord(extent.row() * kInterleavedK,
+                                           extent.column() / kInterleavedK),
+                  thread_id,
+                  layout::PitchLinearCoord(
+                      threadblock_offset.row() * kInterleavedK,
+                      threadblock_offset.column() / kInterleavedK)) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -1810,7 +1568,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     ++iterator_;
     return *this;
   }
@@ -1830,56 +1588,42 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
-  void set_residual_tile(bool enable) {
-    iterator_.set_residual_tile(enable);
-  }
+  void set_residual_tile(bool enable) { iterator_.set_residual_tile(enable); }
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    iterator_.enable_mask();
-  }
+  void enable_mask() { iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    iterator_.get_mask(mask);
-  }
+  void get_mask(Mask &mask) { iterator_.get_mask(mask); }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
     iterator_.load_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
     iterator_.store_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_pointer_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1892,22 +1636,12 @@ class PredicatedTileIteratorResidualLast<
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <
-    typename Shape_,
-    typename Element_,
-    int AdvanceRank,
-    typename ThreadMap_,
-    int AccessSize,
-    int InterleavedK>
+template <typename Shape_, typename Element_, int AdvanceRank,
+          typename ThreadMap_, int AccessSize, int InterleavedK>
 class PredicatedTileIteratorResidualLast<
-    Shape_,
-    Element_,
-    layout::RowMajorInterleaved<InterleavedK>,
-    AdvanceRank,
-    ThreadMap_,
-    AccessSize,
-    false> {
- public:
+    Shape_, Element_, layout::RowMajorInterleaved<InterleavedK>, AdvanceRank,
+    ThreadMap_, AccessSize, false> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -1927,52 +1661,47 @@ class PredicatedTileIteratorResidualLast<
   using TensorView = TensorView<Element, Layout>;
   using TensorCoord = typename Layout::TensorCoord;
 
-  using Pointer = Element*;
-  using NonConstPointer = typename platform::remove_const<Element>::type*;
+  using Pointer = Element *;
+  using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedTileIteratorResidualLast<
-      layout::PitchLinearShape<
-          Shape::kColumn * kInterleavedK,
-          Shape::kRow / kInterleavedK>,
-      Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 1 : 0),
-      ThreadMap,
+      layout::PitchLinearShape<Shape::kColumn * kInterleavedK,
+                               Shape::kRow / kInterleavedK>,
+      Element, layout::PitchLinear, (kAdvanceRank == 0 ? 1 : 0), ThreadMap,
       AccessSize>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
   /// Fragment object to be loaded or stored
-  using Fragment = cutlass::Array<
-      Element,
-      ThreadMap::Iterations::kCount * ThreadMap::kElementsPerAccess>;
+  using Fragment = cutlass::Array<Element, ThreadMap::Iterations::kCount *
+                                               ThreadMap::kElementsPerAccess>;
 
   /// Predicate vector stores mask to guard accesses
   using Mask = typename UnderlyingIterator::Mask;
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileIteratorResidualLast;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const& layout)
+    Params(Layout const &layout)
         : params_(layout::PitchLinear(layout.stride(0))) {}
 
     CUTLASS_HOST_DEVICE
-    Params(typename UnderlyingIterator::Params::Base const& base)
+    Params(typename UnderlyingIterator::Params::Base const &base)
         : params_(base) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -1980,13 +1709,13 @@ class PredicatedTileIteratorResidualLast<
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
       /// Precomputed parameters object
-      Params const& params,
+      Params const &params,
       /// Pointer to start of tensor
       Pointer pointer,
       /// Extent of tensor
@@ -1994,37 +1723,30 @@ class PredicatedTileIteratorResidualLast<
       /// ID of each participating thread
       int thread_id,
       /// Initial offset of threadblock
-      TensorCoord const& threadblock_offset,
-      int const* indices =
+      TensorCoord const &threadblock_offset,
+      int const *indices =
           nullptr ///< gather/scatter indices, note no support for
                   ///< gather/scatter at this specialization
       )
-      : iterator_(
-            params.params_,
-            pointer,
-            layout::PitchLinearCoord(
-                extent.column() * kInterleavedK,
-                extent.row() / kInterleavedK),
-            thread_id,
-            layout::PitchLinearCoord(
-                threadblock_offset.column() * kInterleavedK,
-                threadblock_offset.row() / kInterleavedK)) {}
+      : iterator_(params.params_, pointer,
+                  layout::PitchLinearCoord(extent.column() * kInterleavedK,
+                                           extent.row() / kInterleavedK),
+                  thread_id,
+                  layout::PitchLinearCoord(
+                      threadblock_offset.column() * kInterleavedK,
+                      threadblock_offset.row() / kInterleavedK)) {}
 
   /// Construct a PredicatedTileIteratorResidualLast with zero threadblock
   /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileIteratorResidualLast(
-      Params const& params, ///< Precomputed parameters object
-      Pointer pointer, ///< Pointer to start of tensor
-      TensorCoord extent, ///< Extent of tensor
-      int thread_id ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileIteratorResidualLast(
-            params,
-            pointer,
-            extent,
-            thread_id,
-            make_Coord(0, 0)) {}
+      : PredicatedTileIteratorResidualLast(params, pointer, extent, thread_id,
+                                           make_Coord(0, 0)) {}
 
   /// Adds a pointer offset in units of Element
   CUTLASS_HOST_DEVICE
@@ -2039,7 +1761,7 @@ class PredicatedTileIteratorResidualLast<
   /// Subsequent calls are lightweight and must only update the internal
   /// pointer.
   CUTLASS_HOST_DEVICE
-  PredicatedTileIteratorResidualLast& operator++() {
+  PredicatedTileIteratorResidualLast &operator++() {
     ++iterator_;
     return *this;
   }
@@ -2059,56 +1781,42 @@ class PredicatedTileIteratorResidualLast<
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void clear_mask(bool enable = true) {
-    iterator_.clear_mask(enable);
-  }
+  void clear_mask(bool enable = true) { iterator_.clear_mask(enable); }
 
   CUTLASS_HOST_DEVICE
-  void set_residual_tile(bool enable) {
-    iterator_.set_residual_tile(enable);
-  }
+  void set_residual_tile(bool enable) { iterator_.set_residual_tile(enable); }
 
   /// Clears the predicate set efficiently
   CUTLASS_HOST_DEVICE
-  void enable_mask() {
-    iterator_.enable_mask();
-  }
+  void enable_mask() { iterator_.enable_mask(); }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const& mask) {
-    iterator_.set_mask(mask);
-  }
+  void set_mask(Mask const &mask) { iterator_.set_mask(mask); }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
-  void get_mask(Mask& mask) {
-    iterator_.get_mask(mask);
-  }
+  void get_mask(Mask &mask) { iterator_.get_mask(mask); }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load_with_pointer_offset(Fragment& frag, Index pointer_offset) {
+  void load_with_pointer_offset(Fragment &frag, Index pointer_offset) {
     iterator_.load_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Loads a fragment from memory
   CUTLASS_DEVICE
-  void load(Fragment& frag) {
-    load_with_pointer_offset(frag, 0);
-  }
+  void load(Fragment &frag) { load_with_pointer_offset(frag, 0); }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store_with_pointer_offset(Fragment const& frag, Index pointer_offset) {
+  void store_with_pointer_offset(Fragment const &frag, Index pointer_offset) {
     iterator_.store_with_pointer_offset(frag, pointer_offset);
   }
 
   /// Store a fragment to memory
   CUTLASS_DEVICE
-  void store(Fragment const& frag) {
-    store_with_pointer_offset(frag, 0);
-  }
+  void store(Fragment const &frag) { store_with_pointer_offset(frag, 0); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

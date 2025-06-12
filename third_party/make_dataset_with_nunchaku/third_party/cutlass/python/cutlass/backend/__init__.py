@@ -6,7 +6,8 @@ from cutlass.backend.epilogue import *
 from cutlass.backend.frontend import *
 from cutlass.backend.gemm_operation import *
 from cutlass.backend.library import *
-from cutlass.backend.memory_manager import PoolMemoryManager, create_memory_pool
+from cutlass.backend.memory_manager import (PoolMemoryManager,
+                                            create_memory_pool)
 from cutlass.backend.operation import *
 from cutlass.backend.reduction_operation import *
 from cutlass.backend.type_hint import *

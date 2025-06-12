@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,18 +18,20 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Ell iterator for Blocked-Ell matrix (ellValue matrix) used with EllMmaMultistage
+    \brief Ell iterator for Blocked-Ell matrix (ellValue matrix) used with
+   EllMmaMultistage
 */
 
 #pragma once
@@ -67,8 +69,8 @@ class EllPredicatedTileAccessIterator;
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_>
 class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+                                      AdvanceRank, ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -91,19 +93,22 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
   using Pointer = Element *;
   using NonConstPointer = typename platform::remove_const<Element>::type *;
 
-  static int const kAccessesPerVector = ThreadMap::kElementsPerAccess / AccessType::kElements;
+  static int const kAccessesPerVector =
+      ThreadMap::kElementsPerAccess / AccessType::kElements;
 
   static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements),
-    "Vectors implied by the thread map must be divisible by the access type.");
+                "Vectors implied by the thread map must be divisible by the "
+                "access type.");
 
   static int const kPredicatesPerByte = 4;
   static int const kPredicatesPerWord = 4 * kPredicatesPerByte;
 
-  static int const kPredicateCount = ThreadMap::Iterations::kCount * kAccessesPerVector;
+  static int const kPredicateCount =
+      ThreadMap::Iterations::kCount * kAccessesPerVector;
 
   /// Number of 32b words containing predicates
   static int const kPredicateByteCount =
-    (kPredicateCount + kPredicatesPerByte - 1) / kPredicatesPerByte;
+      (kPredicateCount + kPredicatesPerByte - 1) / kPredicatesPerByte;
   static int const kPredicateWordCount = (kPredicateByteCount + 3) / 4;
 
   static unsigned const kPredicateMask = (1u << kPredicatesPerByte) - 1u;
@@ -115,10 +120,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   public:
+  public:
     friend EllPredicatedTileAccessIterator;
 
-   private:
+  private:
     /// stride of pitch-linear layout (units of Element)
     LongIndex stride_;
     /// amount (in byte) to increment pointer to move to next access along
@@ -131,11 +136,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     /// to first access of next tile
     LongIndex inc_advance_;
 
-   public:
-
+  public:
     // Default ctor
     CUTLASS_HOST_DEVICE
-    Params(): stride_(0), inc_strided_(0), inc_next_(0), inc_advance_(0) { }
+    Params() : stride_(0), inc_strided_(0), inc_next_(0), inc_advance_(0) {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
@@ -145,24 +149,25 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
 
       if (kAdvanceRank) {
         // advance along strided dimension
-        inc_advance_ =
-            Shape::kStrided * LongIndex(stride_) * sizeof_bits<Element>::value / 8;
+        inc_advance_ = Shape::kStrided * LongIndex(stride_) *
+                       sizeof_bits<Element>::value / 8;
       } else {
         // advance along contiguous dimension
         inc_advance_ = Shape::kContiguous * sizeof_bits<Element>::value / 8;
       }
 
-      inc_next_ = inc_advance_ - LongIndex(ThreadMap::Iterations::kStrided - 1) *
-                                     ThreadMap::Delta::kStrided * LongIndex(stride_) *
-                                     sizeof_bits<Element>::value / 8;
+      inc_next_ =
+          inc_advance_ - LongIndex(ThreadMap::Iterations::kStrided - 1) *
+                             ThreadMap::Delta::kStrided * LongIndex(stride_) *
+                             sizeof_bits<Element>::value / 8;
     };
   };
 
- private:
+private:
   /// Internal pointer type permits fast address arithmetic
   using BytePointer = char *;
 
- private:
+private:
   //
   // Data members
   //
@@ -200,7 +205,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
   /// Iteration in the strided dimension
   int iteration_strided_;
 
- public:
+public:
   /// Computes predicates based on internally tracked per-thread offset.
   CUTLASS_DEVICE
   void compute_predicates_(
@@ -215,17 +220,22 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     }
 
     CUTLASS_PRAGMA_UNROLL
-    for (int access_idx = 0; access_idx < ThreadMap::Iterations::kCount * kAccessesPerVector; ++access_idx) {
+    for (int access_idx = 0;
+         access_idx < ThreadMap::Iterations::kCount * kAccessesPerVector;
+         ++access_idx) {
 
-      int s = access_idx / (ThreadMap::Iterations::kContiguous * kAccessesPerVector);
-      
-      int access_residual = access_idx % (ThreadMap::Iterations::kContiguous * kAccessesPerVector);
+      int s = access_idx /
+              (ThreadMap::Iterations::kContiguous * kAccessesPerVector);
+
+      int access_residual = access_idx % (ThreadMap::Iterations::kContiguous *
+                                          kAccessesPerVector);
 
       int c = access_residual / kAccessesPerVector;
       int v = access_residual % kAccessesPerVector;
 
-      TensorCoord iteration_coord(c * ThreadMap::Delta::kContiguous + v * AccessType::kElements,
-                                s * ThreadMap::Delta::kStrided);
+      TensorCoord iteration_coord(c * ThreadMap::Delta::kContiguous +
+                                      v * AccessType::kElements,
+                                  s * ThreadMap::Delta::kStrided);
 
       TensorCoord coord = thread_offset_ + iteration_coord;
 
@@ -242,20 +252,19 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
                  coord.contiguous() < extent.contiguous());
       }
 
-      int pred_idx = v + kAccessesPerVector * (c + ThreadMap::Iterations::kContiguous * s);
+      int pred_idx =
+          v + kAccessesPerVector * (c + ThreadMap::Iterations::kContiguous * s);
 
       int word_idx = pred_idx / kPredicatesPerWord;
       int residual = pred_idx % kPredicatesPerWord;
       int byte_idx = residual / kPredicatesPerByte;
       int bit_idx = residual % kPredicatesPerByte;
-      
+
       predicates_[word_idx] |= (unsigned(guard) << (byte_idx * 8 + bit_idx));
-
     }
-
   }
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -270,38 +279,39 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
       int thread_id,
       /// Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : params_(params),
-        pointer_(reinterpret_cast<BytePointer>(
-            const_cast<NonConstPointer>(pointer))),
-        extent_(extent),
-        is_residue_tile_(true) {
-          
+      : params_(params), pointer_(reinterpret_cast<BytePointer>(
+                             const_cast<NonConstPointer>(pointer))),
+        extent_(extent), is_residue_tile_(true) {
+
     TensorCoord residue_extent;
     if (kAdvanceRank) {
 
-      typename TensorCoord::Index residue_size = (extent_[kAdvanceRank] - threadblock_offset.strided()) % Shape::kStrided;
+      typename TensorCoord::Index residue_size =
+          (extent_[kAdvanceRank] - threadblock_offset.strided()) %
+          Shape::kStrided;
       if (!residue_size) {
         residue_size = Shape::kStrided;
       }
 
       residue_offset_ = make_Coord(0, residue_size);
       residue_extent = make_Coord(
-        extent_.contiguous(), 
-        min(threadblock_offset.strided() + residue_size, extent_.strided())
-      );
+          extent_.contiguous(),
+          min(threadblock_offset.strided() + residue_size, extent_.strided()));
     } else {
 
-      typename TensorCoord::Index residue_size = (extent_[kAdvanceRank] - threadblock_offset.contiguous()) % Shape::kContiguous;
+      typename TensorCoord::Index residue_size =
+          (extent_[kAdvanceRank] - threadblock_offset.contiguous()) %
+          Shape::kContiguous;
       if (!residue_size) {
         residue_size = Shape::kContiguous;
       }
 
       residue_offset_ = make_Coord(residue_size, 0);
-      
-      residue_extent = make_Coord(
-        min(extent_.contiguous(), threadblock_offset.contiguous() + residue_size),
-        extent_.strided()
-      );
+
+      residue_extent =
+          make_Coord(min(extent_.contiguous(),
+                         threadblock_offset.contiguous() + residue_size),
+                     extent_.strided());
     }
 
     // Per-thread offset in logical coordinates of tensor
@@ -329,7 +339,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
       ///< ID of each participating thread
       int thread_id)
       : EllPredicatedTileAccessIterator(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+                                        make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -338,9 +348,9 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     iteration_vector_ = index % kAccessesPerVector;
     int residual_access = index / kAccessesPerVector;
 
-    iteration_contiguous_ = residual_access % ThreadMap::Iterations::kContiguous;
+    iteration_contiguous_ =
+        residual_access % ThreadMap::Iterations::kContiguous;
     iteration_strided_ = residual_access / ThreadMap::Iterations::kContiguous;
-
   }
 
   /// Adds a pointer offset in units of Element
@@ -349,10 +359,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     pointer_ += sizeof_bits<Element>::value * pointer_offset / 8;
   }
 
-  /// Advances an iterator along logical dimensions of matrix in units of whole tiles
+  /// Advances an iterator along logical dimensions of matrix in units of whole
+  /// tiles
   CUTLASS_DEVICE
-  void add_tile_offset(
-      TensorCoord const &tile_offset) {
+  void add_tile_offset(TensorCoord const &tile_offset) {
     if (is_residue_tile_) {
 
       thread_offset_ += residue_offset_;
@@ -366,7 +376,8 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
         pointer_ += params_.inc_advance_ * LongIndex(tile_offset.strided() - 1);
         pointer_ += Shape::kContiguous * tile_offset.contiguous();
       } else {
-        pointer_ += params_.inc_advance_ * LongIndex(tile_offset.contiguous() - 1);
+        pointer_ +=
+            params_.inc_advance_ * LongIndex(tile_offset.contiguous() - 1);
         pointer_ += Shape::kStrided * tile_offset.strided();
       }
     } else {
@@ -384,29 +395,35 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
   /// Returns a pointer
   CUTLASS_HOST_DEVICE
   AccessType *get() const {
-    return reinterpret_cast<AccessType *>(
-        pointer_ + 
-        iteration_contiguous_ * (ThreadMap::Delta::kContiguous * sizeof_bits<Element>::value) / 8) + iteration_vector_;
+    return reinterpret_cast<AccessType *>(pointer_ +
+                                          iteration_contiguous_ *
+                                              (ThreadMap::Delta::kContiguous *
+                                               sizeof_bits<Element>::value) /
+                                              8) +
+           iteration_vector_;
   }
-  
+
   /// Returns a k_location
   CUTLASS_HOST_DEVICE
   int get_k() const {
-    if(kAdvanceRank){ //strided
-      return ell_offset_.strided() + iteration_strided_ * ThreadMap::Delta::kStrided;
-    }else{
-      return ell_offset_.contiguous() + iteration_contiguous_ * ThreadMap::Delta::kContiguous + iteration_vector_ * AccessType::kElements;
+    if (kAdvanceRank) { // strided
+      return ell_offset_.strided() +
+             iteration_strided_ * ThreadMap::Delta::kStrided;
+    } else {
+      return ell_offset_.contiguous() +
+             iteration_contiguous_ * ThreadMap::Delta::kContiguous +
+             iteration_vector_ * AccessType::kElements;
     }
   }
-  
+
   CUTLASS_HOST_DEVICE
   int get_stride() const {
-    if(kAdvanceRank)
+    if (kAdvanceRank)
       return params_.stride_;
     else
       return 1;
   }
-  
+
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
   EllPredicatedTileAccessIterator &operator++() {
@@ -463,7 +480,6 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     for (int i = 0; i < kPredicateWordCount; ++i) {
       predicates_[i] = enable ? 0u : predicates_[i];
     }
-
   }
 
   /// Clears the predicate set efficiently
@@ -473,28 +489,26 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     for (int i = 0; i < kPredicateWordCount; ++i) {
       predicates_[i] = 0xffffffff;
     }
-
   }
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const &mask) { 
+  void set_mask(Mask const &mask) {
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kPredicateWordCount; ++i) {
       predicates_[i] = mask[i];
     }
-
   }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
   void get_mask(Mask &mask) {
-     CUTLASS_PRAGMA_UNROLL
+    CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kPredicateWordCount; ++i) {
       mask[i] = predicates_[i];
     }
   }
-  
+
   /// add mask for small tiles in ELL
   CUTLASS_DEVICE
   void ell_add_mask(int blocksize) {
@@ -507,17 +521,22 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
     }
 
     CUTLASS_PRAGMA_UNROLL
-    for (int access_idx = 0; access_idx < ThreadMap::Iterations::kCount * kAccessesPerVector; ++access_idx) {
+    for (int access_idx = 0;
+         access_idx < ThreadMap::Iterations::kCount * kAccessesPerVector;
+         ++access_idx) {
 
-      int s = access_idx / (ThreadMap::Iterations::kContiguous * kAccessesPerVector);
-      
-      int access_residual = access_idx % (ThreadMap::Iterations::kContiguous * kAccessesPerVector);
+      int s = access_idx /
+              (ThreadMap::Iterations::kContiguous * kAccessesPerVector);
+
+      int access_residual = access_idx % (ThreadMap::Iterations::kContiguous *
+                                          kAccessesPerVector);
 
       int c = access_residual / kAccessesPerVector;
       int v = access_residual % kAccessesPerVector;
 
-      TensorCoord iteration_coord(c * ThreadMap::Delta::kContiguous + v * AccessType::kElements,
-                                s * ThreadMap::Delta::kStrided);
+      TensorCoord iteration_coord(c * ThreadMap::Delta::kContiguous +
+                                      v * AccessType::kElements,
+                                  s * ThreadMap::Delta::kStrided);
 
       TensorCoord coord = ell_offset_ + iteration_coord;
 
@@ -529,17 +548,17 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
         guard = (coord.contiguous() < blocksize);
       }
 
-      int pred_idx = v + kAccessesPerVector * (c + ThreadMap::Iterations::kContiguous * s);
+      int pred_idx =
+          v + kAccessesPerVector * (c + ThreadMap::Iterations::kContiguous * s);
 
       int word_idx = pred_idx / kPredicatesPerWord;
       int residual = pred_idx % kPredicatesPerWord;
       int byte_idx = residual / kPredicatesPerByte;
       int bit_idx = residual % kPredicatesPerByte;
-      
-      mask[word_idx] |= (unsigned(guard) << (byte_idx * 8 + bit_idx));
 
+      mask[word_idx] |= (unsigned(guard) << (byte_idx * 8 + bit_idx));
     }
-    
+
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kPredicateWordCount; ++i) {
       mask[i] &= predicates_[i];
@@ -551,17 +570,19 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
   CUTLASS_HOST_DEVICE
   bool valid() {
 
-    int pred_idx = 
-      iteration_vector_ + kAccessesPerVector * (iteration_contiguous_ + iteration_strided_ * ThreadMap::Iterations::kContiguous);
+    int pred_idx =
+        iteration_vector_ +
+        kAccessesPerVector *
+            (iteration_contiguous_ +
+             iteration_strided_ * ThreadMap::Iterations::kContiguous);
 
     int word_idx = pred_idx / kPredicatesPerWord;
     int residual = pred_idx % kPredicatesPerWord;
     int byte_idx = residual / kPredicatesPerByte;
     int bit_idx = residual % kPredicatesPerByte;
-    
+
     bool pred = (predicates_[word_idx] & (1u << (byte_idx * 8 + bit_idx))) != 0;
     return pred;
-    
   }
 };
 
@@ -577,8 +598,8 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::PitchLinear,
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_>
 class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+                                      AdvanceRank, ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -612,25 +633,24 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend EllPredicatedTileAccessIterator;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
-
+  public:
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Params() { }
+    Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
     Params(Layout const &layout)
-        : params_(layout::PitchLinear(layout.stride(0))){};
+        : params_(layout::PitchLinear(layout.stride(0))) {};
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -638,7 +658,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -662,13 +682,13 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
   /// Construct a EllPredicatedTileAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   EllPredicatedTileAccessIterator(
-      Params const &params,  ///< Precomputed parameters object
-      Pointer pointer,       ///< Pointer to start of tensor
-      TensorCoord extent,    ///< Extent of tensor
-      int thread_id          ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
       : EllPredicatedTileAccessIterator(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+                                        make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -694,14 +714,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
   }
 
   CUTLASS_HOST_DEVICE
-  int get_k() const {
-    return iterator_.get_k();
-  }
-  
+  int get_k() const { return iterator_.get_k(); }
+
   CUTLASS_HOST_DEVICE
-  int get_stride() const {
-    return iterator_.get_stride();
-  }
+  int get_stride() const { return iterator_.get_stride(); }
 
   /// Advances to the next tile in memory.
   ///
@@ -746,15 +762,11 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
 
   /// add mask for small tiles in ELL
   CUTLASS_DEVICE
-  void ell_add_mask(int blocksize) {
-    iterator_.ell_add_mask(blocksize);
-  }
+  void ell_add_mask(int blocksize) { iterator_.ell_add_mask(blocksize); }
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
-  bool valid() {
-    return iterator_.valid();
-  }
+  bool valid() { return iterator_.valid(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -769,8 +781,8 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_>
 class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+                                      AdvanceRank, ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -804,25 +816,24 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend EllPredicatedTileAccessIterator;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
-
+  public:
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Params() { }
+    Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
     Params(Layout const &layout)
-        : params_(layout::PitchLinear(layout.stride(0))){};
+        : params_(layout::PitchLinear(layout.stride(0))) {};
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -830,7 +841,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -854,13 +865,13 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
   /// Construct a EllPredicatedTileAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   EllPredicatedTileAccessIterator(
-      Params const &params,  ///< Precomputed parameters object
-      Pointer pointer,       ///< Pointer to start of tensor
-      TensorCoord extent,    ///< Extent of tensor
-      int thread_id          ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
       : EllPredicatedTileAccessIterator(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+                                        make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -886,14 +897,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
   }
 
   CUTLASS_HOST_DEVICE
-  int get_k() const {
-    return iterator_.get_k();
-  }
-  
+  int get_k() const { return iterator_.get_k(); }
+
   CUTLASS_HOST_DEVICE
-  int get_stride() const {
-    return iterator_.get_stride();
-  }
+  int get_stride() const { return iterator_.get_stride(); }
 
   /// Advances to the next tile in memory.
   ///
@@ -938,21 +945,17 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
 
   /// add mask for small tiles in ELL
   CUTLASS_DEVICE
-  void ell_add_mask(int blocksize) {
-    iterator_.ell_add_mask(blocksize);
-  }
-  
+  void ell_add_mask(int blocksize) { iterator_.ell_add_mask(blocksize); }
+
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
-  bool valid() {
-    return iterator_.valid();
-  }
+  bool valid() { return iterator_.valid(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization of EllPredicatedTileAccessIterator for column-major interleaved data.
-/// It is mapped to the congruous layout.
+/// Specialization of EllPredicatedTileAccessIterator for column-major
+/// interleaved data. It is mapped to the congruous layout.
 ///
 /// Satisfies: ForwardTileIteratorConcept |
 ///            ReadableContiguousTileIteratorConcept |
@@ -962,10 +965,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_, layout::RowMajor,
 
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_, int InterleavedK>
-class EllPredicatedTileAccessIterator<Shape_, Element_,
-                                   layout::ColumnMajorInterleaved<InterleavedK>,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+class EllPredicatedTileAccessIterator<
+    Shape_, Element_, layout::ColumnMajorInterleaved<InterleavedK>, AdvanceRank,
+    ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -1002,13 +1005,13 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend EllPredicatedTileAccessIterator;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
@@ -1018,7 +1021,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
         : params_(layout::PitchLinear(layout.stride(0))) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -1026,7 +1029,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -1052,13 +1055,13 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   /// Construct a EllPredicatedTileAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   EllPredicatedTileAccessIterator(
-      Params const &params,  ///< Precomputed parameters object
-      Pointer pointer,       ///< Pointer to start of tensor
-      TensorCoord extent,    ///< Extent of tensor
-      int thread_id          ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
       : EllPredicatedTileAccessIterator(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+                                        make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -1084,14 +1087,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   }
 
   CUTLASS_HOST_DEVICE
-  int get_k() const {
-    return iterator_.get_k();
-  }
-  
+  int get_k() const { return iterator_.get_k(); }
+
   CUTLASS_HOST_DEVICE
-  int get_stride() const {
-    return iterator_.get_stride();
-  }
+  int get_stride() const { return iterator_.get_stride(); }
 
   /// Advances to the next tile in memory.
   ///
@@ -1133,12 +1132,10 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   /// Gets the mask
   CUTLASS_HOST_DEVICE
   void get_mask(Mask &mask) { iterator_.get_mask(mask); }
-  
+
   /// add mask for small tiles in ELL
   CUTLASS_DEVICE
-  void ell_add_mask(int blocksize) {
-    iterator_.ell_add_mask(blocksize);
-  }
+  void ell_add_mask(int blocksize) { iterator_.ell_add_mask(blocksize); }
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
@@ -1147,8 +1144,8 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization of EllPredicatedTileAccessIterator for row-major interleaved data.
-/// It is mapped to the congruous layout.
+/// Specialization of EllPredicatedTileAccessIterator for row-major interleaved
+/// data. It is mapped to the congruous layout.
 ///
 /// Satisfies: ForwardTileIteratorConcept |
 ///            ReadableContiguousTileIteratorConcept |
@@ -1158,9 +1155,9 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_, int InterleavedK>
 class EllPredicatedTileAccessIterator<Shape_, Element_,
-                                   layout::RowMajorInterleaved<InterleavedK>,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+                                      layout::RowMajorInterleaved<InterleavedK>,
+                                      AdvanceRank, ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -1190,7 +1187,6 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
       Element, layout::PitchLinear, (kAdvanceRank == 0 ? 1 : 0), ThreadMap,
       AccessType>;
 
-
   static int const kAccessesPerVector = UnderlyingIterator::kAccessesPerVector;
 
   /// Predicate vector stores mask to guard accesses
@@ -1198,13 +1194,13 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend EllPredicatedTileAccessIterator;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
+  public:
     CUTLASS_HOST_DEVICE
     Params() {}
 
@@ -1214,7 +1210,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
         : params_(layout::PitchLinear(layout.stride(0))) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -1222,7 +1218,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -1248,13 +1244,13 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   /// Construct a EllPredicatedTileAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   EllPredicatedTileAccessIterator(
-      Params const &params,  ///< Precomputed parameters object
-      Pointer pointer,       ///< Pointer to start of tensor
-      TensorCoord extent,    ///< Extent of tensor
-      int thread_id          ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
       : EllPredicatedTileAccessIterator(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+                                        make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -1278,16 +1274,12 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
   AccessType *get() const {
     return reinterpret_cast<AccessType *>(iterator_.get());
   }
-  
+
   CUTLASS_HOST_DEVICE
-  int get_k() const {
-    return iterator_.get_k();
-  }
-  
+  int get_k() const { return iterator_.get_k(); }
+
   CUTLASS_HOST_DEVICE
-  int get_stride() const {
-    return iterator_.get_stride();
-  }
+  int get_stride() const { return iterator_.get_stride(); }
 
   /// Advances to the next tile in memory.
   ///
@@ -1332,9 +1324,7 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
 
   /// add mask for small tiles in ELL
   CUTLASS_DEVICE
-  void ell_add_mask(int blocksize) {
-    iterator_.ell_add_mask(blocksize);
-  }
+  void ell_add_mask(int blocksize) { iterator_.ell_add_mask(blocksize); }
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
@@ -1343,8 +1333,8 @@ class EllPredicatedTileAccessIterator<Shape_, Element_,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

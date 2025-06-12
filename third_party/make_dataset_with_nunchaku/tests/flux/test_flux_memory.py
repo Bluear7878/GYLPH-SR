@@ -1,7 +1,6 @@
 import pytest
 import torch
 from diffusers import FluxPipeline
-
 from nunchaku import NunchakuFluxTransformer2dModel, NunchakuT5EncoderModel
 from nunchaku.utils import get_precision, is_turing
 
@@ -16,7 +15,9 @@ from nunchaku.utils import get_precision, is_turing
         (True, True, 6),
     ],
 )
-def test_flux_schnell_memory(use_qencoder: bool, cpu_offload: bool, memory_limit: float):
+def test_flux_schnell_memory(
+    use_qencoder: bool, cpu_offload: bool, memory_limit: float
+):
     torch.cuda.empty_cache()
     torch.cuda.reset_peak_memory_stats()
     precision = get_precision()
@@ -26,10 +27,14 @@ def test_flux_schnell_memory(use_qencoder: bool, cpu_offload: bool, memory_limit
         )
     }
     if use_qencoder:
-        text_encoder_2 = NunchakuT5EncoderModel.from_pretrained("mit-han-lab/svdq-flux.1-t5")
+        text_encoder_2 = NunchakuT5EncoderModel.from_pretrained(
+            "mit-han-lab/svdq-flux.1-t5"
+        )
         pipeline_init_kwargs["text_encoder_2"] = text_encoder_2
     pipeline = FluxPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16, **pipeline_init_kwargs
+        "black-forest-labs/FLUX.1-schnell",
+        torch_dtype=torch.bfloat16,
+        **pipeline_init_kwargs,
     )
 
     if cpu_offload:
@@ -38,7 +43,11 @@ def test_flux_schnell_memory(use_qencoder: bool, cpu_offload: bool, memory_limit
         pipeline = pipeline.to("cuda")
 
     pipeline(
-        "A cat holding a sign that says hello world", width=1024, height=1024, num_inference_steps=4, guidance_scale=0
+        "A cat holding a sign that says hello world",
+        width=1024,
+        height=1024,
+        num_inference_steps=4,
+        guidance_scale=0,
     )
     memory = torch.cuda.max_memory_reserved(0) / 1024**3
     assert memory < memory_limit

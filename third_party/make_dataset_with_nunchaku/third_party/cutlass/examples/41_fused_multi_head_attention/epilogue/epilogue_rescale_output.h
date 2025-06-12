@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -89,22 +90,20 @@ namespace thread {
 //     alpha = 1 / s_prime (to normalize when isLast=True, 1 otherwise)
 //     beta = alpha / m_prime (renormalize the output when the max changes)
 //     source is the current output
-template <
-    typename ElementOutput_, ///< Data type used to store tensors
-    typename ElementSource_, //< Data type for source (usually matches
-                             //`ElementOutput`)
-    int Count, ///< Number of elements computed per operation.
-               ///< Usually it is 128/sizeof_bits<ElementOutput_>,
-               ///< but we use 64 or 32 sometimes when there are not enough data
-               ///< to store
-    typename ElementAccumulator_, ///< Accumulator data type
-    typename ElementCompute_, ///< Data type used to compute linear combination
-    bool isFirst,
-    bool isLast,
-    typename FragmentAlphaBeta_,
-    FloatRoundStyle Round = FloatRoundStyle::round_to_nearest>
+template <typename ElementOutput_, ///< Data type used to store tensors
+          typename ElementSource_, //< Data type for source (usually matches
+                                   //`ElementOutput`)
+          int Count, ///< Number of elements computed per operation.
+                     ///< Usually it is 128/sizeof_bits<ElementOutput_>,
+                     ///< but we use 64 or 32 sometimes when there are not
+                     ///< enough data to store
+          typename ElementAccumulator_, ///< Accumulator data type
+          typename ElementCompute_,     ///< Data type used to compute linear
+                                        ///< combination
+          bool isFirst, bool isLast, typename FragmentAlphaBeta_,
+          FloatRoundStyle Round = FloatRoundStyle::round_to_nearest>
 class MemoryEfficientAttentionNormalize {
- public:
+public:
   using ElementOutput = ElementOutput_;
   using ElementSource = ElementSource_;
   using ElementAccumulator = ElementAccumulator_;
@@ -120,28 +119,25 @@ class MemoryEfficientAttentionNormalize {
 
   static FloatRoundStyle const kRound = Round;
 
- private:
+private:
   //
   // Data members
   //
 
-  FragmentAlphaBeta const& s_prime_;
-  FragmentAlphaBeta const& m_prime_;
+  FragmentAlphaBeta const &s_prime_;
+  FragmentAlphaBeta const &m_prime_;
 
- public:
+public:
   /// Constructs the function object, possibly loading from pointers in host
   /// memory
   CUTLASS_HOST_DEVICE
-  MemoryEfficientAttentionNormalize(
-      FragmentAlphaBeta const& s_prime,
-      FragmentAlphaBeta const& m_prime)
+  MemoryEfficientAttentionNormalize(FragmentAlphaBeta const &s_prime,
+                                    FragmentAlphaBeta const &m_prime)
       : s_prime_(s_prime), m_prime_(m_prime) {}
 
   /// Returns true if source is needed
   CUTLASS_HOST_DEVICE
-  bool is_source_needed() const {
-    return !isFirst;
-  }
+  bool is_source_needed() const { return !isFirst; }
 
   /// Functionally required for serial reduction in the epilogue
   CUTLASS_HOST_DEVICE
@@ -149,10 +145,8 @@ class MemoryEfficientAttentionNormalize {
 
   /// Computes linear scaling: D = alpha * accumulator + beta * source
   CUTLASS_HOST_DEVICE
-  FragmentOutput operator()(
-      int row,
-      FragmentAccumulator const& accumulator,
-      FragmentSource const& source) const {
+  FragmentOutput operator()(int row, FragmentAccumulator const &accumulator,
+                            FragmentSource const &source) const {
     assert(!isFirst);
 
     // Convert source to interal compute numeric type
@@ -179,16 +173,16 @@ class MemoryEfficientAttentionNormalize {
 
     intermediate = mul_add_source(beta, converted_source); // X =  beta * C
 
-    intermediate = mul_add_accumulator(
-        alpha, converted_accumulator, intermediate); // D = alpha * Accum + X
+    intermediate = mul_add_accumulator(alpha, converted_accumulator,
+                                       intermediate); // D = alpha * Accum + X
 
     return destination_converter(intermediate);
   }
 
   /// Computes linear scaling: D = alpha * accumulator
   CUTLASS_HOST_DEVICE
-  FragmentOutput operator()(int row, FragmentAccumulator const& accumulator)
-      const {
+  FragmentOutput operator()(int row,
+                            FragmentAccumulator const &accumulator) const {
     assert(isFirst);
 
     // Convert source to interal compute numeric type
@@ -216,39 +210,21 @@ class MemoryEfficientAttentionNormalize {
 } // namespace thread
 
 namespace threadblock {
-template <
-    typename EO,
-    typename ES,
-    int Count,
-    typename EA,
-    typename EC,
-    bool F,
-    bool L,
-    typename FAB,
-    FloatRoundStyle R>
+template <typename EO, typename ES, int Count, typename EA, typename EC, bool F,
+          bool L, typename FAB, FloatRoundStyle R>
 struct ApplyEpilogueOp<thread::MemoryEfficientAttentionNormalize<
-    EO,
-    ES,
-    Count,
-    EA,
-    EC,
-    F,
-    L,
-    FAB,
-    R>> {
-  using Op = thread::
-      MemoryEfficientAttentionNormalize<EO, ES, Count, EA, EC, F, L, FAB, R>;
-  static CUTLASS_DEVICE typename Op::FragmentOutput apply(
-      Op const& output_op,
-      int row_id,
-      typename Op::FragmentAccumulator const& accum,
-      typename Op::FragmentSource const& source) {
+    EO, ES, Count, EA, EC, F, L, FAB, R>> {
+  using Op = thread::MemoryEfficientAttentionNormalize<EO, ES, Count, EA, EC, F,
+                                                       L, FAB, R>;
+  static CUTLASS_DEVICE typename Op::FragmentOutput
+  apply(Op const &output_op, int row_id,
+        typename Op::FragmentAccumulator const &accum,
+        typename Op::FragmentSource const &source) {
     return output_op(row_id, accum, source);
   }
-  static CUTLASS_DEVICE typename Op::FragmentOutput apply(
-      Op const& output_op,
-      int row_id,
-      typename Op::FragmentAccumulator const& accum) {
+  static CUTLASS_DEVICE typename Op::FragmentOutput
+  apply(Op const &output_op, int row_id,
+        typename Op::FragmentAccumulator const &accum) {
     return output_op(row_id, accum);
   }
 };

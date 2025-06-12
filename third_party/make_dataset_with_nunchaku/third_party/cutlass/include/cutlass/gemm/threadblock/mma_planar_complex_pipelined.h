@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,12 +35,12 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/array.h"
 #include "cutlass/aligned_buffer.h"
+#include "cutlass/array.h"
+#include "cutlass/cutlass.h"
 
-#include "cutlass/numeric_types.h"
 #include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/threadblock/mma_planar_complex_base.h"
@@ -82,10 +83,9 @@ template <
     /// Transformation applied to A
     ComplexTransform TransformA = ComplexTransform::kNone,
     /// Transformation applied to B
-    ComplexTransform TransformB = ComplexTransform::kNone
->
-class MmaPlanarComplexPipelined : 
-  public MmaPlanarComplexBase<Shape_, Policy_, Stages> {
+    ComplexTransform TransformB = ComplexTransform::kNone>
+class MmaPlanarComplexPipelined
+    : public MmaPlanarComplexBase<Shape_, Policy_, Stages> {
 public:
   ///< Base class
   using Base = MmaPlanarComplexBase<Shape_, Policy_, Stages>;
@@ -124,23 +124,20 @@ public:
   //
 
   /// Fragment of accumulator tile
-  using FragmentC = ArrayPlanarComplex<
-    typename Policy::Operator::FragmentC::Element,
-    Policy::Operator::FragmentC::kElements
-  >;
+  using FragmentC =
+      ArrayPlanarComplex<typename Policy::Operator::FragmentC::Element,
+                         Policy::Operator::FragmentC::kElements>;
 
   /// Warp-level Mma
   using Operator = typename Policy::Operator;
 
- private:
-
+private:
   using FragmentA = typename IteratorA::Fragment;
   using FragmentB = typename IteratorB::Fragment;
   using WarpFragmentA = typename Operator::FragmentA;
   using WarpFragmentB = typename Operator::FragmentB;
 
- private:
-
+private:
   //
   // Data members
   //
@@ -152,7 +149,6 @@ public:
   SmemIteratorB smem_iterator_B_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   MmaPlanarComplexPipelined(
@@ -163,12 +159,10 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      Base(shared_storage, thread_idx, warp_idx, lane_idx),
-      smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
-      smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx)
-  {
+      int lane_idx)
+      : Base(shared_storage, thread_idx, warp_idx, lane_idx),
+        smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
+        smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx) {
     // Compute warp location within threadblock tile by mapping the warp_id to
     // three coordinates:
     //   _m: the warp's position within the threadblock along the M dimension
@@ -182,52 +176,50 @@ public:
     int warp_idx_n = warp_idx_mn / Base::WarpCount::kM;
 
     // Add per-warp offsets in units of warp-level tiles
-    this->warp_tile_iterator_A_.add_tile_offset({warp_idx_m, Base::kWarpGemmIterations * warp_idx_k});
-    this->warp_tile_iterator_B_.add_tile_offset({Base::kWarpGemmIterations * warp_idx_k, warp_idx_n});
+    this->warp_tile_iterator_A_.add_tile_offset(
+        {warp_idx_m, Base::kWarpGemmIterations * warp_idx_k});
+    this->warp_tile_iterator_B_.add_tile_offset(
+        {Base::kWarpGemmIterations * warp_idx_k, warp_idx_n});
   }
 
 private:
-
   CUTLASS_DEVICE
-  void warp_mma_planar_complex(
-    Operator & warp_mma, 
-    FragmentC &accum,
-    WarpFragmentA const & real_A, 
-    WarpFragmentA const & imag_A, 
-    WarpFragmentB const & real_B, 
-    WarpFragmentB const & imag_B) {
+  void warp_mma_planar_complex(Operator &warp_mma, FragmentC &accum,
+                               WarpFragmentA const &real_A,
+                               WarpFragmentA const &imag_A,
+                               WarpFragmentB const &real_B,
+                               WarpFragmentB const &imag_B) {
 
-    cutlass::negate<Array<typename WarpFragmentB::Element, WarpFragmentB::kElements>> neg_op_B;
+    cutlass::negate<
+        Array<typename WarpFragmentB::Element, WarpFragmentB::kElements>>
+        neg_op_B;
 
     WarpFragmentB neg_real_B = neg_op_B(real_B);
     WarpFragmentB neg_imag_B = neg_op_B(imag_B);
 
-    warp_mma(accum.real, real_A, real_B, accum.real);  
+    warp_mma(accum.real, real_A, real_B, accum.real);
 
     if (kTransformB == ComplexTransform::kNone) {
       warp_mma(accum.imag, real_A, imag_B, accum.imag);
-    }
-    else {
+    } else {
       warp_mma(accum.imag, real_A, neg_imag_B, accum.imag);
     }
 
     if (kTransformA == ComplexTransform::kNone) {
       warp_mma(accum.imag, imag_A, real_B, accum.imag);
-    }
-    else {
+    } else {
       warp_mma(accum.imag, imag_A, neg_real_B, accum.imag);
     }
 
-    if (kTransformA == ComplexTransform::kNone ^ kTransformB == ComplexTransform::kNone) {
+    if (kTransformA == ComplexTransform::kNone ^
+        kTransformB == ComplexTransform::kNone) {
       warp_mma(accum.real, imag_A, imag_B, accum.real);
-    }
-    else {
+    } else {
       warp_mma(accum.real, imag_A, neg_imag_B, accum.real);
     }
   }
 
 public:
-  
   /// Perform a threadblock-scoped matrix multiply-accumulate
   CUTLASS_DEVICE
   void operator()(
@@ -279,17 +271,20 @@ public:
     ++iterator_B_imag;
 
     this->smem_iterator_A_.store(tb_frag_A_real);
-    this->smem_iterator_A_.store_with_pointer_offset(tb_frag_A_imag, Base::SharedStorage::kImaginaryStrideA);
+    this->smem_iterator_A_.store_with_pointer_offset(
+        tb_frag_A_imag, Base::SharedStorage::kImaginaryStrideA);
 
     this->smem_iterator_B_.store(tb_frag_B_real);
-    this->smem_iterator_B_.store_with_pointer_offset(tb_frag_B_imag, Base::SharedStorage::kImaginaryStrideB);
+    this->smem_iterator_B_.store_with_pointer_offset(
+        tb_frag_B_imag, Base::SharedStorage::kImaginaryStrideB);
 
     ++this->smem_iterator_A_;
     ++this->smem_iterator_B_;
 
     __syncthreads();
 
-    // Pair of fragments used to overlap shared memory loads and math instructions
+    // Pair of fragments used to overlap shared memory loads and math
+    // instructions
     WarpFragmentA warp_frag_real_A[2];
     WarpFragmentA warp_frag_imag_A[2];
 
@@ -300,11 +295,12 @@ public:
     this->warp_tile_iterator_B_.set_kgroup_index(0);
 
     this->warp_tile_iterator_A_.load(warp_frag_real_A[0]);
-    this->warp_tile_iterator_A_.load_with_pointer_offset(warp_frag_imag_A[0], Base::SharedStorage::kImaginaryStrideA);
+    this->warp_tile_iterator_A_.load_with_pointer_offset(
+        warp_frag_imag_A[0], Base::SharedStorage::kImaginaryStrideA);
 
     this->warp_tile_iterator_B_.load(warp_frag_real_B[0]);
-    this->warp_tile_iterator_B_.load_with_pointer_offset(warp_frag_imag_B[0], Base::SharedStorage::kImaginaryStrideB);
-
+    this->warp_tile_iterator_B_.load_with_pointer_offset(
+        warp_frag_imag_B[0], Base::SharedStorage::kImaginaryStrideB);
 
     ++this->warp_tile_iterator_A_;
     ++this->warp_tile_iterator_B_;
@@ -316,12 +312,13 @@ public:
     // Avoid reading out of bounds
     iterator_A_real.clear_mask(gemm_k_iterations <= 1);
     iterator_A_imag.clear_mask(gemm_k_iterations <= 1);
-    
+
     iterator_B_real.clear_mask(gemm_k_iterations <= 1);
     iterator_B_imag.clear_mask(gemm_k_iterations <= 1);
 
-    // Issue loads during the first warp-level matrix multiply-add *AFTER* issuing 
-    // shared memory loads (which have the tightest latency requirement).
+    // Issue loads during the first warp-level matrix multiply-add *AFTER*
+    // issuing shared memory loads (which have the tightest latency
+    // requirement).
 
     //
     // Mainloop
@@ -335,49 +332,62 @@ public:
       //
 
       CUTLASS_PRAGMA_UNROLL
-      for (int warp_mma_k = 0; warp_mma_k < Base::kWarpGemmIterations; ++warp_mma_k) {
+      for (int warp_mma_k = 0; warp_mma_k < Base::kWarpGemmIterations;
+           ++warp_mma_k) {
 
-        // Load warp-level tiles from shared memory, wrapping to k offset if this is the last group
-        // as the case may be.
+        // Load warp-level tiles from shared memory, wrapping to k offset if
+        // this is the last group as the case may be.
 
         if (warp_mma_k == Base::kWarpGemmIterations - 1) {
 
           // Write fragments to shared memory
           this->smem_iterator_A_.store(tb_frag_A_real);
-          this->smem_iterator_A_.store_with_pointer_offset(tb_frag_A_imag, Base::SharedStorage::kImaginaryStrideA);
+          this->smem_iterator_A_.store_with_pointer_offset(
+              tb_frag_A_imag, Base::SharedStorage::kImaginaryStrideA);
 
           this->smem_iterator_B_.store(tb_frag_B_real);
-          this->smem_iterator_B_.store_with_pointer_offset(tb_frag_B_imag, Base::SharedStorage::kImaginaryStrideB);
+          this->smem_iterator_B_.store_with_pointer_offset(
+              tb_frag_B_imag, Base::SharedStorage::kImaginaryStrideB);
 
           __syncthreads();
-          
+
           ++this->smem_iterator_B_;
           ++this->smem_iterator_A_;
 
-          // Add negative offsets to return iterators to the 'start' of the circular buffer in shared memory
+          // Add negative offsets to return iterators to the 'start' of the
+          // circular buffer in shared memory
           if (smem_write_stage_idx == 1) {
             this->smem_iterator_A_.add_tile_offset({0, -Base::kStages});
             this->smem_iterator_B_.add_tile_offset({-Base::kStages, 0});
-          }
-          else {
+          } else {
             this->warp_tile_iterator_A_.add_tile_offset(
-                {0, -Base::kStages * Policy::kPartitionsK * Base::kWarpGemmIterations});
+                {0, -Base::kStages * Policy::kPartitionsK *
+                        Base::kWarpGemmIterations});
             this->warp_tile_iterator_B_.add_tile_offset(
-                {-Base::kStages * Policy::kPartitionsK * Base::kWarpGemmIterations,
+                {-Base::kStages * Policy::kPartitionsK *
+                     Base::kWarpGemmIterations,
                  0});
           }
 
           smem_write_stage_idx ^= 1;
         }
 
-        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        
-        this->warp_tile_iterator_A_.load(warp_frag_real_A[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_A_.load_with_pointer_offset(warp_frag_imag_A[(warp_mma_k + 1) % 2], Base::SharedStorage::kImaginaryStrideA);
-        
-        this->warp_tile_iterator_B_.load(warp_frag_real_B[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_B_.load_with_pointer_offset(warp_frag_imag_B[(warp_mma_k + 1) % 2], Base::SharedStorage::kImaginaryStrideB);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+
+        this->warp_tile_iterator_A_.load(
+            warp_frag_real_A[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_A_.load_with_pointer_offset(
+            warp_frag_imag_A[(warp_mma_k + 1) % 2],
+            Base::SharedStorage::kImaginaryStrideA);
+
+        this->warp_tile_iterator_B_.load(
+            warp_frag_real_B[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B_.load_with_pointer_offset(
+            warp_frag_imag_B[(warp_mma_k + 1) % 2],
+            Base::SharedStorage::kImaginaryStrideB);
 
         ++this->warp_tile_iterator_A_;
         ++this->warp_tile_iterator_B_;
@@ -403,15 +413,11 @@ public:
         }
 
         warp_mma_planar_complex(
-          warp_mma, 
-          accum, 
-          warp_frag_real_A[warp_mma_k % 2], 
-          warp_frag_imag_A[warp_mma_k % 2],
-          warp_frag_real_B[warp_mma_k % 2], 
-          warp_frag_imag_B[warp_mma_k % 2]);
+            warp_mma, accum, warp_frag_real_A[warp_mma_k % 2],
+            warp_frag_imag_A[warp_mma_k % 2], warp_frag_real_B[warp_mma_k % 2],
+            warp_frag_imag_B[warp_mma_k % 2]);
       }
     }
-
   }
 };
 

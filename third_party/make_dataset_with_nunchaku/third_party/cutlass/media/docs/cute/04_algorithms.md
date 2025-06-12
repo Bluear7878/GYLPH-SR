@@ -116,12 +116,12 @@ would include the following.
    access instructions (like `cp.async`), then dispatch to the
    custom instruction.
 
-2. The two `Tensor`s have static layouts and it can be proven
+1. The two `Tensor`s have static layouts and it can be proven
    that element vectorization is valid -- for example, four `LDS.32`s
    can be combined into a single `LDS.128` -- then vectorize the source
    and destinations tensors.
 
-3. If possible, validate that the copy instruction to be used is 
+1. If possible, validate that the copy instruction to be used is
    appropriate for the source and destination tensors.
 
 CuTe's optimized copy implementations can do all of these.
@@ -149,12 +149,12 @@ What it does depends on the number of modes
 that its `Tensor` parameters have.
 We express these modes using letters.
 
-* V indicates a "vector," a mode of independent elements.
+- V indicates a "vector," a mode of independent elements.
 
-* M and N indicate the number of rows resp. columns
+- M and N indicate the number of rows resp. columns
   of the matrix result C of the BLAS's GEMM routine.
 
-* K indicates the "reduction mode" of GEMM,
+- K indicates the "reduction mode" of GEMM,
   that is, the mode along which GEMM sums.
   Please see the [GEMM tutorial](./0x_gemm_tutorial.md) for details.
 
@@ -166,13 +166,13 @@ and the `(...)` to the right of the `=>` describes C.
 
 1. `(V) x (V) => (V)`. The element-wise product of vectors: C<sub>v</sub> += A<sub>v</sub> B<sub>v</sub>. Dispatches to FMA or MMA.
 
-2. `(M) x (N) => (M,N)`. The outer product of vectors: C<sub>mn</sub> += A<sub>m</sub> B_<sub>n</sub>. Dispatches to (4) with V=1.
+1. `(M) x (N) => (M,N)`. The outer product of vectors: C<sub>mn</sub> += A<sub>m</sub> B\_<sub>n</sub>. Dispatches to (4) with V=1.
 
-3. `(M,K) x (N,K) => (M,N)`. The product of matrices: C<sub>mn</sub> += A<sub>mk</sub> B<sub>nk</sub>. Dispatches to (2) for each K.
+1. `(M,K) x (N,K) => (M,N)`. The product of matrices: C<sub>mn</sub> += A<sub>mk</sub> B<sub>nk</sub>. Dispatches to (2) for each K.
 
-4. `(V,M) x (V,N) => (V,M,N)`. The batched outer product of vectors: C<sub>vmn</sub> += A<sub>vm</sub> B<sub>vn</sub>. Optimizes for register reuse and dispatches to (1) for each M, N.
+1. `(V,M) x (V,N) => (V,M,N)`. The batched outer product of vectors: C<sub>vmn</sub> += A<sub>vm</sub> B<sub>vn</sub>. Optimizes for register reuse and dispatches to (1) for each M, N.
 
-5. `(V,M,K) x (V,N,K) => (V,M,N)`. The batched product of matrices: C<sub>vmn</sub> += A<sub>vmk</sub> B<sub>vnk</sub>. Dispatches to (4) for each K.
+1. `(V,M,K) x (V,N,K) => (V,M,N)`. The batched product of matrices: C<sub>vmn</sub> += A<sub>vmk</sub> B<sub>vnk</sub>. Dispatches to (4) for each K.
 
 Please refer to the [GEMM tutorial](./0x_gemm_tutorial.md)
 for an overview of CuTe's convention for ordering the modes.
@@ -196,8 +196,8 @@ for different architectures, please refer to the
 
 The `axpby` algorithm lives in the header file
 [`include/cute/algorithm/axpby.hpp`](../../../include/cute/algorithm/axpby.hpp).
-It assigns to $y$ the result of $\alpha x + \beta y$,
-where $\alpha$ and $\beta$ are scalars and $x$ and $y$ are `Tensor`s.
+It assigns to $y$ the result of $\\alpha x + \\beta y$,
+where $\\alpha$ and $\\beta$ are scalars and $x$ and $y$ are `Tensor`s.
 The name stands for "Alpha times X Plus Beta times Y,"
 and is a generalization of the original BLAS "AXPY" routine
 ("Alpha times X Plus Y").

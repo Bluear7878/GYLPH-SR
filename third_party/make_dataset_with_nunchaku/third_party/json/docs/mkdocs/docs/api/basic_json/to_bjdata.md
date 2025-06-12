@@ -17,29 +17,29 @@ Serializes a given JSON value `j` to a byte vector using the BJData (Binary JDat
 be more compact than JSON itself, yet more efficient to parse.
 
 1. Returns a byte vector containing the BJData serialization.
-2. Writes the BJData serialization to an output adapter.
+1. Writes the BJData serialization to an output adapter.
 
 The exact mapping and its limitations is described on a [dedicated page](../../features/binary_formats/bjdata.md).
 
 ## Parameters
 
 `j` (in)
-:   JSON value to serialize
+: JSON value to serialize
 
 `o` (in)
-:   output adapter to write serialization to
+: output adapter to write serialization to
 
 `use_size` (in)
-:   whether to add size annotations to container types; optional, `#!cpp false` by default.
+: whether to add size annotations to container types; optional, `#!cpp false` by default.
 
 `use_type` (in)
-:   whether to add type annotations to container types (must be combined with `#!cpp use_size = true`); optional,
+: whether to add type annotations to container types (must be combined with `#!cpp use_size = true`); optional,
 `#!cpp false` by default.
 
 ## Return value
 
 1. BJData serialization as byte vector
-2. (none)
+1. (none)
 
 ## Exception safety
 
@@ -53,17 +53,19 @@ Linear in the size of the JSON value `j`.
 
 ??? example
 
-    The example shows the serialization of a JSON value to a byte vector in BJData format.
-     
-    ```cpp
-    --8<-- "examples/to_bjdata.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/to_bjdata.output"
-    ```
+````
+The example shows the serialization of a JSON value to a byte vector in BJData format.
+
+```cpp
+--8<-- "examples/to_bjdata.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/to_bjdata.output"
+```
+````
 
 ## Version history
 

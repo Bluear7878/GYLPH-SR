@@ -27,14 +27,16 @@ The default value is detected based on preprocessor macros such as `#!cpp __cplu
 
 ??? example
 
-    The code below forces the library to use the C++14 standard:
+````
+The code below forces the library to use the C++14 standard:
 
-    ```cpp
-    #define JSON_HAS_CPP_14 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_HAS_CPP_14 1
+#include <nlohmann/json.hpp>
 
-    ...
-    ```
+...
+```
+````
 
 ## Version history
 

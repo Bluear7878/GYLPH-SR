@@ -1,6 +1,6 @@
+#include <iomanip>  // for std::setw
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <iomanip> // for std::setw
 
 using json = nlohmann::json;
 using namespace nlohmann::literals;

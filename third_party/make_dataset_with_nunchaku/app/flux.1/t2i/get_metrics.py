@@ -12,7 +12,13 @@ from metrics.similarity import compute_image_similarity_metrics
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("input_roots", type=str, nargs="*")
-    parser.add_argument("-o", "--output-path", type=str, default="metrics.json", help="Image output path")
+    parser.add_argument(
+        "-o",
+        "--output-path",
+        type=str,
+        default="metrics.json",
+        help="Image output path",
+    )
     args = parser.parse_args()
     return args
 
@@ -36,7 +42,10 @@ def main():
         print("Results for dataset:", dataset_name)
         results[dataset_name] = {}
         dataset = get_dataset(name=dataset_name, return_gt=True)
-        fid = compute_fid(ref_dirpath_or_dataset=dataset, gen_dirpath=os.path.join(image_root1, dataset_name))
+        fid = compute_fid(
+            ref_dirpath_or_dataset=dataset,
+            gen_dirpath=os.path.join(image_root1, dataset_name),
+        )
         results[dataset_name]["fid"] = fid
         print("FID:", fid)
         multimodal_metrics = compute_image_multimodal_metrics(
@@ -45,14 +54,19 @@ def main():
         results[dataset_name].update(multimodal_metrics)
         for k, v in multimodal_metrics.items():
             print(f"{k}:", v)
-        image_reward = compute_image_reward(ref_dataset=dataset, gen_dirpath=os.path.join(image_root1, dataset_name))
+        image_reward = compute_image_reward(
+            ref_dataset=dataset, gen_dirpath=os.path.join(image_root1, dataset_name)
+        )
         results[dataset_name].update(image_reward)
         for k, v in image_reward.items():
             print(f"{k}:", v)
 
-        if image_root2 is not None and os.path.exists(os.path.join(image_root2, dataset_name)):
+        if image_root2 is not None and os.path.exists(
+            os.path.join(image_root2, dataset_name)
+        ):
             similarity_results = compute_image_similarity_metrics(
-                os.path.join(image_root1, dataset_name), os.path.join(image_root2, dataset_name)
+                os.path.join(image_root1, dataset_name),
+                os.path.join(image_root2, dataset_name),
             )
             results[dataset_name].update(similarity_results)
             for k, v in similarity_results.items():

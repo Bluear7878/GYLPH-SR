@@ -5,20 +5,21 @@ File [nlohmann-json.py](nlohmann-json.py) contains a pretty printer for GDB for 
 ## How to use
 
 - Add line
-  
+
   ```
   source /path/to/nlohmann-json.py
   ```
-  
+
   to `~/.gdbinit`. Note you must replace `/path/to` with whatever path you stored file `nlohmann-json.py`.
+
 - In GDB, debug as usual. When you want to pretty-print a JSON value `var`, type
-  
+
   ```
   p -pretty on -array on -- var
   ```
-  
+
   The result should look like
-  
+
   ```
     $1 = std::map with 5 elements = {
         ["Baptiste"] = std::map with 1 element = {
@@ -48,7 +49,7 @@ File [nlohmann-json.py](nlohmann-json.py) contains a pretty printer for GDB for 
         },
         ["empty"] = nlohmann::detail::value_t::null
     }
-    ```
+  ```
 
 Requires Python 3.9+. Last tested with GDB 12.1.
 See [#1952](https://github.com/nlohmann/json/issues/1952) for more information. Please post questions there.

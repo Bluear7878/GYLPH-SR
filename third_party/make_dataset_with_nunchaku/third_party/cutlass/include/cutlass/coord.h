@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -33,11 +34,11 @@
 */
 
 /*
-  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However, certain
-         existing integrations of CUTLASS require C++11 host compilers.
+  Note:  CUTLASS 3x increases the host compiler requirements to C++17. However,
+  certain existing integrations of CUTLASS require C++11 host compilers.
 
-         Until this requirement can be lifted, certain headers with this annotation are required
-         to be remain consistent with C++11 syntax.
+         Until this requirement can be lifted, certain headers with this
+  annotation are required to be remain consistent with C++11 syntax.
 
          C++11 compatibility is enforced by `cutlass_test_unit_core_cpp11`.
 */
@@ -57,15 +58,14 @@ namespace cutlass {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Statically-sized array specifying Coords within a tensor
-template <
-  int Rank_,                          ///< Logical rank of coordinate
-  typename Index_ = int,              ///< Index type used for each dimension
-  typename LongIndex_ = int64_t       ///< Long index type used for linear offsets
->
+template <int Rank_,             ///< Logical rank of coordinate
+          typename Index_ = int, ///< Index type used for each dimension
+          typename LongIndex_ =
+              int64_t ///< Long index type used for linear offsets
+          >
 struct Coord {
 
 public:
-
   //
   // Type and constant definitions
   //
@@ -80,7 +80,6 @@ public:
   using LongIndex = LongIndex_;
 
 private:
-
   //
   // Data members
   //
@@ -89,7 +88,6 @@ private:
   Index idx[kRank];
 
 public:
-
   //
   // Methods
   //
@@ -112,8 +110,7 @@ public:
 
   /// Constructs from some other Coord
   template <int R, typename I, typename L>
-  CUTLASS_HOST_DEVICE
-  Coord(Coord<R, I, L> other) {
+  CUTLASS_HOST_DEVICE Coord(Coord<R, I, L> other) {
     for (int i = 0; i < kRank; ++i) {
       idx[i] = other[i];
     }
@@ -122,14 +119,13 @@ public:
   /// Returns a slice of the Coord which may be larger or smaller in rank
   /// than this.
   template <int Slice>
-  CUTLASS_HOST_DEVICE
-  Coord<Slice, Index, LongIndex> slice(int start = 0, Index identity = 0) const {
+  CUTLASS_HOST_DEVICE Coord<Slice, Index, LongIndex>
+  slice(int start = 0, Index identity = 0) const {
     Coord<Slice, Index, LongIndex> result;
     for (int i = 0; i < Slice; ++i) {
       if (i + start < kRank) {
         result[i] = idx[i + start];
-      }
-      else {
+      } else {
         result[i] = identity;
       }
     }
@@ -184,7 +180,7 @@ public:
 
   /// Element-wise addition
   CUTLASS_HOST_DEVICE
-  Coord operator+(Coord const& b) const {
+  Coord operator+(Coord const &b) const {
     Coord c;
     for (int i = 0; i < kRank; ++i) {
       c.idx[i] = idx[i] + b.idx[i];
@@ -194,7 +190,7 @@ public:
 
   /// Element-wise subtraction
   CUTLASS_HOST_DEVICE
-  Coord operator-(Coord const& b) const {
+  Coord operator-(Coord const &b) const {
     Coord c;
     for (int i = 0; i < kRank; ++i) {
       c.idx[i] = idx[i] - b.idx[i];
@@ -204,7 +200,7 @@ public:
 
   /// Element-wise multiplication
   CUTLASS_HOST_DEVICE
-  Coord operator*(Coord const& b) const {
+  Coord operator*(Coord const &b) const {
     Coord c;
     for (int i = 0; i < kRank; ++i) {
       c.idx[i] = idx[i] * b.idx[i];
@@ -214,7 +210,7 @@ public:
 
   /// Element-wise division
   CUTLASS_HOST_DEVICE
-  Coord operator/(Coord const& b) const {
+  Coord operator/(Coord const &b) const {
     Coord c;
     for (int i = 0; i < kRank; ++i) {
       c.idx[i] = idx[i] / b.idx[i];
@@ -224,7 +220,7 @@ public:
 
   /// In-place addition
   CUTLASS_HOST_DEVICE
-  Coord& operator+=(Coord const& b) {
+  Coord &operator+=(Coord const &b) {
     for (int i = 0; i < kRank; ++i) {
       idx[i] += b.idx[i];
     }
@@ -233,7 +229,7 @@ public:
 
   /// In-place subtraction
   CUTLASS_HOST_DEVICE
-  Coord& operator-=(Coord const& b) {
+  Coord &operator-=(Coord const &b) {
     for (int i = 0; i < kRank; ++i) {
       idx[i] -= b.idx[i];
     }
@@ -242,7 +238,7 @@ public:
 
   /// In-place multiplication
   CUTLASS_HOST_DEVICE
-  Coord& operator*=(Coord const& b) {
+  Coord &operator*=(Coord const &b) {
     for (int i = 0; i < kRank; ++i) {
       idx[i] *= b.idx[i];
     }
@@ -251,7 +247,7 @@ public:
 
   /// In-place division
   CUTLASS_HOST_DEVICE
-  Coord& operator/=(Coord const& b) {
+  Coord &operator/=(Coord const &b) {
     for (int i = 0; i < kRank; ++i) {
       idx[i] /= b.idx[i];
     }
@@ -259,14 +255,16 @@ public:
   }
 
   /// Member access operator
-  CUTLASS_HOST_DEVICE Index& operator[](int dim) { return idx[dim]; }
+  CUTLASS_HOST_DEVICE Index &operator[](int dim) { return idx[dim]; }
 
   /// Member access operator
-  CUTLASS_HOST_DEVICE Index const& operator[](int dim) const { return idx[dim]; }
+  CUTLASS_HOST_DEVICE Index const &operator[](int dim) const {
+    return idx[dim];
+  }
 
   /// Computes the dot product with anotherCoord object
   CUTLASS_HOST_DEVICE
-  LongIndex dot(Coord const& b, LongIndex sum = LongIndex(0)) const {
+  LongIndex dot(Coord const &b, LongIndex sum = LongIndex(0)) const {
     for (int i = 0; i < kRank; ++i) {
       sum += idx[i] * b.idx[i];
     }
@@ -274,28 +272,24 @@ public:
   }
 
   /// Gets the index of a given Coord element
-  template <int Dim>
-  CUTLASS_HOST_DEVICE Index& at() {
-    return idx[Dim];
-  }
+  template <int Dim> CUTLASS_HOST_DEVICE Index &at() { return idx[Dim]; }
 
   /// Access via index; may limit unrolling potential
   CUTLASS_HOST_DEVICE
-  Index& at(int dim) { return idx[dim]; }
+  Index &at(int dim) { return idx[dim]; }
 
   /// Gets the index of a given Coord element
-  template <int Dim>
-  CUTLASS_HOST_DEVICE Index const& at() const {
+  template <int Dim> CUTLASS_HOST_DEVICE Index const &at() const {
     return idx[Dim];
   }
 
   /// Access via index; may limit unrolling potential
   CUTLASS_HOST_DEVICE
-  Index const& at(int dim) const { return idx[dim]; }
+  Index const &at(int dim) const { return idx[dim]; }
 
   /// Determines if two Coord<> objects are equal
   CUTLASS_HOST_DEVICE
-  bool operator==(Coord const& b) const {
+  bool operator==(Coord const &b) const {
     bool equal = true;
     for (int i = 0; equal && i < kRank; ++i) {
       equal = (idx[i] == b.idx[i]);
@@ -305,11 +299,11 @@ public:
 
   /// Not equal
   CUTLASS_HOST_DEVICE
-  bool operator!=(Coord const& b) const { return !(*this == b); }
+  bool operator!=(Coord const &b) const { return !(*this == b); }
 
   /// Clamps a coordinate to a range specified by maximum and minimum values
   CUTLASS_HOST_DEVICE
-  Coord& clamp(Coord const& max, Coord const& min = Coord()) {
+  Coord &clamp(Coord const &max, Coord const &min = Coord()) {
     for (int i = 0; i < kRank; ++i) {
       idx[i] = __NV_STD_MAX(__NV_STD_MIN(idx[i], max.idx[i]), min.idx[i]);
     }
@@ -360,28 +354,23 @@ public:
 
   /// Greater than operator
   CUTLASS_HOST_DEVICE
-  bool operator>(Coord const &b) const {
-    return !(*this <= b);
-  }
+  bool operator>(Coord const &b) const { return !(*this <= b); }
 
   /// Greater than or equals operator
   CUTLASS_HOST_DEVICE
-  bool operator>=(Coord const &b) const {
-    return !(*this < b);
-  }
+  bool operator>=(Coord const &b) const { return !(*this < b); }
 };
 
-} // namespace cutlass 
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace cutlass {
 
-
 /// Scalar multiplication
 template <int Rank, typename Index>
-CUTLASS_HOST_DEVICE
-Coord<Rank, Index> operator*(Index s, Coord<Rank, Index> coord) {
+CUTLASS_HOST_DEVICE Coord<Rank, Index> operator*(Index s,
+                                                 Coord<Rank, Index> coord) {
   CUTLASS_PRAGMA_UNROLL
   for (int i = 0; i < Rank; ++i) {
     coord[i] *= s;
@@ -391,8 +380,8 @@ Coord<Rank, Index> operator*(Index s, Coord<Rank, Index> coord) {
 
 /// Scalar multiplication
 template <int Rank, typename Index>
-CUTLASS_HOST_DEVICE
-Coord<Rank, Index> operator*(Coord<Rank, Index> coord, Index s) {
+CUTLASS_HOST_DEVICE Coord<Rank, Index> operator*(Coord<Rank, Index> coord,
+                                                 Index s) {
   CUTLASS_PRAGMA_UNROLL
   for (int i = 0; i < Rank; ++i) {
     coord[i] *= s;
@@ -402,8 +391,8 @@ Coord<Rank, Index> operator*(Coord<Rank, Index> coord, Index s) {
 
 /// Scalar division
 template <int Rank, typename Index>
-CUTLASS_HOST_DEVICE
-Coord<Rank, Index> operator/(Index s, Coord<Rank, Index> coord) {
+CUTLASS_HOST_DEVICE Coord<Rank, Index> operator/(Index s,
+                                                 Coord<Rank, Index> coord) {
   CUTLASS_PRAGMA_UNROLL
   for (int i = 0; i < Rank; ++i) {
     coord[i] = s / coord[i];
@@ -413,8 +402,8 @@ Coord<Rank, Index> operator/(Index s, Coord<Rank, Index> coord) {
 
 /// Scalar division
 template <int Rank, typename Index>
-CUTLASS_HOST_DEVICE
-Coord<Rank, Index> operator/(Coord<Rank, Index> coord, Index s) {
+CUTLASS_HOST_DEVICE Coord<Rank, Index> operator/(Coord<Rank, Index> coord,
+                                                 Index s) {
   CUTLASS_PRAGMA_UNROLL
   for (int i = 0; i < Rank; ++i) {
     coord[i] /= s;
@@ -429,49 +418,41 @@ Coord<Rank, Index> operator/(Coord<Rank, Index> coord, Index s) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Helper to make a 2-element coordinate
-template <typename T> 
-CUTLASS_HOST_DEVICE
-Coord<1, T> make_Coord(T _0) {
+template <typename T> CUTLASS_HOST_DEVICE Coord<1, T> make_Coord(T _0) {
   T values[1] = {_0};
   return Coord<1, T>(values);
 }
 
 /// Helper to make a 2-element coordinate
-template <typename T> 
-CUTLASS_HOST_DEVICE
-Coord<2, T> make_Coord(T _0, T _1) {
+template <typename T> CUTLASS_HOST_DEVICE Coord<2, T> make_Coord(T _0, T _1) {
   T values[2] = {_0, _1};
   return Coord<2, T>(values);
 }
 
 /// Helper to make a 3-element coordinate
-template <typename T> 
-CUTLASS_HOST_DEVICE
-Coord<3, T> make_Coord(T _0, T _1, T _2) {
+template <typename T>
+CUTLASS_HOST_DEVICE Coord<3, T> make_Coord(T _0, T _1, T _2) {
   T values[3] = {_0, _1, _2};
   return Coord<3, T>(values);
 }
 
 /// Helper to make a 4-element coordinate
-template <typename T> 
-CUTLASS_HOST_DEVICE
-Coord<4, T> make_Coord(T _0, T _1, T _2, T _3) {
+template <typename T>
+CUTLASS_HOST_DEVICE Coord<4, T> make_Coord(T _0, T _1, T _2, T _3) {
   T values[4] = {_0, _1, _2, _3};
   return Coord<4, T>(values);
 }
 
 /// Helper to make a 5-element coordinate
-template <typename T> 
-CUTLASS_HOST_DEVICE
-Coord<5, T> make_Coord(T _0, T _1, T _2, T _3, T _4) {
+template <typename T>
+CUTLASS_HOST_DEVICE Coord<5, T> make_Coord(T _0, T _1, T _2, T _3, T _4) {
   T values[5] = {_0, _1, _2, _3, _4};
   return Coord<5, T>(values);
 }
 
 /// Helper to make a 1-element coordinate
-template <int N, typename T> 
-CUTLASS_HOST_DEVICE
-Coord<N, T>make_Coord_with_padding(T _0) {
+template <int N, typename T>
+CUTLASS_HOST_DEVICE Coord<N, T> make_Coord_with_padding(T _0) {
   Coord<N, T> coord;
 
   CUTLASS_PRAGMA_UNROLL
@@ -486,5 +467,4 @@ Coord<N, T>make_Coord_with_padding(T _0) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace cutlass
-
+} // namespace cutlass

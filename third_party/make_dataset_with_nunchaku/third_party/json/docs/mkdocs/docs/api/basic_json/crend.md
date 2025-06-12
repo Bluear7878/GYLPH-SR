@@ -25,17 +25,19 @@ Constant.
 
 ??? example
 
-    The following code shows an example for `eend()`.
-    
-    ```cpp
-    --8<-- "examples/crend.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/crend.output"
-    ```
+````
+The following code shows an example for `eend()`.
+
+```cpp
+--8<-- "examples/crend.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/crend.output"
+```
+````
 
 ## Version history
 

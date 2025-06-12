@@ -32,4 +32,3 @@ cutlass_example_add_executable(
   20_simt_canonical
   simt_canonical.cu
 )
-

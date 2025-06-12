@@ -18,15 +18,15 @@ This function is usually called by the [`get()`](../basic_json/get.md) function 
 class (either explicitly or via the conversion operators).
 
 1. This function is chosen for default-constructible value types.
-2. This function is chosen for value types which are not default-constructible.
+1. This function is chosen for value types which are not default-constructible.
 
 ## Parameters
 
 `j` (in)
-:   JSON value to read from
+: JSON value to read from
 
 `val` (out)
-:   value to write to
+: value to write to
 
 ## Return value
 
@@ -36,33 +36,37 @@ Copy of the JSON value, converted to `ValueType`
 
 ??? example "Example: (1) Default-constructible type"
 
-    The example below shows how a `from_json` function can be implemented for a user-defined type. This function is
-    called by the `adl_serializer` when `template get<ns::person>()` is called.
-        
-    ```cpp
-    --8<-- "examples/from_json__default_constructible.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/from_json__default_constructible.output"
-    ```
+````
+The example below shows how a `from_json` function can be implemented for a user-defined type. This function is
+called by the `adl_serializer` when `template get<ns::person>()` is called.
+
+```cpp
+--8<-- "examples/from_json__default_constructible.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/from_json__default_constructible.output"
+```
+````
 
 ??? example "Example: (2) Non-default-constructible type"
 
-    The example below shows how a `from_json` is implemented as part of a specialization of the `adl_serializer` to
-    realize the conversion of a non-default-constructible type.
-        
-    ```cpp
-    --8<-- "examples/from_json__non_default_constructible.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/from_json__non_default_constructible.output"
-    ```
+````
+The example below shows how a `from_json` is implemented as part of a specialization of the `adl_serializer` to
+realize the conversion of a non-default-constructible type.
+
+```cpp
+--8<-- "examples/from_json__non_default_constructible.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/from_json__non_default_constructible.output"
+```
+````
 
 ## See also
 

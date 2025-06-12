@@ -4,8 +4,7 @@
 using json = nlohmann::json;
 using namespace nlohmann::literals;
 
-namespace ns
-{
+namespace ns {
 struct person
 {
     std::string name = "John Doe";
@@ -14,12 +13,14 @@ struct person
 
     person() = default;
     person(std::string name_, std::string address_, int age_)
-        : name(std::move(name_)), address(std::move(address_)), age(age_)
+      : name(std::move(name_))
+      , address(std::move(address_))
+      , age(age_)
     {}
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(person, name, address, age)
-} // namespace ns
+}  // namespace ns
 
 int main()
 {

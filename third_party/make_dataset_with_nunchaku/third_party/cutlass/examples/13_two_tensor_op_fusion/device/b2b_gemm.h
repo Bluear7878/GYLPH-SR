@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,31 +18,33 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Template for a pipelined GEMM kernel. Does not compute batching or support split-K.
+    \brief Template for a pipelined GEMM kernel. Does not compute batching or
+   support split-K.
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
-#include "cutlass/gemm/device/default_gemm_configuration.h"
 #include "cutlass/epilogue/thread/linear_combination_relu.h"
+#include "cutlass/gemm/device/default_gemm_configuration.h"
 
 #include "kernel/b2b_gemm.h"
 #include "kernel/default_b2b_gemm.h"
@@ -104,7 +106,8 @@ template <
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
         ElementAccumulator_>::EpilogueOutputOp,
     /// Threadblock-level swizzling operator
-    typename ThreadblockSwizzle_ = threadblock::GemmIdentityThreadblockSwizzle<>,
+    typename ThreadblockSwizzle_ =
+        threadblock::GemmIdentityThreadblockSwizzle<>,
     /// Number of stages used in the pipelined mainloop
     int Stages =
         DefaultGemmConfiguration<OperatorClass_, ArchTag_, ElementA_, ElementB_,
@@ -124,8 +127,7 @@ template <
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
         ElementAccumulator_>::Operator>
 class B2bGemm {
- public:
-
+public:
   using ElementA = ElementA_;
   using LayoutA = LayoutA_;
   using TensorRefA = TensorRef<ElementA const, LayoutA>;
@@ -161,55 +163,29 @@ class B2bGemm {
 
   /// Define the kernel
   using B2bGemmKernel = typename kernel::DefaultB2bGemm<
-    ElementA,
-    LayoutA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    kAlignmentB,
-    ElementC,
-    LayoutC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape0,
-    ThreadblockShape1,
-    WarpShape0,
-    WarpShape1,
-    InstructionShape,
-    EpilogueOutputOp0,
-    EpilogueOutputOp1,
-    ThreadblockSwizzle,
-    kStages,
-    Operator,
-    SmemAccumulator
-  >::B2bGemmKernel;
+      ElementA, LayoutA, kAlignmentA, ElementB, LayoutB, kAlignmentB, ElementC,
+      LayoutC, ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape0,
+      ThreadblockShape1, WarpShape0, WarpShape1, InstructionShape,
+      EpilogueOutputOp0, EpilogueOutputOp1, ThreadblockSwizzle, kStages,
+      Operator, SmemAccumulator>::B2bGemmKernel;
 
   using Arguments = typename B2bGemmKernel::Arguments;
 
 private:
-
   /// Kernel parameters object
   typename B2bGemmKernel::Params params_;
 
 public:
-
   /// Constructs the GEMM.
-  B2bGemm() { }
+  B2bGemm() {}
 
   /// Determines whether the GEMM can execute the given problem.
   static Status can_implement(Arguments const &args) {
 
     Status status = B2bGemmKernel::can_implement(
-      args.problem_size_0,
-      args.problem_size_1,
-      args.ref_A0.non_const_ref(),
-      args.ref_B0.non_const_ref(),
-      args.ref_C0.non_const_ref(),
-      args.ref_B1.non_const_ref(),
-      args.ref_C1.non_const_ref(),
-      args.ref_D1
-    );
+        args.problem_size_0, args.problem_size_1, args.ref_A0.non_const_ref(),
+        args.ref_B0.non_const_ref(), args.ref_C0.non_const_ref(),
+        args.ref_B1.non_const_ref(), args.ref_C1.non_const_ref(), args.ref_D1);
 
     if (status != Status::kSuccess) {
       return status;
@@ -227,52 +203,54 @@ public:
     ThreadblockSwizzle threadblock_swizzle;
 
     cutlass::gemm::GemmCoord tiled_shape = threadblock_swizzle.get_tiled_shape(
-      args.problem_size_0,
-      {ThreadblockShape0::kM, ThreadblockShape0::kN, ThreadblockShape0::kK},
-      args.batch_count);
+        args.problem_size_0,
+        {ThreadblockShape0::kM, ThreadblockShape0::kN, ThreadblockShape0::kK},
+        args.batch_count);
 
     return bytes;
   }
 
   /// Initializes GEMM state from arguments.
-  Status initialize(Arguments const &args, void *workspace = nullptr, cudaStream_t stream = nullptr) {
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
     // Determine grid shape
     ThreadblockSwizzle threadblock_swizzle;
 
     cutlass::gemm::GemmCoord grid_shape = threadblock_swizzle.get_tiled_shape(
-      args.problem_size_0,
-      {ThreadblockShape0::kM, ThreadblockShape0::kN, ThreadblockShape0::kK},
-      args.batch_count);
-//    cutlass::gemm::GemmCoord grid_shape_1 = threadblock_swizzle.get_tiled_shape(
-//      args.problem_size_1,
-//      {ThreadblockShape1::kM, ThreadblockShape1::kN, ThreadblockShape1::kK},
-//      args.batch_count);
+        args.problem_size_0,
+        {ThreadblockShape0::kM, ThreadblockShape0::kN, ThreadblockShape0::kK},
+        args.batch_count);
+    //    cutlass::gemm::GemmCoord grid_shape_1 =
+    //    threadblock_swizzle.get_tiled_shape(
+    //      args.problem_size_1,
+    //      {ThreadblockShape1::kM, ThreadblockShape1::kN,
+    //      ThreadblockShape1::kK}, args.batch_count);
 
     // Initialize the Params structure
     params_ = typename B2bGemmKernel::Params{
-      args.mode,
-      args.problem_size_0,
-      args.problem_size_1,
-      grid_shape,
-      args.ref_A0.non_const_ref(),
-      args.ref_B0.non_const_ref(),
-      args.ref_C0.non_const_ref(),
-      args.ref_Scale0.non_const_ref(),
-      args.ref_Bias0.non_const_ref(),
-      args.ref_B1.non_const_ref(),
-      args.ref_C1.non_const_ref(),
-      args.ref_D1,
-      args.batch_stride_A0,
-      args.batch_stride_B0,
-      args.batch_stride_B1,
-      args.batch_stride_C1,
-      args.batch_stride_D1,
-      args.batch_stride_Bias0,
-      args.batch_stride_Scale0,
-      args.epilogue0,
-      args.epilogue1,
-      static_cast<int *>(workspace),
+        args.mode,
+        args.problem_size_0,
+        args.problem_size_1,
+        grid_shape,
+        args.ref_A0.non_const_ref(),
+        args.ref_B0.non_const_ref(),
+        args.ref_C0.non_const_ref(),
+        args.ref_Scale0.non_const_ref(),
+        args.ref_Bias0.non_const_ref(),
+        args.ref_B1.non_const_ref(),
+        args.ref_C1.non_const_ref(),
+        args.ref_D1,
+        args.batch_stride_A0,
+        args.batch_stride_B0,
+        args.batch_stride_B1,
+        args.batch_stride_C1,
+        args.batch_stride_D1,
+        args.batch_stride_Bias0,
+        args.batch_stride_Scale0,
+        args.epilogue0,
+        args.epilogue1,
+        static_cast<int *>(workspace),
     };
 
     return Status::kSuccess;
@@ -325,15 +303,11 @@ public:
   }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args,
-    void *workspace = nullptr,
-    cudaStream_t stream = nullptr) {
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
     Status status = initialize(args, workspace, stream);
 

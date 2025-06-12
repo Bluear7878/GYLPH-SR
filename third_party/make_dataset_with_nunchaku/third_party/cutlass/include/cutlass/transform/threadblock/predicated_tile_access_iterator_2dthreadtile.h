@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -72,13 +73,15 @@ class PredicatedTileAccessIterator2dThreadTile;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization of PredicatedTileAccessIterator2dThreadTile for pitch-linear data.
+/// Specialization of PredicatedTileAccessIterator2dThreadTile for pitch-linear
+/// data.
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_>
-class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLinear,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_,
+                                               layout::PitchLinear, AdvanceRank,
+                                               ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -106,7 +109,10 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
   static int const kPredicatesPerWord = 4 * kPredicatesPerByte;
 
   /// Number of 32b words containing predicates
-  static int const kPredicateByteCount = (ThreadMap::Iterations::kCount * ThreadMap::ThreadAccessShape::kStrided + kPredicatesPerByte - 1) / kPredicatesPerByte;
+  static int const kPredicateByteCount =
+      (ThreadMap::Iterations::kCount * ThreadMap::ThreadAccessShape::kStrided +
+       kPredicatesPerByte - 1) /
+      kPredicatesPerByte;
   static int const kPredicateWordCount = (kPredicateByteCount + 3) / 4;
 
   static unsigned const kPredicateMask = (1u << kPredicatesPerByte) - 1u;
@@ -119,33 +125,31 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
   /// Uses a non-template class
   struct Params : PredicatedTileAccessIteratorParams {
 
-   public:
+  public:
     friend PredicatedTileAccessIterator2dThreadTile;
 
     using Base = PredicatedTileAccessIteratorParams;
 
     // Default ctor
     CUTLASS_HOST_DEVICE
-    Params() { }
+    Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(Layout const &layout) : 
-      Base(layout.stride(0),
-            MakePredicatedTileAccessIteratorDesc<Shape, Element, Layout, kAdvanceRank, ThreadMap>()()
-        ) { }
+    Params(Layout const &layout)
+        : Base(layout.stride(0),
+               MakePredicatedTileAccessIteratorDesc<
+                   Shape, Element, Layout, kAdvanceRank, ThreadMap>()()) {}
 
     CUTLASS_HOST_DEVICE
-    Params(Base const &base) : 
-      Base(base) { }
+    Params(Base const &base) : Base(base) {}
   };
 
-
- private:
+private:
   /// Internal pointer type permits fast address arithmetic
   using BytePointer = char *;
 
- private:
+private:
   //
   // Data members
   //
@@ -180,7 +184,7 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
   /// Tracks iterations within the thread loop
   int iteration_thread_;
 
- private:
+private:
   /// Computes predicates based on internally tracked per-thread offset.
   CUTLASS_HOST_DEVICE
   void compute_predicates_(
@@ -217,21 +221,22 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
                      coord.contiguous() < extent_.contiguous());
           }
 
-          int pred_idx = ts + c *  ThreadMap::ThreadAccessShape::kStrided + s * ThreadMap::Iterations::kContiguous *  ThreadMap::ThreadAccessShape::kStrided;
+          int pred_idx = ts + c * ThreadMap::ThreadAccessShape::kStrided +
+                         s * ThreadMap::Iterations::kContiguous *
+                             ThreadMap::ThreadAccessShape::kStrided;
           int word_idx = pred_idx / kPredicatesPerWord;
           int residual = pred_idx % kPredicatesPerWord;
           int byte_idx = residual / kPredicatesPerByte;
           int bit_idx = residual % kPredicatesPerByte;
-          
-          predicates_[word_idx] |= (unsigned(guard) << (byte_idx * 8 + bit_idx));
 
+          predicates_[word_idx] |=
+              (unsigned(guard) << (byte_idx * 8 + bit_idx));
         }
       }
     }
-
   }
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -246,12 +251,9 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
       int thread_id,
       /// Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : params_(params),
-        pointer_(reinterpret_cast<BytePointer>(
-            const_cast<NonConstPointer>(pointer))),
-        extent_(extent),
-        is_residue_tile_(true) {
-          
+      : params_(params), pointer_(reinterpret_cast<BytePointer>(
+                             const_cast<NonConstPointer>(pointer))),
+        extent_(extent), is_residue_tile_(true) {
 
     TensorCoord residue_offset;
     if (kAdvanceRank) {
@@ -279,7 +281,8 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
     set_iteration_index(0);
   }
 
-  /// Construct a PredicatedTileAccessIterator2dThreadTile with zero threadblock offset
+  /// Construct a PredicatedTileAccessIterator2dThreadTile with zero threadblock
+  /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileAccessIterator2dThreadTile(
       /// Precomputed parameters object
@@ -290,19 +293,20 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
       TensorCoord extent,
       ///< ID of each participating thread
       int thread_id)
-      : PredicatedTileAccessIterator2dThreadTile(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+      : PredicatedTileAccessIterator2dThreadTile(params, pointer, extent,
+                                                 thread_id, make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
   void set_iteration_index(int index) {
 
-    int residual = index % (ThreadMap::Iterations::kContiguous * ThreadMap::ThreadAccessShape::kStrided);
-    iteration_strided_ = index / (ThreadMap::Iterations::kContiguous * ThreadMap::ThreadAccessShape::kStrided);
-    
+    int residual = index % (ThreadMap::Iterations::kContiguous *
+                            ThreadMap::ThreadAccessShape::kStrided);
+    iteration_strided_ = index / (ThreadMap::Iterations::kContiguous *
+                                  ThreadMap::ThreadAccessShape::kStrided);
+
     iteration_contiguous_ = residual / ThreadMap::ThreadAccessShape::kStrided;
     iteration_thread_ = residual % ThreadMap::ThreadAccessShape::kStrided;
-
   }
 
   /// Adds a pointer offset in units of Element
@@ -311,10 +315,10 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
     pointer_ += int(sizeof(Element)) * pointer_offset;
   }
 
-  /// Advances an iterator along logical dimensions of matrix in units of whole tiles
+  /// Advances an iterator along logical dimensions of matrix in units of whole
+  /// tiles
   CUTLASS_DEVICE
-  void add_tile_offset(
-      TensorCoord const &tile_offset) {
+  void add_tile_offset(TensorCoord const &tile_offset) {
     if (is_residue_tile_) {
       TensorCoord residue_offset;
       if (kAdvanceRank) {
@@ -353,7 +357,9 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
   AccessType *get() const {
 
     AccessType *ret_val = reinterpret_cast<AccessType *>(
-                pointer_ + (iteration_thread_ * params_.stride_  + iteration_contiguous_ * ThreadMap::Delta::kContiguous) * int(sizeof(Element)));
+        pointer_ + (iteration_thread_ * params_.stride_ +
+                    iteration_contiguous_ * ThreadMap::Delta::kContiguous) *
+                       int(sizeof(Element)));
 
     return ret_val;
   }
@@ -414,7 +420,6 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
     for (int i = 0; i < kPredicateWordCount; ++i) {
       predicates_[i] = enable ? 0u : predicates_[i];
     }
-
   }
 
   /// Clears the predicate set efficiently
@@ -428,18 +433,17 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
 
   /// Sets the predicate mask, overriding value stored in predicate iterator
   CUTLASS_HOST_DEVICE
-  void set_mask(Mask const &mask) { 
+  void set_mask(Mask const &mask) {
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kPredicateWordCount; ++i) {
       predicates_[i] = mask[i];
     }
-
   }
 
   /// Gets the mask
   CUTLASS_HOST_DEVICE
   void get_mask(Mask &mask) {
-     CUTLASS_PRAGMA_UNROLL
+    CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kPredicateWordCount; ++i) {
       mask[i] = predicates_[i];
     }
@@ -449,25 +453,27 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
   CUTLASS_HOST_DEVICE
   bool valid() {
 
-    int pred_idx = 
-      iteration_thread_ + 
-      iteration_contiguous_ * ThreadMap::ThreadAccessShape::kStrided + 
-      iteration_strided_ * ThreadMap::Iterations::kContiguous * ThreadMap::ThreadAccessShape::kStrided;
+    int pred_idx =
+        iteration_thread_ +
+        iteration_contiguous_ * ThreadMap::ThreadAccessShape::kStrided +
+        iteration_strided_ * ThreadMap::Iterations::kContiguous *
+            ThreadMap::ThreadAccessShape::kStrided;
 
     int word_idx = pred_idx / kPredicatesPerWord;
     int residual = pred_idx % kPredicatesPerWord;
     int byte_idx = residual / kPredicatesPerByte;
     int bit_idx = residual % kPredicatesPerByte;
-    
+
     bool pred = (predicates_[word_idx] & (1u << (byte_idx * 8 + bit_idx))) != 0;
-    
+
     return pred;
   }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization of PredicatedTileAccessIterator2dThreadTile for pitch-linear data.
+/// Specialization of PredicatedTileAccessIterator2dThreadTile for pitch-linear
+/// data.
 ///
 /// Satisfies: ForwardTileIteratorConcept |
 ///            ReadableContiguousTileIteratorConcept |
@@ -476,9 +482,10 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::PitchLi
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_>
-class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::ColumnMajor,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_,
+                                               layout::ColumnMajor, AdvanceRank,
+                                               ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -510,30 +517,29 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::ColumnM
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileAccessIterator2dThreadTile;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
-
+  public:
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Params() { }
+    Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
     Params(Layout const &layout)
-        : params_(layout::PitchLinear(layout.stride(0))){}
+        : params_(layout::PitchLinear(layout.stride(0))) {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(typename UnderlyingIterator::Params::Base const &base) 
+    Params(typename UnderlyingIterator::Params::Base const &base)
         : params_(base) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -541,7 +547,7 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::ColumnM
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -562,16 +568,17 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::ColumnM
                   layout::PitchLinearCoord(threadblock_offset.row(),
                                            threadblock_offset.column())) {}
 
-  /// Construct a PredicatedTileAccessIterator2dThreadTile with zero threadblock offset
+  /// Construct a PredicatedTileAccessIterator2dThreadTile with zero threadblock
+  /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileAccessIterator2dThreadTile(
-      Params const &params,  ///< Precomputed parameters object
-      Pointer pointer,       ///< Pointer to start of tensor
-      TensorCoord extent,    ///< Extent of tensor
-      int thread_id          ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileAccessIterator2dThreadTile(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+      : PredicatedTileAccessIterator2dThreadTile(params, pointer, extent,
+                                                 thread_id, make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -639,14 +646,13 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::ColumnM
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
-  bool valid() {
-    return iterator_.valid();
-  }
+  bool valid() { return iterator_.valid(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization of PredicatedTileAccessIterator2dThreadTile for pitch-linear data.
+/// Specialization of PredicatedTileAccessIterator2dThreadTile for pitch-linear
+/// data.
 ///
 /// Satisfies: ForwardTileIteratorConcept |
 ///            ReadableContiguousTileIteratorConcept |
@@ -655,9 +661,9 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::ColumnM
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, typename AccessType_>
-class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::RowMajor,
-                                   AdvanceRank, ThreadMap_, AccessType_> {
- public:
+class PredicatedTileAccessIterator2dThreadTile<
+    Shape_, Element_, layout::RowMajor, AdvanceRank, ThreadMap_, AccessType_> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -689,30 +695,29 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::RowMajo
 
   /// Parameters object is precomputed state and is host-constructible
   class Params {
-   private:
+  private:
     friend PredicatedTileAccessIterator2dThreadTile;
 
     /// Parameters object
     typename UnderlyingIterator::Params params_;
 
-   public:
-
+  public:
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Params() { }
+    Params() {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
     Params(Layout const &layout)
-        : params_(layout::PitchLinear(layout.stride(0))){}
+        : params_(layout::PitchLinear(layout.stride(0))) {}
 
     /// Construct the Params object given a pitch-linear tensor's layout
     CUTLASS_HOST_DEVICE
-    Params(typename UnderlyingIterator::Params::Base const &base) 
+    Params(typename UnderlyingIterator::Params::Base const &base)
         : params_(base) {}
   };
 
- private:
+private:
   //
   // Data members
   //
@@ -720,7 +725,7 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::RowMajo
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -741,16 +746,17 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::RowMajo
                   layout::PitchLinearCoord(threadblock_offset.column(),
                                            threadblock_offset.row())) {}
 
-  /// Construct a PredicatedTileAccessIterator2dThreadTile with zero threadblock offset
+  /// Construct a PredicatedTileAccessIterator2dThreadTile with zero threadblock
+  /// offset
   CUTLASS_HOST_DEVICE
   PredicatedTileAccessIterator2dThreadTile(
-      Params const &params,  ///< Precomputed parameters object
-      Pointer pointer,       ///< Pointer to start of tensor
-      TensorCoord extent,    ///< Extent of tensor
-      int thread_id          ///< ID of each participating thread
+      Params const &params, ///< Precomputed parameters object
+      Pointer pointer,      ///< Pointer to start of tensor
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id         ///< ID of each participating thread
       )
-      : PredicatedTileAccessIterator2dThreadTile(params, pointer, extent, thread_id,
-                                     make_Coord(0, 0)) {}
+      : PredicatedTileAccessIterator2dThreadTile(params, pointer, extent,
+                                                 thread_id, make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -818,17 +824,15 @@ class PredicatedTileAccessIterator2dThreadTile<Shape_, Element_, layout::RowMajo
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
-  bool valid() {
-    return iterator_.valid();
-  }
+  bool valid() { return iterator_.valid(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

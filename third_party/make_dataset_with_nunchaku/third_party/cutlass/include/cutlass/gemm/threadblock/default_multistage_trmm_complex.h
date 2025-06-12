@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,31 +18,33 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief Template for a multistage GEMM kernel. Does not compute batching or support split-K.
+    \brief Template for a multistage GEMM kernel. Does not compute batching or
+   support split-K.
 
-  
+
 */
 
 #pragma once
 
-#include "cutlass/blas3.h"
 #include "cutlass/arch/arch.h"
+#include "cutlass/blas3.h"
 #include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
+#include "cutlass/gemm/threadblock/mma_blas3_multistage.h"
 #include "cutlass/numeric_types.h"
 #include "cutlass/transform/threadblock/predicated_tile_iterator_triangular_matrix.h"
-#include "cutlass/gemm/threadblock/mma_blas3_multistage.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +89,8 @@ template <
     ComplexTransform TransformA = ComplexTransform::kNone,
     /// Complex transformation on operand B
     ComplexTransform TransformB = ComplexTransform::kNone,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator = arch::OpMultiplyAddComplex,
     /// Blas3 computation mode
     BlasMode BlasMode_ = BlasMode::kTriangular,
@@ -132,37 +135,38 @@ template <
     ComplexTransform TransformA,
     /// Complex transformation on operand B
     ComplexTransform TransformB,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator>
-struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
-                            kSideMode, kFillMode, kDiagType,
-                            ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
-                            InstructionShape, Stages, TransformA, TransformB, Operator> {
+struct DefaultMultistageTrmmComplex<
+    ElementA, LayoutA, ElementB, LayoutB, kSideMode, kFillMode, kDiagType,
+    ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag,
+    ThreadblockShape, WarpShape, InstructionShape, Stages, TransformA,
+    TransformB, Operator> {
   // Define the MmaCore components
-  using MmaCore = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
-      ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA, 
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, OperatorClass,
-      Stages, TransformA, TransformB, Operator>;
+  using MmaCore =
+      typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
+          ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
+          ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+          OperatorClass, Stages, TransformA, TransformB, Operator>;
 
   // Define iterators over tiles from the A operand
   using ThreadMapA = typename MmaCore::IteratorThreadMapA;
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
-  using IteratorA =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorA = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, ThreadMapA, 
-          kSideMode, kFillMode, kDiagType, 
+          ElementA, LayoutA, 1, ThreadMapA, kSideMode, kFillMode, kDiagType,
           AccessTypeA>;
 
   // Define iterators over tiles from the B operand
   using ThreadMapB = typename MmaCore::IteratorThreadMapB;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
-  using IteratorB =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorB = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, ThreadMapB, 
-          kSideMode, FillMode::kFull, DiagType::kInvalid,
-          AccessTypeB>;
+          ElementB, LayoutB, 0, ThreadMapB, kSideMode, FillMode::kFull,
+          DiagType::kInvalid, AccessTypeB>;
 
   // Define the threadblock-scoped multistage matrix multiply
   using ThreadblockMma = cutlass::gemm::threadblock::MmaMultistage<
@@ -206,37 +210,38 @@ template <
     ComplexTransform TransformA,
     /// Complex transformation on operand B
     ComplexTransform TransformB,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator>
-struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
-                            SideMode::kRight, kFillMode, kDiagType,
-                            ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
-                            InstructionShape, Stages, TransformA, TransformB, Operator> {
+struct DefaultMultistageTrmmComplex<
+    ElementA, LayoutA, ElementB, LayoutB, SideMode::kRight, kFillMode,
+    kDiagType, ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag,
+    ThreadblockShape, WarpShape, InstructionShape, Stages, TransformA,
+    TransformB, Operator> {
   // Define the MmaCore components
-  using MmaCore = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
-      ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA, 
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, OperatorClass,
-      Stages, TransformA, TransformB, Operator>;
+  using MmaCore =
+      typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
+          ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
+          ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+          OperatorClass, Stages, TransformA, TransformB, Operator>;
 
   // Define iterators over tiles from the A operand
   using ThreadMapA = typename MmaCore::IteratorThreadMapA;
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
-  using IteratorA =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorA = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, ThreadMapA, 
-          SideMode::kRight, FillMode::kFull, DiagType::kInvalid, 
-          AccessTypeA>;
+          ElementA, LayoutA, 1, ThreadMapA, SideMode::kRight, FillMode::kFull,
+          DiagType::kInvalid, AccessTypeA>;
 
   // Define iterators over tiles from the B operand
   using ThreadMapB = typename MmaCore::IteratorThreadMapB;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
-  using IteratorB =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorB = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, ThreadMapB, 
-          SideMode::kRight, kFillMode, kDiagType,
-          AccessTypeB>;
+          ElementB, LayoutB, 0, ThreadMapB, SideMode::kRight, kFillMode,
+          kDiagType, AccessTypeB>;
 
   // Define the threadblock-scoped multistage matrix multiply
   using ThreadblockMma = cutlass::gemm::threadblock::MmaMultistage<
@@ -280,37 +285,38 @@ template <
     ComplexTransform TransformA,
     /// Complex transformation on operand B
     ComplexTransform TransformB,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator>
-struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
-                            kSideMode, kFillMode, DiagType::kUnit,
-                            ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
-                            InstructionShape, Stages, TransformA, TransformB, Operator> {
+struct DefaultMultistageTrmmComplex<
+    ElementA, LayoutA, ElementB, LayoutB, kSideMode, kFillMode, DiagType::kUnit,
+    ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag,
+    ThreadblockShape, WarpShape, InstructionShape, Stages, TransformA,
+    TransformB, Operator> {
   // Define the MmaCore components
-  using MmaCore = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
-      ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA, 
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, OperatorClass,
-      Stages, TransformA, TransformB, Operator>;
+  using MmaCore =
+      typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
+          ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
+          ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+          OperatorClass, Stages, TransformA, TransformB, Operator>;
 
   // Define iterators over tiles from the A operand
   using ThreadMapA = typename MmaCore::IteratorThreadMapA;
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
-  using IteratorA =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorA = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, ThreadMapA, 
-          kSideMode, kFillMode, DiagType::kUnit, 
-          AccessTypeA>;
+          ElementA, LayoutA, 1, ThreadMapA, kSideMode, kFillMode,
+          DiagType::kUnit, AccessTypeA>;
 
   // Define iterators over tiles from the B operand
   using ThreadMapB = typename MmaCore::IteratorThreadMapB;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
-  using IteratorB =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorB = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, ThreadMapB, 
-          kSideMode, FillMode::kFull, DiagType::kInvalid,
-          AccessTypeB>;
+          ElementB, LayoutB, 0, ThreadMapB, kSideMode, FillMode::kFull,
+          DiagType::kInvalid, AccessTypeB>;
 
   // Define the threadblock-scoped multistage matrix multiply
   using ThreadblockMma = cutlass::gemm::threadblock::MmaBlas3Multistage<
@@ -352,37 +358,38 @@ template <
     ComplexTransform TransformA,
     /// Complex transformation on operand B
     ComplexTransform TransformB,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator>
-struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
-                            SideMode::kRight, kFillMode, DiagType::kUnit,
-                            ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
-                            InstructionShape, Stages, TransformA, TransformB, Operator> {
+struct DefaultMultistageTrmmComplex<
+    ElementA, LayoutA, ElementB, LayoutB, SideMode::kRight, kFillMode,
+    DiagType::kUnit, ElementAccumulator, layout::RowMajor, OperatorClass,
+    ArchTag, ThreadblockShape, WarpShape, InstructionShape, Stages, TransformA,
+    TransformB, Operator> {
   // Define the MmaCore components
-  using MmaCore = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
-      ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA, 
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, OperatorClass,
-      Stages, TransformA, TransformB, Operator>;
+  using MmaCore =
+      typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
+          ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
+          ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+          OperatorClass, Stages, TransformA, TransformB, Operator>;
 
   // Define iterators over tiles from the A operand
   using ThreadMapA = typename MmaCore::IteratorThreadMapA;
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
-  using IteratorA =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorA = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, ThreadMapA, 
-          SideMode::kRight, FillMode::kFull, DiagType::kInvalid, 
-          AccessTypeA>;
+          ElementA, LayoutA, 1, ThreadMapA, SideMode::kRight, FillMode::kFull,
+          DiagType::kInvalid, AccessTypeA>;
 
   // Define iterators over tiles from the B operand
   using ThreadMapB = typename MmaCore::IteratorThreadMapB;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
-  using IteratorB =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorB = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, ThreadMapB, 
-          SideMode::kRight, kFillMode, DiagType::kUnit,
-          AccessTypeB>;
+          ElementB, LayoutB, 0, ThreadMapB, SideMode::kRight, kFillMode,
+          DiagType::kUnit, AccessTypeB>;
 
   // Define the threadblock-scoped multistage matrix multiply
   using ThreadblockMma = cutlass::gemm::threadblock::MmaBlas3Multistage<
@@ -392,10 +399,10 @@ struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
       typename MmaCore::MmaPolicy, Stages, SharedMemoryClearOption::kZfill>;
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization for row-major output (for TRMM where diagonal imag part is ignored - used by HEMM)
+/// Specialization for row-major output (for TRMM where diagonal imag part is
+/// ignored - used by HEMM)
 template <
     /// Element type for A matrix operand
     typename ElementA,
@@ -427,40 +434,41 @@ template <
     ComplexTransform TransformA,
     /// Complex transformation on operand B
     ComplexTransform TransformB,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator>
-struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
-                            kSideMode, kFillMode, DiagType::kNonUnit,
-                            ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
-                            InstructionShape, Stages, TransformA, TransformB, Operator, BlasMode::kHermitian> {
+struct DefaultMultistageTrmmComplex<
+    ElementA, LayoutA, ElementB, LayoutB, kSideMode, kFillMode,
+    DiagType::kNonUnit, ElementAccumulator, layout::RowMajor, OperatorClass,
+    ArchTag, ThreadblockShape, WarpShape, InstructionShape, Stages, TransformA,
+    TransformB, Operator, BlasMode::kHermitian> {
 
   // Define the MmaCore components
-  using MmaCore = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
-      ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA, 
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, OperatorClass,
-      Stages, TransformA, TransformB, Operator>;
+  using MmaCore =
+      typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
+          ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
+          ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+          OperatorClass, Stages, TransformA, TransformB, Operator>;
 
   // Define iterators over tiles from the A operand
   // PredicatedTileAccessIteratorTriangularMatrix only tracks diagonal elements,
   // when DiagType is kUnit
   using ThreadMapA = typename MmaCore::IteratorThreadMapA;
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
-  using IteratorA =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorA = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, ThreadMapA, 
-          kSideMode, kFillMode, DiagType::kUnit, 
-          AccessTypeA>;
+          ElementA, LayoutA, 1, ThreadMapA, kSideMode, kFillMode,
+          DiagType::kUnit, AccessTypeA>;
 
   // Define iterators over tiles from the B operand
   using ThreadMapB = typename MmaCore::IteratorThreadMapB;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
-  using IteratorB =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorB = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, ThreadMapB, 
-          kSideMode, FillMode::kFull, DiagType::kInvalid,
-          AccessTypeB>;
+          ElementB, LayoutB, 0, ThreadMapB, kSideMode, FillMode::kFull,
+          DiagType::kInvalid, AccessTypeB>;
 
   // Define the threadblock-scoped multistage matrix multiply
   using ThreadblockMma = cutlass::gemm::threadblock::MmaBlas3Multistage<
@@ -473,7 +481,8 @@ struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Specialization for row-major output and right-side mode (for TRMM where diagonal imag part is ignored - used by HEMM)
+/// Specialization for row-major output and right-side mode (for TRMM where
+/// diagonal imag part is ignored - used by HEMM)
 template <
     /// Element type for A matrix operand
     typename ElementA,
@@ -503,40 +512,41 @@ template <
     ComplexTransform TransformA,
     /// Complex transformation on operand B
     ComplexTransform TransformB,
-    /// Multiply-add operator (arch::OpMultiplyAddComplex, arch::OpMultiplyGaussianComplex)
+    /// Multiply-add operator (arch::OpMultiplyAddComplex,
+    /// arch::OpMultiplyGaussianComplex)
     typename Operator>
-struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
-                            SideMode::kRight, kFillMode, DiagType::kNonUnit,
-                            ElementAccumulator, layout::RowMajor, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
-                            InstructionShape, Stages, TransformA, TransformB, Operator, BlasMode::kHermitian> {
+struct DefaultMultistageTrmmComplex<
+    ElementA, LayoutA, ElementB, LayoutB, SideMode::kRight, kFillMode,
+    DiagType::kNonUnit, ElementAccumulator, layout::RowMajor, OperatorClass,
+    ArchTag, ThreadblockShape, WarpShape, InstructionShape, Stages, TransformA,
+    TransformB, Operator, BlasMode::kHermitian> {
 
   // Define the MmaCore components
-  using MmaCore = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
-      ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA, 
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, OperatorClass,
-      Stages, TransformA, TransformB, Operator>;
+  using MmaCore =
+      typename cutlass::gemm::threadblock::DefaultMultistageMmaComplexCore<
+          ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
+          ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+          OperatorClass, Stages, TransformA, TransformB, Operator>;
 
   // Define iterators over tiles from the A operand
   using ThreadMapA = typename MmaCore::IteratorThreadMapA;
   using AccessTypeA = cutlass::Array<ElementA, ThreadMapA::kElementsPerAccess>;
-  using IteratorA =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorA = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, ThreadMapA, 
-          SideMode::kRight, FillMode::kFull, DiagType::kInvalid, 
-          AccessTypeA>;
+          ElementA, LayoutA, 1, ThreadMapA, SideMode::kRight, FillMode::kFull,
+          DiagType::kInvalid, AccessTypeA>;
 
   // Define iterators over tiles from the B operand
   // PredicatedTileAccessIteratorTriangularMatrix only tracks diagonal elements,
   // when DiagType is kUnit
   using ThreadMapB = typename MmaCore::IteratorThreadMapB;
   using AccessTypeB = cutlass::Array<ElementB, ThreadMapB::kElementsPerAccess>;
-  using IteratorB =
-      cutlass::transform::threadblock::PredicatedTileAccessIteratorTriangularMatrix<
+  using IteratorB = cutlass::transform::threadblock::
+      PredicatedTileAccessIteratorTriangularMatrix<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, ThreadMapB, 
-          SideMode::kRight, kFillMode, DiagType::kUnit,
-          AccessTypeB>;
+          ElementB, LayoutB, 0, ThreadMapB, SideMode::kRight, kFillMode,
+          DiagType::kUnit, AccessTypeB>;
 
   // Define the threadblock-scoped multistage matrix multiply
   using ThreadblockMma = cutlass::gemm::threadblock::MmaBlas3Multistage<
@@ -549,8 +559,8 @@ struct DefaultMultistageTrmmComplex<ElementA, LayoutA, ElementB, LayoutB,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

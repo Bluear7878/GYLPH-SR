@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -40,33 +41,32 @@ namespace transform {
 namespace thread {
 
 /// Transforms a fragment by doing a transpose
-template <
-  int ElementCount, 
-  typename TransposeShape, 
-  typename Element
-> struct Transpose;
+template <int ElementCount, typename TransposeShape, typename Element>
+struct Transpose;
 
 /// Specialization for int8_t 4x4 transpose
 template <int ElementCount_>
-struct Transpose<ElementCount_, layout::PitchLinearShape<4,4> , int8_t> {
+struct Transpose<ElementCount_, layout::PitchLinearShape<4, 4>, int8_t> {
 
-    static const int kElementCount = ElementCount_;
-    using TransposeShape = layout::PitchLinearShape<4,4>;
-    using Element = int8_t;
-    using Fragment = cutlass::Array<Element, kElementCount>;
+  static const int kElementCount = ElementCount_;
+  using TransposeShape = layout::PitchLinearShape<4, 4>;
+  using Element = int8_t;
+  using Fragment = cutlass::Array<Element, kElementCount>;
 
-    static_assert(!(kElementCount % TransposeShape::kCount), "Shape needs to be multiple of 16 elements to do a 4x4 transpose");
+  static_assert(
+      !(kElementCount % TransposeShape::kCount),
+      "Shape needs to be multiple of 16 elements to do a 4x4 transpose");
 
-    CUTLASS_DEVICE 
-    void transform(Fragment& dst, Fragment& src) {
+  CUTLASS_DEVICE
+  void transform(Fragment &dst, Fragment &src) {
 
     // Expose src/dst as int arrays.
-    int* src_int = reinterpret_cast<int*>(&src);
-    int* dst_int = reinterpret_cast<int*>(&dst);
+    int *src_int = reinterpret_cast<int *>(&src);
+    int *dst_int = reinterpret_cast<int *>(&dst);
 
     CUTLASS_PRAGMA_UNROLL
-    for (int i = 0; i < kElementCount / TransposeShape::kCount; i++){
-  
+    for (int i = 0; i < kElementCount / TransposeShape::kCount; i++) {
+
       int const i0 = 4 * i + 0;
       int const i1 = 4 * i + 1;
       int const i2 = 4 * i + 2;
@@ -102,6 +102,6 @@ struct Transpose<ElementCount_, layout::PitchLinearShape<4,4> , int8_t> {
   }
 };
 
-}  // namespace thread
-}  // namespace layout
-}  // namespace cutlass
+} // namespace thread
+} // namespace transform
+} // namespace cutlass

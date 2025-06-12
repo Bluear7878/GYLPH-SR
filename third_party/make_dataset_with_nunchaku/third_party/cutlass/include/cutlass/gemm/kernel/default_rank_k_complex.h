@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,39 +18,40 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief 
-      Default kernel-level RankK definitions combine threadblock-scoped matrix multiply-add with
-      the appropriate threadblock-scoped epilogue.
+    \brief
+      Default kernel-level RankK definitions combine threadblock-scoped matrix
+   multiply-add with the appropriate threadblock-scoped epilogue.
 
-  
+
 */
 
 #pragma once
 
 #include "cutlass/blas3.h"
 
-#include "cutlass/layout/matrix.h"
 #include "cutlass/arch/wmma.h"
+#include "cutlass/layout/matrix.h"
 
-#include "cutlass/epilogue/threadblock/epilogue.h"
 #include "cutlass/epilogue/thread/linear_combination.h"
+#include "cutlass/epilogue/threadblock/epilogue.h"
 
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/kernel/rank_k_universal.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_mma.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_multistage_mma_complex.h"
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
@@ -59,8 +60,7 @@
 
 #if defined(CUTLASS_ARCH_WMMA_ENABLED)
 #include "cutlass/epilogue/threadblock/default_epilogue_wmma_tensor_op.h"
-#endif //CUTLASS_ARCH_WMMA_ENABLED
-
+#endif // CUTLASS_ARCH_WMMA_ENABLED
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -110,49 +110,42 @@ template <
     BlasMode BlasMode_ = BlasMode::kSymmetric>
 struct DefaultRankKComplex;
 
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace detail {
 
 template <
-  /// Layout type for A matrix operand
-  typename LayoutA_,
-  /// Complex elementwise transformation 
-  ComplexTransform TransformA,
-  /// Blas3 computation mode (symmetric/hermitian)
-  BlasMode BlasMode_
-  > struct RankKTransposedComplexTransform {
-  
+    /// Layout type for A matrix operand
+    typename LayoutA_,
+    /// Complex elementwise transformation
+    ComplexTransform TransformA,
+    /// Blas3 computation mode (symmetric/hermitian)
+    BlasMode BlasMode_>
+struct RankKTransposedComplexTransform {
+
   static ComplexTransform const kTransformA = TransformA;
   static ComplexTransform const kTransformB = TransformA;
-
 };
-  
-  // partial specializations for HERK CUBLAS_OP_N layout (ColumMajor)
+
+// partial specializations for HERK CUBLAS_OP_N layout (ColumMajor)
 template <>
-  struct RankKTransposedComplexTransform <
-  layout::ColumnMajor, 
-  ComplexTransform::kNone,
-  BlasMode::kHermitian> {
+struct RankKTransposedComplexTransform<
+    layout::ColumnMajor, ComplexTransform::kNone, BlasMode::kHermitian> {
 
   static ComplexTransform const kTransformA = ComplexTransform::kConjugate;
   static ComplexTransform const kTransformB = ComplexTransform::kNone;
-
 };
 
-  // partial specializations for HERK CUBLAS_OP_C layout (RowMajor + Complex conjugate) 
+// partial specializations for HERK CUBLAS_OP_C layout (RowMajor + Complex
+// conjugate)
 template <>
-  struct RankKTransposedComplexTransform <
-  layout::RowMajor, 
-  ComplexTransform::kConjugate,
-  BlasMode::kHermitian> {
+struct RankKTransposedComplexTransform<
+    layout::RowMajor, ComplexTransform::kConjugate, BlasMode::kHermitian> {
 
   static ComplexTransform const kTransformA = ComplexTransform::kNone;
   static ComplexTransform const kTransformB = ComplexTransform::kConjugate;
-
 };
 
-}
+} // namespace detail
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Partial specialization for Hopper Architecture complex datatype (symmetric)
@@ -187,31 +180,30 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultRankKComplex<
-  ElementA, LayoutA, ElementC, 
-  layout::RowMajor, FillModeC, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm90, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  TransformA, Operator, SplitKSerial, BlasMode::kSymmetric> {
+    ElementA, LayoutA, ElementC, layout::RowMajor, FillModeC,
+    ElementAccumulator, arch::OpClassTensorOp, arch::Sm90, ThreadblockShape,
+    WarpShape, InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+    TransformA, Operator, SplitKSerial, BlasMode::kSymmetric> {
 
   static BlasMode const kBlasMode = BlasMode::kSymmetric;
-  
+
   /// Define the threadblock-scoped matrix multiply-accumulate (A x B^T)
   using Mma = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplex<
-      ElementA, LayoutA, 
-      ElementA, typename layout::LayoutTranspose<LayoutA>::type, 
-      ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm90, 
-      ThreadblockShape, WarpShape, InstructionShape, Stages, 
-      TransformA, TransformA, Operator>::ThreadblockMma;
+      ElementA, LayoutA, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, ElementAccumulator,
+      layout::RowMajor, arch::OpClassTensorOp, arch::Sm90, ThreadblockShape,
+      WarpShape, InstructionShape, Stages, TransformA, TransformA,
+      Operator>::ThreadblockMma;
 
   /// Define the epilogue
-  using Epilogue =
-      typename cutlass::epilogue::threadblock::DefaultEpilogueComplexTensorOpBlas3<
+  using Epilogue = typename cutlass::epilogue::threadblock::
+      DefaultEpilogueComplexTensorOpBlas3<
           ThreadblockShape, typename Mma::Operator, 1, EpilogueOutputOp,
           EpilogueOutputOp::kCount, Operator, kBlasMode>::Epilogue;
 
   /// Define the kernel-level RankK operator.
-  using RankKkernel = kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
-
+  using RankKkernel =
+      kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,43 +240,42 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultRankKComplex<
-  ElementA, LayoutA, ElementC, 
-  layout::RowMajor, FillModeC, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm90, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  TransformA, Operator, SplitKSerial, BlasMode::kHermitian> {
+    ElementA, LayoutA, ElementC, layout::RowMajor, FillModeC,
+    ElementAccumulator, arch::OpClassTensorOp, arch::Sm90, ThreadblockShape,
+    WarpShape, InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+    TransformA, Operator, SplitKSerial, BlasMode::kHermitian> {
 
   static BlasMode const kBlasMode = BlasMode::kHermitian;
 
   // Complex transform for input A and B matrices (function on input layout)
   static ComplexTransform const kTransformA = TransformA;
 
-  using TransposedComplexTransform = detail::RankKTransposedComplexTransform<
-                                        LayoutA, 
-                                        TransformA,
-                                        kBlasMode>;
+  using TransposedComplexTransform =
+      detail::RankKTransposedComplexTransform<LayoutA, TransformA, kBlasMode>;
 
   // Complex transform on operandA and operandB (function of blas3 computation)
-  static ComplexTransform const kTransformOperandA = TransposedComplexTransform::kTransformA;
-  static ComplexTransform const kTransformOperandB = TransposedComplexTransform::kTransformB;
+  static ComplexTransform const kTransformOperandA =
+      TransposedComplexTransform::kTransformA;
+  static ComplexTransform const kTransformOperandB =
+      TransposedComplexTransform::kTransformB;
 
   /// Define the threadblock-scoped matrix multiply-accumulate (A x A^H)
   using Mma = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplex<
-      ElementA, LayoutA, 
-      ElementA, typename layout::LayoutTranspose<LayoutA>::type, 
-      ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm90, 
-      ThreadblockShape, WarpShape, InstructionShape, Stages, 
-      kTransformOperandA, kTransformOperandB, Operator>::ThreadblockMma;
+      ElementA, LayoutA, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, ElementAccumulator,
+      layout::RowMajor, arch::OpClassTensorOp, arch::Sm90, ThreadblockShape,
+      WarpShape, InstructionShape, Stages, kTransformOperandA,
+      kTransformOperandB, Operator>::ThreadblockMma;
 
   /// Define the epilogue
-  using Epilogue =
-      typename cutlass::epilogue::threadblock::DefaultEpilogueComplexTensorOpBlas3<
+  using Epilogue = typename cutlass::epilogue::threadblock::
+      DefaultEpilogueComplexTensorOpBlas3<
           ThreadblockShape, typename Mma::Operator, 1, EpilogueOutputOp,
           EpilogueOutputOp::kCount, Operator, kBlasMode>::Epilogue;
 
   /// Define the kernel-level RankK operator.
-  using RankKkernel = kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
-
+  using RankKkernel =
+      kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -321,31 +312,30 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultRankKComplex<
-  ElementA, LayoutA, ElementC, 
-  layout::RowMajor, FillModeC, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm80, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  TransformA, Operator, SplitKSerial, BlasMode::kSymmetric> {
+    ElementA, LayoutA, ElementC, layout::RowMajor, FillModeC,
+    ElementAccumulator, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+    WarpShape, InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+    TransformA, Operator, SplitKSerial, BlasMode::kSymmetric> {
 
   static BlasMode const kBlasMode = BlasMode::kSymmetric;
-  
+
   /// Define the threadblock-scoped matrix multiply-accumulate (A x B^T)
   using Mma = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplex<
-      ElementA, LayoutA, 
-      ElementA, typename layout::LayoutTranspose<LayoutA>::type, 
-      ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, 
-      ThreadblockShape, WarpShape, InstructionShape, Stages, 
-      TransformA, TransformA, Operator>::ThreadblockMma;
+      ElementA, LayoutA, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, ElementAccumulator,
+      layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+      WarpShape, InstructionShape, Stages, TransformA, TransformA,
+      Operator>::ThreadblockMma;
 
   /// Define the epilogue
-  using Epilogue =
-      typename cutlass::epilogue::threadblock::DefaultEpilogueComplexTensorOpBlas3<
+  using Epilogue = typename cutlass::epilogue::threadblock::
+      DefaultEpilogueComplexTensorOpBlas3<
           ThreadblockShape, typename Mma::Operator, 1, EpilogueOutputOp,
           EpilogueOutputOp::kCount, Operator, kBlasMode>::Epilogue;
 
   /// Define the kernel-level RankK operator.
-  using RankKkernel = kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
-
+  using RankKkernel =
+      kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,48 +372,46 @@ template <
     /// epilogue
     bool SplitKSerial>
 struct DefaultRankKComplex<
-  ElementA, LayoutA, ElementC, 
-  layout::RowMajor, FillModeC, ElementAccumulator, arch::OpClassTensorOp,
-  arch::Sm80, ThreadblockShape, WarpShape, InstructionShape, 
-  EpilogueOutputOp, ThreadblockSwizzle, Stages, 
-  TransformA, Operator, SplitKSerial, BlasMode::kHermitian> {
+    ElementA, LayoutA, ElementC, layout::RowMajor, FillModeC,
+    ElementAccumulator, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+    WarpShape, InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+    TransformA, Operator, SplitKSerial, BlasMode::kHermitian> {
 
   static BlasMode const kBlasMode = BlasMode::kHermitian;
 
   // Complex transform for input A and B matrices (function on input layout)
   static ComplexTransform const kTransformA = TransformA;
 
-  using TransposedComplexTransform = detail::RankKTransposedComplexTransform<
-                                        LayoutA, 
-                                        TransformA,
-                                        kBlasMode>;
+  using TransposedComplexTransform =
+      detail::RankKTransposedComplexTransform<LayoutA, TransformA, kBlasMode>;
 
   // Complex transform on operandA and operandB (function of blas3 computation)
-  static ComplexTransform const kTransformOperandA = TransposedComplexTransform::kTransformA;
-  static ComplexTransform const kTransformOperandB = TransposedComplexTransform::kTransformB;
+  static ComplexTransform const kTransformOperandA =
+      TransposedComplexTransform::kTransformA;
+  static ComplexTransform const kTransformOperandB =
+      TransposedComplexTransform::kTransformB;
 
   /// Define the threadblock-scoped matrix multiply-accumulate (A x A^H)
   using Mma = typename cutlass::gemm::threadblock::DefaultMultistageMmaComplex<
-      ElementA, LayoutA, 
-      ElementA, typename layout::LayoutTranspose<LayoutA>::type, 
-      ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, 
-      ThreadblockShape, WarpShape, InstructionShape, Stages, 
-      kTransformOperandA, kTransformOperandB, Operator>::ThreadblockMma;
+      ElementA, LayoutA, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, ElementAccumulator,
+      layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+      WarpShape, InstructionShape, Stages, kTransformOperandA,
+      kTransformOperandB, Operator>::ThreadblockMma;
 
   /// Define the epilogue
-  using Epilogue =
-      typename cutlass::epilogue::threadblock::DefaultEpilogueComplexTensorOpBlas3<
+  using Epilogue = typename cutlass::epilogue::threadblock::
+      DefaultEpilogueComplexTensorOpBlas3<
           ThreadblockShape, typename Mma::Operator, 1, EpilogueOutputOp,
           EpilogueOutputOp::kCount, Operator, kBlasMode>::Epilogue;
 
   /// Define the kernel-level RankK operator.
-  using RankKkernel = kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
-
+  using RankKkernel =
+      kernel::RankKUniversal<Mma, Epilogue, ThreadblockSwizzle, FillModeC>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass

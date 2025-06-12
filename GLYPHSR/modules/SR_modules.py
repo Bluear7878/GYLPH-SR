@@ -1,33 +1,31 @@
 # from einops._torch_specific import allow_ops_in_compiled_graph
 # allow_ops_in_compiled_graph()
+import re
+from functools import partial
+
 import einops
 import torch
 import torch as th
 import torch.nn as nn
 from einops import rearrange, repeat
 
-from sgm.modules.diffusionmodules.util import (
-    avg_pool_nd,
-    checkpoint,
-    conv_nd,
-    linear,
-    normalization,
-    timestep_embedding,
-    zero_module,
-)
-
-from sgm.modules.diffusionmodules.openaimodel import Downsample, Upsample, UNetModel, Timestep, \
-    TimestepEmbedSequential, ResBlock, AttentionBlock, TimestepBlock
-from sgm.modules.attention import SpatialTransformer, MemoryEfficientCrossAttention, CrossAttention
-from sgm.util import default, log_txt_as_img, exists, instantiate_from_config
-import re
-import torch
-from functools import partial
-
+from sgm.modules.attention import (CrossAttention,
+                                   MemoryEfficientCrossAttention,
+                                   SpatialTransformer)
+from sgm.modules.diffusionmodules.openaimodel import (AttentionBlock,
+                                                      Downsample, ResBlock,
+                                                      Timestep, TimestepBlock,
+                                                      TimestepEmbedSequential,
+                                                      UNetModel, Upsample)
+from sgm.modules.diffusionmodules.util import (avg_pool_nd, checkpoint,
+                                               conv_nd, linear, normalization,
+                                               timestep_embedding, zero_module)
+from sgm.util import default, exists, instantiate_from_config, log_txt_as_img
 
 try:
     import xformers
     import xformers.ops
+
     XFORMERS_IS_AVAILBLE = True
 except:
     XFORMERS_IS_AVAILBLE = False
@@ -76,11 +74,14 @@ class ZeroSFT(nn.Module):
         nhidden = 128
 
         self.mlp_shared = nn.Sequential(
-            nn.Conv2d(label_nc, nhidden, kernel_size=ks, padding=pw),
-            nn.SiLU()
+            nn.Conv2d(label_nc, nhidden, kernel_size=ks, padding=pw), nn.SiLU()
         )
-        self.zero_mul = zero_module(nn.Conv2d(nhidden, norm_nc + concat_channels, kernel_size=ks, padding=pw))
-        self.zero_add = zero_module(nn.Conv2d(nhidden, norm_nc + concat_channels, kernel_size=ks, padding=pw))
+        self.zero_mul = zero_module(
+            nn.Conv2d(nhidden, norm_nc + concat_channels, kernel_size=ks, padding=pw)
+        )
+        self.zero_add = zero_module(
+            nn.Conv2d(nhidden, norm_nc + concat_channels, kernel_size=ks, padding=pw)
+        )
         # self.zero_mul = nn.Conv2d(nhidden, norm_nc + concat_channels, kernel_size=ks, padding=pw)
         # self.zero_add = nn.Conv2d(nhidden, norm_nc + concat_channels, kernel_size=ks, padding=pw)
 
@@ -116,7 +117,7 @@ class ZeroSFT(nn.Module):
 class ZeroCrossAttn(nn.Module):
     ATTENTION_MODES = {
         "softmax": CrossAttention,  # vanilla attention
-        "softmax-xformers": MemoryEfficientCrossAttention
+        "softmax-xformers": MemoryEfficientCrossAttention,
     }
 
     def __init__(self, context_dim, query_dim, zero_out=True, mask=False):
@@ -124,7 +125,12 @@ class ZeroCrossAttn(nn.Module):
         attn_mode = "softmax-xformers" if XFORMERS_IS_AVAILBLE else "softmax"
         assert attn_mode in self.ATTENTION_MODES
         attn_cls = self.ATTENTION_MODES[attn_mode]
-        self.attn = attn_cls(query_dim=query_dim, context_dim=context_dim, heads=query_dim//64, dim_head=64)
+        self.attn = attn_cls(
+            query_dim=query_dim,
+            context_dim=context_dim,
+            heads=query_dim // 64,
+            dim_head=64,
+        )
         self.norm1 = normalization(query_dim)
         self.norm2 = normalization(context_dim)
 
@@ -141,10 +147,10 @@ class ZeroCrossAttn(nn.Module):
         x = self.norm1(x)
         context = self.norm2(context)
         b, c, h, w = x.shape
-        x = rearrange(x, 'b c h w -> b (h w) c').contiguous()
-        context = rearrange(context, 'b c h w -> b (h w) c').contiguous()
+        x = rearrange(x, "b c h w -> b (h w) c").contiguous()
+        context = rearrange(context, "b c h w -> b (h w) c").contiguous()
         x = self.attn(x, context)
-        x = rearrange(x, 'b (h w) c -> b c h w', h=h, w=w).contiguous()
+        x = rearrange(x, "b (h w) c -> b c h w", h=h, w=w).contiguous()
         if self.mask:
             x = x * torch.zeros_like(x)
         x = x_in + x * control_scale
@@ -442,27 +448,29 @@ class GLVControl(nn.Module):
                     use_scale_shift_norm=use_scale_shift_norm,
                 )
             ),
-            checkpoint_wrapper_fn(
-                AttentionBlock(
-                    ch,
-                    use_checkpoint=use_checkpoint,
-                    num_heads=num_heads,
-                    num_head_channels=dim_head,
-                    use_new_attention_order=use_new_attention_order,
+            (
+                checkpoint_wrapper_fn(
+                    AttentionBlock(
+                        ch,
+                        use_checkpoint=use_checkpoint,
+                        num_heads=num_heads,
+                        num_head_channels=dim_head,
+                        use_new_attention_order=use_new_attention_order,
+                    )
                 )
-            )
-            if not use_spatial_transformer
-            else checkpoint_wrapper_fn(
-                SpatialTransformer(  # always uses a self-attn
-                    ch,
-                    num_heads,
-                    dim_head,
-                    depth=transformer_depth_middle,
-                    context_dim=context_dim,
-                    disable_self_attn=disable_middle_self_attn,
-                    use_linear=use_linear_in_transformer,
-                    attn_type=spatial_transformer_attn_type,
-                    use_checkpoint=use_checkpoint,
+                if not use_spatial_transformer
+                else checkpoint_wrapper_fn(
+                    SpatialTransformer(  # always uses a self-attn
+                        ch,
+                        num_heads,
+                        dim_head,
+                        depth=transformer_depth_middle,
+                        context_dim=context_dim,
+                        disable_self_attn=disable_middle_self_attn,
+                        use_linear=use_linear_in_transformer,
+                        attn_type=spatial_transformer_attn_type,
+                        use_checkpoint=use_checkpoint,
+                    )
                 )
             ),
             checkpoint_wrapper_fn(
@@ -479,8 +487,8 @@ class GLVControl(nn.Module):
 
         self.input_upscale = input_upscale
         self.input_hint_block = TimestepEmbedSequential(
-                    zero_module(conv_nd(dims, in_channels, model_channels, 3, padding=1))
-                )
+            zero_module(conv_nd(dims, in_channels, model_channels, 3, padding=1))
+        )
 
     def convert_to_fp16(self):
         """
@@ -507,12 +515,16 @@ class GLVControl(nn.Module):
         xt, context, y = xt.to(x.dtype), context.to(x.dtype), y.to(x.dtype)
 
         if self.input_upscale != 1:
-            x = nn.functional.interpolate(x, scale_factor=self.input_upscale, mode='bilinear', antialias=True)
+            x = nn.functional.interpolate(
+                x, scale_factor=self.input_upscale, mode="bilinear", antialias=True
+            )
         assert (y is not None) == (
             self.num_classes is not None
         ), "must specify y if and only if the model is class-conditional"
         hs = []
-        t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False).to(x.dtype)
+        t_emb = timestep_embedding(
+            timesteps, self.model_channels, repeat_only=False
+        ).to(x.dtype)
         # import pdb
         # pdb.set_trace()
         emb = self.time_embed(t_emb)
@@ -541,16 +553,17 @@ class GLVControl(nn.Module):
 
 
 class LightGLVUNet(UNetModel):
-    def __init__(self, mode='', project_type='ZeroSFT', project_channel_scale=1,
-                 *args, **kwargs):
+    def __init__(
+        self, mode="", project_type="ZeroSFT", project_channel_scale=1, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
-        if mode == 'XL-base':
+        if mode == "XL-base":
             cond_output_channels = [320] * 4 + [640] * 3 + [1280] * 3
             project_channels = [160] * 4 + [320] * 3 + [640] * 3
             concat_channels = [320] * 2 + [640] * 3 + [1280] * 4 + [0]
             cross_attn_insert_idx = [6, 3]
             self.progressive_mask_nums = [0, 3, 7, 11]
-        elif mode == 'XL-refine':
+        elif mode == "XL-refine":
             cond_output_channels = [384] * 4 + [768] * 3 + [1536] * 6
             project_channels = [192] * 4 + [384] * 3 + [768] * 6
             concat_channels = [384] * 2 + [768] * 3 + [1536] * 7 + [0]
@@ -568,16 +581,25 @@ class LightGLVUNet(UNetModel):
             # else:
             #     _project_type = project_type
             _project_type = project_type
-            if _project_type == 'ZeroSFT':
-                self.project_modules.append(ZeroSFT(project_channels[i], cond_output_channels[i],
-                                                    concat_channels=concat_channels[i]))
-            elif _project_type == 'ZeroCrossAttn':
-                self.project_modules.append(ZeroCrossAttn(cond_output_channels[i], project_channels[i]))
+            if _project_type == "ZeroSFT":
+                self.project_modules.append(
+                    ZeroSFT(
+                        project_channels[i],
+                        cond_output_channels[i],
+                        concat_channels=concat_channels[i],
+                    )
+                )
+            elif _project_type == "ZeroCrossAttn":
+                self.project_modules.append(
+                    ZeroCrossAttn(cond_output_channels[i], project_channels[i])
+                )
             else:
                 raise NotImplementedError
 
         for i in cross_attn_insert_idx:
-            self.project_modules.insert(i, ZeroCrossAttn(cond_output_channels[i], concat_channels[i]))
+            self.project_modules.insert(
+                i, ZeroCrossAttn(cond_output_channels[i], concat_channels[i])
+            )
 
     def step_progressive_mask(self):
         if len(self.progressive_mask_nums) > 0:
@@ -591,9 +613,16 @@ class LightGLVUNet(UNetModel):
         else:
             return
 
-
-
-    def forward(self, x, timesteps=None, context=None, y=None, control=None, control_scale=1, **kwargs):
+    def forward(
+        self,
+        x,
+        timesteps=None,
+        context=None,
+        y=None,
+        control=None,
+        control_scale=1,
+        **kwargs,
+    ):
         assert (y is not None) == (
             self.num_classes is not None
         ), "must specify y if and only if the model is class-conditional"
@@ -603,7 +632,9 @@ class LightGLVUNet(UNetModel):
         x, context, y = x.to(_dtype), context.to(_dtype), y.to(_dtype)
 
         with torch.no_grad():
-            t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False).to(x.dtype)
+            t_emb = timestep_embedding(
+                timesteps, self.model_channels, repeat_only=False
+            ).to(x.dtype)
             emb = self.time_embed(t_emb)
 
             if self.num_classes is not None:
@@ -619,13 +650,17 @@ class LightGLVUNet(UNetModel):
         adapter_idx = len(self.project_modules) - 1
         control_idx = len(control) - 1
         h = self.middle_block(h, emb, context)
-        h = self.project_modules[adapter_idx](control[control_idx], h, control_scale=control_scale)
+        h = self.project_modules[adapter_idx](
+            control[control_idx], h, control_scale=control_scale
+        )
         adapter_idx -= 1
         control_idx -= 1
 
         for i, module in enumerate(self.output_blocks):
             _h = hs.pop()
-            h = self.project_modules[adapter_idx](control[control_idx], _h, h, control_scale=control_scale)
+            h = self.project_modules[adapter_idx](
+                control[control_idx], _h, h, control_scale=control_scale
+            )
             adapter_idx -= 1
             if len(module) == 3:
                 assert isinstance(module[2], Upsample)
@@ -636,7 +671,9 @@ class LightGLVUNet(UNetModel):
                         h = layer(h, context)
                     else:
                         h = layer(h)
-                h = self.project_modules[adapter_idx](control[control_idx], h, control_scale=control_scale)
+                h = self.project_modules[adapter_idx](
+                    control[control_idx], h, control_scale=control_scale
+                )
                 adapter_idx -= 1
                 h = module[2](h)
             else:

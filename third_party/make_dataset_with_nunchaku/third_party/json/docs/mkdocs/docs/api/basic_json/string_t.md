@@ -7,6 +7,7 @@ using string_t = StringType;
 The type used to store JSON strings.
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes JSON strings as follows:
+
 > A string is a sequence of zero or more Unicode characters.
 
 To store objects in C++, a type is defined by the template parameter described below. Unicode values are split by the
@@ -15,8 +16,8 @@ JSON class into byte-sized characters during deserialization.
 ## Template parameters
 
 `StringType`
-:   the container to store strings (e.g., `std::string`). Note this container is used for keys/names in objects, see
-    [object_t](object_t.md).
+: the container to store strings (e.g., `std::string`). Note this container is used for keys/names in objects, see
+[object_t](object_t.md).
 
 ## Notes
 
@@ -32,6 +33,7 @@ the number of bytes in the string rather than the number of characters or glyphs
 #### String comparison
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) states:
+
 > Software implementations are typically required to test names of object members for equality. Implementations that
 > transform the textual representation into sequences of Unicode code units and then perform the comparison numerically,
 > code unit by code unit, are interoperable in the sense that implementations will agree in all cases on equality or
@@ -49,17 +51,19 @@ String values are stored as pointers in a `basic_json` type. That is, for any ac
 
 ??? example
 
-    The following code shows that `string_t` is by default, a typedef to `#!cpp std::string`.
-     
-    ```cpp
-    --8<-- "examples/string_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/string_t.output"
-    ```
+````
+The following code shows that `string_t` is by default, a typedef to `#!cpp std::string`.
+
+```cpp
+--8<-- "examples/string_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/string_t.output"
+```
+````
 
 ## Version history
 

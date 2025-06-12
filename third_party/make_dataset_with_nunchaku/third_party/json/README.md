@@ -6,7 +6,7 @@
 [![Windows](https://github.com/nlohmann/json/workflows/Windows/badge.svg)](https://github.com/nlohmann/json/actions?query=workflow%3AWindows)
 [![Coverage Status](https://coveralls.io/repos/github/nlohmann/json/badge.svg?branch=develop)](https://coveralls.io/github/nlohmann/json?branch=develop)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/5550/badge.svg)](https://scan.coverity.com/projects/nlohmann-json)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e0d1a9d5d6fd46fcb655c4cb930bb3e8)](https://www.codacy.com/gh/nlohmann/json/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nlohmann/json&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e0d1a9d5d6fd46fcb655c4cb930bb3e8)](https://www.codacy.com/gh/nlohmann/json/dashboard?utm_source=github.com&utm_medium=referral&utm_content=nlohmann/json&utm_campaign=Badge_Grade)
 [![Cirrus CI](https://api.cirrus-ci.com/github/nlohmann/json.svg)](https://cirrus-ci.com/github/nlohmann/json)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/json.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:json)
 [![Try online](https://img.shields.io/badge/try-online-blue.svg)](https://wandbox.org/permlink/1mp10JbaANo6FUc7)
@@ -69,7 +69,6 @@ Other aspects were not so important to us:
 - **Speed**. There are certainly [faster JSON libraries](https://github.com/miloyip/nativejson-benchmark#parsing-time) out there. However, if your goal is to speed up your development by adding JSON support with a single header, then this library is the way to go. If you know how to use a `std::vector` or `std::map`, you are already set.
 
 See the [contribution guidelines](https://github.com/nlohmann/json/blob/master/.github/CONTRIBUTING.md#please-dont) for more information.
-
 
 ## Sponsors
 
@@ -360,7 +359,7 @@ std::vector<std::uint8_t> v = {'t', 'r', 'u', 'e'};
 json j = json::parse(v.begin(), v.end());
 ```
 
-You may leave the iterators for the range [begin, end):
+You may leave the iterators for the range \[begin, end):
 
 ```cpp
 std::vector<std::uint8_t> v = {'t', 'r', 'u', 'e'};
@@ -454,10 +453,10 @@ The return value of each function determines whether parsing should proceed.
 To implement your own SAX handler, proceed as follows:
 
 1. Implement the SAX interface in a class. You can use class `nlohmann::json_sax<json>` as base class, but you can also use any class where the functions described above are implemented and public.
-2. Create an object of your SAX interface class, e.g. `my_sax`.
-3. Call `bool json::sax_parse(input, &my_sax)`; where the first parameter can be any input like a string or an input stream and the second parameter is a pointer to your SAX interface.
+1. Create an object of your SAX interface class, e.g. `my_sax`.
+1. Call `bool json::sax_parse(input, &my_sax)`; where the first parameter can be any input like a string or an input stream and the second parameter is a pointer to your SAX interface.
 
-Note the `sax_parse` function only returns a `bool` indicating the result of the last executed SAX event. It does not return a  `json` value - it is up to you to decide what to do with the SAX events. Furthermore, no exceptions are thrown in case of a parse error - it is up to you what to do with the exception object passed to your `parse_error` implementation. Internally, the SAX interface is used for the DOM parser (class `json_sax_dom_parser`) as well as the acceptor (`json_sax_acceptor`), see file [`json_sax.hpp`](https://github.com/nlohmann/json/blob/develop/include/nlohmann/detail/input/json_sax.hpp).
+Note the `sax_parse` function only returns a `bool` indicating the result of the last executed SAX event. It does not return a `json` value - it is up to you to decide what to do with the SAX events. Furthermore, no exceptions are thrown in case of a parse error - it is up to you what to do with the exception object passed to your `parse_error` implementation. Internally, the SAX interface is used for the DOM parser (class `json_sax_dom_parser`) as well as the acceptor (`json_sax_acceptor`), see file [`json_sax.hpp`](https://github.com/nlohmann/json/blob/develop/include/nlohmann/detail/input/json_sax.hpp).
 
 ### STL-like access
 
@@ -546,7 +545,6 @@ int fob_present = o.count("fob"); // 0
 // delete an entry
 o.erase("foo");
 ```
-
 
 ### Conversion from STL containers
 
@@ -803,11 +801,11 @@ Likewise, when calling `template get<your_type>()` or `get_to(your_type&)`, the 
 
 Some important things:
 
-* Those methods **MUST** be in your type's namespace (which can be the global namespace), or the library will not be able to locate them (in this example, they are in namespace `ns`, where `person` is defined).
-* Those methods **MUST** be available (e.g., proper headers must be included) everywhere you use these conversions. Look at [issue 1108](https://github.com/nlohmann/json/issues/1108) for errors that may occur otherwise.
-* When using `template get<your_type>()`, `your_type` **MUST** be [DefaultConstructible](https://en.cppreference.com/w/cpp/named_req/DefaultConstructible). (There is a way to bypass this requirement described later.)
-* In function `from_json`, use function [`at()`](https://json.nlohmann.me/api/basic_json/at/) to access the object values rather than `operator[]`. In case a key does not exist, `at` throws an exception that you can handle, whereas `operator[]` exhibits undefined behavior.
-* You do not need to add serializers or deserializers for STL types like `std::vector`: the library already implements these.
+- Those methods **MUST** be in your type's namespace (which can be the global namespace), or the library will not be able to locate them (in this example, they are in namespace `ns`, where `person` is defined).
+- Those methods **MUST** be available (e.g., proper headers must be included) everywhere you use these conversions. Look at [issue 1108](https://github.com/nlohmann/json/issues/1108) for errors that may occur otherwise.
+- When using `template get<your_type>()`, `your_type` **MUST** be [DefaultConstructible](https://en.cppreference.com/w/cpp/named_req/DefaultConstructible). (There is a way to bypass this requirement described later.)
+- In function `from_json`, use function [`at()`](https://json.nlohmann.me/api/basic_json/at/) to access the object values rather than `operator[]`. In case a key does not exist, `at` throws an exception that you can handle, whereas `operator[]` exhibits undefined behavior.
+- You do not need to add serializers or deserializers for STL types like `std::vector`: the library already implements these.
 
 #### Simplify your life with macros
 
@@ -941,7 +939,7 @@ If you write your own serializer, you'll need to do a few things:
 - use your `basic_json` alias (or a template parameter) in all your `to_json`/`from_json` methods
 - use `nlohmann::to_json` and `nlohmann::from_json` when you need ADL
 
-Here is an example, without simplifications, that only accepts types with a size <= 32, and uses ADL.
+Here is an example, without simplifications, that only accepts types with a size \<= 32, and uses ADL.
 
 ```cpp
 // You should use void as a second template argument
@@ -1030,10 +1028,12 @@ assert(jPi.template get<TaskState>() == TS_INVALID );
 ```
 
 Just as in [Arbitrary Type Conversions](#arbitrary-types-conversions) above,
+
 - `NLOHMANN_JSON_SERIALIZE_ENUM()` MUST be declared in your enum type's namespace (which can be the global namespace), or the library will not be able to locate it, and it will default to integer serialization.
 - It MUST be available (e.g., proper headers must be included) everywhere you use the conversions.
 
 Other Important points:
+
 - When using `template get<ENUM_TYPE>()`, undefined JSON values will default to the first pair specified in your map. Select this default pair carefully.
 - If an enum or JSON value is specified more than once in your map, the first matching occurrence from the top of the map will be returned when converting to or from JSON.
 
@@ -1108,7 +1108,6 @@ binary.set_subtype(0x10);
 auto cbor = json::to_msgpack(j); // 0xD5 (fixext2), 0x10, 0xCA, 0xFE
 ```
 
-
 ## Supported compilers
 
 Though it's 2023 already, the support for C++11 is still a bit sparse. Currently, the following compilers are known to work:
@@ -1128,82 +1127,82 @@ I would be happy to learn about other compilers/versions.
 Please note:
 
 - GCC 4.8 has a bug [57824](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57824)): multiline raw strings cannot be the arguments to macros. Don't use multiline raw strings directly in macros with this compiler.
+
 - Android defaults to using very old compilers and C++ libraries. To fix this, add the following to your `Application.mk`. This will switch to the LLVM C++ library, the Clang compiler, and enable C++11 and other features disabled by default.
 
-    ```
-    APP_STL := c++_shared
-    NDK_TOOLCHAIN_VERSION := clang3.6
-    APP_CPPFLAGS += -frtti -fexceptions
-    ```
+  ```
+  APP_STL := c++_shared
+  NDK_TOOLCHAIN_VERSION := clang3.6
+  APP_CPPFLAGS += -frtti -fexceptions
+  ```
 
-    The code compiles successfully with [Android NDK](https://developer.android.com/ndk/index.html?hl=ml), Revision 9 - 11 (and possibly later) and [CrystaX's Android NDK](https://www.crystax.net/en/android/ndk) version 10.
+  The code compiles successfully with [Android NDK](https://developer.android.com/ndk/index.html?hl=ml), Revision 9 - 11 (and possibly later) and [CrystaX's Android NDK](https://www.crystax.net/en/android/ndk) version 10.
 
-- For GCC running on MinGW or Android SDK, the error `'to_string' is not a member of 'std'` (or similarly, for `strtod` or `strtof`) may occur. Note this is not an issue with the code,  but rather with the compiler itself. On Android, see above to build with a newer environment.  For MinGW, please refer to [this site](https://tehsausage.com/mingw-to-string) and [this discussion](https://github.com/nlohmann/json/issues/136) for information on how to fix this bug. For Android NDK using `APP_STL := gnustl_static`, please refer to [this discussion](https://github.com/nlohmann/json/issues/219).
+- For GCC running on MinGW or Android SDK, the error `'to_string' is not a member of 'std'` (or similarly, for `strtod` or `strtof`) may occur. Note this is not an issue with the code, but rather with the compiler itself. On Android, see above to build with a newer environment. For MinGW, please refer to [this site](https://tehsausage.com/mingw-to-string) and [this discussion](https://github.com/nlohmann/json/issues/136) for information on how to fix this bug. For Android NDK using `APP_STL := gnustl_static`, please refer to [this discussion](https://github.com/nlohmann/json/issues/219).
 
 - Unsupported versions of GCC and Clang are rejected by `#error` directives. This can be switched off by defining `JSON_SKIP_UNSUPPORTED_COMPILER_CHECK`. Note that you can expect no support in this case.
 
 The following compilers are currently used in continuous integration at [AppVeyor](https://ci.appveyor.com/project/nlohmann/json), [Cirrus CI](https://cirrus-ci.com/github/nlohmann/json), and [GitHub Actions](https://github.com/nlohmann/json/actions):
 
-| Compiler                                                                                               | Operating System   | CI Provider    |
+| Compiler | Operating System | CI Provider |
 |--------------------------------------------------------------------------------------------------------|--------------------|----------------|
-| Apple Clang 11.0.3 (clang-1103.0.32.62);  Xcode 11.7                                                   | macOS 11.7.1       | GitHub Actions |
-| Apple Clang 12.0.0 (clang-1200.0.32.29);  Xcode 12.4                                                   | macOS 11.7.1       | GitHub Actions |
-| Apple Clang 12.0.5 (clang-1205.0.22.11);  Xcode 12.5.1                                                 | macOS 11.7.1       | GitHub Actions |
-| Apple Clang 13.0.0 (clang-1300.0.29.3);   Xcode 13.0                                                   | macOS 11.7.1       | GitHub Actions |
-| Apple Clang 13.0.0 (clang-1300.0.29.3);   Xcode 13.1                                                   | macOS 12.6.1       | GitHub Actions |
-| Apple Clang 13.0.0 (clang-1300.0.29.30);  Xcode 13.2.1                                                 | macOS 12.6.1       | GitHub Actions |
-| Apple Clang 13.1.6 (clang-1316.0.21.2.3); Xcode 13.3.1                                                 | macOS 12.6.1       | GitHub Actions |
-| Apple Clang 13.1.6 (clang-1316.0.21.2.5); Xcode 13.4.1                                                 | macOS 12.6.1       | GitHub Actions |
-| Apple Clang 14.0.0 (clang-1400.0.29.102); Xcode 14.0                                                   | macOS 12.6.1       | GitHub Actions |
-| Apple Clang 14.0.0 (clang-1400.0.29.102); Xcode 14.0.1                                                 | macOS 12.6.1       | GitHub Actions |
-| Apple Clang 14.0.0 (clang-1400.0.29.202); Xcode 14.1                                                   | macOS 12.6.1       | GitHub Actions |
-| Clang 3.5.2                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 3.6.2                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 3.7.1                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 3.8.1                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 3.9.1                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 4.0.1                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 5.0.2                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 6.0.1                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 7.0.1                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 8.0.0                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 9.0.0                                                                                            | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 10.0.0                                                                                           | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 10.0.0 with GNU-like command-line                                                                | Windows-10.0.17763 | GitHub Actions |
-| Clang 11.0.0 with GNU-like command-line                                                                | Windows-10.0.17763 | GitHub Actions |
-| Clang 11.0.0 with MSVC-like command-line                                                               | Windows-10.0.17763 | GitHub Actions |
-| Clang 11.0.0                                                                                           | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 12.0.0                                                                                           | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 12.0.0 with GNU-like command-line                                                                | Windows-10.0.17763 | GitHub Actions |
-| Clang 13.0.0                                                                                           | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 13.0.0 with GNU-like command-line                                                                | Windows-10.0.17763 | GitHub Actions |
-| Clang 14.0.0                                                                                           | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 14.0.0 with GNU-like command-line                                                                | Windows-10.0.17763 | GitHub Actions |
-| Clang 15.0.0 with GNU-like command-line                                                                | Windows-10.0.17763 | GitHub Actions |
-| Clang 15.0.4                                                                                           | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Clang 16.0.0 (16.0.0-++20221031071727+500876226c60-1~exp1~20221031071831.439)                          | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 4.8.5 (Ubuntu 4.8.5-4ubuntu2)                                                                      | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 4.9.4                                                                                              | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 5.5.0                                                                                              | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 6.5.0                                                                                              | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 7.5.0                                                                                              | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 8.1.0 (i686-posix-dwarf-rev0, Built by MinGW-W64 project)                                          | Windows-10.0.17763 | GitHub Actions |
-| GCC 8.1.0 (x86_64-posix-seh-rev0, Built by MinGW-W64 project)                                          | Windows-10.0.17763 | GitHub Actions |
-| GCC 8.5.0                                                                                              | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 9.5.0                                                                                              | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 10.4.0                                                                                             | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 11.1.0                                                                                             | Ubuntu (aarch64)   | Cirrus CI      |
-| GCC 11.3.0                                                                                             | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 12.2.0                                                                                             | Ubuntu 20.04.3 LTS | GitHub Actions |
-| GCC 13.0.0 20220605 (experimental)                                                                     | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Intel C++ Compiler 2021.5.0.20211109                                                                   | Ubuntu 20.04.3 LTS | GitHub Actions |
-| NVCC 11.0.221                                                                                          | Ubuntu 20.04.3 LTS | GitHub Actions |
-| Visual Studio 14 2015 MSVC 19.0.24241.7 (Build Engine version 14.0.25420.1)                            | Windows-6.3.9600   | AppVeyor       |
-| Visual Studio 15 2017 MSVC 19.16.27035.0 (Build Engine version 15.9.21+g9802d43bc3 for .NET Framework) | Windows-10.0.14393 | AppVeyor       |
-| Visual Studio 16 2019 MSVC 19.28.29912.0 (Build Engine version 16.9.0+57a23d249 for .NET Framework)    | Windows-10.0.17763 | GitHub Actions |
-| Visual Studio 16 2019 MSVC 19.28.29912.0 (Build Engine version 16.9.0+57a23d249 for .NET Framework)    | Windows-10.0.17763 | AppVeyor       |
-| Visual Studio 17 2022 MSVC 19.30.30709.0 (Build Engine version 17.0.31804.368 for .NET Framework)      | Windows-10.0.20348 | GitHub Actions |
-
+| Apple Clang 11.0.3 (clang-1103.0.32.62); Xcode 11.7 | macOS 11.7.1 | GitHub Actions |
+| Apple Clang 12.0.0 (clang-1200.0.32.29); Xcode 12.4 | macOS 11.7.1 | GitHub Actions |
+| Apple Clang 12.0.5 (clang-1205.0.22.11); Xcode 12.5.1 | macOS 11.7.1 | GitHub Actions |
+| Apple Clang 13.0.0 (clang-1300.0.29.3); Xcode 13.0 | macOS 11.7.1 | GitHub Actions |
+| Apple Clang 13.0.0 (clang-1300.0.29.3); Xcode 13.1 | macOS 12.6.1 | GitHub Actions |
+| Apple Clang 13.0.0 (clang-1300.0.29.30); Xcode 13.2.1 | macOS 12.6.1 | GitHub Actions |
+| Apple Clang 13.1.6 (clang-1316.0.21.2.3); Xcode 13.3.1 | macOS 12.6.1 | GitHub Actions |
+| Apple Clang 13.1.6 (clang-1316.0.21.2.5); Xcode 13.4.1 | macOS 12.6.1 | GitHub Actions |
+| Apple Clang 14.0.0 (clang-1400.0.29.102); Xcode 14.0 | macOS 12.6.1 | GitHub Actions |
+| Apple Clang 14.0.0 (clang-1400.0.29.102); Xcode 14.0.1 | macOS 12.6.1 | GitHub Actions |
+| Apple Clang 14.0.0 (clang-1400.0.29.202); Xcode 14.1 | macOS 12.6.1 | GitHub Actions |
+| Clang 3.5.2 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 3.6.2 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 3.7.1 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 3.8.1 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 3.9.1 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 4.0.1 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 5.0.2 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 6.0.1 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 7.0.1 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 8.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 9.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 10.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 10.0.0 with GNU-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 11.0.0 with GNU-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 11.0.0 with MSVC-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 11.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 12.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 12.0.0 with GNU-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 13.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 13.0.0 with GNU-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 14.0.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 14.0.0 with GNU-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 15.0.0 with GNU-like command-line | Windows-10.0.17763 | GitHub Actions |
+| Clang 15.0.4 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Clang 16.0.0 (16.0.0-++20221031071727+500876226c60-1~exp1~20221031071831.439) | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 4.8.5 (Ubuntu 4.8.5-4ubuntu2) | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 4.9.4 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 5.5.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 6.5.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 7.5.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 8.1.0 (i686-posix-dwarf-rev0, Built by MinGW-W64 project) | Windows-10.0.17763 | GitHub Actions |
+| GCC 8.1.0 (x86_64-posix-seh-rev0, Built by MinGW-W64 project) | Windows-10.0.17763 | GitHub Actions |
+| GCC 8.5.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 9.5.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 10.4.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 11.1.0 | Ubuntu (aarch64) | Cirrus CI |
+| GCC 11.3.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 12.2.0 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| GCC 13.0.0 20220605 (experimental) | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Intel C++ Compiler 2021.5.0.20211109 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| NVCC 11.0.221 | Ubuntu 20.04.3 LTS | GitHub Actions |
+| Visual Studio 14 2015 MSVC 19.0.24241.7 (Build Engine version 14.0.25420.1) | Windows-6.3.9600 | AppVeyor |
+| Visual Studio 15 2017 MSVC 19.16.27035.0 (Build Engine version 15.9.21+g9802d43bc3 for .NET Framework) | Windows-10.0.14393 | AppVeyor |
+| Visual Studio 16 2019 MSVC 19.28.29912.0 (Build Engine version 16.9.0+57a23d249 for .NET Framework) | Windows-10.0.17763 | GitHub Actions |
+| Visual Studio 16 2019 MSVC 19.28.29912.0 (Build Engine version 16.9.0+57a23d249 for .NET Framework) | Windows-10.0.17763 | AppVeyor |
+| Visual Studio 17 2022 MSVC 19.30.30709.0 (Build Engine version 17.0.31804.368 for .NET Framework) | Windows-10.0.20348 | GitHub Actions |
 
 ## Integration
 
@@ -1222,7 +1221,7 @@ You can further use file [`include/nlohmann/json_fwd.hpp`](https://github.com/nl
 
 ### CMake
 
-You can also use the `nlohmann_json::nlohmann_json` interface target in CMake.  This target populates the appropriate usage requirements for `INTERFACE_INCLUDE_DIRECTORIES` to point to the appropriate include directories and `INTERFACE_COMPILE_FEATURES` for the necessary C++11 flags.
+You can also use the `nlohmann_json::nlohmann_json` interface target in CMake. This target populates the appropriate usage requirements for `INTERFACE_INCLUDE_DIRECTORIES` to point to the appropriate include directories and `INTERFACE_COMPILE_FEATURES` for the necessary C++11 flags.
 
 #### External
 
@@ -1270,6 +1269,7 @@ Since CMake v3.11,
 be used to automatically download a release as a dependency at configure time.
 
 Example:
+
 ```cmake
 include(FetchContent)
 
@@ -1286,7 +1286,7 @@ target_link_libraries(foo PRIVATE nlohmann_json::nlohmann_json)
 
 To allow your project to support either an externally supplied or an embedded JSON library, you can use a pattern akin to the following:
 
-``` cmake
+```cmake
 # Top level CMakeLists.txt
 project(FOO)
 ...
@@ -1300,6 +1300,7 @@ add_library(foo ...)
 # import method
 target_link_libraries(foo PRIVATE nlohmann_json::nlohmann_json)
 ```
+
 ```cmake
 # thirdparty/CMakeLists.txt
 ...
@@ -1376,14 +1377,13 @@ Users of the Meson build system will also be able to use a system-wide library, 
 json = dependency('nlohmann_json', required: true)
 ```
 
-
 ## License
 
 <img align="right" src="https://opensource.org/trademarks/opensource/OSI-Approved-License-100x137.png">
 
 The class is licensed under the [MIT License](https://opensource.org/licenses/MIT):
 
-Copyright &copy; 2013-2022 [Niels Lohmann](https://nlohmann.me)
+Copyright © 2013-2022 [Niels Lohmann](https://nlohmann.me)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -1391,11 +1391,11 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-* * *
+______________________________________________________________________
 
-The class contains the UTF-8 Decoder from Bjoern Hoehrmann which is licensed under the [MIT License](https://opensource.org/licenses/MIT) (see above). Copyright &copy; 2008-2009 [Björn Hoehrmann](https://bjoern.hoehrmann.de/) <bjoern@hoehrmann.de>
+The class contains the UTF-8 Decoder from Bjoern Hoehrmann which is licensed under the [MIT License](https://opensource.org/licenses/MIT) (see above). Copyright © 2008-2009 [Björn Hoehrmann](https://bjoern.hoehrmann.de/) <bjoern@hoehrmann.de>
 
-The class contains a slightly modified version of the Grisu2 algorithm from Florian Loitsch which is licensed under the [MIT License](https://opensource.org/licenses/MIT) (see above). Copyright &copy; 2009 [Florian Loitsch](https://florian.loitsch.com/)
+The class contains a slightly modified version of the Grisu2 algorithm from Florian Loitsch which is licensed under the [MIT License](https://opensource.org/licenses/MIT) (see above). Copyright © 2009 [Florian Loitsch](https://florian.loitsch.com/)
 
 The class contains a copy of [Hedley](https://nemequ.github.io/hedley/) from Evan Nemerson which is licensed as [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 
@@ -1418,354 +1418,353 @@ I deeply appreciate the help of the following people.
 <img src="https://raw.githubusercontent.com/nlohmann/json/develop/docs/avatars.png" align="right">
 
 1. [Teemperor](https://github.com/Teemperor) implemented CMake support and lcov integration, realized escape and Unicode handling in the string parser, and fixed the JSON serialization.
-2. [elliotgoodrich](https://github.com/elliotgoodrich) fixed an issue with double deletion in the iterator classes.
-3. [kirkshoop](https://github.com/kirkshoop) made the iterators of the class composable to other libraries.
-4. [wancw](https://github.com/wanwc) fixed a bug that hindered the class to compile with Clang.
-5. Tomas Åblad found a bug in the iterator implementation.
-6. [Joshua C. Randall](https://github.com/jrandall) fixed a bug in the floating-point serialization.
-7. [Aaron Burghardt](https://github.com/aburgh) implemented code to parse streams incrementally. Furthermore, he greatly improved the parser class by allowing the definition of a filter function to discard undesired elements while parsing.
-8. [Daniel Kopeček](https://github.com/dkopecek) fixed a bug in the compilation with GCC 5.0.
-9. [Florian Weber](https://github.com/Florianjw) fixed a bug in and improved the performance of the comparison operators.
-10. [Eric Cornelius](https://github.com/EricMCornelius) pointed out a bug in the handling with NaN and infinity values. He also improved the performance of the string escaping.
-11. [易思龙](https://github.com/likebeta) implemented a conversion from anonymous enums.
-12. [kepkin](https://github.com/kepkin) patiently pushed forward the support for Microsoft Visual studio.
-13. [gregmarr](https://github.com/gregmarr) simplified the implementation of reverse iterators and helped with numerous hints and improvements. In particular, he pushed forward the implementation of user-defined types.
-14. [Caio Luppi](https://github.com/caiovlp) fixed a bug in the Unicode handling.
-15. [dariomt](https://github.com/dariomt) fixed some typos in the examples.
-16. [Daniel Frey](https://github.com/d-frey) cleaned up some pointers and implemented exception-safe memory allocation.
-17. [Colin Hirsch](https://github.com/ColinH) took care of a small namespace issue.
-18. [Huu Nguyen](https://github.com/whoshuu) correct a variable name in the documentation.
-19. [Silverweed](https://github.com/silverweed) overloaded `parse()` to accept an rvalue reference.
-20. [dariomt](https://github.com/dariomt) fixed a subtlety in MSVC type support and implemented the `get_ref()` function to get a reference to stored values.
-21. [ZahlGraf](https://github.com/ZahlGraf) added a workaround that allows compilation using Android NDK.
-22. [whackashoe](https://github.com/whackashoe) replaced a function that was marked as unsafe by Visual Studio.
-23. [406345](https://github.com/406345) fixed two small warnings.
-24. [Glen Fernandes](https://github.com/glenfe) noted a potential portability problem in the `has_mapped_type` function.
-25. [Corbin Hughes](https://github.com/nibroc) fixed some typos in the contribution guidelines.
-26. [twelsby](https://github.com/twelsby) fixed the array subscript operator, an issue that failed the MSVC build, and floating-point parsing/dumping. He further added support for unsigned integer numbers and implemented better roundtrip support for parsed numbers.
-27. [Volker Diels-Grabsch](https://github.com/vog) fixed a link in the README file.
-28. [msm-](https://github.com/msm-) added support for American Fuzzy Lop.
-29. [Annihil](https://github.com/Annihil) fixed an example in the README file.
-30. [Themercee](https://github.com/Themercee) noted a wrong URL in the README file.
-31. [Lv Zheng](https://github.com/lv-zheng) fixed a namespace issue with `int64_t` and `uint64_t`.
-32. [abc100m](https://github.com/abc100m) analyzed the issues with GCC 4.8 and proposed a [partial solution](https://github.com/nlohmann/json/pull/212).
-33. [zewt](https://github.com/zewt) added useful notes to the README file about Android.
-34. [Róbert Márki](https://github.com/robertmrk) added a fix to use move iterators and improved the integration via CMake.
-35. [Chris Kitching](https://github.com/ChrisKitching) cleaned up the CMake files.
-36. [Tom Needham](https://github.com/06needhamt) fixed a subtle bug with MSVC 2015 which was also proposed by [Michael K.](https://github.com/Epidal).
-37. [Mário Feroldi](https://github.com/thelostt) fixed a small typo.
-38. [duncanwerner](https://github.com/duncanwerner) found a really embarrassing performance regression in the 2.0.0 release.
-39. [Damien](https://github.com/dtoma) fixed one of the last conversion warnings.
-40. [Thomas Braun](https://github.com/t-b) fixed a warning in a test case and adjusted MSVC calls in the CI.
-41. [Théo DELRIEU](https://github.com/theodelrieu) patiently and constructively oversaw the long way toward [iterator-range parsing](https://github.com/nlohmann/json/issues/290). He also implemented the magic behind the serialization/deserialization of user-defined types and split the single header file into smaller chunks.
-42. [Stefan](https://github.com/5tefan) fixed a minor issue in the documentation.
-43. [Vasil Dimov](https://github.com/vasild) fixed the documentation regarding conversions from `std::multiset`.
-44. [ChristophJud](https://github.com/ChristophJud) overworked the CMake files to ease project inclusion.
-45. [Vladimir Petrigo](https://github.com/vpetrigo) made a SFINAE hack more readable and added Visual Studio 17 to the build matrix.
-46. [Denis Andrejew](https://github.com/seeekr) fixed a grammar issue in the README file.
-47. [Pierre-Antoine Lacaze](https://github.com/palacaze) found a subtle bug in the `dump()` function.
-48. [TurpentineDistillery](https://github.com/TurpentineDistillery) pointed to [`std::locale::classic()`](https://en.cppreference.com/w/cpp/locale/locale/classic) to avoid too much locale joggling, found some nice performance improvements in the parser, improved the benchmarking code, and realized locale-independent number parsing and printing.
-49. [cgzones](https://github.com/cgzones) had an idea how to fix the Coverity scan.
-50. [Jared Grubb](https://github.com/jaredgrubb) silenced a nasty documentation warning.
-51. [Yixin Zhang](https://github.com/qwename) fixed an integer overflow check.
-52. [Bosswestfalen](https://github.com/Bosswestfalen) merged two iterator classes into a smaller one.
-53. [Daniel599](https://github.com/Daniel599) helped to get Travis execute the tests with Clang's sanitizers.
-54. [Jonathan Lee](https://github.com/vjon) fixed an example in the README file.
-55. [gnzlbg](https://github.com/gnzlbg) supported the implementation of user-defined types.
-56. [Alexej Harm](https://github.com/qis) helped to get the user-defined types working with Visual Studio.
-57. [Jared Grubb](https://github.com/jaredgrubb) supported the implementation of user-defined types.
-58. [EnricoBilla](https://github.com/EnricoBilla) noted a typo in an example.
-59. [Martin Hořeňovský](https://github.com/horenmar) found a way for a 2x speedup for the compilation time of the test suite.
-60. [ukhegg](https://github.com/ukhegg) found proposed an improvement for the examples section.
-61. [rswanson-ihi](https://github.com/rswanson-ihi) noted a typo in the README.
-62. [Mihai Stan](https://github.com/stanmihai4) fixed a bug in the comparison with `nullptr`s.
-63. [Tushar Maheshwari](https://github.com/tusharpm) added [cotire](https://github.com/sakra/cotire) support to speed up the compilation.
-64. [TedLyngmo](https://github.com/TedLyngmo) noted a typo in the README, removed unnecessary bit arithmetic, and fixed some `-Weffc++` warnings.
-65. [Krzysztof Woś](https://github.com/krzysztofwos) made exceptions more visible.
-66. [ftillier](https://github.com/ftillier) fixed a compiler warning.
-67. [tinloaf](https://github.com/tinloaf) made sure all pushed warnings are properly popped.
-68. [Fytch](https://github.com/Fytch) found a bug in the documentation.
-69. [Jay Sistar](https://github.com/Type1J) implemented a Meson build description.
-70. [Henry Lee](https://github.com/HenryRLee) fixed a warning in ICC and improved the iterator implementation.
-71. [Vincent Thiery](https://github.com/vthiery) maintains a package for the Conan package manager.
-72. [Steffen](https://github.com/koemeet) fixed a potential issue with MSVC and `std::min`.
-73. [Mike Tzou](https://github.com/Chocobo1) fixed some typos.
-74. [amrcode](https://github.com/amrcode) noted a misleading documentation about comparison of floats.
-75. [Oleg Endo](https://github.com/olegendo) reduced the memory consumption by replacing `<iostream>` with `<iosfwd>`.
-76. [dan-42](https://github.com/dan-42) cleaned up the CMake files to simplify including/reusing of the library.
-77. [Nikita Ofitserov](https://github.com/himikof) allowed for moving values from initializer lists.
-78. [Greg Hurrell](https://github.com/wincent) fixed a typo.
-79. [Dmitry Kukovinets](https://github.com/DmitryKuk) fixed a typo.
-80. [kbthomp1](https://github.com/kbthomp1) fixed an issue related to the Intel OSX compiler.
-81. [Markus Werle](https://github.com/daixtrose) fixed a typo.
-82. [WebProdPP](https://github.com/WebProdPP) fixed a subtle error in a precondition check.
-83. [Alex](https://github.com/leha-bot) noted an error in a code sample.
-84. [Tom de Geus](https://github.com/tdegeus) reported some warnings with ICC and helped to fix them.
-85. [Perry Kundert](https://github.com/pjkundert) simplified reading from input streams.
-86. [Sonu Lohani](https://github.com/sonulohani) fixed a small compilation error.
-87. [Jamie Seward](https://github.com/jseward) fixed all MSVC warnings.
-88. [Nate Vargas](https://github.com/eld00d) added a Doxygen tag file.
-89. [pvleuven](https://github.com/pvleuven) helped to fix a warning in ICC.
-90. [Pavel](https://github.com/crea7or) helped to fix some warnings in MSVC.
-91. [Jamie Seward](https://github.com/jseward) avoided unnecessary string copies in `find()` and `count()`.
-92. [Mitja](https://github.com/Itja) fixed some typos.
-93. [Jorrit Wronski](https://github.com/jowr) updated the Hunter package links.
-94. [Matthias Möller](https://github.com/TinyTinni) added a `.natvis` for the MSVC debug view.
-95. [bogemic](https://github.com/bogemic) fixed some C++17 deprecation warnings.
-96. [Eren Okka](https://github.com/erengy) fixed some MSVC warnings.
-97. [abolz](https://github.com/abolz) integrated the Grisu2 algorithm for proper floating-point formatting, allowing more roundtrip checks to succeed.
-98. [Vadim Evard](https://github.com/Pipeliner) fixed a Markdown issue in the README.
-99. [zerodefect](https://github.com/zerodefect) fixed a compiler warning.
-100. [Kert](https://github.com/kaidokert) allowed to template the string type in the serialization and added the possibility to override the exceptional behavior.
-101. [mark-99](https://github.com/mark-99) helped fixing an ICC error.
-102. [Patrik Huber](https://github.com/patrikhuber) fixed links in the README file.
-103. [johnfb](https://github.com/johnfb) found a bug in the implementation of CBOR's indefinite length strings.
-104. [Paul Fultz II](https://github.com/pfultz2) added a note on the cget package manager.
-105. [Wilson Lin](https://github.com/wla80) made the integration section of the README more concise.
-106. [RalfBielig](https://github.com/ralfbielig) detected and fixed a memory leak in the parser callback.
-107. [agrianius](https://github.com/agrianius) allowed to dump JSON to an alternative string type.
-108. [Kevin Tonon](https://github.com/ktonon) overworked the C++11 compiler checks in CMake.
-109. [Axel Huebl](https://github.com/ax3l) simplified a CMake check and added support for the [Spack package manager](https://spack.io).
-110. [Carlos O'Ryan](https://github.com/coryan) fixed a typo.
-111. [James Upjohn](https://github.com/jammehcow) fixed a version number in the compilers section.
-112. [Chuck Atkins](https://github.com/chuckatkins) adjusted the CMake files to the CMake packaging guidelines and provided documentation for the CMake integration.
-113. [Jan Schöppach](https://github.com/dns13) fixed a typo.
-114. [martin-mfg](https://github.com/martin-mfg) fixed a typo.
-115. [Matthias Möller](https://github.com/TinyTinni) removed the dependency from `std::stringstream`.
-116. [agrianius](https://github.com/agrianius) added code to use alternative string implementations.
-117. [Daniel599](https://github.com/Daniel599) allowed to use more algorithms with the `items()` function.
-118. [Julius Rakow](https://github.com/jrakow) fixed the Meson include directory and fixed the links to [cppreference.com](cppreference.com).
-119. [Sonu Lohani](https://github.com/sonulohani) fixed the compilation with MSVC 2015 in debug mode.
-120. [grembo](https://github.com/grembo) fixed the test suite and re-enabled several test cases.
-121. [Hyeon Kim](https://github.com/simnalamburt) introduced the macro `JSON_INTERNAL_CATCH` to control the exception handling inside the library.
-122. [thyu](https://github.com/thyu) fixed a compiler warning.
-123. [David Guthrie](https://github.com/LEgregius) fixed a subtle compilation error with Clang 3.4.2.
-124. [Dennis Fischer](https://github.com/dennisfischer) allowed to call `find_package` without installing the library.
-125. [Hyeon Kim](https://github.com/simnalamburt) fixed an issue with a double macro definition.
-126. [Ben Berman](https://github.com/rivertam) made some error messages more understandable.
-127. [zakalibit](https://github.com/zakalibit) fixed a compilation problem with the Intel C++ compiler.
-128. [mandreyel](https://github.com/mandreyel) fixed a compilation problem.
-129. [Kostiantyn Ponomarenko](https://github.com/koponomarenko) added version and license information to the Meson build file.
-130. [Henry Schreiner](https://github.com/henryiii) added support for GCC 4.8.
-131. [knilch](https://github.com/knilch0r) made sure the test suite does not stall when run in the wrong directory.
-132. [Antonio Borondo](https://github.com/antonioborondo) fixed an MSVC 2017 warning.
-133. [Dan Gendreau](https://github.com/dgendreau) implemented the `NLOHMANN_JSON_SERIALIZE_ENUM` macro to quickly define an enum/JSON mapping.
-134. [efp](https://github.com/efp) added line and column information to parse errors.
-135. [julian-becker](https://github.com/julian-becker) added BSON support.
-136. [Pratik Chowdhury](https://github.com/pratikpc) added support for structured bindings.
-137. [David Avedissian](https://github.com/davedissian) added support for Clang 5.0.1 (PS4 version).
-138. [Jonathan Dumaresq](https://github.com/dumarjo) implemented an input adapter to read from `FILE*`.
-139. [kjpus](https://github.com/kjpus) fixed a link in the documentation.
-140. [Manvendra Singh](https://github.com/manu-chroma) fixed a typo in the documentation.
-141. [ziggurat29](https://github.com/ziggurat29) fixed an MSVC warning.
-142. [Sylvain Corlay](https://github.com/SylvainCorlay) added code to avoid an issue with MSVC.
-143. [mefyl](https://github.com/mefyl) fixed a bug when JSON was parsed from an input stream.
-144. [Millian Poquet](https://github.com/mpoquet) allowed to install the library via Meson.
-145. [Michael Behrns-Miller](https://github.com/moodboom) found an issue with a missing namespace.
-146. [Nasztanovics Ferenc](https://github.com/naszta) fixed a compilation issue with libc 2.12.
-147. [Andreas Schwab](https://github.com/andreas-schwab) fixed the endian conversion.
-148. [Mark-Dunning](https://github.com/Mark-Dunning) fixed a warning in MSVC.
-149. [Gareth Sylvester-Bradley](https://github.com/garethsb-sony) added `operator/` for JSON Pointers.
-150. [John-Mark](https://github.com/johnmarkwayve) noted a missing header.
-151. [Vitaly Zaitsev](https://github.com/xvitaly) fixed compilation with GCC 9.0.
-152. [Laurent Stacul](https://github.com/stac47) fixed compilation with GCC 9.0.
-153. [Ivor Wanders](https://github.com/iwanders) helped to reduce the CMake requirement to version 3.1.
-154. [njlr](https://github.com/njlr) updated the Buckaroo instructions.
-155. [Lion](https://github.com/lieff) fixed a compilation issue with GCC 7 on CentOS.
-156. [Isaac Nickaein](https://github.com/nickaein) improved the integer serialization performance and  implemented the `contains()` function.
-157. [past-due](https://github.com/past-due) suppressed an unfixable warning.
-158. [Elvis Oric](https://github.com/elvisoric) improved Meson support.
-159. [Matěj Plch](https://github.com/Afforix) fixed an example in the README.
-160. [Mark Beckwith](https://github.com/wythe) fixed a typo.
-161. [scinart](https://github.com/scinart) fixed bug in the serializer.
-162. [Patrick Boettcher](https://github.com/pboettch) implemented `push_back()` and `pop_back()` for JSON Pointers.
-163. [Bruno Oliveira](https://github.com/nicoddemus) added support for Conda.
-164. [Michele Caini](https://github.com/skypjack) fixed links in the README.
-165. [Hani](https://github.com/hnkb) documented how to install the library with NuGet.
-166. [Mark Beckwith](https://github.com/wythe) fixed a typo.
-167. [yann-morin-1998](https://github.com/yann-morin-1998) helped to reduce the CMake requirement to version 3.1.
-168. [Konstantin Podsvirov](https://github.com/podsvirov) maintains a package for the MSYS2 software distro.
-169. [remyabel](https://github.com/remyabel) added GNUInstallDirs to the CMake files.
-170. [Taylor Howard](https://github.com/taylorhoward92) fixed a unit test.
-171. [Gabe Ron](https://github.com/Macr0Nerd) implemented the `to_string` method.
-172. [Watal M. Iwasaki](https://github.com/heavywatal) fixed a Clang warning.
-173. [Viktor Kirilov](https://github.com/onqtam) switched the unit tests from [Catch](https://github.com/philsquared/Catch) to [doctest](https://github.com/onqtam/doctest)
-174. [Juncheng E](https://github.com/ejcjason) fixed a typo.
-175. [tete17](https://github.com/tete17) fixed a bug in the `contains` function.
-176. [Xav83](https://github.com/Xav83) fixed some cppcheck warnings.
-177. [0xflotus](https://github.com/0xflotus) fixed some typos.
-178. [Christian Deneke](https://github.com/chris0x44) added a const version of `json_pointer::back`.
-179. [Julien Hamaide](https://github.com/crazyjul) made the `items()` function work with custom string types.
-180. [Evan Nemerson](https://github.com/nemequ) updated fixed a bug in Hedley and updated this library accordingly.
-181. [Florian Pigorsch](https://github.com/flopp) fixed a lot of typos.
-182. [Camille Bégué](https://github.com/cbegue) fixed an issue in the conversion from  `std::pair` and `std::tuple` to `json`.
-183. [Anthony VH](https://github.com/AnthonyVH) fixed a compile error in an enum deserialization.
-184. [Yuriy Vountesmery](https://github.com/ua-code-dragon) noted a subtle bug in a preprocessor check.
-185. [Chen](https://github.com/dota17) fixed numerous issues in the library.
-186. [Antony Kellermann](https://github.com/aokellermann) added a CI step for GCC 10.1.
-187. [Alex](https://github.com/gistrec) fixed an MSVC warning.
-188. [Rainer](https://github.com/rvjr) proposed an improvement in the floating-point serialization in CBOR.
-189. [Francois Chabot](https://github.com/FrancoisChabot) made performance improvements in the input adapters.
-190. [Arthur Sonzogni](https://github.com/ArthurSonzogni) documented how the library can be included via `FetchContent`.
-191. [Rimas Misevičius](https://github.com/rmisev) fixed an error message.
-192. [Alexander Myasnikov](https://github.com/alexandermyasnikov) fixed some examples and a link in the README.
-193. [Hubert Chathi](https://github.com/uhoreg) made CMake's version config file architecture-independent.
-194. [OmnipotentEntity](https://github.com/OmnipotentEntity) implemented the binary values for CBOR, MessagePack, BSON, and UBJSON.
-195. [ArtemSarmini](https://github.com/ArtemSarmini) fixed a compilation issue with GCC 10 and fixed a leak.
-196. [Evgenii Sopov](https://github.com/sea-kg) integrated the library to the wsjcpp package manager.
-197. [Sergey Linev](https://github.com/linev) fixed a compiler warning.
-198. [Miguel Magalhães](https://github.com/magamig) fixed the year in the copyright.
-199. [Gareth Sylvester-Bradley](https://github.com/garethsb-sony) fixed a compilation issue with MSVC.
-200. [Alexander “weej” Jones](https://github.com/alex-weej) fixed an example in the README.
-201. [Antoine Cœur](https://github.com/Coeur) fixed some typos in the documentation.
-202. [jothepro](https://github.com/jothepro) updated links to the Hunter package.
-203. [Dave Lee](https://github.com/kastiglione) fixed link in the README.
-204. [Joël Lamotte](https://github.com/Klaim) added instruction for using Build2's package manager.
-205. [Paul Jurczak](https://github.com/pauljurczak) fixed an example in the README.
-206. [Sonu Lohani](https://github.com/sonulohani) fixed a warning.
-207. [Carlos Gomes Martinho](https://github.com/gocarlos) updated the Conan package source.
-208. [Konstantin Podsvirov](https://github.com/podsvirov) fixed the MSYS2 package documentation.
-209. [Tridacnid](https://github.com/Tridacnid) improved the CMake tests.
-210. [Michael](https://github.com/MBalszun) fixed MSVC warnings.
-211. [Quentin Barbarat](https://github.com/quentin-dev) fixed an example in the documentation.
-212. [XyFreak](https://github.com/XyFreak) fixed a compiler warning.
-213. [TotalCaesar659](https://github.com/TotalCaesar659) fixed links in the README.
-214. [Tanuj Garg](https://github.com/tanuj208) improved the fuzzer coverage for UBSAN input.
-215. [AODQ](https://github.com/AODQ) fixed a compiler warning.
-216. [jwittbrodt](https://github.com/jwittbrodt) made `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE` inline.
-217. [pfeatherstone](https://github.com/pfeatherstone) improved the upper bound of arguments of the `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE`/`NLOHMANN_DEFINE_TYPE_INTRUSIVE` macros.
-218. [Jan Procházka](https://github.com/jprochazk) fixed a bug in the CBOR parser for binary and string values.
-219. [T0b1-iOS](https://github.com/T0b1-iOS) fixed a bug in the new hash implementation.
-220. [Matthew Bauer](https://github.com/matthewbauer) adjusted the CBOR writer to create tags for binary subtypes.
-221. [gatopeich](https://github.com/gatopeich) implemented an ordered map container for `nlohmann::ordered_json`.
-222. [Érico Nogueira Rolim](https://github.com/ericonr) added support for pkg-config.
-223. [KonanM](https://github.com/KonanM) proposed an implementation for the `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE`/`NLOHMANN_DEFINE_TYPE_INTRUSIVE` macros.
-224. [Guillaume Racicot](https://github.com/gracicot) implemented `string_view` support and allowed C++20 support.
-225. [Alex Reinking](https://github.com/alexreinking) improved CMake support for `FetchContent`.
-226. [Hannes Domani](https://github.com/ssbssa) provided a GDB pretty printer.
-227. Lars Wirzenius reviewed the README file.
-228. [Jun Jie](https://github.com/ongjunjie) fixed a compiler path in the CMake scripts.
-229. [Ronak Buch](https://github.com/rbuch) fixed typos in the documentation.
-230. [Alexander Karzhenkov](https://github.com/karzhenkov) fixed a move constructor and the Travis builds.
-231. [Leonardo Lima](https://github.com/leozz37) added CPM.Cmake support.
-232. [Joseph Blackman](https://github.com/jbzdarkid) fixed a warning.
-233. [Yaroslav](https://github.com/YarikTH) updated doctest and implemented unit tests.
-234. [Martin Stump](https://github.com/globberwops) fixed a bug in the CMake files.
-235. [Jaakko Moisio](https://github.com/jasujm) fixed a bug in the input adapters.
-236. [bl-ue](https://github.com/bl-ue) fixed some Markdown issues in the README file.
-237. [William A. Wieselquist](https://github.com/wawiesel) fixed an example from the README.
-238. [abbaswasim](https://github.com/abbaswasim) fixed an example from the README.
-239. [Remy Jette](https://github.com/remyjette) fixed a warning.
-240. [Fraser](https://github.com/frasermarlow) fixed the documentation.
-241. [Ben Beasley](https://github.com/musicinmybrain) updated doctest.
-242. [Doron Behar](https://github.com/doronbehar) fixed pkg-config.pc.
-243. [raduteo](https://github.com/raduteo) fixed a warning.
-244. [David Pfahler](https://github.com/theShmoo) added the possibility to compile the library without I/O support.
-245. [Morten Fyhn Amundsen](https://github.com/mortenfyhn) fixed a typo.
-246. [jpl-mac](https://github.com/jpl-mac) allowed to treat the library as a system header in CMake.
-247. [Jason Dsouza](https://github.com/jasmcaus) fixed the indentation of the CMake file.
-248. [offa](https://github.com/offa) added a link to Conan Center to the documentation.
-249. [TotalCaesar659](https://github.com/TotalCaesar659) updated the links in the documentation to use HTTPS.
-250. [Rafail Giavrimis](https://github.com/grafail) fixed the Google Benchmark default branch.
-251. [Louis Dionne](https://github.com/ldionne) fixed a conversion operator.
-252. [justanotheranonymoususer](https://github.com/justanotheranonymoususer) made the examples in the README more consistent.
-253. [Finkman](https://github.com/Finkman) suppressed some `-Wfloat-equal` warnings.
-254. [Ferry Huberts](https://github.com/fhuberts) fixed `-Wswitch-enum` warnings.
-255. [Arseniy Terekhin](https://github.com/senyai) made the GDB pretty-printer robust against unset variable names.
-256. [Amir Masoud Abdol](https://github.com/amirmasoudabdol) updated the Homebrew command as nlohmann/json is now in homebrew-core.
-257. [Hallot](https://github.com/Hallot) fixed some `-Wextra-semi-stmt warnings`.
-258. [Giovanni Cerretani](https://github.com/gcerretani) fixed `-Wunused` warnings on `JSON_DIAGNOSTICS`.
-259. [Bogdan Popescu](https://github.com/Kapeli) hosts the [docset](https://github.com/Kapeli/Dash-User-Contributions/tree/master/docsets/JSON_for_Modern_C%2B%2B) for offline documentation viewers.
-260. [Carl Smedstad](https://github.com/carlsmedstad) fixed an assertion error when using `JSON_DIAGNOSTICS`.
-261. [miikka75](https://github.com/miikka75) provided an important fix to compile C++17 code with Clang 9.
-262. [Maarten Becker](https://github.com/kernie) fixed a warning for shadowed variables.
-263. [Cristi Vîjdea](https://github.com/axnsan12) fixed typos in the `operator[]` documentation.
-264. [Alex Beregszaszi](https://github.com/axic) fixed spelling mistakes in comments.
-265. [Dirk Stolle](https://github.com/striezel) fixed typos in documentation.
-266. [Daniel Albuschat](https://github.com/daniel-kun) corrected the parameter name in the `parse` documentation.
-267. [Prince Mendiratta](https://github.com/Prince-Mendiratta) fixed a link to the FAQ.
-268. [Florian Albrechtskirchinger](https://github.com/falbrechtskirchinger) implemented `std::string_view` support for object keys and made dozens of other improvements.
-269. [Qianqian Fang](https://github.com/fangq) implemented the Binary JData (BJData) format.
-270. [pketelsen](https://github.com/pketelsen) added macros `NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT` and `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT`.
-271. [DarkZeros](https://github.com/DarkZeros) adjusted to code to not clash with Arduino defines.
-272. [flagarde](https://github.com/flagarde) fixed the output of `meta()` for MSVC.
-273. [Giovanni Cerretani](https://github.com/gcerretani) fixed a check for `std::filesystem`.
-274. [Dimitris Apostolou](https://github.com/rex4539) fixed a typo.
-275. [Ferry Huberts](https://github.com/fhuberts) fixed a typo.
-276. [Michael Nosthoff](https://github.com/heinemml) fixed a typo.
-277. [JungHoon Lee](https://github.com/jhnlee) fixed a typo.
-278. [Faruk D.](https://github.com/fdiblen) fixed the CITATION.CFF file.
-279. [Andrea Cocito](https://github.com/puffetto) added a clarification on macro usage to the documentation.
-280. [Krzysiek Karbowiak](https://github.com/kkarbowiak) refactored the tests to use `CHECK_THROWS_WITH_AS`.
-281. [Chaoqi Zhang](https://github.com/prncoprs) fixed a typo.
-282. [ivanovmp](https://github.com/ivanovmp) fixed a whitespace error.
-283. [KsaNL](https://github.com/KsaNL) fixed a build error when including `<windows.h>`.
-284. [Andrea Pappacoda](https://github.com/Tachi107) moved `.pc` and `.cmake` files to `share` directory.
-285. [Wolf Vollprecht](https://github.com/wolfv) added the `patch_inplace` function.
-286. [Jake Zimmerman](https://github.com/jez) highlighted common usage patterns in the README file.
-287. [NN](https://github.com/NN---) added the Visual Studio output directory to `.gitignore`.
-288. [Romain Reignier](https://github.com/romainreignier) improved the performance the vector output adapter.
-289. [Mike](https://github.com/Mike-Leo-Smith) fixed the `std::iterator_traits`.
-290. [Richard Hozák](https://github.com/zxey) added macro `JSON_NO_ENUM` to disable default enum conversions.
-291. [vakokako](https://github.com/vakokako) fixed tests when compiling with C++20.
-292. [Alexander “weej” Jones](https://github.com/alexweej) fixed an example in the README.
-293. [Eli Schwartz](https://github.com/eli-schwartz) added more files to the `include.zip` archive.
-294. [Kevin Lu](https://github.com/kevinlul) fixed a compilation issue when typedefs with certain names were present.
-295. [Trevor Hickey](https://github.com/luxe) improved the description of an example.
-296. [Jef LeCompte](https://github.com/jef) updated the year in the README file.
-297. [Alexandre Hamez](https://github.com/ahamez) fixed a warning.
-298. [Maninderpal Badhan](https://github.com/mbadhan) fixed a typo.
-299. [kevin--](https://github.com/kevin--) added a note to an example in the README file.
-300. [I](https://github.com/wx257osn2) fixed a typo.
-301. [Gregorio Litenstein](https://github.com/Lord-Kamina) fixed the Clang detection.
-302. [Andreas Smas](https://github.com/andoma) added a Doozer badge.
-303. [WanCW](https://github.com/wancw) fixed the string conversion with Clang.
-304. [zhaohuaxishi](https://github.com/zhaohuaxishi) fixed a Doxygen error.
-305. [emvivre](https://github.com/emvivre) removed an invalid parameter from CMake.
-306. [Tobias Hermann](https://github.com/Dobiasd) fixed a link in the README file.
-307. [Michael](https://github.com/traits) fixed a warning.
-308. [Ryan Mulder](https://github.com/ryanjmulder) added `ensure_ascii` to the `dump` function.
-309. [Muri Nicanor](https://github.com/murinicanor) fixed the `sed` discovery in the Makefile.
-310. [David Avedissian](https://github.com/dgavedissian) implemented SFINAE-friendly `iterator_traits`.
-311. [AQNOUCH Mohammed](https://github.com/aqnouch) fixed a typo in the README.
-312. [Gareth Sylvester-Bradley](https://github.com/garethsb) added `operator/=` and `operator/` to construct JSON pointers.
-313. [Michael Macnair](https://github.com/mykter) added support for afl-fuzz testing.
-314. [Berkus Decker](https://github.com/berkus) fixed a typo in the README.
-315. [Illia Polishchuk](https://github.com/effolkronium) improved the CMake testing.
-316. [Ikko Ashimine](https://github.com/eltociear) fixed a typo.
-317. [Raphael Grimm](https://github.com/barcode) added the possibility to define a custom base class.
-318. [tocic](https://github.com/tocic) fixed typos in the documentation.
-319. [Vertexwahn](https://github.com/Vertexwahn) added Bazel build support.
-320. [Dirk Stolle](https://github.com/striezel) fixed typos in the documentation.
-321. [DavidKorczynski](https://github.com/DavidKorczynski) added a CIFuzz CI GitHub action.
-322. [Finkman](https://github.com/Finkman) fixed the debug pretty-printer.
-323. [Florian Segginger](https://github.com/floriansegginger) bumped the years in the README.
-324. [haadfida](https://github.com/haadfida) cleaned up the badges of used services.
-325. [Arsen Arsenović](https://github.com/ArsenArsen) fixed a build error.
-326. [theevilone45](https://github.com/theevilone45) fixed a typo in a CMake file.
-327. [Sergei Trofimovich](https://github.com/trofi) fixed the custom allocator support.
-328. [Joyce](https://github.com/joycebrum) fixed some security issues in the GitHub workflows.
-329. [Nicolas Jakob](https://github.com/njakob) add vcpkg version badge.
-330. [Tomerkm](https://github.com/Tomerkm) added tests.
-331. [No.](https://github.com/tusooa) fixed the use of `get<>` calls.
-332. [taro](https://github.com/tarolling) fixed a typo in the `CODEOWNERS` file.
-333. [Ikko Eltociear Ashimine](https://github.com/eltociear) fixed a typo.
-334. [Felix Yan](https://github.com/felixonmars) fixed a typo in the README.
-335. [HO-COOH](https://github.com/HO-COOH) fixed a parentheses in the documentation.
-336. [Ivor Wanders](https://github.com/iwanders) fixed the examples to catch exception by `const&`.
-337. [miny1233](https://github.com/miny1233) fixed a parentheses in the documentation.
-338. [tomalakgeretkal](https://github.com/tomalakgeretkal) fixed a compilation error.
-339. [alferov](https://github.com/ALF-ONE) fixed a compilation error.
-340. [Craig Scott](https://github.com/craigscott-crascit) fixed a deprecation warning in CMake.
-341. [Vyacheslav Zhdanovskiy](https://github.com/ZeronSix) added macros for serialization-only types.
-342. [Mathieu Westphal](https://github.com/mwestphal) fixed typos.
-343. [scribam](https://github.com/scribam) fixed the MinGW workflow.
-344. [Aleksei Sapitskii](https://github.com/aleksproger) added support for Apple's Swift Package Manager.
-345. [Benjamin Buch](https://github.com/bebuch) fixed the installation path in CMake.
-346. [Colby Haskell](https://github.com/colbychaskell) clarified the parse error message in case a file cannot be opened.
+1. [elliotgoodrich](https://github.com/elliotgoodrich) fixed an issue with double deletion in the iterator classes.
+1. [kirkshoop](https://github.com/kirkshoop) made the iterators of the class composable to other libraries.
+1. [wancw](https://github.com/wanwc) fixed a bug that hindered the class to compile with Clang.
+1. Tomas Åblad found a bug in the iterator implementation.
+1. [Joshua C. Randall](https://github.com/jrandall) fixed a bug in the floating-point serialization.
+1. [Aaron Burghardt](https://github.com/aburgh) implemented code to parse streams incrementally. Furthermore, he greatly improved the parser class by allowing the definition of a filter function to discard undesired elements while parsing.
+1. [Daniel Kopeček](https://github.com/dkopecek) fixed a bug in the compilation with GCC 5.0.
+1. [Florian Weber](https://github.com/Florianjw) fixed a bug in and improved the performance of the comparison operators.
+1. [Eric Cornelius](https://github.com/EricMCornelius) pointed out a bug in the handling with NaN and infinity values. He also improved the performance of the string escaping.
+1. [易思龙](https://github.com/likebeta) implemented a conversion from anonymous enums.
+1. [kepkin](https://github.com/kepkin) patiently pushed forward the support for Microsoft Visual studio.
+1. [gregmarr](https://github.com/gregmarr) simplified the implementation of reverse iterators and helped with numerous hints and improvements. In particular, he pushed forward the implementation of user-defined types.
+1. [Caio Luppi](https://github.com/caiovlp) fixed a bug in the Unicode handling.
+1. [dariomt](https://github.com/dariomt) fixed some typos in the examples.
+1. [Daniel Frey](https://github.com/d-frey) cleaned up some pointers and implemented exception-safe memory allocation.
+1. [Colin Hirsch](https://github.com/ColinH) took care of a small namespace issue.
+1. [Huu Nguyen](https://github.com/whoshuu) correct a variable name in the documentation.
+1. [Silverweed](https://github.com/silverweed) overloaded `parse()` to accept an rvalue reference.
+1. [dariomt](https://github.com/dariomt) fixed a subtlety in MSVC type support and implemented the `get_ref()` function to get a reference to stored values.
+1. [ZahlGraf](https://github.com/ZahlGraf) added a workaround that allows compilation using Android NDK.
+1. [whackashoe](https://github.com/whackashoe) replaced a function that was marked as unsafe by Visual Studio.
+1. [406345](https://github.com/406345) fixed two small warnings.
+1. [Glen Fernandes](https://github.com/glenfe) noted a potential portability problem in the `has_mapped_type` function.
+1. [Corbin Hughes](https://github.com/nibroc) fixed some typos in the contribution guidelines.
+1. [twelsby](https://github.com/twelsby) fixed the array subscript operator, an issue that failed the MSVC build, and floating-point parsing/dumping. He further added support for unsigned integer numbers and implemented better roundtrip support for parsed numbers.
+1. [Volker Diels-Grabsch](https://github.com/vog) fixed a link in the README file.
+1. [msm-](https://github.com/msm-) added support for American Fuzzy Lop.
+1. [Annihil](https://github.com/Annihil) fixed an example in the README file.
+1. [Themercee](https://github.com/Themercee) noted a wrong URL in the README file.
+1. [Lv Zheng](https://github.com/lv-zheng) fixed a namespace issue with `int64_t` and `uint64_t`.
+1. [abc100m](https://github.com/abc100m) analyzed the issues with GCC 4.8 and proposed a [partial solution](https://github.com/nlohmann/json/pull/212).
+1. [zewt](https://github.com/zewt) added useful notes to the README file about Android.
+1. [Róbert Márki](https://github.com/robertmrk) added a fix to use move iterators and improved the integration via CMake.
+1. [Chris Kitching](https://github.com/ChrisKitching) cleaned up the CMake files.
+1. [Tom Needham](https://github.com/06needhamt) fixed a subtle bug with MSVC 2015 which was also proposed by [Michael K.](https://github.com/Epidal).
+1. [Mário Feroldi](https://github.com/thelostt) fixed a small typo.
+1. [duncanwerner](https://github.com/duncanwerner) found a really embarrassing performance regression in the 2.0.0 release.
+1. [Damien](https://github.com/dtoma) fixed one of the last conversion warnings.
+1. [Thomas Braun](https://github.com/t-b) fixed a warning in a test case and adjusted MSVC calls in the CI.
+1. [Théo DELRIEU](https://github.com/theodelrieu) patiently and constructively oversaw the long way toward [iterator-range parsing](https://github.com/nlohmann/json/issues/290). He also implemented the magic behind the serialization/deserialization of user-defined types and split the single header file into smaller chunks.
+1. [Stefan](https://github.com/5tefan) fixed a minor issue in the documentation.
+1. [Vasil Dimov](https://github.com/vasild) fixed the documentation regarding conversions from `std::multiset`.
+1. [ChristophJud](https://github.com/ChristophJud) overworked the CMake files to ease project inclusion.
+1. [Vladimir Petrigo](https://github.com/vpetrigo) made a SFINAE hack more readable and added Visual Studio 17 to the build matrix.
+1. [Denis Andrejew](https://github.com/seeekr) fixed a grammar issue in the README file.
+1. [Pierre-Antoine Lacaze](https://github.com/palacaze) found a subtle bug in the `dump()` function.
+1. [TurpentineDistillery](https://github.com/TurpentineDistillery) pointed to [`std::locale::classic()`](https://en.cppreference.com/w/cpp/locale/locale/classic) to avoid too much locale joggling, found some nice performance improvements in the parser, improved the benchmarking code, and realized locale-independent number parsing and printing.
+1. [cgzones](https://github.com/cgzones) had an idea how to fix the Coverity scan.
+1. [Jared Grubb](https://github.com/jaredgrubb) silenced a nasty documentation warning.
+1. [Yixin Zhang](https://github.com/qwename) fixed an integer overflow check.
+1. [Bosswestfalen](https://github.com/Bosswestfalen) merged two iterator classes into a smaller one.
+1. [Daniel599](https://github.com/Daniel599) helped to get Travis execute the tests with Clang's sanitizers.
+1. [Jonathan Lee](https://github.com/vjon) fixed an example in the README file.
+1. [gnzlbg](https://github.com/gnzlbg) supported the implementation of user-defined types.
+1. [Alexej Harm](https://github.com/qis) helped to get the user-defined types working with Visual Studio.
+1. [Jared Grubb](https://github.com/jaredgrubb) supported the implementation of user-defined types.
+1. [EnricoBilla](https://github.com/EnricoBilla) noted a typo in an example.
+1. [Martin Hořeňovský](https://github.com/horenmar) found a way for a 2x speedup for the compilation time of the test suite.
+1. [ukhegg](https://github.com/ukhegg) found proposed an improvement for the examples section.
+1. [rswanson-ihi](https://github.com/rswanson-ihi) noted a typo in the README.
+1. [Mihai Stan](https://github.com/stanmihai4) fixed a bug in the comparison with `nullptr`s.
+1. [Tushar Maheshwari](https://github.com/tusharpm) added [cotire](https://github.com/sakra/cotire) support to speed up the compilation.
+1. [TedLyngmo](https://github.com/TedLyngmo) noted a typo in the README, removed unnecessary bit arithmetic, and fixed some `-Weffc++` warnings.
+1. [Krzysztof Woś](https://github.com/krzysztofwos) made exceptions more visible.
+1. [ftillier](https://github.com/ftillier) fixed a compiler warning.
+1. [tinloaf](https://github.com/tinloaf) made sure all pushed warnings are properly popped.
+1. [Fytch](https://github.com/Fytch) found a bug in the documentation.
+1. [Jay Sistar](https://github.com/Type1J) implemented a Meson build description.
+1. [Henry Lee](https://github.com/HenryRLee) fixed a warning in ICC and improved the iterator implementation.
+1. [Vincent Thiery](https://github.com/vthiery) maintains a package for the Conan package manager.
+1. [Steffen](https://github.com/koemeet) fixed a potential issue with MSVC and `std::min`.
+1. [Mike Tzou](https://github.com/Chocobo1) fixed some typos.
+1. [amrcode](https://github.com/amrcode) noted a misleading documentation about comparison of floats.
+1. [Oleg Endo](https://github.com/olegendo) reduced the memory consumption by replacing `<iostream>` with `<iosfwd>`.
+1. [dan-42](https://github.com/dan-42) cleaned up the CMake files to simplify including/reusing of the library.
+1. [Nikita Ofitserov](https://github.com/himikof) allowed for moving values from initializer lists.
+1. [Greg Hurrell](https://github.com/wincent) fixed a typo.
+1. [Dmitry Kukovinets](https://github.com/DmitryKuk) fixed a typo.
+1. [kbthomp1](https://github.com/kbthomp1) fixed an issue related to the Intel OSX compiler.
+1. [Markus Werle](https://github.com/daixtrose) fixed a typo.
+1. [WebProdPP](https://github.com/WebProdPP) fixed a subtle error in a precondition check.
+1. [Alex](https://github.com/leha-bot) noted an error in a code sample.
+1. [Tom de Geus](https://github.com/tdegeus) reported some warnings with ICC and helped to fix them.
+1. [Perry Kundert](https://github.com/pjkundert) simplified reading from input streams.
+1. [Sonu Lohani](https://github.com/sonulohani) fixed a small compilation error.
+1. [Jamie Seward](https://github.com/jseward) fixed all MSVC warnings.
+1. [Nate Vargas](https://github.com/eld00d) added a Doxygen tag file.
+1. [pvleuven](https://github.com/pvleuven) helped to fix a warning in ICC.
+1. [Pavel](https://github.com/crea7or) helped to fix some warnings in MSVC.
+1. [Jamie Seward](https://github.com/jseward) avoided unnecessary string copies in `find()` and `count()`.
+1. [Mitja](https://github.com/Itja) fixed some typos.
+1. [Jorrit Wronski](https://github.com/jowr) updated the Hunter package links.
+1. [Matthias Möller](https://github.com/TinyTinni) added a `.natvis` for the MSVC debug view.
+1. [bogemic](https://github.com/bogemic) fixed some C++17 deprecation warnings.
+1. [Eren Okka](https://github.com/erengy) fixed some MSVC warnings.
+1. [abolz](https://github.com/abolz) integrated the Grisu2 algorithm for proper floating-point formatting, allowing more roundtrip checks to succeed.
+1. [Vadim Evard](https://github.com/Pipeliner) fixed a Markdown issue in the README.
+1. [zerodefect](https://github.com/zerodefect) fixed a compiler warning.
+1. [Kert](https://github.com/kaidokert) allowed to template the string type in the serialization and added the possibility to override the exceptional behavior.
+1. [mark-99](https://github.com/mark-99) helped fixing an ICC error.
+1. [Patrik Huber](https://github.com/patrikhuber) fixed links in the README file.
+1. [johnfb](https://github.com/johnfb) found a bug in the implementation of CBOR's indefinite length strings.
+1. [Paul Fultz II](https://github.com/pfultz2) added a note on the cget package manager.
+1. [Wilson Lin](https://github.com/wla80) made the integration section of the README more concise.
+1. [RalfBielig](https://github.com/ralfbielig) detected and fixed a memory leak in the parser callback.
+1. [agrianius](https://github.com/agrianius) allowed to dump JSON to an alternative string type.
+1. [Kevin Tonon](https://github.com/ktonon) overworked the C++11 compiler checks in CMake.
+1. [Axel Huebl](https://github.com/ax3l) simplified a CMake check and added support for the [Spack package manager](https://spack.io).
+1. [Carlos O'Ryan](https://github.com/coryan) fixed a typo.
+1. [James Upjohn](https://github.com/jammehcow) fixed a version number in the compilers section.
+1. [Chuck Atkins](https://github.com/chuckatkins) adjusted the CMake files to the CMake packaging guidelines and provided documentation for the CMake integration.
+1. [Jan Schöppach](https://github.com/dns13) fixed a typo.
+1. [martin-mfg](https://github.com/martin-mfg) fixed a typo.
+1. [Matthias Möller](https://github.com/TinyTinni) removed the dependency from `std::stringstream`.
+1. [agrianius](https://github.com/agrianius) added code to use alternative string implementations.
+1. [Daniel599](https://github.com/Daniel599) allowed to use more algorithms with the `items()` function.
+1. [Julius Rakow](https://github.com/jrakow) fixed the Meson include directory and fixed the links to [cppreference.com](cppreference.com).
+1. [Sonu Lohani](https://github.com/sonulohani) fixed the compilation with MSVC 2015 in debug mode.
+1. [grembo](https://github.com/grembo) fixed the test suite and re-enabled several test cases.
+1. [Hyeon Kim](https://github.com/simnalamburt) introduced the macro `JSON_INTERNAL_CATCH` to control the exception handling inside the library.
+1. [thyu](https://github.com/thyu) fixed a compiler warning.
+1. [David Guthrie](https://github.com/LEgregius) fixed a subtle compilation error with Clang 3.4.2.
+1. [Dennis Fischer](https://github.com/dennisfischer) allowed to call `find_package` without installing the library.
+1. [Hyeon Kim](https://github.com/simnalamburt) fixed an issue with a double macro definition.
+1. [Ben Berman](https://github.com/rivertam) made some error messages more understandable.
+1. [zakalibit](https://github.com/zakalibit) fixed a compilation problem with the Intel C++ compiler.
+1. [mandreyel](https://github.com/mandreyel) fixed a compilation problem.
+1. [Kostiantyn Ponomarenko](https://github.com/koponomarenko) added version and license information to the Meson build file.
+1. [Henry Schreiner](https://github.com/henryiii) added support for GCC 4.8.
+1. [knilch](https://github.com/knilch0r) made sure the test suite does not stall when run in the wrong directory.
+1. [Antonio Borondo](https://github.com/antonioborondo) fixed an MSVC 2017 warning.
+1. [Dan Gendreau](https://github.com/dgendreau) implemented the `NLOHMANN_JSON_SERIALIZE_ENUM` macro to quickly define an enum/JSON mapping.
+1. [efp](https://github.com/efp) added line and column information to parse errors.
+1. [julian-becker](https://github.com/julian-becker) added BSON support.
+1. [Pratik Chowdhury](https://github.com/pratikpc) added support for structured bindings.
+1. [David Avedissian](https://github.com/davedissian) added support for Clang 5.0.1 (PS4 version).
+1. [Jonathan Dumaresq](https://github.com/dumarjo) implemented an input adapter to read from `FILE*`.
+1. [kjpus](https://github.com/kjpus) fixed a link in the documentation.
+1. [Manvendra Singh](https://github.com/manu-chroma) fixed a typo in the documentation.
+1. [ziggurat29](https://github.com/ziggurat29) fixed an MSVC warning.
+1. [Sylvain Corlay](https://github.com/SylvainCorlay) added code to avoid an issue with MSVC.
+1. [mefyl](https://github.com/mefyl) fixed a bug when JSON was parsed from an input stream.
+1. [Millian Poquet](https://github.com/mpoquet) allowed to install the library via Meson.
+1. [Michael Behrns-Miller](https://github.com/moodboom) found an issue with a missing namespace.
+1. [Nasztanovics Ferenc](https://github.com/naszta) fixed a compilation issue with libc 2.12.
+1. [Andreas Schwab](https://github.com/andreas-schwab) fixed the endian conversion.
+1. [Mark-Dunning](https://github.com/Mark-Dunning) fixed a warning in MSVC.
+1. [Gareth Sylvester-Bradley](https://github.com/garethsb-sony) added `operator/` for JSON Pointers.
+1. [John-Mark](https://github.com/johnmarkwayve) noted a missing header.
+1. [Vitaly Zaitsev](https://github.com/xvitaly) fixed compilation with GCC 9.0.
+1. [Laurent Stacul](https://github.com/stac47) fixed compilation with GCC 9.0.
+1. [Ivor Wanders](https://github.com/iwanders) helped to reduce the CMake requirement to version 3.1.
+1. [njlr](https://github.com/njlr) updated the Buckaroo instructions.
+1. [Lion](https://github.com/lieff) fixed a compilation issue with GCC 7 on CentOS.
+1. [Isaac Nickaein](https://github.com/nickaein) improved the integer serialization performance and implemented the `contains()` function.
+1. [past-due](https://github.com/past-due) suppressed an unfixable warning.
+1. [Elvis Oric](https://github.com/elvisoric) improved Meson support.
+1. [Matěj Plch](https://github.com/Afforix) fixed an example in the README.
+1. [Mark Beckwith](https://github.com/wythe) fixed a typo.
+1. [scinart](https://github.com/scinart) fixed bug in the serializer.
+1. [Patrick Boettcher](https://github.com/pboettch) implemented `push_back()` and `pop_back()` for JSON Pointers.
+1. [Bruno Oliveira](https://github.com/nicoddemus) added support for Conda.
+1. [Michele Caini](https://github.com/skypjack) fixed links in the README.
+1. [Hani](https://github.com/hnkb) documented how to install the library with NuGet.
+1. [Mark Beckwith](https://github.com/wythe) fixed a typo.
+1. [yann-morin-1998](https://github.com/yann-morin-1998) helped to reduce the CMake requirement to version 3.1.
+1. [Konstantin Podsvirov](https://github.com/podsvirov) maintains a package for the MSYS2 software distro.
+1. [remyabel](https://github.com/remyabel) added GNUInstallDirs to the CMake files.
+1. [Taylor Howard](https://github.com/taylorhoward92) fixed a unit test.
+1. [Gabe Ron](https://github.com/Macr0Nerd) implemented the `to_string` method.
+1. [Watal M. Iwasaki](https://github.com/heavywatal) fixed a Clang warning.
+1. [Viktor Kirilov](https://github.com/onqtam) switched the unit tests from [Catch](https://github.com/philsquared/Catch) to [doctest](https://github.com/onqtam/doctest)
+1. [Juncheng E](https://github.com/ejcjason) fixed a typo.
+1. [tete17](https://github.com/tete17) fixed a bug in the `contains` function.
+1. [Xav83](https://github.com/Xav83) fixed some cppcheck warnings.
+1. [0xflotus](https://github.com/0xflotus) fixed some typos.
+1. [Christian Deneke](https://github.com/chris0x44) added a const version of `json_pointer::back`.
+1. [Julien Hamaide](https://github.com/crazyjul) made the `items()` function work with custom string types.
+1. [Evan Nemerson](https://github.com/nemequ) updated fixed a bug in Hedley and updated this library accordingly.
+1. [Florian Pigorsch](https://github.com/flopp) fixed a lot of typos.
+1. [Camille Bégué](https://github.com/cbegue) fixed an issue in the conversion from `std::pair` and `std::tuple` to `json`.
+1. [Anthony VH](https://github.com/AnthonyVH) fixed a compile error in an enum deserialization.
+1. [Yuriy Vountesmery](https://github.com/ua-code-dragon) noted a subtle bug in a preprocessor check.
+1. [Chen](https://github.com/dota17) fixed numerous issues in the library.
+1. [Antony Kellermann](https://github.com/aokellermann) added a CI step for GCC 10.1.
+1. [Alex](https://github.com/gistrec) fixed an MSVC warning.
+1. [Rainer](https://github.com/rvjr) proposed an improvement in the floating-point serialization in CBOR.
+1. [Francois Chabot](https://github.com/FrancoisChabot) made performance improvements in the input adapters.
+1. [Arthur Sonzogni](https://github.com/ArthurSonzogni) documented how the library can be included via `FetchContent`.
+1. [Rimas Misevičius](https://github.com/rmisev) fixed an error message.
+1. [Alexander Myasnikov](https://github.com/alexandermyasnikov) fixed some examples and a link in the README.
+1. [Hubert Chathi](https://github.com/uhoreg) made CMake's version config file architecture-independent.
+1. [OmnipotentEntity](https://github.com/OmnipotentEntity) implemented the binary values for CBOR, MessagePack, BSON, and UBJSON.
+1. [ArtemSarmini](https://github.com/ArtemSarmini) fixed a compilation issue with GCC 10 and fixed a leak.
+1. [Evgenii Sopov](https://github.com/sea-kg) integrated the library to the wsjcpp package manager.
+1. [Sergey Linev](https://github.com/linev) fixed a compiler warning.
+1. [Miguel Magalhães](https://github.com/magamig) fixed the year in the copyright.
+1. [Gareth Sylvester-Bradley](https://github.com/garethsb-sony) fixed a compilation issue with MSVC.
+1. [Alexander “weej” Jones](https://github.com/alex-weej) fixed an example in the README.
+1. [Antoine Cœur](https://github.com/Coeur) fixed some typos in the documentation.
+1. [jothepro](https://github.com/jothepro) updated links to the Hunter package.
+1. [Dave Lee](https://github.com/kastiglione) fixed link in the README.
+1. [Joël Lamotte](https://github.com/Klaim) added instruction for using Build2's package manager.
+1. [Paul Jurczak](https://github.com/pauljurczak) fixed an example in the README.
+1. [Sonu Lohani](https://github.com/sonulohani) fixed a warning.
+1. [Carlos Gomes Martinho](https://github.com/gocarlos) updated the Conan package source.
+1. [Konstantin Podsvirov](https://github.com/podsvirov) fixed the MSYS2 package documentation.
+1. [Tridacnid](https://github.com/Tridacnid) improved the CMake tests.
+1. [Michael](https://github.com/MBalszun) fixed MSVC warnings.
+1. [Quentin Barbarat](https://github.com/quentin-dev) fixed an example in the documentation.
+1. [XyFreak](https://github.com/XyFreak) fixed a compiler warning.
+1. [TotalCaesar659](https://github.com/TotalCaesar659) fixed links in the README.
+1. [Tanuj Garg](https://github.com/tanuj208) improved the fuzzer coverage for UBSAN input.
+1. [AODQ](https://github.com/AODQ) fixed a compiler warning.
+1. [jwittbrodt](https://github.com/jwittbrodt) made `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE` inline.
+1. [pfeatherstone](https://github.com/pfeatherstone) improved the upper bound of arguments of the `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE`/`NLOHMANN_DEFINE_TYPE_INTRUSIVE` macros.
+1. [Jan Procházka](https://github.com/jprochazk) fixed a bug in the CBOR parser for binary and string values.
+1. [T0b1-iOS](https://github.com/T0b1-iOS) fixed a bug in the new hash implementation.
+1. [Matthew Bauer](https://github.com/matthewbauer) adjusted the CBOR writer to create tags for binary subtypes.
+1. [gatopeich](https://github.com/gatopeich) implemented an ordered map container for `nlohmann::ordered_json`.
+1. [Érico Nogueira Rolim](https://github.com/ericonr) added support for pkg-config.
+1. [KonanM](https://github.com/KonanM) proposed an implementation for the `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE`/`NLOHMANN_DEFINE_TYPE_INTRUSIVE` macros.
+1. [Guillaume Racicot](https://github.com/gracicot) implemented `string_view` support and allowed C++20 support.
+1. [Alex Reinking](https://github.com/alexreinking) improved CMake support for `FetchContent`.
+1. [Hannes Domani](https://github.com/ssbssa) provided a GDB pretty printer.
+1. Lars Wirzenius reviewed the README file.
+1. [Jun Jie](https://github.com/ongjunjie) fixed a compiler path in the CMake scripts.
+1. [Ronak Buch](https://github.com/rbuch) fixed typos in the documentation.
+1. [Alexander Karzhenkov](https://github.com/karzhenkov) fixed a move constructor and the Travis builds.
+1. [Leonardo Lima](https://github.com/leozz37) added CPM.Cmake support.
+1. [Joseph Blackman](https://github.com/jbzdarkid) fixed a warning.
+1. [Yaroslav](https://github.com/YarikTH) updated doctest and implemented unit tests.
+1. [Martin Stump](https://github.com/globberwops) fixed a bug in the CMake files.
+1. [Jaakko Moisio](https://github.com/jasujm) fixed a bug in the input adapters.
+1. [bl-ue](https://github.com/bl-ue) fixed some Markdown issues in the README file.
+1. [William A. Wieselquist](https://github.com/wawiesel) fixed an example from the README.
+1. [abbaswasim](https://github.com/abbaswasim) fixed an example from the README.
+1. [Remy Jette](https://github.com/remyjette) fixed a warning.
+1. [Fraser](https://github.com/frasermarlow) fixed the documentation.
+1. [Ben Beasley](https://github.com/musicinmybrain) updated doctest.
+1. [Doron Behar](https://github.com/doronbehar) fixed pkg-config.pc.
+1. [raduteo](https://github.com/raduteo) fixed a warning.
+1. [David Pfahler](https://github.com/theShmoo) added the possibility to compile the library without I/O support.
+1. [Morten Fyhn Amundsen](https://github.com/mortenfyhn) fixed a typo.
+1. [jpl-mac](https://github.com/jpl-mac) allowed to treat the library as a system header in CMake.
+1. [Jason Dsouza](https://github.com/jasmcaus) fixed the indentation of the CMake file.
+1. [offa](https://github.com/offa) added a link to Conan Center to the documentation.
+1. [TotalCaesar659](https://github.com/TotalCaesar659) updated the links in the documentation to use HTTPS.
+1. [Rafail Giavrimis](https://github.com/grafail) fixed the Google Benchmark default branch.
+1. [Louis Dionne](https://github.com/ldionne) fixed a conversion operator.
+1. [justanotheranonymoususer](https://github.com/justanotheranonymoususer) made the examples in the README more consistent.
+1. [Finkman](https://github.com/Finkman) suppressed some `-Wfloat-equal` warnings.
+1. [Ferry Huberts](https://github.com/fhuberts) fixed `-Wswitch-enum` warnings.
+1. [Arseniy Terekhin](https://github.com/senyai) made the GDB pretty-printer robust against unset variable names.
+1. [Amir Masoud Abdol](https://github.com/amirmasoudabdol) updated the Homebrew command as nlohmann/json is now in homebrew-core.
+1. [Hallot](https://github.com/Hallot) fixed some `-Wextra-semi-stmt warnings`.
+1. [Giovanni Cerretani](https://github.com/gcerretani) fixed `-Wunused` warnings on `JSON_DIAGNOSTICS`.
+1. [Bogdan Popescu](https://github.com/Kapeli) hosts the [docset](https://github.com/Kapeli/Dash-User-Contributions/tree/master/docsets/JSON_for_Modern_C%2B%2B) for offline documentation viewers.
+1. [Carl Smedstad](https://github.com/carlsmedstad) fixed an assertion error when using `JSON_DIAGNOSTICS`.
+1. [miikka75](https://github.com/miikka75) provided an important fix to compile C++17 code with Clang 9.
+1. [Maarten Becker](https://github.com/kernie) fixed a warning for shadowed variables.
+1. [Cristi Vîjdea](https://github.com/axnsan12) fixed typos in the `operator[]` documentation.
+1. [Alex Beregszaszi](https://github.com/axic) fixed spelling mistakes in comments.
+1. [Dirk Stolle](https://github.com/striezel) fixed typos in documentation.
+1. [Daniel Albuschat](https://github.com/daniel-kun) corrected the parameter name in the `parse` documentation.
+1. [Prince Mendiratta](https://github.com/Prince-Mendiratta) fixed a link to the FAQ.
+1. [Florian Albrechtskirchinger](https://github.com/falbrechtskirchinger) implemented `std::string_view` support for object keys and made dozens of other improvements.
+1. [Qianqian Fang](https://github.com/fangq) implemented the Binary JData (BJData) format.
+1. [pketelsen](https://github.com/pketelsen) added macros `NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT` and `NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT`.
+1. [DarkZeros](https://github.com/DarkZeros) adjusted to code to not clash with Arduino defines.
+1. [flagarde](https://github.com/flagarde) fixed the output of `meta()` for MSVC.
+1. [Giovanni Cerretani](https://github.com/gcerretani) fixed a check for `std::filesystem`.
+1. [Dimitris Apostolou](https://github.com/rex4539) fixed a typo.
+1. [Ferry Huberts](https://github.com/fhuberts) fixed a typo.
+1. [Michael Nosthoff](https://github.com/heinemml) fixed a typo.
+1. [JungHoon Lee](https://github.com/jhnlee) fixed a typo.
+1. [Faruk D.](https://github.com/fdiblen) fixed the CITATION.CFF file.
+1. [Andrea Cocito](https://github.com/puffetto) added a clarification on macro usage to the documentation.
+1. [Krzysiek Karbowiak](https://github.com/kkarbowiak) refactored the tests to use `CHECK_THROWS_WITH_AS`.
+1. [Chaoqi Zhang](https://github.com/prncoprs) fixed a typo.
+1. [ivanovmp](https://github.com/ivanovmp) fixed a whitespace error.
+1. [KsaNL](https://github.com/KsaNL) fixed a build error when including `<windows.h>`.
+1. [Andrea Pappacoda](https://github.com/Tachi107) moved `.pc` and `.cmake` files to `share` directory.
+1. [Wolf Vollprecht](https://github.com/wolfv) added the `patch_inplace` function.
+1. [Jake Zimmerman](https://github.com/jez) highlighted common usage patterns in the README file.
+1. [NN](https://github.com/NN---) added the Visual Studio output directory to `.gitignore`.
+1. [Romain Reignier](https://github.com/romainreignier) improved the performance the vector output adapter.
+1. [Mike](https://github.com/Mike-Leo-Smith) fixed the `std::iterator_traits`.
+1. [Richard Hozák](https://github.com/zxey) added macro `JSON_NO_ENUM` to disable default enum conversions.
+1. [vakokako](https://github.com/vakokako) fixed tests when compiling with C++20.
+1. [Alexander “weej” Jones](https://github.com/alexweej) fixed an example in the README.
+1. [Eli Schwartz](https://github.com/eli-schwartz) added more files to the `include.zip` archive.
+1. [Kevin Lu](https://github.com/kevinlul) fixed a compilation issue when typedefs with certain names were present.
+1. [Trevor Hickey](https://github.com/luxe) improved the description of an example.
+1. [Jef LeCompte](https://github.com/jef) updated the year in the README file.
+1. [Alexandre Hamez](https://github.com/ahamez) fixed a warning.
+1. [Maninderpal Badhan](https://github.com/mbadhan) fixed a typo.
+1. [kevin--](https://github.com/kevin--) added a note to an example in the README file.
+1. [I](https://github.com/wx257osn2) fixed a typo.
+1. [Gregorio Litenstein](https://github.com/Lord-Kamina) fixed the Clang detection.
+1. [Andreas Smas](https://github.com/andoma) added a Doozer badge.
+1. [WanCW](https://github.com/wancw) fixed the string conversion with Clang.
+1. [zhaohuaxishi](https://github.com/zhaohuaxishi) fixed a Doxygen error.
+1. [emvivre](https://github.com/emvivre) removed an invalid parameter from CMake.
+1. [Tobias Hermann](https://github.com/Dobiasd) fixed a link in the README file.
+1. [Michael](https://github.com/traits) fixed a warning.
+1. [Ryan Mulder](https://github.com/ryanjmulder) added `ensure_ascii` to the `dump` function.
+1. [Muri Nicanor](https://github.com/murinicanor) fixed the `sed` discovery in the Makefile.
+1. [David Avedissian](https://github.com/dgavedissian) implemented SFINAE-friendly `iterator_traits`.
+1. [AQNOUCH Mohammed](https://github.com/aqnouch) fixed a typo in the README.
+1. [Gareth Sylvester-Bradley](https://github.com/garethsb) added `operator/=` and `operator/` to construct JSON pointers.
+1. [Michael Macnair](https://github.com/mykter) added support for afl-fuzz testing.
+1. [Berkus Decker](https://github.com/berkus) fixed a typo in the README.
+1. [Illia Polishchuk](https://github.com/effolkronium) improved the CMake testing.
+1. [Ikko Ashimine](https://github.com/eltociear) fixed a typo.
+1. [Raphael Grimm](https://github.com/barcode) added the possibility to define a custom base class.
+1. [tocic](https://github.com/tocic) fixed typos in the documentation.
+1. [Vertexwahn](https://github.com/Vertexwahn) added Bazel build support.
+1. [Dirk Stolle](https://github.com/striezel) fixed typos in the documentation.
+1. [DavidKorczynski](https://github.com/DavidKorczynski) added a CIFuzz CI GitHub action.
+1. [Finkman](https://github.com/Finkman) fixed the debug pretty-printer.
+1. [Florian Segginger](https://github.com/floriansegginger) bumped the years in the README.
+1. [haadfida](https://github.com/haadfida) cleaned up the badges of used services.
+1. [Arsen Arsenović](https://github.com/ArsenArsen) fixed a build error.
+1. [theevilone45](https://github.com/theevilone45) fixed a typo in a CMake file.
+1. [Sergei Trofimovich](https://github.com/trofi) fixed the custom allocator support.
+1. [Joyce](https://github.com/joycebrum) fixed some security issues in the GitHub workflows.
+1. [Nicolas Jakob](https://github.com/njakob) add vcpkg version badge.
+1. [Tomerkm](https://github.com/Tomerkm) added tests.
+1. [No.](https://github.com/tusooa) fixed the use of `get<>` calls.
+1. [taro](https://github.com/tarolling) fixed a typo in the `CODEOWNERS` file.
+1. [Ikko Eltociear Ashimine](https://github.com/eltociear) fixed a typo.
+1. [Felix Yan](https://github.com/felixonmars) fixed a typo in the README.
+1. [HO-COOH](https://github.com/HO-COOH) fixed a parentheses in the documentation.
+1. [Ivor Wanders](https://github.com/iwanders) fixed the examples to catch exception by `const&`.
+1. [miny1233](https://github.com/miny1233) fixed a parentheses in the documentation.
+1. [tomalakgeretkal](https://github.com/tomalakgeretkal) fixed a compilation error.
+1. [alferov](https://github.com/ALF-ONE) fixed a compilation error.
+1. [Craig Scott](https://github.com/craigscott-crascit) fixed a deprecation warning in CMake.
+1. [Vyacheslav Zhdanovskiy](https://github.com/ZeronSix) added macros for serialization-only types.
+1. [Mathieu Westphal](https://github.com/mwestphal) fixed typos.
+1. [scribam](https://github.com/scribam) fixed the MinGW workflow.
+1. [Aleksei Sapitskii](https://github.com/aleksproger) added support for Apple's Swift Package Manager.
+1. [Benjamin Buch](https://github.com/bebuch) fixed the installation path in CMake.
+1. [Colby Haskell](https://github.com/colbychaskell) clarified the parse error message in case a file cannot be opened.
 
 Thanks a lot for helping out! Please [let me know](mailto:mail@nlohmann.me) if I forgot someone.
-
 
 ## Used third-party tools
 
@@ -1794,11 +1793,9 @@ The library itself consists of a single header file licensed under the MIT licen
 - [**Probot**](https://probot.github.io) for automating maintainer tasks such as closing stale issues, requesting missing information, or detecting toxic comments.
 - [**Valgrind**](https://valgrind.org) to check for correct memory management
 
-
 ## Projects using JSON for Modern C++
 
 The library is currently used in Apple macOS Sierra-Monterey and iOS 10-15. I am not sure what they are using the library for, but I am happy that it runs on so many devices.
-
 
 ## Notes
 
@@ -1820,13 +1817,14 @@ The library supports **Unicode input** as follows:
 This library does not support comments by default. It does so for three reasons:
 
 1. Comments are not part of the [JSON specification](https://tools.ietf.org/html/rfc8259). You may argue that `//` or `/* */` are allowed in JavaScript, but JSON is not JavaScript.
-2. This was not an oversight: Douglas Crockford [wrote on this](https://plus.google.com/118095276221607585885/posts/RK8qyGVaGSr) in May 2012:
 
-	> I removed comments from JSON because I saw people were using them to hold parsing directives, a practice which would have destroyed interoperability.  I know that the lack of comments makes some people sad, but it shouldn't.
+1. This was not an oversight: Douglas Crockford [wrote on this](https://plus.google.com/118095276221607585885/posts/RK8qyGVaGSr) in May 2012:
 
-	> Suppose you are using JSON to keep configuration files, which you would like to annotate. Go ahead and insert all the comments you like. Then pipe it through JSMin before handing it to your JSON parser.
+   > I removed comments from JSON because I saw people were using them to hold parsing directives, a practice which would have destroyed interoperability. I know that the lack of comments makes some people sad, but it shouldn't.
 
-3. It is dangerous for interoperability if some libraries would add comment support while others don't. Please check [The Harmful Consequences of the Robustness Principle](https://tools.ietf.org/html/draft-iab-protocol-maintenance-01) on this.
+   > Suppose you are using JSON to keep configuration files, which you would like to annotate. Go ahead and insert all the comments you like. Then pipe it through JSMin before handing it to your JSON parser.
+
+1. It is dangerous for interoperability if some libraries would add comment support while others don't. Please check [The Harmful Consequences of the Robustness Principle](https://tools.ietf.org/html/draft-iab-protocol-maintenance-01) on this.
 
 However, you can pass set parameter `ignore_comments` to true in the `parse` function to ignore `//` or `/* */` comments. Comments will then be treated as whitespace.
 

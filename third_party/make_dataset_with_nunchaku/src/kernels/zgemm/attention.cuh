@@ -4,7 +4,7 @@
 
 namespace nunchaku::kernels {
 
-// M: Q tokens 
+// M: Q tokens
 // N: V HEAD_DIM
 // K: K tokens
 // D: QK HEAD_DIM
@@ -115,7 +115,7 @@ public:
         int bm;         // M: Q tokens, bm: block id of M
         int head;       // H: head
         int batch;      // B: batch
-        int numBlocksM; 
+        int numBlocksM;
         int numHeads;
         int numBatch;
     };
@@ -142,7 +142,7 @@ public:
     }
 
     // q: [batch, head, bm, NUM_WARPS, WARP_M_TILES, WARP_D_TILES, WARP_SIZE] of packed_q_t
-    __device__ __forceinline__ 
+    __device__ __forceinline__
     static void load_q(const packed_q_t *ptr, q_warp &out, bool pred) {
         const int laneId = threadIdx.x % WARP_SIZE;
         const int warpId = threadIdx.x / WARP_SIZE;
@@ -157,7 +157,7 @@ public:
     }
 
     // k: [batch, head, ktile, WARP_K_TILES_QK, WARP_D_TILES, WARP_SIZE] of packed_k_t
-    __device__ __forceinline__ 
+    __device__ __forceinline__
     static void load_k(const packed_k_t *ptr, int ktile, k_warp &out, bool pred) {
         const int laneId = threadIdx.x % WARP_SIZE;
         const int warpId = threadIdx.x / WARP_SIZE;
@@ -172,7 +172,7 @@ public:
     }
 
     // v: [batch, head, ktile, WARP_K_TILES_PV, WARP_N_TILES, WARP_SIZE] of packed_v_t
-    __device__ __forceinline__ 
+    __device__ __forceinline__
     static void load_v(const packed_v_t *ptr, int ktile, v_warp &out, bool pred) {
         const int laneId = threadIdx.x % WARP_SIZE;
         const int warpId = threadIdx.x / WARP_SIZE;
@@ -198,9 +198,9 @@ public:
     static half2_t fix_nan(half2_t input) {
         static constexpr float neginf = -std::numeric_limits<float>::infinity();
         /**
-         * In accordance to the IEEE-754R standard, 
-         * if one of the input parameters to fminf(), fmin(), fmaxf(), or fmax() is NaN, 
-         * but not the other, 
+         * In accordance to the IEEE-754R standard,
+         * if one of the input parameters to fminf(), fmin(), fmaxf(), or fmax() is NaN,
+         * but not the other,
          * the result is the non-NaN parameter.
          */
         return __hmax2(input, half2_t(neginf, neginf));
@@ -256,7 +256,7 @@ public:
                 for (int d = 0; d < WARP_D_TILES; d++) {
                     psum = mma_f16xf16_f16(Q[m * WARP_D_TILES + d], K[k * WARP_D_TILES + d], psum);
                 }
-            
+
                 if constexpr (IS_SM80) {
                     psum = fix_nan(psum);
                     QK[m * WARP_K_TILES_QK + k] = packed_fp16_to_fp32(psum);
@@ -264,7 +264,7 @@ public:
                     QK[m * WARP_K_TILES_QK + k] = fix_nan(packed_fp16_to_fp32(psum));
                 }
 #endif
-                
+
             }
         }
         return QK;
@@ -363,7 +363,7 @@ public:
                 for (int k = 0; k < WARP_K_TILES_PV; k++) {
                     psum = mma_f16xf16_f16(P[m * WARP_K_TILES_PV + k], V[n * WARP_K_TILES_PV + k], psum);
                 }
-                
+
                 packed_f32psum_t pv = packed_fp16_to_fp32(psum);
                 packed_f32psum_t &oval = O[m * WARP_N_TILES + n];
                 oval.data[0] = oval.data[0] * rescale[m].x + pv.data[0];
@@ -462,10 +462,10 @@ public:
         const packed_k_t *ptr_k,
         const packed_v_t *ptr_v,
         float scale,
-        int ntokens_q, 
+        int ntokens_q,
         int ntokens_kv,
         Epilogue::Arguments epilogueArgs,
-        bool alwaysfalse) 
+        bool alwaysfalse)
     {
         constexpr int NUM_STAGES = 2;
 
@@ -519,7 +519,7 @@ public:
                 bool pred = nextk < ntokens_kv / WARP_K;
                 load_k(ptr_k, nextk, K[idx], pred);
                 load_v(ptr_v, nextk, V[idx], pred);
-                
+
                 // __syncthreads();
                 // if (alwaysfalse) {
                 //     dummy = clock();
@@ -556,10 +556,10 @@ public:
         const packed_k_t *ptr_k,
         const packed_v_t *ptr_v,
         float scale,
-        int ntokens_q, 
+        int ntokens_q,
         int ntokens_kv,
         Epilogue::Arguments epilogueArgs,
-        bool alwaysfalse) 
+        bool alwaysfalse)
     {
         // constexpr int NUM_STAGES = 2;
 
@@ -628,7 +628,7 @@ public:
                 dummy = clock();
             }
 
-        
+
 
             auto [P, rescale] = compute(Q, K, M, L, scale);
 
@@ -646,7 +646,7 @@ public:
 
             load_k(ptr_k, k1+1, K, k1+1 < ntokens_kv / WARP_K);
 
-            
+
 
             // if (alwaysfalse) {
             //     dummy = clock();
@@ -685,10 +685,10 @@ public:
             const packed_k_t *ptr_k,
             const packed_v_t *ptr_v,
             float scale,
-            int ntokens_q, 
+            int ntokens_q,
             int ntokens_kv,
             Epilogue::Arguments epilogueArgs,
-            bool alwaysfalse) 
+            bool alwaysfalse)
         {
             BlockInfo binfo = {
                 .bm = (int)blockIdx.x,
@@ -723,4 +723,3 @@ public:
 
 
 };  // namespace nunchaku::kernels
-

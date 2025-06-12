@@ -38,92 +38,96 @@ from .layout import *
 
 
 def shiftr(a, s):
-  return a >> s if s > 0 else shiftl(a, -s)
+    return a >> s if s > 0 else shiftl(a, -s)
 
 
 def shiftl(a, s):
-  return a << s if s > 0 else shiftr(a, -s)
+    return a << s if s > 0 else shiftr(a, -s)
 
 
 ## A generic Swizzle functor
- # 0bxxxxxxxxxxxxxxxYYYxxxxxxxZZZxxxx
- #                               ^--^  Base is the number of least-sig bits to keep constant
- #                  ^-^       ^-^      Bits is the number of bits in the mask
- #                    ^---------^      Shift is the distance to shift the YYY mask
- #                                       (pos shifts YYY to the right, neg shifts YYY to the left)
- #
- # e.g. Given
- # 0bxxxxxxxxxxxxxxxxYYxxxxxxxxxZZxxx
- # the result is
- # 0bxxxxxxxxxxxxxxxxYYxxxxxxxxxAAxxx where AA = ZZ xor YY
- #
+# 0bxxxxxxxxxxxxxxxYYYxxxxxxxZZZxxxx
+#                               ^--^  Base is the number of least-sig bits to keep constant
+#                  ^-^       ^-^      Bits is the number of bits in the mask
+#                    ^---------^      Shift is the distance to shift the YYY mask
+#                                       (pos shifts YYY to the right, neg shifts YYY to the left)
+#
+# e.g. Given
+# 0bxxxxxxxxxxxxxxxxYYxxxxxxxxxZZxxx
+# the result is
+# 0bxxxxxxxxxxxxxxxxYYxxxxxxxxxAAxxx where AA = ZZ xor YY
+#
 class Swizzle:
-  def __init__(self, bits, base, shift):
-    assert bits >= 0
-    assert base >= 0
-    assert abs(shift) >= bits
-    self.bits = bits
-    self.base = base
-    self.shift = shift
-    bit_msk = (1 << bits) - 1
-    self.yyy_msk = bit_msk << (base + max(0,shift))
-    self.zzz_msk = bit_msk << (base - min(0,shift))
+    def __init__(self, bits, base, shift):
+        assert bits >= 0
+        assert base >= 0
+        assert abs(shift) >= bits
+        self.bits = bits
+        self.base = base
+        self.shift = shift
+        bit_msk = (1 << bits) - 1
+        self.yyy_msk = bit_msk << (base + max(0, shift))
+        self.zzz_msk = bit_msk << (base - min(0, shift))
 
-  # operator ()    (transform integer)
-  def __call__(self, offset):
-    return offset ^ shiftr(offset & self.yyy_msk, self.shift)
+    # operator ()    (transform integer)
+    def __call__(self, offset):
+        return offset ^ shiftr(offset & self.yyy_msk, self.shift)
 
-  # Size of the domain
-  def size(self):
-    return 1 << (bits + base + abs(shift))
+    # Size of the domain
+    def size(self):
+        return 1 << (bits + base + abs(shift))
 
-  # Size of the codomain
-  def cosize(self):
-    return self.size()
+    # Size of the codomain
+    def cosize(self):
+        return self.size()
 
-  # print and str
-  def __str__(self):
-    return f"SW_{self.bits}_{self.base}_{self.shift}"
+    # print and str
+    def __str__(self):
+        return f"SW_{self.bits}_{self.base}_{self.shift}"
 
-  # error msgs and representation
-  def __repr__(self):
-    return f"Swizzle({self.bits},{self.base},{self.shift})"
+    # error msgs and representation
+    def __repr__(self):
+        return f"Swizzle({self.bits},{self.base},{self.shift})"
 
 
 class ComposedLayout(LayoutBase):
-  def __init__(self, layoutB, offset, layoutA):
-    self.layoutB = layoutB
-    self.offset  = offset
-    self.layoutA = layoutA
+    def __init__(self, layoutB, offset, layoutA):
+        self.layoutB = layoutB
+        self.offset = offset
+        self.layoutA = layoutA
 
-  # operator ==
-  def __eq__(self, other):
-    return self.layoutB == other.layoutB and self.offset == other.offset and self.layoutA == other.layoutA
+    # operator ==
+    def __eq__(self, other):
+        return (
+            self.layoutB == other.layoutB
+            and self.offset == other.offset
+            and self.layoutA == other.layoutA
+        )
 
-  # operator len(L)  (len [rank] like tuples)
-  def __len__(self):
-    return len(self.layoutA)
+    # operator len(L)  (len [rank] like tuples)
+    def __len__(self):
+        return len(self.layoutA)
 
-  # operator ()    (map coord to idx)
-  def __call__(self, *args):
-    return self.layoutB(self.offset + self.layoutA(*args))
+    # operator ()    (map coord to idx)
+    def __call__(self, *args):
+        return self.layoutB(self.offset + self.layoutA(*args))
 
-  # operator []    (get-i like tuples)
-  def __getitem__(self, i):
-    return ComposedLayout(self.layoutB, self.offset, self.layoutA[i])
+    # operator []    (get-i like tuples)
+    def __getitem__(self, i):
+        return ComposedLayout(self.layoutB, self.offset, self.layoutA[i])
 
-  # size(layout)   Size of the domain
-  def size(self):
-    return size(self.layoutA)
+    # size(layout)   Size of the domain
+    def size(self):
+        return size(self.layoutA)
 
-  # cosize(layout)   Size of the codomain
-  def cosize(self):
-    return cosize(self.layoutB)
+    # cosize(layout)   Size of the codomain
+    def cosize(self):
+        return cosize(self.layoutB)
 
-  # print and str
-  def __str__(self):
-    return f"{self.layoutB} o {self.offset} o {self.layoutA}"
+    # print and str
+    def __str__(self):
+        return f"{self.layoutB} o {self.offset} o {self.layoutA}"
 
-  # error msgs and representation
-  def __repr__(self):
-    return f"ComposedLayout({repr(self.layoutB)},{repr(self.offset)},{repr(self.layoutA)})"
+    # error msgs and representation
+    def __repr__(self):
+        return f"ComposedLayout({repr(self.layoutB)},{repr(self.offset)},{repr(self.layoutA)})"

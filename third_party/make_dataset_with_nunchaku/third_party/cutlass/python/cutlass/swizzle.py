@@ -36,7 +36,6 @@ Registry of swizzling functions
 
 from cutlass_library import SwizzlingFunctor
 
-
 IdentitySwizzle1 = SwizzlingFunctor.Identity1
 IdentitySwizzle2 = SwizzlingFunctor.Identity2
 IdentitySwizzle4 = SwizzlingFunctor.Identity4

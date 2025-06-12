@@ -3,24 +3,24 @@
 
 using json = nlohmann::json;
 
-namespace ns
-{
+namespace ns {
 // a simple struct to model a person (not default constructible)
 struct person
 {
     person(std::string n, std::string a, int aa)
-        : name(std::move(n)), address(std::move(a)), age(aa)
+      : name(std::move(n))
+      , address(std::move(a))
+      , age(aa)
     {}
 
     std::string name;
     std::string address;
     int age;
 };
-} // namespace ns
+}  // namespace ns
 
-namespace nlohmann
-{
-template <>
+namespace nlohmann {
+template<>
 struct adl_serializer<ns::person>
 {
     static ns::person from_json(const json& j)
@@ -38,7 +38,7 @@ struct adl_serializer<ns::person>
         j["age"] = p.age;
     }
 };
-} // namespace nlohmann
+}  // namespace nlohmann
 
 int main()
 {

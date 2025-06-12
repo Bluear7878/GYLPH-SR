@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -54,12 +55,14 @@ namespace device {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Use simple problem visitor as a baseline
-template <typename ProblemSizeHelper,
-          typename ThreadblockShape,
-          int PrefetchTileCount,
-          int ThreadCount>
-struct BaselineProblemVisitor : public cutlass::gemm::kernel::BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape> {
-  using Base = cutlass::gemm::kernel::BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape>;
+template <typename ProblemSizeHelper, typename ThreadblockShape,
+          int PrefetchTileCount, int ThreadCount>
+struct BaselineProblemVisitor
+    : public cutlass::gemm::kernel::BaseGroupedProblemVisitor<
+          ProblemSizeHelper, ThreadblockShape> {
+  using Base =
+      cutlass::gemm::kernel::BaseGroupedProblemVisitor<ProblemSizeHelper,
+                                                       ThreadblockShape>;
   using Params = typename Base::Params;
   static int const kThreadCount = ThreadCount;
 
@@ -72,15 +75,11 @@ struct BaselineProblemVisitor : public cutlass::gemm::kernel::BaseGroupedProblem
   // Methods
   //
   CUTLASS_DEVICE
-  BaselineProblemVisitor(
-    Params const &params_,
-    SharedStorage &shared_storage_,
-    int32_t block_idx
-  ): Base(params_, block_idx),
-  shared_storage(shared_storage_)
-  {
+  BaselineProblemVisitor(Params const &params_, SharedStorage &shared_storage_,
+                         int32_t block_idx)
+      : Base(params_, block_idx), shared_storage(shared_storage_) {
     cutlass::gemm::GemmCoord problem = this->problem_size();
-    cutlass::gemm::GemmCoord  grid = this->grid_shape(problem);
+    cutlass::gemm::GemmCoord grid = this->grid_shape(problem);
     tile_count_sum = this->tile_count(grid);
   }
 
@@ -98,7 +97,7 @@ struct BaselineProblemVisitor : public cutlass::gemm::kernel::BaseGroupedProblem
       }
 
       cutlass::gemm::GemmCoord problem = this->problem_size();
-      cutlass::gemm::GemmCoord  grid = this->grid_shape(problem);
+      cutlass::gemm::GemmCoord grid = this->grid_shape(problem);
 
       this->problem_tile_start = tile_count_sum;
       tile_count_sum += this->tile_count(grid);
@@ -108,53 +107,49 @@ struct BaselineProblemVisitor : public cutlass::gemm::kernel::BaseGroupedProblem
     return true;
   }
 
-  static size_t get_workspace_size(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr,
-                                   int32_t problem_count,
-                                   int32_t block_count) {
+  static size_t
+  get_workspace_size(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                     int32_t problem_count, int32_t block_count) {
     return 0;
   }
 
-  static void host_precompute(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr,
-                              int32_t problem_count,
-                              int32_t block_count,
-                              void* host_workspace_ptr) {}
+  static void
+  host_precompute(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                  int32_t problem_count, int32_t block_count,
+                  void *host_workspace_ptr) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename ProblemVisitor>
-struct ProblemVisitorKernel {
+template <typename ProblemVisitor> struct ProblemVisitorKernel {
   struct SharedStorage {
     typename ProblemVisitor::SharedStorage problem_visitor;
   };
 
   struct Params {
     typename ProblemVisitor::Params problem_visitor_params;
-    int32_t* visited_problems_ptr;
-    int32_t* visited_tiles_ptr;
+    int32_t *visited_problems_ptr;
+    int32_t *visited_tiles_ptr;
     int32_t visits_per_block;
 
-    Params():
-      visited_problems_ptr(nullptr),
-      visited_tiles_ptr(nullptr),
-      visits_per_block(0) {}
+    Params()
+        : visited_problems_ptr(nullptr), visited_tiles_ptr(nullptr),
+          visits_per_block(0) {}
 
     Params(typename ProblemVisitor::Params problem_visitor_params_,
-           int32_t* visited_problems_ptr_,
-           int32_t* visited_tiles_ptr_,
-           int32_t visits_per_block_):
-      problem_visitor_params(problem_visitor_params_),
-      visited_problems_ptr(visited_problems_ptr_),
-      visited_tiles_ptr(visited_tiles_ptr_),
-      visits_per_block(visits_per_block_) {}
+           int32_t *visited_problems_ptr_, int32_t *visited_tiles_ptr_,
+           int32_t visits_per_block_)
+        : problem_visitor_params(problem_visitor_params_),
+          visited_problems_ptr(visited_problems_ptr_),
+          visited_tiles_ptr(visited_tiles_ptr_),
+          visits_per_block(visits_per_block_) {}
   };
 
   CUTLASS_DEVICE
-  void operator()(const Params& params, SharedStorage &shared_storage) {
+  void operator()(const Params &params, SharedStorage &shared_storage) {
     int32_t store_offset = params.visits_per_block * blockIdx.x;
     ProblemVisitor problem_visitor(params.problem_visitor_params,
-                                   shared_storage.problem_visitor,
-                                   blockIdx.x);
+                                   shared_storage.problem_visitor, blockIdx.x);
 
     while (problem_visitor.next_tile()) {
       int32_t problem_idx = problem_visitor.problem_index();
@@ -170,8 +165,7 @@ struct ProblemVisitorKernel {
   }
 };
 
-template <typename ProblemVisitor>
-struct ProblemVisitorRunner {
+template <typename ProblemVisitor> struct ProblemVisitorRunner {
   using BaseKernel = ProblemVisitorKernel<ProblemVisitor>;
   using Params = typename BaseKernel::Params;
 
@@ -187,23 +181,23 @@ struct ProblemVisitorRunner {
   std::vector<int32_t> host_visited_problems;
   std::vector<int32_t> host_visited_tiles;
 
-  ProblemVisitorRunner(const std::vector<cutlass::gemm::GemmCoord>& host_problem_sizes_,
-                       int32_t threadblock_count_):
-      host_problem_sizes(host_problem_sizes_),
-      problem_count(int32_t(host_problem_sizes_.size())),
-      threadblock_count(threadblock_count_) {}
+  ProblemVisitorRunner(
+      const std::vector<cutlass::gemm::GemmCoord> &host_problem_sizes_,
+      int32_t threadblock_count_)
+      : host_problem_sizes(host_problem_sizes_),
+        problem_count(int32_t(host_problem_sizes_.size())),
+        threadblock_count(threadblock_count_) {}
 
   /// Initializes GEMM state from arguments.
   cutlass::Status initialize() {
     size_t workspace_bytes = ProblemVisitor::get_workspace_size(
-                                host_problem_sizes.data(),
-                                problem_count,
-                                threadblock_count);
+        host_problem_sizes.data(), problem_count, threadblock_count);
 
     workspace.reset(workspace_bytes);
     std::vector<uint8_t> host_workspace(workspace_bytes);
 
-    int32_t tile_count = ProblemVisitor::group_tile_count(host_problem_sizes.data(), problem_count);
+    int32_t tile_count = ProblemVisitor::group_tile_count(
+        host_problem_sizes.data(), problem_count);
 
     ProblemVisitor::host_precompute(host_problem_sizes.data(), problem_count,
                                     threadblock_count, host_workspace.data());
@@ -211,7 +205,8 @@ struct ProblemVisitorRunner {
     workspace.copy_from_host(host_workspace.data(), workspace_bytes);
 
     device_problem_sizes.reset(problem_count);
-    device_problem_sizes.copy_from_host(host_problem_sizes.data(), problem_count);
+    device_problem_sizes.copy_from_host(host_problem_sizes.data(),
+                                        problem_count);
 
     visits_per_block = (tile_count - 1 + threadblock_count) / threadblock_count;
     int32_t total_visits = visits_per_block * threadblock_count;
@@ -221,18 +216,22 @@ struct ProblemVisitorRunner {
     host_visited_problems.resize(total_visits);
     host_visited_tiles.resize(total_visits);
 
-    cudaError_t result = cudaMemset(visited_problems.get(), -1, sizeof(int32_t) * total_visits);
+    cudaError_t result =
+        cudaMemset(visited_problems.get(), -1, sizeof(int32_t) * total_visits);
     if (result != cudaSuccess) {
       return cutlass::Status::kErrorInternal;
     }
 
-    result = cudaMemset(visited_tiles.get(), -1, sizeof(int32_t) * total_visits);
+    result =
+        cudaMemset(visited_tiles.get(), -1, sizeof(int32_t) * total_visits);
     if (result != cudaSuccess) {
       return cutlass::Status::kErrorInternal;
     }
 
-    typename ProblemVisitor::Params pv_params(device_problem_sizes.get(), problem_count, workspace.get(), tile_count);
-    params = Params(pv_params, visited_problems.get(), visited_tiles.get(), visits_per_block);
+    typename ProblemVisitor::Params pv_params(
+        device_problem_sizes.get(), problem_count, workspace.get(), tile_count);
+    params = Params(pv_params, visited_problems.get(), visited_tiles.get(),
+                    visits_per_block);
 
     return cutlass::Status::kSuccess;
   }
@@ -242,13 +241,13 @@ struct ProblemVisitorRunner {
     std::vector<int32_t> indices(host_visited_problems.size());
     std::iota(indices.begin(), indices.end(), 0);
 
-    std::stable_sort(indices.begin(), indices.end(),
-      [&](int32_t i1, int32_t i2) {
-        if (host_visited_problems[i1] == host_visited_problems[i2]) {
-          return host_visited_tiles[i1] < host_visited_tiles[i2];
-        }
-        return host_visited_problems[i1] < host_visited_problems[i2];
-      });
+    std::stable_sort(
+        indices.begin(), indices.end(), [&](int32_t i1, int32_t i2) {
+          if (host_visited_problems[i1] == host_visited_problems[i2]) {
+            return host_visited_tiles[i1] < host_visited_tiles[i2];
+          }
+          return host_visited_problems[i1] < host_visited_problems[i2];
+        });
 
     int32_t idx = 0;
 
@@ -261,7 +260,8 @@ struct ProblemVisitorRunner {
     for (int32_t problem_idx = 0; problem_idx < problem_count; ++problem_idx) {
       auto problem = host_problem_sizes[problem_idx];
       ProblemVisitor::possibly_transpose_problem(problem);
-      int32_t problem_tiles = ProblemVisitor::tile_count(ProblemVisitor::grid_shape(problem));
+      int32_t problem_tiles =
+          ProblemVisitor::tile_count(ProblemVisitor::grid_shape(problem));
       for (int i = 0; i < problem_tiles; ++i) {
         EXPECT_EQ(problem_idx, host_visited_problems[indices[idx]]);
         EXPECT_EQ(i, host_visited_tiles[indices[idx]]);
@@ -287,13 +287,15 @@ struct ProblemVisitorRunner {
 
     cudaError_t result = cudaGetLastError();
     if (result != cudaSuccess) {
-      std::cerr << "grid launch failed with error " << cudaGetErrorString(result) << std::endl;
+      std::cerr << "grid launch failed with error "
+                << cudaGetErrorString(result) << std::endl;
       return false;
     }
 
     result = cudaDeviceSynchronize();
     if (result != cudaSuccess) {
-      std::cerr << "cudaDeviceSynchronize failed with error " << cudaGetErrorString(result) << std::endl;
+      std::cerr << "cudaDeviceSynchronize failed with error "
+                << cudaGetErrorString(result) << std::endl;
       return false;
     }
 
@@ -304,19 +306,16 @@ struct ProblemVisitorRunner {
   }
 };
 
-template <typename ThreadblockShape,
-          int PrefetchTileCount,
-          int ThreadCount,
+template <typename ThreadblockShape, int PrefetchTileCount, int ThreadCount,
           bool Transpose,
           cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode0,
           cutlass::gemm::kernel::GroupScheduleMode... Args>
 struct TestbedGroupedGemmScheduler {
 
-  using PSHelper = cutlass::gemm::kernel::detail::GemmGroupedProblemSizeHelper<ThreadblockShape, Transpose>;
-  using BaselinePV = BaselineProblemVisitor<PSHelper,
-                                            ThreadblockShape,
-                                            PrefetchTileCount,
-                                            ThreadCount>;
+  using PSHelper = cutlass::gemm::kernel::detail::GemmGroupedProblemSizeHelper<
+      ThreadblockShape, Transpose>;
+  using BaselinePV = BaselineProblemVisitor<PSHelper, ThreadblockShape,
+                                            PrefetchTileCount, ThreadCount>;
 
   //
   // Data members
@@ -330,8 +329,9 @@ struct TestbedGroupedGemmScheduler {
   // Methods
   //
 
-  TestbedGroupedGemmScheduler(uint32_t seed_ = 3080):
-    seed(seed_) { srand(seed); }
+  TestbedGroupedGemmScheduler(uint32_t seed_ = 3080) : seed(seed_) {
+    srand(seed);
+  }
 
   /// Initializes data structures
   void initialize(int32_t scale_factor) {
@@ -345,35 +345,35 @@ struct TestbedGroupedGemmScheduler {
 
     for (int32_t i = 0; i < problem_count; ++i) {
 
-      cutlass::gemm::GemmCoord problem(
-        scale_factor * (rand() % 64) + 24,
-        scale_factor * (rand() % 64) + 24,
-        scale_factor * (rand() % 64) + 24);
+      cutlass::gemm::GemmCoord problem(scale_factor * (rand() % 64) + 24,
+                                       scale_factor * (rand() % 64) + 24,
+                                       scale_factor * (rand() % 64) + 24);
 
       problem_sizes_host.at(i) = problem;
     }
   }
 
   template <cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode_>
-  void compare_visitors(const ProblemVisitorRunner<BaselinePV>& baseline_runner) {
+  void
+  compare_visitors(const ProblemVisitorRunner<BaselinePV> &baseline_runner) {
     using PV = cutlass::gemm::kernel::GemmGroupedProblemVisitor<
-                                         ThreadblockShape,
-                                         GroupScheduleMode_,
-                                         PrefetchTileCount,
-                                         ThreadCount,
-                                         Transpose>;
+        ThreadblockShape, GroupScheduleMode_, PrefetchTileCount, ThreadCount,
+        Transpose>;
     ProblemVisitorRunner<PV> runner(problem_sizes_host, threadblock_count);
     EXPECT_TRUE(runner.run());
 
-    // Check that this problem visitor visits the same problems and tiles as the baseline
-    EXPECT_EQ(baseline_runner.host_visited_problems, runner.host_visited_problems);
+    // Check that this problem visitor visits the same problems and tiles as the
+    // baseline
+    EXPECT_EQ(baseline_runner.host_visited_problems,
+              runner.host_visited_problems);
     EXPECT_EQ(baseline_runner.host_visited_tiles, runner.host_visited_tiles);
   }
 
   template <cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode1_,
             cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode2_,
             cutlass::gemm::kernel::GroupScheduleMode... Rest>
-  void compare_visitors(const ProblemVisitorRunner<BaselinePV>& baseline_runner) {
+  void
+  compare_visitors(const ProblemVisitorRunner<BaselinePV> &baseline_runner) {
     // Compare the next visitor with the baseline visitor
     compare_visitors<GroupScheduleMode1_>(baseline_runner);
 
@@ -382,7 +382,7 @@ struct TestbedGroupedGemmScheduler {
   }
 
   /// Executes the test on all scheduler modes
-  void run(int problem_count, int threadblock_count, int scale_factor=8) {
+  void run(int problem_count, int threadblock_count, int scale_factor = 8) {
 
     this->problem_count = problem_count;
     this->threadblock_count = threadblock_count;
@@ -391,7 +391,8 @@ struct TestbedGroupedGemmScheduler {
     initialize(scale_factor);
 
     // Run the baseline visitor to which we will compare all other visitors
-    ProblemVisitorRunner<BaselinePV> baseline_runner(problem_sizes_host, threadblock_count);
+    ProblemVisitorRunner<BaselinePV> baseline_runner(problem_sizes_host,
+                                                     threadblock_count);
     EXPECT_TRUE(baseline_runner.run());
 
     compare_visitors<Args...>(baseline_runner);
@@ -400,8 +401,8 @@ struct TestbedGroupedGemmScheduler {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-} // device
-} // gemm
-} // test
+} // namespace device
+} // namespace gemm
+} // namespace test
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

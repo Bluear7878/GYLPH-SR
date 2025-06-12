@@ -5,7 +5,7 @@
 Although CUTLASS 3.0 restructures the GEMM hierarchy and introduces new types for the
 threadblock layer and below, we intend the entire source code to be usable in user applications.
 We expect users to be able to `#include` any source file from CUTLASS 3.0, whether
-they implement the 2.x or the 3.x API, without breaking user builds. This means that a single 
+they implement the 2.x or the 3.x API, without breaking user builds. This means that a single
 translation unit should be able to contain any valid kernel regardless of its API version. The
 sections below discuss how `device` and `kernel` layer type names are made compatible across the
 two API versions, and what the users can expect out of the `threadblock` layer API going forward.
@@ -24,11 +24,11 @@ for both CUTLASS 3.x and CUTLASS 2.x kernels.
 Its template parameter `GemmKernel`,
 the GEMM kernel type, can be any of the following:
 
-* `cutlass::gemm::kernel::GemmUniversal`,
+- `cutlass::gemm::kernel::GemmUniversal`,
   implementing CUTLASS 3.x API kernels;
-* `cutlass::gemm::kernel::GemmUniversal`,
+- `cutlass::gemm::kernel::GemmUniversal`,
   implementing CUTLASS 2.x API kernels;
-* Any valid CUTLASS 2.x `kernel` layer GEMM that
+- Any valid CUTLASS 2.x `kernel` layer GEMM that
   was previously composable with `device::GemmUniversalAdapter`
 
 Users implementing new kernels in either API should prefer
@@ -53,9 +53,9 @@ might differ between the two specializations.
 ### Device API design differences
 
 In CUTLASS 2.x, the Device API was more closely tied
-to the Kernel API.  In CUTLASS 3.0, the Device API
+to the Kernel API. In CUTLASS 3.0, the Device API
 accepts any kernel type that meets the Kernel API
-interface requirements.  CUTLASS 3.0's Device API code is
+interface requirements. CUTLASS 3.0's Device API code is
 parameterized by the kernel type, but this code
 is *generic*; the same code works for any kernel type.
 
@@ -73,9 +73,9 @@ run(Params& params, cudaStream_t stream = nullptr);
 
 This new API is useful for the following scenarios.
 
-* Running again does not require reinvoking `GemmKernel::to_underlying_arguments()`
-* Manual control over construction of `GemmKernel::Params` for custom kernels with custom stride types
-* Fully static problem shapes and strides for bespoke kernels where no argument mapping needs to take place
+- Running again does not require reinvoking `GemmKernel::to_underlying_arguments()`
+- Manual control over construction of `GemmKernel::Params` for custom kernels with custom stride types
+- Fully static problem shapes and strides for bespoke kernels where no argument mapping needs to take place
 
 ## Compatible Kernel API
 
@@ -126,7 +126,7 @@ a 2.x mainloop with a 3.0 collective epilogue.
 CUTLASS 3.x implements various embodiments of `kernel::GemmUniversal`.
 Each kernel layer schedule is specialized
 for a GEMM scheduling algorithm and GPU architecture.
-Specializations of `kernel::GemmUniversal` for 3.0 APIs live in 
+Specializations of `kernel::GemmUniversal` for 3.0 APIs live in
 any of various `gemm_*.hpp` files in the directory
 [include/cutlass/gemm/kernel/](../../include/cutlass/gemm/kernel/).
 The specialization to which to dispatch is decided through the dispatch policy's `Schedule` type.
@@ -155,7 +155,7 @@ All CUTLASS 3 `kernel::GemmUniversal` specializations expose the following (stat
 static bool
 can_implement(Arguments const& args);
 
-// Returns a dim3 representing the threadblock shape. 
+// Returns a dim3 representing the threadblock shape.
 static dim3
 get_block_shape();
 
@@ -172,7 +172,7 @@ the 3.x API or 2.x API:
 // include/cutlass/gemm/gemm.h
 
 namespace cutlass:gemm::detail {
-  
+
 // The following metafunction is used to detect whether a
 // `kernel::Gemm` or `kernel::GemmUniversal` implements the CUTLASS 3.x API,
 // by checking whether the problem shape type is aliased within.
@@ -188,15 +188,15 @@ this as a type trait for the kernel API version.
 ## Threadblock API and Inner Loops
 
 Much of the CUTLASS 3 GEMM hierarchy for mainloops and inner loops diverges
-from that of CUTLASS 2.x.  With that also comes the introduction of the
+from that of CUTLASS 2.x. With that also comes the introduction of the
 `cutlass::gemm::collective` layer as a direct replacement and a superset
 of the 2.x `cutlass::gemm::threadblock` layer. Going forward,
 CUTLASS 3.x will discontinue new developments in the following namespaces.
 
-* `cutlass::*::threadblock::*` 
-* `cutlass::*::warp::*`
-* `cutlass::gemm::thread::*`
-* `cutlass::arch::*` (except `barrier.h`)
+- `cutlass::*::threadblock::*`
+- `cutlass::*::warp::*`
+- `cutlass::gemm::thread::*`
+- `cutlass::arch::*` (except `barrier.h`)
 
 `cutlass::gemm::collective`s are a superset of the threadblock layer where
 all new mainloops will be developed. Users should look to the `CollectiveMma` type
@@ -209,7 +209,7 @@ and associated metadata development will occur directly inside [`cute/arch/*.hpp
 The desired inner loop MMA iteration order and tiling can be achieved through careful
 selection of the atom layout, value layout, and permutations of the `cute::TiledMma`.
 
-For epilogues, the `cutlass::epilogue::collective` layer replaces `cutlass::threadblock::collective`.  However, the thread-level epilogue elementwise operations
+For epilogues, the `cutlass::epilogue::collective` layer replaces `cutlass::threadblock::collective`. However, the thread-level epilogue elementwise operations
 in `cutlass::epilogue::thread` will continue to be used in 3.x kernels as well, albeit, with
 a more idiomatic epilogue vectorization strategy.
 [Example 50](/examples/50_hopper_gemm_with_epilogue_swizzle/50_hopper_gemm_with_epilogue_swizzle.cu)
@@ -228,24 +228,24 @@ CUTLASS 3.0 does not use the terms "column major"
 or "row major" to describe matrix layouts.
 Starting with CUTLASS 3.0, adoption of CuTe allows us to decouple
 
-* the coordinate mode order (logical shape) of layouts from
+- the coordinate mode order (logical shape) of layouts from
 
-* the index space stride order of the backing storage.
+- the index space stride order of the backing storage.
 
 In line with our switch to a conceptual GEMM hierarchy, we view the major modes not from a BLAS-3 perspective.
 Rather, we divide the modes into two categories.
 
-* "Inner modes" or "K-modes" are contracted over during the GEMM.
+- "Inner modes" or "K-modes" are contracted over during the GEMM.
   Therefore, they are not present in the output tensor.
 
-* "Outer modes" or "MN-modes" are preserved in the output.
+- "Outer modes" or "MN-modes" are preserved in the output.
 
 Now, instead of `RowMajor` or `ColumnMajor`, whose major stride depends on whether we are referring to the
-A or the B matrix, we uniformly employ the "K major" or "MN major" terminology and enforce the convention of all tensors having the shape `[M/N, K, L]` regardless of which mode is major.  That is,
+A or the B matrix, we uniformly employ the "K major" or "MN major" terminology and enforce the convention of all tensors having the shape `[M/N, K, L]` regardless of which mode is major. That is,
 
-* the input matrix A has shape M x K,
-* the input matrix B has shape N x K, and
-* the input/output matrices C/D have shape M x N.
+- the input matrix A has shape M x K,
+- the input matrix B has shape N x K, and
+- the input/output matrices C/D have shape M x N.
 
 Note that this convention for B
 differs from the BLAS's GEMM interface,
@@ -255,17 +255,17 @@ CUTLASS 3.0 uses these names of the modes
 to specify which mode of a matrix has stride 1.
 For the matrix A,
 
-* "M major" means that the matrix is stride 1
+- "M major" means that the matrix is stride 1
   in the M mode, and
-* "K major" means that the matrix is stride 1
+- "K major" means that the matrix is stride 1
   in the K mode.
 
 For the matrix B,
 
-* "N major" means that the matrix is stride 1
+- "N major" means that the matrix is stride 1
   in the N mode (which for B is mode 0,
   because the convention is that B is N x K); and
-* "K major" means that the matrix is stride 1
+- "K major" means that the matrix is stride 1
   in the K mode (which for B is mode 1).
 
 CUTLASS 2.x defines "layout tag" classes
@@ -274,7 +274,7 @@ that live in the header file
 [`cutlass/layout/matrix.h`](/include/cutlass/layout/matrix.h).
 The interpretation of these layouts in GEMM
 depends on whether they are applied
-to the input matrix A or B. For the matrix A, "column major" means 
+to the input matrix A or B. For the matrix A, "column major" means
 that mode corresponding to M extent has stride 1,
 and "row major" means that mode corresponding to K extent has stride 1.
 This is the usual computer science definition
@@ -290,14 +290,14 @@ changing depending on whether they are applied to A or B.
 The table below summarizes our mode order convention and
 mapping of 2.x layout tags to corresponding M-major, N-major, or K-major strides.
 
-| Matrix | CUTLASS 2.x layout | 2.x Shape  | Logical major mode| 3.x Shape/Stride  | Major ordinal |
-| ---    | ---                | ---        | ---               | ---               | ---           |
-| A      | `ColumnMajor`      | M x K      | M major           | M x K x L         | 0 (outer)     |
-| A      | `RowMajor`         | M x K      | K major           | M x K x L         | 1 (inner)     |
-| B      | `RowMajor`         | K x N      | N major           | N x K x L         | 0 (outer)     |
-| B      | `ColumnMajor`      | K x N      | K major           | N x K x L         | 1 (inner)     |
-| C      | `ColumnMajor`      | M x N      | M major           | M x N x L         | 0 (outer)     |
-| C      | `RowMajor`         | M x N      | N major           | M x N x L         | 1 (inner)     |
+| Matrix | CUTLASS 2.x layout | 2.x Shape | Logical major mode| 3.x Shape/Stride | Major ordinal |
+| --- | --- | --- | --- | --- | --- |
+| A | `ColumnMajor` | M x K | M major | M x K x L | 0 (outer) |
+| A | `RowMajor` | M x K | K major | M x K x L | 1 (inner) |
+| B | `RowMajor` | K x N | N major | N x K x L | 0 (outer) |
+| B | `ColumnMajor` | K x N | K major | N x K x L | 1 (inner) |
+| C | `ColumnMajor` | M x N | M major | M x N x L | 0 (outer) |
+| C | `RowMajor` | M x N | N major | M x N x L | 1 (inner) |
 
 Notice that in CUTLASS 3.0, interpretation of layouts no longer changes based on
 whether we are talking about the A or B matrix. M and N major inputs always have a
@@ -332,7 +332,7 @@ and K mode as the 1st mode of the stride.
 ### Conversions between 2.x tags and 3.0 types
 
 Starting with CUTLASS 3.0, all layouts are described using
-`cute::Shape` and `cute::Stride` which compose into a `cute::Layout<Shape, Stride>`. 
+`cute::Shape` and `cute::Stride` which compose into a `cute::Layout<Shape, Stride>`.
 In CUTLASS 2.x, various layout tags such as `cutlass::layout::RowMajor` are used to specialize
 template implementations. These tag types only encode information about the tensor strides,
 as 2.x layouts did not incorporate any concept of tensor shape in the layout tags themselves.
@@ -342,9 +342,9 @@ also accept these 2.x layout tags as input parameters in their template API as a
 At every entry point into CUTLASS 3.0, these tags get converted to their corresponding CuTe Stride type with
 metafunctions that best approximate their corresponding `cute::Stride`.
 
-* `cutlass::gemm::detail::TagToStrideA_t<LayoutTag>`
-* `cutlass::gemm::detail::TagToStrideB_t<LayoutTag>`
-* `cutlass::gemm::detail::TagToStrideC_t<LayoutTag>`
+- `cutlass::gemm::detail::TagToStrideA_t<LayoutTag>`
+- `cutlass::gemm::detail::TagToStrideB_t<LayoutTag>`
+- `cutlass::gemm::detail::TagToStrideC_t<LayoutTag>`
 
 By convention, and to match user expectations, the `cute::Stride` types that these
 map onto always contain one static mode corresponding to the layout tag, and two 64-bit
@@ -357,9 +357,9 @@ header file includes functions
 that can be useful for converting
 from CUTLASS 3.0 `cute::Stride`s back to CUTLASS 2.x layout tags.
 
-* `cutlass::gemm::detail::StrideToLayoutTagA_t<CuteStride>`
-* `cutlass::gemm::detail::StrideToLayoutTagB_t<CuteStride>`
-* `cutlass::gemm::detail::StrideToLayoutTagC_t<CuteStride>`
+- `cutlass::gemm::detail::StrideToLayoutTagA_t<CuteStride>`
+- `cutlass::gemm::detail::StrideToLayoutTagB_t<CuteStride>`
+- `cutlass::gemm::detail::StrideToLayoutTagC_t<CuteStride>`
 
 These metafunctions take the CuTe Stride as a template parameter and
 attempt to find the size-1 stride in the idiomatic M, N, or K modes
@@ -435,9 +435,9 @@ Here is an excerpt.
       typename CollectiveMainloop::GmemTiledCopyB, ElementB>();
 ```
 
-CUTLASS's library and profiler use these reflective interfaces to 
+CUTLASS's library and profiler use these reflective interfaces to
 obtain the kernel's configuration parameters. Users can use these to approximate the CUTLASS 2.x types
-for 3.0 API kernels.  However, the reflective interfaces cannot always match the types exactly,
+for 3.0 API kernels. However, the reflective interfaces cannot always match the types exactly,
 as the mappings are not always bijective.
 
 # Copyright

@@ -29,9 +29,10 @@ while also satisfying these performance objectives.
 CUDA C++ templates and modern generic programming techniques enable CUTLASS device code to span a large design space.
 
 This design space includes:
-* Mixed precision arithmetic and data storage
-* Kernels specialized for layout and problem size
-* Support for kernel fusion
+
+- Mixed precision arithmetic and data storage
+- Kernels specialized for layout and problem size
+- Support for kernel fusion
 
 Moreover, templates provided a structured approach to collecting compile-time constants such as tile dimensions. These
 must be template arguments to target static array allocation and take advantage of loop unrolling, constant folding,
@@ -66,7 +67,7 @@ objects for each data member.
 To be consistent, this pattern defines a convention in which classes define internal shared memory storage requirements.
 Classes should consider all SharedStorage structures to be opaque other than their own child class. When the lifetimes
 of child objects are known to be non-overlapping, `union`s may be used to alias multiple SharedStorage objects to the same
-shared memory region and reduce overall shared memory capacity.  Developers should carefully note that C++ `union` rules
+shared memory region and reduce overall shared memory capacity. Developers should carefully note that C++ `union` rules
 require that they only access the most recently written ("active") member of the `union`; this differs from C rules.
 
 ### Loop Unrolling
@@ -104,7 +105,7 @@ like `clang-format`, on CUTLASS code.
 
 #### CUTLASS is a C++ project
 
-CUTLASS is a C++ project.  CUDA C++ is a C++ dialect.
+CUTLASS is a C++ project. CUDA C++ is a C++ dialect.
 Therefore, we write using standard C++ idioms as much as possible.
 We aim for portability to as many compilers as possible,
 by writing host code in Standard C++
@@ -124,17 +125,17 @@ or where performance absolutely requires it.
 Deviations should be limited in scope
 and we should always strive to eliminate them.
 
-* [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md)
+- [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md)
 
-* [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
+- [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html)
 
 #### Spacing and line length
 
-* Use spaces, not tabs.
+- Use spaces, not tabs.
 
-* Use 2 spaces to indent.
+- Use 2 spaces to indent.
 
-* Max 100 characters per line.
+- Max 100 characters per line.
 
 Lines longer than 100 characters typically wrap unfavorably
 when viewed in Github's pretty printer.
@@ -169,15 +170,15 @@ that opens the function's body. Note the double indent for function parameters.
 
 #### If-else brackets and spacing
 
-* Always use braces with conditionals such as `if`.
+- Always use braces with conditionals such as `if`.
 
-* Use a space after control flow keywords
+- Use a space after control flow keywords
   such as `if`, `for`, and `while`.
 
-* Use a space after the parenthesis closing a conditional
+- Use a space after the parenthesis closing a conditional
   such as `if`, and the curly bracket opening a scope.
 
-* Use a new line between the closing brace
+- Use a new line between the closing brace
   of an `if` branch, and the `else` keyword.
 
 ```c++
@@ -229,7 +230,7 @@ const float* pointer_to_const_float = &const_float;
 
 For reference and pointer types,
 align the `&` resp. `*` flush against the type
-that it modifies.  This is called "left alignment."
+that it modifies. This is called "left alignment."
 
 For example, do this:
 
@@ -252,7 +253,7 @@ in the name of a function
 assumes that the "fast" path is actually faster.
 That might be true now, but later changes
 (in the code, compilers, or GPU hardware)
-might make it false.  In that case,
+might make it false. In that case,
 your name could be unintentionally misleading.
 Consider instead a name that briefly describes
 the algorithm or feature that is relevant for optimization.
@@ -383,13 +384,13 @@ float preferred(float input); // preferred
 
 ##### Return multiple values by struct or tuple
 
-Sometimes a function needs to return multiple values.  In that case, consider the following, in decreasing order of preference.
+Sometimes a function needs to return multiple values. In that case, consider the following, in decreasing order of preference.
 
-1. Return a `struct`.  This lets you name the fields
+1. Return a `struct`. This lets you name the fields
    (for more self-documenting code),
    yet still permits use of structured binding.
 
-2. Return a `tuple`.  If you need a tuple type
+1. Return a `tuple`. If you need a tuple type
    that works on device, use `cute::tuple`.
    (Please note that `cute::tuple` does not work
    for all the types that work in `std::tuple`.
@@ -442,11 +443,11 @@ from a function that could fail
 or otherwise report errors.
 That is, the function either
 
-* returns one or more valid values, or
+- returns one or more valid values, or
 
-* does not return any values and reports an error,
+- does not return any values and reports an error,
 
-but NOT BOTH.  We contrast this with cases
+but NOT BOTH. We contrast this with cases
 when it's meaningful to report both a result
 and whether the result is satisfactory.
 For example, when solving
@@ -465,15 +466,15 @@ For this case, C++ offers a few options.
 
 1. Return the value(s), or throw an exception on error
 
-2. `std::expected` (requiring C++23) or something like it
+1. `std::expected` (requiring C++23) or something like it
 
-3. `std::optional` (for a Boolean error state)
+1. `std::optional` (for a Boolean error state)
    or something like it
 
-4. `std::variant` (a C++17 fall-back for `std::expected`)
+1. `std::variant` (a C++17 fall-back for `std::expected`)
    or something like it
 
-5. C-style interface: return an error code,
+1. C-style interface: return an error code,
    and "return" the values as output parameters
 
 We usually cannot or do not want to
@@ -547,25 +548,25 @@ auto foo(std::span<const float> input) {
 
 C++ lets you use `auto` to deduce the type returned from a function.
 
-* If you know the actual type, prefer using the type instead of `auto`.
+- If you know the actual type, prefer using the type instead of `auto`.
 
-* Use [Constructor Type Argument Deduction](https://en.cppreference.com/w/cpp/language/class_template_argument_deduction)
+- Use [Constructor Type Argument Deduction](https://en.cppreference.com/w/cpp/language/class_template_argument_deduction)
   (CTAD) if you know that a function returns some type
   (e.g., `Tensor`), but don't know the type's template arguments.
 
-* Use `auto` in structured bindings (where you have to use it anyway).  This also makes your code agnostic of whether the return type is a `struct`, `tuple`, `pair`, or other tuple-like type.
+- Use `auto` in structured bindings (where you have to use it anyway). This also makes your code agnostic of whether the return type is a `struct`, `tuple`, `pair`, or other tuple-like type.
 
-* Be careful using `auto` with types that provide expression templates.
+- Be careful using `auto` with types that provide expression templates.
 
 Contrast this with "Almost Always Auto" (AAA) style.
 We deliberately choose not to follow AAA style,
 for the following reasons.
 
-* Using the actual type when we know it can help prevent common loss-of-precision errors in mixed-precision computations, an important use case for CUTLASS.
+- Using the actual type when we know it can help prevent common loss-of-precision errors in mixed-precision computations, an important use case for CUTLASS.
 
-* CTAD gives us much of the brevity of AAA, with more clarity.
+- CTAD gives us much of the brevity of AAA, with more clarity.
 
-* Using the actual type instead of `auto` can prevent common dangling errors with expression templates.
+- Using the actual type instead of `auto` can prevent common dangling errors with expression templates.
 
 #### Classes and structs
 
@@ -580,10 +581,10 @@ Follow the
 [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rc-struct)
 to decide whether to use `class` or `struct`.
 
-* Use `class` when the object must maintain an invariant.
+- Use `class` when the object must maintain an invariant.
   Data members related to the invariant should be `private`.
 
-* Use `struct` when the class has no invariant to maintain,
+- Use `struct` when the class has no invariant to maintain,
   and data members may vary arbitrarily with respect to each other.
 
 Prefer nonmember functions and statelessness where possible.
@@ -602,11 +603,11 @@ Members within classes and structures should be organized as follows:
 
 1. Type and constant definitions
 
-2. Data members
+1. Data members
 
-3. Constructors
+1. Constructors
 
-4. Other methods
+1. Other methods
 
 This convention follows the
 [CUB library](https://nvlabs.github.io/cub/)
@@ -618,11 +619,11 @@ That is, it
 
 1. identifies relevant constants,
 
-2. defines a state-space representation
+1. defines a state-space representation
    of the dynamical system under study
    (the class's data members), and then
 
-3. devotes the remaining "chapters" to defining
+1. devotes the remaining "chapters" to defining
    the system's dynamical behavior
    (the class's methods).
 
@@ -735,29 +736,29 @@ and
 offer macros for expressing compiler-dependent behavior.
 These include
 
-* replacements for `__device__` and/or `__host__`
+- replacements for `__device__` and/or `__host__`
   annotations:
 
-  * `CUTLASS_HOST_DEVICE` or `CUTE_HOST_DEVICE`
+  - `CUTLASS_HOST_DEVICE` or `CUTE_HOST_DEVICE`
     for functions that run on the host and the device,
 
-  * `CUTLASS_DEVICE` or `CUTE_DEVICE`
+  - `CUTLASS_DEVICE` or `CUTE_DEVICE`
     for functions that run on the device only,
 
-  * `CUTE_HOST`
+  - `CUTE_HOST`
     for functions that run on the host only, and
 
-  * `CUTE_HOST_RTC`
+  - `CUTE_HOST_RTC`
     for functions that run on the host only,
     but occur as unevaluated operands (of e.g., `decltype` or `sizeof`;
     see C++ Standard, `[expr.context]` 1) in device code; and
 
-* annotations to loop unrolling:
+- annotations to loop unrolling:
 
-  * `CUTLASS_PRAGMA_UNROLL` or `CUTE_UNROLL`
+  - `CUTLASS_PRAGMA_UNROLL` or `CUTE_UNROLL`
     for full unrolling of loops with constant trip counts, and
 
-  * `CUTLASS_PRAGMA_NO_UNROLL` or `CUTE_NO_UNROLL` to prevent unrolling.
+  - `CUTLASS_PRAGMA_NO_UNROLL` or `CUTE_NO_UNROLL` to prevent unrolling.
 
 #### Guard all headers with `#pragma once`
 
@@ -765,13 +766,13 @@ Use `#pragma once` to guard all headers.
 
 ### CuTe Layout Comments
 
-* Right align CuTe layout comments at column 120. 
-* If layout comment is too long do your best to align it.
-* If layout comment is too long and there are many related tensors that reader should read together, try to align the layout comments of related tensors.
+- Right align CuTe layout comments at column 120.
+- If layout comment is too long do your best to align it.
+- If layout comment is too long and there are many related tensors that reader should read together, try to align the layout comments of related tensors.
 
 ```c++
     Tensor my_tensor = make_tensor<Type>(Layout<Shape<_2,_2>{}, Stride<_1,_2>>{});                       // (2,2):(1,2)
-    
+
     // Related tensors
     Tensor my_tensor1 = make_tensor<Type>(ThisIsAVeryComplicatedLayoutWithAVeryLongName);         // ((Mode0_0,Mode0_1,Mode0_2),Mode1,Mode2,Mode3)
     Tensor my_tensor2_related = make_tensor<Type>(ThisIsAVeryComplicatedLayoutWithAVeryLongName); // ((Mode0_0,Mode0_1,Mode0_2),Mode1,Mode2,Mode3)
@@ -802,9 +803,9 @@ It also saves developer effort.
 
 CUTLASS's fundamental types and operations include
 
-* [Numeric types](fundamental_types.md#numeric-types) to represent numeric data in host and device code, and
+- [Numeric types](fundamental_types.md#numeric-types) to represent numeric data in host and device code, and
 
-* [functional.h](fundamental_types.md#functional) to perform numeric operations in generic code.
+- [functional.h](fundamental_types.md#functional) to perform numeric operations in generic code.
 
 CUTLASS 3.0 uses CuTe components to represent data layouts and multidimensional arrays.
 Please refer to the [CuTe Tutorial](./cute/00_quickstart.md) for details.
@@ -820,10 +821,10 @@ CuTe has replaced CUTLASS 2.x components such as
 Developers sometimes need to detect whether a tensor is MN-major or K-major.
 (For definitions, see the [CuTe GEMM tutorial](./cute/0x_gemm_tutorial.md).)
 
-* _Correct_: `cutlass::detail::is_major<0, Stride>()` or
-`cutlass::detail::is_k_major()` from `include/cutlass/gemm/gemm.h`
+- _Correct_: `cutlass::detail::is_major<0, Stride>()` or
+  `cutlass::detail::is_k_major()` from `include/cutlass/gemm/gemm.h`
 
-* _Incorrect_: `get<0>(stride) == 1`
+- _Incorrect_: `get<0>(stride) == 1`
 
 The second point is incorrect because it assumes that the mode
 is a single integer, not a multimode.

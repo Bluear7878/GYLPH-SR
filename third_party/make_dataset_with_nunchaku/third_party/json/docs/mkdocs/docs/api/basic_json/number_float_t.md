@@ -7,6 +7,7 @@ using number_float_t = NumberFloatType;
 The type used to store JSON numbers (floating-point).
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes numbers as follows:
+
 > The representation of numbers is similar to that used in most programming languages. A number is represented in base
 > 10 using decimal digits. It contains an integer component that may be prefixed with an optional minus sign, which may
 > be followed by a fraction part and/or an exponent part. Leading zeros are not allowed. (...) Numeric values that
@@ -36,6 +37,7 @@ With the default values for `NumberFloatType` (`double`), the default value for 
 #### Limits
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) states:
+
 > This specification allows implementations to set limits on the range and precision of numbers accepted. Since software
 > that implements IEEE 754-2008 binary64 (double precision) numbers is generally available and widely used, good
 > interoperability can be achieved by implementations that expect no more precision or range than these provide, in the
@@ -53,17 +55,19 @@ Floating-point number values are stored directly inside a `basic_json` type.
 
 ??? example
 
-    The following code shows that `number_float_t` is by default, a typedef to `#!cpp double`.
-     
-    ```cpp
-    --8<-- "examples/number_float_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/number_float_t.output"
-    ```
+````
+The following code shows that `number_float_t` is by default, a typedef to `#!cpp double`.
+
+```cpp
+--8<-- "examples/number_float_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/number_float_t.output"
+```
+````
 
 ## Version history
 

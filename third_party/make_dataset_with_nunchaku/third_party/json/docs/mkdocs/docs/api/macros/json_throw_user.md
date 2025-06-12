@@ -15,15 +15,15 @@ Controls how exceptions are handled by the library.
    The argument is the type of the exception to catch. As of version 3.8.0, the library only catches `std::out_of_range`
    exceptions internally to rethrow them as [`json::out_of_range`](../../home/exceptions.md#out-of-range) exceptions.
    The macro is always followed by a scope.
-2. This macro overrides `#!cpp throw` calls inside the library. The argument is the exception to be thrown. Note that
+1. This macro overrides `#!cpp throw` calls inside the library. The argument is the exception to be thrown. Note that
    `JSON_THROW_USER` should leave the current scope (e.g., by throwing or aborting), as continuing after it may yield
    undefined behavior.
-3. This macro overrides `#!cpp try` calls inside the library. It has no arguments and is always followed by a scope.
+1. This macro overrides `#!cpp try` calls inside the library. It has no arguments and is always followed by a scope.
 
 ## Parameters
 
 `exception` (in)
-:   an exception type
+: an exception type
 
 ## Default definition
 
@@ -49,21 +49,23 @@ replaced by calling [`std::abort`](https://en.cppreference.com/w/cpp/utility/pro
 
 ??? example
 
-    The code below switches off exceptions and creates a log entry with a detailed error message in case of errors.
+````
+The code below switches off exceptions and creates a log entry with a detailed error message in case of errors.
 
-    ```cpp
-    #include <iostream>
-    
-    #define JSON_TRY_USER if(true)
-    #define JSON_CATCH_USER(exception) if(false)
-    #define JSON_THROW_USER(exception)                           \
-        {std::clog << "Error in " << __FILE__ << ":" << __LINE__ \
-                   << " (function " << __FUNCTION__ << ") - "    \
-                   << (exception).what() << std::endl;           \
-         std::abort();}
-    
-    #include <nlohmann/json.hpp>
-    ```
+```cpp
+#include <iostream>
+
+#define JSON_TRY_USER if(true)
+#define JSON_CATCH_USER(exception) if(false)
+#define JSON_THROW_USER(exception)                           \
+    {std::clog << "Error in " << __FILE__ << ":" << __LINE__ \
+               << " (function " << __FUNCTION__ << ") - "    \
+               << (exception).what() << std::endl;           \
+     std::abort();}
+
+#include <nlohmann/json.hpp>
+```
+````
 
 ## See also
 

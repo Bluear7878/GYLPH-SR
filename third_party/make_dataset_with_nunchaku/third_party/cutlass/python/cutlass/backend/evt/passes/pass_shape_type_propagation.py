@@ -43,6 +43,7 @@ class PassShapeTypePropagation(EVTPassBase):
     """
     Propagate the shape and type of all nodes
     """
+
     dependencies = [PassPreprocessRed]
 
     def call(self):

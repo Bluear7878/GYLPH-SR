@@ -112,25 +112,19 @@
         args.sync()
 """
 
-from cutlass_library import (
-    ConvKind,
-    ConvMode,
-    DataTypeSize,
-    IteratorAlgorithm,
-    OperationKind,
-    SplitKMode,
-    StrideSupport,
-)
-
 import cutlass
 from cutlass import epilogue
 from cutlass.backend import compiler
 from cutlass.backend.conv2d_operation import Conv2dArguments, Conv2dOperation
-from cutlass.backend.reduction_operation import ReductionOperation, ReductionArguments
 from cutlass.backend.library import TensorDescription, TileDescription
+from cutlass.backend.reduction_operation import (ReductionArguments,
+                                                 ReductionOperation)
 from cutlass.op.op import OperationBase
 from cutlass.shape import Conv2DProblemSize, MatrixCoord
 from cutlass.utils import check, datatypes
+from cutlass_library import (ConvKind, ConvMode, DataTypeSize,
+                             IteratorAlgorithm, OperationKind, SplitKMode,
+                             StrideSupport)
 
 
 class Conv2d(OperationBase):
@@ -197,20 +191,35 @@ class Conv2d(OperationBase):
     :param kernel_cc: compute capability of kernels to generate. For example, if running on SM90, but desiring to use a CUTLASS 2.x-style Ampere kernel, this should be set to 80
     :type kernel_cc: int
     """
+
     def __init__(
-        self, kind="fprop",
-        A=None, B=None, C=None, D=None, alpha=1.0, beta=0.0,
+        self,
+        kind="fprop",
+        A=None,
+        B=None,
+        C=None,
+        D=None,
+        alpha=1.0,
+        beta=0.0,
         element=None,
-        element_A=None, element_B=None, element_C=None, element_D=None,
+        element_A=None,
+        element_B=None,
+        element_C=None,
+        element_D=None,
         element_accumulator=None,
-        cc: int = None, kernel_cc: int = None
+        cc: int = None,
+        kernel_cc: int = None,
     ):
-        super().__init__(cc=cc, kernel_cc=kernel_cc, operation_kind=OperationKind.Conv2d)
+        super().__init__(
+            cc=cc, kernel_cc=kernel_cc, operation_kind=OperationKind.Conv2d
+        )
         # Verify the kernel cc
         if self.current_cc == 90:
             # The Conv2d kernel on Hopper (SM90) is currently unsupported
             # Revert to use SM80-tagged kernels
-            cutlass.logger.warning("Reverting to using SM80-tagged kernel. Opclass may change.")
+            cutlass.logger.warning(
+                "Reverting to using SM80-tagged kernel. Opclass may change."
+            )
             self.specified_kernel_cc = 80
             self._reset_options(80)
 
@@ -226,13 +235,19 @@ class Conv2d(OperationBase):
         layouts = []
 
         # Complete the data types based on user-provided arguments
-        for elt, tens, name in zip([element_A, element_B, element_C, element_D],
-                                   [A, B, C, D],
-                                   ["A", "B", "C", "D"]):
+        for elt, tens, name in zip(
+            [element_A, element_B, element_C, element_D],
+            [A, B, C, D],
+            ["A", "B", "C", "D"],
+        ):
             if elt is not None and tens is not None:
-                raise Exception(f'Must not specify both element_{name} and tensor {name}')
+                raise Exception(
+                    f"Must not specify both element_{name} and tensor {name}"
+                )
             if elt is None and tens is None and element is None:
-                raise Exception(f'Must specify one of element_{name}, tensor {name}, or generic element.')
+                raise Exception(
+                    f"Must specify one of element_{name}, tensor {name}, or generic element."
+                )
 
             elt_to_set = None
             lay_to_set = None
@@ -292,8 +307,11 @@ class Conv2d(OperationBase):
         layout_comb = (self._layout_a, self._layout_b)
 
         self.possible_op_classes = self.options.supporting_opclasses(
-            self._element_a, self._element_b, self._element_accumulator,
-            self._layout_a, self._layout_b
+            self._element_a,
+            self._element_b,
+            self._element_accumulator,
+            self._layout_a,
+            self._layout_b,
         )
 
         if cutlass.OpcodeClass.TensorOp in self.possible_op_classes:
@@ -301,18 +319,26 @@ class Conv2d(OperationBase):
         elif cutlass.OpcodeClass.Simt in self.possible_op_classes:
             self.opclass = cutlass.OpcodeClass.Simt
         else:
-            raise Exception(f'No kernel configuration found for supported data type and layout '
-                            f'combination {datatype_comb}x{layout_comb}')
+            raise Exception(
+                f"No kernel configuration found for supported data type and layout "
+                f"combination {datatype_comb}x{layout_comb}"
+            )
 
         if reset_epilogue:
             self._reset_epilogue_functor_activation(epilogue.identity)
 
         self.alignment_pref_A = min(
-            128 // DataTypeSize[self._element_a], max(self.possible_operations.alignments("A")))
+            128 // DataTypeSize[self._element_a],
+            max(self.possible_operations.alignments("A")),
+        )
         self.alignment_pref_B = min(
-            128 // DataTypeSize[self._element_b], max(self.possible_operations.alignments("B")))
+            128 // DataTypeSize[self._element_b],
+            max(self.possible_operations.alignments("B")),
+        )
         self.alignment_pref_C = min(
-            128 // DataTypeSize[self._element_c], max(self.possible_operations.alignments("C")))
+            128 // DataTypeSize[self._element_c],
+            max(self.possible_operations.alignments("C")),
+        )
 
     #
     # Tile description Related
@@ -326,8 +352,7 @@ class Conv2d(OperationBase):
         return self._tile_description
 
     @tile_description.setter
-    def tile_description(
-        self, td=None):
+    def tile_description(self, td=None):
         """
         Set the tile description
 
@@ -349,7 +374,9 @@ class Conv2d(OperationBase):
                 self._tile_description = datatypes.td_from_profiler_op(op)
             if "cluster_shape" in td.keys():
                 if td["cluster_shape"] != [1, 1, 1]:
-                    cutlass.logger.warning("Conv2d currently only support 'cluster_shape'=[1, 1, 1]'.")
+                    cutlass.logger.warning(
+                        "Conv2d currently only support 'cluster_shape'=[1, 1, 1]'."
+                    )
                     td["cluster_shape"] = [1, 1, 1]
             td = self._tile_description.clone_and_update(td)
 
@@ -430,7 +457,10 @@ class Conv2d(OperationBase):
         """
         if self.conv_kind == ConvKind.Dgrad:
             if stride[0] != 1 or stride[1] != 1:
-                return getattr(cutlass.swizzle, f"StridedDgradIdentitySwizzle{self._swizzling_stride}")
+                return getattr(
+                    cutlass.swizzle,
+                    f"StridedDgradIdentitySwizzle{self._swizzling_stride}",
+                )
 
         return getattr(cutlass.swizzle, f"IdentitySwizzle{self._swizzling_stride}")
 
@@ -456,12 +486,20 @@ class Conv2d(OperationBase):
         iterator_alg = datatypes.getattr_enum(IteratorAlgorithm, alg)
 
         # Check if the iterator algorithm is valid
-        if iterator_alg in [IteratorAlgorithm.FewChannels, IteratorAlgorithm.FixedChannels] and self.conv_kind != ConvKind.Fprop:
-            raise Exception(f"{self.conv_kind} does not support iterator algorithm {alg}.")
+        if (
+            iterator_alg
+            in [IteratorAlgorithm.FewChannels, IteratorAlgorithm.FixedChannels]
+            and self.conv_kind != ConvKind.Fprop
+        ):
+            raise Exception(
+                f"{self.conv_kind} does not support iterator algorithm {alg}."
+            )
 
         self._iterator_algorithm = iterator_alg
 
-    def _propose_iterator_algorithm(self, problem_size, alignment_a, alignment_b) -> IteratorAlgorithm:
+    def _propose_iterator_algorithm(
+        self, problem_size, alignment_a, alignment_b
+    ) -> IteratorAlgorithm:
         """
         Propose a valid iterator algorithm based on problem size and alignment
         """
@@ -469,26 +507,33 @@ class Conv2d(OperationBase):
             # Check whether the fixed channel is applicable
             if problem_size.C == alignment_a:
                 return IteratorAlgorithm.FixedChannels
-            elif (problem_size.C % alignment_a == 0 and
-                  problem_size.R <= 32 and problem_size.S <= 32):
+            elif (
+                problem_size.C % alignment_a == 0
+                and problem_size.R <= 32
+                and problem_size.S <= 32
+            ):
                 return IteratorAlgorithm.Optimized
             else:
                 return IteratorAlgorithm.Analytic
         elif self.conv_kind == ConvKind.Dgrad:
-            if (problem_size.K % alignment_a == 0 and
-                problem_size.R <= 32 and problem_size.S <= 32 and
-                problem_size.C % alignment_b == 0):
+            if (
+                problem_size.K % alignment_a == 0
+                and problem_size.R <= 32
+                and problem_size.S <= 32
+                and problem_size.C % alignment_b == 0
+            ):
                 return IteratorAlgorithm.Optimized
             else:
                 return IteratorAlgorithm.Analytic
         elif self.conv_kind == ConvKind.Wgrad:
-            if (problem_size.K % alignment_a == 0 and
-                problem_size.C % alignment_b == 0):
+            if problem_size.K % alignment_a == 0 and problem_size.C % alignment_b == 0:
                 return IteratorAlgorithm.Optimized
             else:
                 return IteratorAlgorithm.Analytic
 
-    def _validate_iterator_algorithm(self, iterator_algorithm, problem_size, alignment_a, alignment_b) -> bool:
+    def _validate_iterator_algorithm(
+        self, iterator_algorithm, problem_size, alignment_a, alignment_b
+    ) -> bool:
         """
         Validate whether the user provide iterator algorithm works for the given problem size
         """
@@ -496,19 +541,27 @@ class Conv2d(OperationBase):
             if iterator_algorithm == IteratorAlgorithm.FixedChannels:
                 return problem_size.C == alignment_a
             elif iterator_algorithm == IteratorAlgorithm.Optimized:
-                return (problem_size.C % alignment_a == 0 and
-                  problem_size.R <= 32 and problem_size.S <= 32)
+                return (
+                    problem_size.C % alignment_a == 0
+                    and problem_size.R <= 32
+                    and problem_size.S <= 32
+                )
             elif iterator_algorithm == IteratorAlgorithm.FewChannels:
                 return problem_size.C % alignment_a == 0
         elif self.conv_kind == ConvKind.Dgrad:
             if iterator_algorithm == IteratorAlgorithm.Optimized:
-                return (problem_size.K % alignment_a == 0 and
-                        problem_size.R <= 32 and problem_size.S <= 32 and
-                        problem_size.C % alignment_b == 0)
+                return (
+                    problem_size.K % alignment_a == 0
+                    and problem_size.R <= 32
+                    and problem_size.S <= 32
+                    and problem_size.C % alignment_b == 0
+                )
         elif self.conv_kind == ConvKind.Wgrad:
             if iterator_algorithm == IteratorAlgorithm.Optimized:
-                return (problem_size.K % alignment_a == 0 and
-                problem_size.C % alignment_b == 0)
+                return (
+                    problem_size.K % alignment_a == 0
+                    and problem_size.C % alignment_b == 0
+                )
 
         return True
 
@@ -528,11 +581,16 @@ class Conv2d(OperationBase):
     #
 
     def construct(
-        self, tile_description: TileDescription = None,
-        alignment_A: int = None, alignment_B: int = None, alignment_C: int = None,
+        self,
+        tile_description: TileDescription = None,
+        alignment_A: int = None,
+        alignment_B: int = None,
+        alignment_C: int = None,
         iterator_algorithm: IteratorAlgorithm = None,
-        stride_support = None, swizzling_functor: cutlass.swizzle = None,
-        epilogue_functor=None) -> cutlass.backend.Conv2dOperation:
+        stride_support=None,
+        swizzling_functor: cutlass.swizzle = None,
+        epilogue_functor=None,
+    ) -> cutlass.backend.Conv2dOperation:
         """
         Constructs a ``cutlass.backend.Conv2dOperation`` based on the input parameters and current
         kernel specification of the ``Conv2d`` object.
@@ -569,7 +627,9 @@ class Conv2d(OperationBase):
             if self.tile_description is not None:
                 tile_description = self.tile_description
             else:
-                op = self.possible_operations.operations(alignment_A, alignment_B, alignment_C)[0]
+                op = self.possible_operations.operations(
+                    alignment_A, alignment_B, alignment_C
+                )[0]
                 tile_description = datatypes.td_from_profiler_op(op)
         else:
             valid, err_str = self._valid_tile_description(tile_description)
@@ -601,17 +661,23 @@ class Conv2d(OperationBase):
             if self.epilogue_functor is not None:
                 epilogue_functor = self.epilogue_functor
             else:
-                epilogue_functor = self._create_epilogue_functor_activation(self._activation)
+                epilogue_functor = self._create_epilogue_functor_activation(
+                    self._activation
+                )
 
         # Reset the alignment of the epilogue functor
-        epilogue_functor = self._reset_epilogue_functor_alignment(alignment_C, epilogue_functor)
+        epilogue_functor = self._reset_epilogue_functor_alignment(
+            alignment_C, epilogue_functor
+        )
 
         operation = Conv2dOperation(
             conv_kind=self.conv_kind,
             iterator_algorithm=iterator_algorithm,
             arch=self.current_cc,
             tile_description=tile_description,
-            A=tensor_A, B=tensor_B, C=tensor_C,
+            A=tensor_A,
+            B=tensor_B,
+            C=tensor_C,
             stride_support=stride_support,
             epilogue_functor=epilogue_functor,
             swizzling_functor=swizzling_functor,
@@ -619,11 +685,18 @@ class Conv2d(OperationBase):
 
         return operation
 
-    def compile(self, tile_description: TileDescription = None,
-                alignment_A: int = None, alignment_B: int = None, alignment_C: int = None,
-                iterator_algorithm: IteratorAlgorithm = None,
-                stride_support = None, swizzling_functor: cutlass.swizzle = None,
-                epilogue_functor = None, print_module: bool = False) -> cutlass.backend.Conv2dOperation:
+    def compile(
+        self,
+        tile_description: TileDescription = None,
+        alignment_A: int = None,
+        alignment_B: int = None,
+        alignment_C: int = None,
+        iterator_algorithm: IteratorAlgorithm = None,
+        stride_support=None,
+        swizzling_functor: cutlass.swizzle = None,
+        epilogue_functor=None,
+        print_module: bool = False,
+    ) -> cutlass.backend.Conv2dOperation:
         """
         Emits and compiles the kernel currently specified. If ``tile_description`` and any
         of the ``alignment`` parameters are set, the kernel will be chosen using this
@@ -651,13 +724,24 @@ class Conv2d(OperationBase):
         """
 
         self.operation = self.construct(
-            tile_description, alignment_A, alignment_B, alignment_C,
-            iterator_algorithm, stride_support, swizzling_functor, epilogue_functor)
+            tile_description,
+            alignment_A,
+            alignment_B,
+            alignment_C,
+            iterator_algorithm,
+            stride_support,
+            swizzling_functor,
+            epilogue_functor,
+        )
 
         if print_module:
             print(self.operation.rt_module.emit())
 
-        compiler.add_module([self.operation,])
+        compiler.add_module(
+            [
+                self.operation,
+            ]
+        )
         return self.operation
 
     #
@@ -677,8 +761,10 @@ class Conv2d(OperationBase):
         """
         dtype, _ = datatypes.get_datatype_and_layout(tensor)
         if dtype != ref_type:
-            raise Exception(f'Tensor {name} with type and layout {dtype} '
-                            f'does not match the expected type of {ref_type}.')
+            raise Exception(
+                f"Tensor {name} with type and layout {dtype} "
+                f"does not match the expected type of {ref_type}."
+            )
 
     def _get_and_verify_conv_problem_size(self, A, B, C, stride, padding, dilation):
         if self.conv_kind == ConvKind.Fprop:
@@ -704,26 +790,47 @@ class Conv2d(OperationBase):
         _, P_, Q_, _ = datatypes.get_tensor_shape(output, op="CONV")
 
         problem_size = Conv2DProblemSize(
-            N_, H_, W_, C_,
-            K_, R_, S_, C_,
-            padding[0], padding[1],
-            stride[0], stride[1],
-            dilation[0], dilation[1],
+            N_,
+            H_,
+            W_,
+            C_,
+            K_,
+            R_,
+            S_,
+            C_,
+            padding[0],
+            padding[1],
+            stride[0],
+            stride[1],
+            dilation[0],
+            dilation[1],
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         )
 
         if P_ != problem_size.P or Q_ != problem_size.Q:
             raise Exception(
-                f"Tensor {output_tensor} size should be ({N_}, {problem_size.P}, {problem_size.Q}, {K_}), got ({N_}, {P_}, {Q_}, {K_})")
+                f"Tensor {output_tensor} size should be ({N_}, {problem_size.P}, {problem_size.Q}, {K_}), got ({N_}, {P_}, {Q_}, {K_})"
+            )
 
         return problem_size
 
-    def run(self, A=None, B=None, C=None, D=None,
-            stride=(1, 1), padding=(0, 0), dilation=(1, 1),
-            alpha=None, beta=None,
-            split_k=("serial", 1), sync: bool = True,
-            print_module: bool = False) -> Conv2dArguments:
+    def run(
+        self,
+        A=None,
+        B=None,
+        C=None,
+        D=None,
+        stride=(1, 1),
+        padding=(0, 0),
+        dilation=(1, 1),
+        alpha=None,
+        beta=None,
+        split_k=("serial", 1),
+        sync: bool = True,
+        print_module: bool = False,
+    ) -> Conv2dArguments:
         """
         Runs the kernel currently specified. If it has not already been, the kernel is emitted and
         compiled. Tensors holding operands and outputs of the kernel are sourced either from the
@@ -772,7 +879,9 @@ class Conv2d(OperationBase):
 
         # Construct problem size based on input
         # It also verifies whether the A, B, C, D, stride, padding, and dilation are matching
-        problem_size = self._get_and_verify_conv_problem_size(A, B, C, stride, padding, dilation)
+        problem_size = self._get_and_verify_conv_problem_size(
+            A, B, C, stride, padding, dilation
+        )
 
         # Propose stride support based on input
         stride_support = self._propose_stride_support(stride)
@@ -785,9 +894,15 @@ class Conv2d(OperationBase):
         shape_c = datatypes.get_tensor_shape(C, op="CONV")
 
         # Get the alignment
-        alignment_a = self.possible_operations.find_alignment(shape_a, self._layout_a, operand="A")
-        alignment_b = self.possible_operations.find_alignment(shape_b, self._layout_b, operand="B")
-        alignment_c = self.possible_operations.find_alignment(shape_c, self._layout_c, operand="C")
+        alignment_a = self.possible_operations.find_alignment(
+            shape_a, self._layout_a, operand="A"
+        )
+        alignment_b = self.possible_operations.find_alignment(
+            shape_b, self._layout_b, operand="B"
+        )
+        alignment_c = self.possible_operations.find_alignment(
+            shape_c, self._layout_c, operand="C"
+        )
 
         alignment_a = check.update_alignment(alignment_a, self.alignment_pref_A)
         alignment_b = check.update_alignment(alignment_b, self.alignment_pref_B)
@@ -796,12 +911,18 @@ class Conv2d(OperationBase):
         # Propose iterator algorithm based on input
         if self._iterator_algorithm is None:
             # Propose a default iterator algorithm based on the problem size
-            iterator_algorithm = self._propose_iterator_algorithm(problem_size, alignment_a, alignment_b)
+            iterator_algorithm = self._propose_iterator_algorithm(
+                problem_size, alignment_a, alignment_b
+            )
         else:
-            if (self._validate_iterator_algorithm(self._iterator_algorithm, problem_size, alignment_a, alignment_b)):
+            if self._validate_iterator_algorithm(
+                self._iterator_algorithm, problem_size, alignment_a, alignment_b
+            ):
                 iterator_algorithm = self._iterator_algorithm
             else:
-                raise Exception(f"Iterator algorithm {self._iterator_algorithm} is invalid for current problem.")
+                raise Exception(
+                    f"Iterator algorithm {self._iterator_algorithm} is invalid for current problem."
+                )
 
         epilogue_args = [alpha, beta]
 
@@ -812,41 +933,64 @@ class Conv2d(OperationBase):
                 epilogue_args.append(self._activation_args)
 
         if split_k[0] == "parallel" and split_k[1] > 1:
-            epilogue_functor = self._create_epilogue_functor_activation(epilogue.identity)
+            epilogue_functor = self._create_epilogue_functor_activation(
+                epilogue.identity
+            )
         else:
             epilogue_functor = self.epilogue_functor
 
         # The alignment is determined by the iterator function (I believe)
-        self.compile(tile_description=self.tile_description, alignment_A=alignment_a, alignment_B=alignment_b,
-                     alignment_C=alignment_c, iterator_algorithm=iterator_algorithm, stride_support=stride_support,
-                     swizzling_functor=swizzling_functor, epilogue_functor=epilogue_functor, print_module=print_module)
+        self.compile(
+            tile_description=self.tile_description,
+            alignment_A=alignment_a,
+            alignment_B=alignment_b,
+            alignment_C=alignment_c,
+            iterator_algorithm=iterator_algorithm,
+            stride_support=stride_support,
+            swizzling_functor=swizzling_functor,
+            epilogue_functor=epilogue_functor,
+            print_module=print_module,
+        )
 
         # Create reduction operation for parallel split-k
         if split_k[0] == "parallel" and split_k[1] > 1:
-            epilogue_functor_reduction = self._reset_epilogue_functor_alignment(alignment_c, self.epilogue_functor)
+            epilogue_functor_reduction = self._reset_epilogue_functor_alignment(
+                alignment_c, self.epilogue_functor
+            )
             self.reduction_operation = ReductionOperation(
-                shape=MatrixCoord(4, 32 * alignment_c), C=self.operation.C,
+                shape=MatrixCoord(4, 32 * alignment_c),
+                C=self.operation.C,
                 element_accumulator=self._element_accumulator,
                 element_compute=self._element_accumulator,
                 epilogue_functor=epilogue_functor_reduction,
-                count=alignment_c
+                count=alignment_c,
             )
             if print_module:
                 print(self.reduction_operation.rt_module.emit())
-            compiler.add_module([self.reduction_operation,])
+            compiler.add_module(
+                [
+                    self.reduction_operation,
+                ]
+            )
 
         arguments = Conv2dArguments(
-            operation=self.operation, problem_size=problem_size,
-            A=A, B=B, C=C, D=D,
+            operation=self.operation,
+            problem_size=problem_size,
+            A=A,
+            B=B,
+            C=C,
+            D=D,
             output_op=self.operation.epilogue_type(*epilogue_args),
             split_k_mode=datatypes.getattr_enum(SplitKMode, split_k[0]),
-            split_k_slices=split_k[1]
+            split_k_slices=split_k[1],
         )
 
         self.operation.run(arguments)
 
         if split_k[0] == "parallel" and split_k[1] > 1:
-            implicit_gemm_size = arguments.problem_size.implicit_gemm_size(self.conv_kind)
+            implicit_gemm_size = arguments.problem_size.implicit_gemm_size(
+                self.conv_kind
+            )
             reduction_arguments = ReductionArguments(
                 self.reduction_operation,
                 problem_size=[implicit_gemm_size.m, implicit_gemm_size.n],
@@ -854,7 +998,7 @@ class Conv2d(OperationBase):
                 workspace=arguments.ptr_D,
                 destination=D,
                 source=C,
-                output_op=self.reduction_operation.epilogue_type(*epilogue_args)
+                output_op=self.reduction_operation.epilogue_type(*epilogue_args),
             )
             self.reduction_operation.run(reduction_arguments)
 
@@ -878,11 +1022,15 @@ class Conv2d(OperationBase):
         problem_size = Conv2DProblemSize(
             *input_size,
             *weight_size,
-            padding[0], padding[1],
-            stride[0], stride[1],
-            dilation[0], dilation[1],
+            padding[0],
+            padding[1],
+            stride[0],
+            stride[1],
+            dilation[0],
+            dilation[1],
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         )
         return (problem_size.N, problem_size.P, problem_size.Q, problem_size.K)
 
@@ -891,74 +1039,223 @@ class Conv2d(OperationBase):
 # Easy to use interfaces for fprop, wgrad, and dgrad
 #
 
+
 class Conv2dFprop(Conv2d):
     def __init__(
         self,
-        input=None, weight=None, C=None, output=None, alpha=1, beta=0,
+        input=None,
+        weight=None,
+        C=None,
+        output=None,
+        alpha=1,
+        beta=0,
         element=None,
-        element_input=None, element_weight=None, element_C=None, element_output=None,
+        element_input=None,
+        element_weight=None,
+        element_C=None,
+        element_output=None,
         element_accumulator=None,
-        cc: int = None, kernel_cc: int = None):
+        cc: int = None,
+        kernel_cc: int = None,
+    ):
         A, B, D = input, weight, output
         element_A, element_B, element_D = element_input, element_weight, element_output
         super().__init__(
-            "fprop", A, B, C, D, alpha, beta, element,
-            element_A, element_B, element_C, element_D,
-            element_accumulator, cc, kernel_cc)
+            "fprop",
+            A,
+            B,
+            C,
+            D,
+            alpha,
+            beta,
+            element,
+            element_A,
+            element_B,
+            element_C,
+            element_D,
+            element_accumulator,
+            cc,
+            kernel_cc,
+        )
 
     def run(
-        self, input=None, weight=None, C=None, output=None, alpha=None, beta=None,
-        stride=(1, 1), padding=(0, 0), dilation=(1, 1), split_k=("serial", 1),
-        sync: bool = True, print_module: bool = False) -> Conv2dArguments:
+        self,
+        input=None,
+        weight=None,
+        C=None,
+        output=None,
+        alpha=None,
+        beta=None,
+        stride=(1, 1),
+        padding=(0, 0),
+        dilation=(1, 1),
+        split_k=("serial", 1),
+        sync: bool = True,
+        print_module: bool = False,
+    ) -> Conv2dArguments:
 
         A, B, D = input, weight, output
         return super().run(
-            A, B, C, D, alpha, beta, stride, padding, dilation, split_k, sync, print_module)
+            A,
+            B,
+            C,
+            D,
+            alpha,
+            beta,
+            stride,
+            padding,
+            dilation,
+            split_k,
+            sync,
+            print_module,
+        )
 
 
 class Conv2dDgrad(Conv2d):
     def __init__(
         self,
-        grad_output=None, weight=None, C=None, grad_input=None, alpha=1, beta=0,
+        grad_output=None,
+        weight=None,
+        C=None,
+        grad_input=None,
+        alpha=1,
+        beta=0,
         element=None,
-        element_grad_output=None, element_weight=None, element_C=None, element_grad_input=None,
+        element_grad_output=None,
+        element_weight=None,
+        element_C=None,
+        element_grad_input=None,
         element_accumulator=None,
-        cc: int = None, kernel_cc: int = None):
+        cc: int = None,
+        kernel_cc: int = None,
+    ):
         A, B, D = grad_output, weight, grad_input
-        element_A, element_B, element_D = element_grad_output, element_weight, element_grad_input
+        element_A, element_B, element_D = (
+            element_grad_output,
+            element_weight,
+            element_grad_input,
+        )
         super().__init__(
-            "dgrad", A, B, C, D, alpha, beta, element,
-            element_A, element_B, element_C, element_D,
-            element_accumulator, cc, kernel_cc)
+            "dgrad",
+            A,
+            B,
+            C,
+            D,
+            alpha,
+            beta,
+            element,
+            element_A,
+            element_B,
+            element_C,
+            element_D,
+            element_accumulator,
+            cc,
+            kernel_cc,
+        )
 
-    def run(self, grad_output=None, weight=None, C=None, grad_input=None, alpha=None, beta=None,
-        stride=(1, 1), padding=(0, 0), dilation=(1, 1), split_k=("serial", 1),
-        sync: bool = True, print_module: bool = False) -> Conv2dArguments:
+    def run(
+        self,
+        grad_output=None,
+        weight=None,
+        C=None,
+        grad_input=None,
+        alpha=None,
+        beta=None,
+        stride=(1, 1),
+        padding=(0, 0),
+        dilation=(1, 1),
+        split_k=("serial", 1),
+        sync: bool = True,
+        print_module: bool = False,
+    ) -> Conv2dArguments:
         #
         A, B, D = grad_output, weight, grad_input
         return super().run(
-            A, B, C, D, alpha, beta, stride, padding, dilation, split_k, sync, print_module)
+            A,
+            B,
+            C,
+            D,
+            alpha,
+            beta,
+            stride,
+            padding,
+            dilation,
+            split_k,
+            sync,
+            print_module,
+        )
 
 
 class Conv2dWgrad(Conv2d):
     def __init__(
         self,
-        grad_output=None, input=None, C=None, grad_weight=None, alpha=1, beta=0,
+        grad_output=None,
+        input=None,
+        C=None,
+        grad_weight=None,
+        alpha=1,
+        beta=0,
         element=None,
-        element_grad_output=None, element_input=None, element_C=None, element_grad_weight=None,
+        element_grad_output=None,
+        element_input=None,
+        element_C=None,
+        element_grad_weight=None,
         element_accumulator=None,
-        cc: int = None, kernel_cc: int = None):
+        cc: int = None,
+        kernel_cc: int = None,
+    ):
         A, B, D = grad_output, input, grad_weight
-        element_A, element_B, element_D = element_grad_output, element_input, element_grad_weight
+        element_A, element_B, element_D = (
+            element_grad_output,
+            element_input,
+            element_grad_weight,
+        )
         super().__init__(
-            "wgrad", A, B, C, D, alpha, beta, element,
-            element_A, element_B, element_C, element_D,
-            element_accumulator, cc, kernel_cc)
+            "wgrad",
+            A,
+            B,
+            C,
+            D,
+            alpha,
+            beta,
+            element,
+            element_A,
+            element_B,
+            element_C,
+            element_D,
+            element_accumulator,
+            cc,
+            kernel_cc,
+        )
 
-    def run(self, grad_output=None, input=None, C=None, grad_weight=None, alpha=None, beta=None,
-        stride=(1, 1), padding=(0, 0), dilation=(1, 1), split_k=("serial", 1),
-        sync: bool = True, print_module: bool = False) -> Conv2dArguments:
+    def run(
+        self,
+        grad_output=None,
+        input=None,
+        C=None,
+        grad_weight=None,
+        alpha=None,
+        beta=None,
+        stride=(1, 1),
+        padding=(0, 0),
+        dilation=(1, 1),
+        split_k=("serial", 1),
+        sync: bool = True,
+        print_module: bool = False,
+    ) -> Conv2dArguments:
         #
         A, B, D = grad_output, input, grad_weight
         return super().run(
-            A, B, C, D, alpha, beta, stride, padding, dilation, split_k, sync, print_module)
+            A,
+            B,
+            C,
+            D,
+            alpha,
+            beta,
+            stride,
+            padding,
+            dilation,
+            split_k,
+            sync,
+            print_module,
+        )

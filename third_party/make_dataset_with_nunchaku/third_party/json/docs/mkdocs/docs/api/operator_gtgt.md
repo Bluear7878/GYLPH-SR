@@ -9,10 +9,10 @@ Deserializes an input stream to a JSON value.
 ## Parameters
 
 `i` (in, out)
-:   input stream to read a serialized JSON value from
+: input stream to read a serialized JSON value from
 
 `j` (in, out)
-:   JSON value to write the deserialized input to
+: JSON value to write the deserialized input to
 
 ## Return value
 
@@ -34,25 +34,29 @@ A UTF-8 byte order mark is silently ignored.
 
 !!! warning "Deprecation"
 
-    This function replaces function `#!cpp std::istream& operator<<(basic_json& j, std::istream& i)` which has
-    been deprecated in version 3.0.0. It will be removed in version 4.0.0. Please replace calls like `#!cpp j << i;`
-    with `#!cpp i >> j;`.
+```
+This function replaces function `#!cpp std::istream& operator<<(basic_json& j, std::istream& i)` which has
+been deprecated in version 3.0.0. It will be removed in version 4.0.0. Please replace calls like `#!cpp j << i;`
+with `#!cpp i >> j;`.
+```
 
 ## Examples
 
 ??? example
 
-    The example below shows how a JSON value is constructed by reading a serialization from a stream.
-        
-    ```cpp
-    --8<-- "examples/operator_deserialize.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/operator_deserialize.output"
-    ```
+````
+The example below shows how a JSON value is constructed by reading a serialization from a stream.
+
+```cpp
+--8<-- "examples/operator_deserialize.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/operator_deserialize.output"
+```
+````
 
 ## See also
 

@@ -10,7 +10,7 @@ elements must be strings. If the initializer list is empty, the empty object `#!
 ## Parameters
 
 `init` (in)
-:   initializer list with JSON values to create an object from (optional)
+: initializer list with JSON values to create an object from (optional)
 
 ## Return value
 
@@ -36,22 +36,24 @@ Linear in the size of `init`.
 This function is only added for symmetry reasons. In contrast to the related function `array(initializer_list_t)`, there
 are no cases which can only be expressed by this function. That is, any initializer list `init` can also be passed to
 the initializer list constructor `basic_json(initializer_list_t, bool, value_t)`.
-    
+
 ## Examples
 
 ??? example
 
-    The following code shows an example for the `object` function.
+````
+The following code shows an example for the `object` function.
 
-    ```cpp
-    --8<-- "examples/object.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/object.output"
-    ```
+```cpp
+--8<-- "examples/object.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/object.output"
+```
+````
 
 ## See also
 

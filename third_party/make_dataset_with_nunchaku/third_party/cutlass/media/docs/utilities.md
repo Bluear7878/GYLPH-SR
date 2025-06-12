@@ -32,6 +32,7 @@ class HostTensor;
 This class is compatible with all CUTLASS numeric data types and layouts.
 
 **Example:** column-major matrix storage of single-precision elements.
+
 ```c++
 #include <cutlass/layout/matrix.h>
 #include <cutlass/util/host_tensor.h>
@@ -47,6 +48,7 @@ int main() {
 ```
 
 Internal host-side storage may be accessed via the following methods.
+
 ```c++
 float *host_ptr = tensor.host_data();
 cutlass::TensorRef<float, cutlass::layout::ColumnMajor> host_ref = tensor.host_ref();
@@ -54,6 +56,7 @@ cutlass::TensorView<float, cutlass::layout::ColumnMajor> host_view = tensor.host
 ```
 
 Device memory may be accessed similarly.
+
 ```c++
 float *device_ptr = tensor.device_data();
 cutlass::TensorRef<float, cutlass::layout::ColumnMajor> device_ref = tensor.device_ref();
@@ -61,8 +64,9 @@ cutlass::TensorView<float, cutlass::layout::ColumnMajor> device_view = tensor.de
 ```
 
 Printing to human-readable CSV output is accoplished with `std::ostream::operator<<()` defined in
-[`cutlass/util/tensor_view_io.h`](/tools/util/include/cutlass/util/tensor_view_io.h). 
+[`cutlass/util/tensor_view_io.h`](/tools/util/include/cutlass/util/tensor_view_io.h).
 Note, this assumes all views refer to host memory.
+
 ```c++
 #include <cutlass/util/tensor_view_io.h>
 
@@ -78,6 +82,7 @@ int main() {
 ```
 
 Host and device memory must be explicitly synchronized by the application.
+
 ```c++
 float idx = 0;
 
@@ -88,7 +93,7 @@ for (int i = 0; i < rows; ++i) {
     tensor.host_ref().at({i, j}) = idx;
 
     idx += 0.5f;
-  } 
+  }
 }
 
 // Copy host memory to device memory
@@ -99,6 +104,7 @@ float *device_ptr = tensor.device_data();
 ```
 
 `HostTensor<>` is usable by all CUTLASS layouts including interleaved layouts.
+
 ```c++
 int rows = 4;
 int columns = 3;
@@ -110,7 +116,7 @@ for (int i = 0; i < rows; ++i) {
 
     // Write the element at location {i, j} in host memory
     tensor.host_ref().at({i, j}) = float(i) * 1.5f - float(j) * 2.25f;
-  } 
+  }
 }
 
 std::cout << tensor.host_view() << std::endl;
@@ -119,9 +125,10 @@ std::cout << tensor.host_view() << std::endl;
 ## Device Allocations
 
 To strictly allocate memory on the device using the smart pointer pattern to manage allocation and deallocation,
-use `cutlass::DeviceAllocation<>`. 
+use `cutlass::DeviceAllocation<>`.
 
 **Example:** allocating an array in device memory.
+
 ```c++
 #include <cutlass/layout/matrix.h>
 #include <cutlass/layout/tensor_view.h>
@@ -157,6 +164,7 @@ or randomly generated elements. These have implementations using strictly host c
 implementations using strictly CUDA device code.
 
 `TensorFill()` for uniform elements throughout a tensor.
+
 ```c++
 #include <cutlass/layout/matrix.h>
 #include <cutlass/util/reference/host/tensor_fill.h>
@@ -183,6 +191,7 @@ int main() {
 
 `TensorFillRandomUniform()` for initializing elements to a random uniform distribution.
 The device-side implementation uses CURAND to generate random numbers.
+
 ```c++
 #include <cutlass/layout/matrix.h>
 #include <cutlass/util/reference/host/tensor_fill.h>
@@ -217,9 +226,9 @@ int main() {
 }
 ```
 
-
 `TensorFillRandomGaussian()` for initializing elements to a random gaussian distribution.
 The device-side implementation uses CURAND to generate random numbers.
+
 ```c++
 #include <cutlass/layout/matrix.h>
 #include <cutlass/util/reference/host/tensor_fill.h>
@@ -302,6 +311,7 @@ int main() {
 These utilities may be used for all data types.
 
 **Example:** random half-precision tensor with Gaussian distribution.
+
 ```c++
 #include <cutlass/numeric_types.h>
 #include <cutlass/layout/matrix.h>
@@ -344,6 +354,7 @@ CUTLASS defines reference implementations usable with all data types and layouts
 used throughout the unit tests.
 
 **Example:** Reference GEMM implementation with mixed precision internal computation.
+
 ```c++
 #include <cutlass/numeric_types.h>
 #include <cutlass/layout/matrix.h>

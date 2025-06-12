@@ -30,9 +30,8 @@
 #
 #################################################################################################
 
-import numpy as np
-
 import cutlass
+import numpy as np
 from cutlass.utils.datatypes import is_numpy_tensor
 
 if cutlass.use_rmm:
@@ -46,7 +45,7 @@ class PoolMemoryManager:
         self.pool = rmm.mr.PoolMemoryResource(
             rmm.mr.CudaMemoryResource(),
             initial_pool_size=init_pool_size,
-            maximum_pool_size=max_pool_size
+            maximum_pool_size=max_pool_size,
         )
         self.mr = rmm.mr.TrackingResourceAdaptor(self.pool)
         rmm.mr.set_current_device_resource(self.mr)
@@ -60,6 +59,7 @@ class DevicePtrWrapper:
     Wrapper around a pointer to device memory to provide a uniform interface with the RMM DeviceBuffer
     (at least in terms of the interface used by the CUTLASS Python interface)
     """
+
     def __init__(self, dev_ptr):
         self.dev_ptr = dev_ptr
 
@@ -77,11 +77,11 @@ def _todevice(host_data):
     else:
         nbytes = len(host_data.tobytes())
         dev_ptr_wrapper = device_mem_alloc(nbytes)
-        err, = cudart.cudaMemcpy(
+        (err,) = cudart.cudaMemcpy(
             dev_ptr_wrapper.ptr,
-            host_data.__array_interface__['data'][0],
+            host_data.__array_interface__["data"][0],
             nbytes,
-            cudart.cudaMemcpyKind.cudaMemcpyHostToDevice
+            cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
         )
         if err != cudart.cudaError_t.cudaSuccess:
             raise Exception(f"cudaMemcpy failed with error {err}")
@@ -112,9 +112,11 @@ def align_size(size, alignment=256):
     return ((size + alignment - 1) // alignment) * alignment
 
 
-def create_memory_pool(init_pool_size=0, max_pool_size=2 ** 34):
+def create_memory_pool(init_pool_size=0, max_pool_size=2**34):
     if cutlass.use_rmm:
-        memory_pool = PoolMemoryManager(init_pool_size=init_pool_size, max_pool_size=max_pool_size)
+        memory_pool = PoolMemoryManager(
+            init_pool_size=init_pool_size, max_pool_size=max_pool_size
+        )
         return memory_pool
     else:
         return None

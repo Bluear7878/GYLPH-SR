@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -45,11 +46,11 @@
 #include "cutlass/array.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/gemm/gemm.h"
+#include "cutlass/gemm/threadblock/mma_base.h"
+#include "cutlass/gemm/warp/layernorm_scale_bias_transform.h"
 #include "cutlass/matrix_shape.h"
 #include "cutlass/numeric_types.h"
 #include "cutlass/transform/threadblock/predicated_scale_bias_vector_iterator.h"
-#include "cutlass/gemm/threadblock/mma_base.h"
-#include "cutlass/gemm/warp/layernorm_scale_bias_transform.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +65,7 @@ namespace threadblock {
 template <
     /// Size of the Gemm problem - concept: gemm::GemmShape<>
     typename Shape_,
-    /// Element type of scale and bias vectors 
+    /// Element type of scale and bias vectors
     typename ElementScaleBias_,
     /// Layout of scale and bias vectors
     typename LayoutScaleBias_,
@@ -77,11 +78,11 @@ template <
     /// Used for partial specialization
     typename Enable = bool>
 class MmaMainloopFusionBase {
- public:
+public:
   ///< Size of the Gemm problem - concept: gemm::GemmShape<>
   using Shape = Shape_;
 
-  ///< Element type of scale and bias vectors 
+  ///< Element type of scale and bias vectors
   using ElementScaleBias = ElementScaleBias_;
 
   /// Layout of scale and bias vectors
@@ -117,13 +118,15 @@ class MmaMainloopFusionBase {
   static int const kStages = Stages;
 
   /// Tensor reference to the A operand
-  using TensorRefA = TensorRef<typename Operator::ElementA, typename Operator::LayoutA>;
+  using TensorRefA =
+      TensorRef<typename Operator::ElementA, typename Operator::LayoutA>;
 
   /// Tensor reference to the scale and bias vectors
   using TensorRefGammaBeta = TensorRef<ElementScaleBias, LayoutScaleBias>;
 
   /// Tensor reference to the B operand
-  using TensorRefB = TensorRef<typename Operator::ElementB, typename Operator::LayoutB>;
+  using TensorRefB =
+      TensorRef<typename Operator::ElementB, typename Operator::LayoutB>;
 
   //
   // Nested structs
@@ -131,15 +134,15 @@ class MmaMainloopFusionBase {
 
   /// Shared storage object needed by threadblock-scoped GEMM
   class SharedStorage {
-   public:
+  public:
     //
     // Type definitions
     //
 
     /// Shape of the A matrix operand in shared memory
-    using ShapeA = MatrixShape<Shape::kM + Policy::SmemPaddingA::kRow,
-                               Shape::kK * kStages +
-                                   Policy::SmemPaddingA::kColumn>;
+    using ShapeA =
+        MatrixShape<Shape::kM + Policy::SmemPaddingA::kRow,
+                    Shape::kK * kStages + Policy::SmemPaddingA::kColumn>;
 
     /// Shape of the A scale and bias vectors in shared memory
     using ShapeGammaBeta =
@@ -147,11 +150,10 @@ class MmaMainloopFusionBase {
                     2 * Shape::kK * kStages + Policy::SmemPaddingA::kColumn>;
 
     /// Shape of the B matrix operand in shared memory
-    using ShapeB =
-        MatrixShape<Shape::kK * kStages + Policy::SmemPaddingB::kRow,
-                    Shape::kN + Policy::SmemPaddingB::kColumn>;
+    using ShapeB = MatrixShape<Shape::kK * kStages + Policy::SmemPaddingB::kRow,
+                               Shape::kN + Policy::SmemPaddingB::kColumn>;
 
-   public:
+  public:
     //
     // Data members
     //
@@ -163,10 +165,10 @@ class MmaMainloopFusionBase {
     AlignedBuffer<typename Operator::ElementB, ShapeB::kCount> operand_B;
 
     /// Buffer for A operand Scale and Bias
-    AlignedBuffer<ElementScaleBias, ShapeGammaBeta::kCount> operand_A_gamma_beta;
+    AlignedBuffer<ElementScaleBias, ShapeGammaBeta::kCount>
+        operand_A_gamma_beta;
 
-   public:
-
+  public:
     //
     // Methods
     //
@@ -209,8 +211,7 @@ class MmaMainloopFusionBase {
     }
   };
 
- protected:
-
+protected:
   //
   // Data members
   //
@@ -226,7 +227,6 @@ class MmaMainloopFusionBase {
   typename Operator::IteratorB warp_tile_iterator_B_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   MmaMainloopFusionBase(
@@ -243,7 +243,6 @@ public:
             shared_storage.operand_A_gamma_beta_ref(), lane_idx),
         warp_tile_iterator_B_(shared_storage.operand_B_ref(), lane_idx) {}
 };
-
 
 /// Structure to compute the matrix product targeting CUDA cores and SIMT math
 /// instructions.
@@ -279,7 +278,7 @@ template <
     /// Iterates over vectors of scale and bias vector in shared memory
     /// (concept: WriteableTileIterator | RandomAccessTileIterator)
     typename SmemIteratorGammaBeta_,
-    /// Cache operation for scale/bias operand 
+    /// Cache operation for scale/bias operand
     cutlass::arch::CacheOperation::Kind CacheOpGammaBeta,
     /// Data type of accumulator matrix
     typename ElementC_,
@@ -295,9 +294,10 @@ template <
     SharedMemoryClearOption SharedMemoryClear = SharedMemoryClearOption::kNone,
     /// Used for partial specialization
     typename Enable = bool>
-class MmaLayernormMainloopFusionMultistage : 
-  public MmaMainloopFusionBase<Shape_, typename IteratorGammaBeta_::Element,
-                       typename IteratorGammaBeta_::Layout, Policy_, WarpIteratorGammaBeta_, Stages> {
+class MmaLayernormMainloopFusionMultistage
+    : public MmaMainloopFusionBase<Shape_, typename IteratorGammaBeta_::Element,
+                                   typename IteratorGammaBeta_::Layout, Policy_,
+                                   WarpIteratorGammaBeta_, Stages> {
 public:
   ///< Size of the Gemm problem - concept: gemm::GemmShape<>
   using Shape = Shape_;
@@ -315,9 +315,10 @@ public:
   using Policy = Policy_;
 
   ///< Base class
-  using Base = MmaMainloopFusionBase<Shape_, typename IteratorGammaBeta::Element, 
-                                     typename IteratorGammaBeta::Layout, Policy,
-                                     WarpIteratorGammaBeta, Stages>;
+  using Base =
+      MmaMainloopFusionBase<Shape_, typename IteratorGammaBeta::Element,
+                            typename IteratorGammaBeta::Layout, Policy,
+                            WarpIteratorGammaBeta, Stages>;
 
   ///< Data type of accumulator matrix
   using ElementC = ElementC_;
@@ -345,7 +346,7 @@ public:
 
   /// Minimum architecture is Sm80 to support cp.async
   using ArchTag = arch::Sm80;
-  
+
   /// Complex transform on A operand
   static ComplexTransform const kTransformA = Operator::kTransformA;
 
@@ -372,27 +373,25 @@ public:
 
     /// Number of cp.async instructions to load on group of operand A
     static int const kAccessesPerGroupA =
-        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageA + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
 
     /// Number of cp.async instructions to load on group of operand B
     static int const kAccessesPerGroupB =
-        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) / Base::kWarpGemmIterations;
+        (AsyncCopyIterationsPerStageB + Base::kWarpGemmIterations - 1) /
+        Base::kWarpGemmIterations;
   };
 
- private:
-
+private:
   using WarpLoadedFragmentA = typename Operator::FragmentA;
   using WarpLoadedFragmentB = typename Operator::FragmentB;
   using WarpTransformedFragmentA = typename Operator::TransformedFragmentA;
   using WarpTransformedFragmentB = typename Operator::TransformedFragmentB;
 
   using WarpLoadedFragmentVarMean = typename IteratorVarMean::Fragment;
-  using WarpLoadedFragmentGammaBeta =
-      typename WarpIteratorGammaBeta::Fragment;
+  using WarpLoadedFragmentGammaBeta = typename WarpIteratorGammaBeta::Fragment;
 
-
- private:
-
+private:
   //
   // Data members
   //
@@ -400,7 +399,8 @@ public:
   /// Iterator to write threadblock-scoped tile of A operand to shared memory
   SmemIteratorA smem_iterator_A_;
 
-  /// Iterator to write threadblock-scoped tile of A operand scale vector to shared memory
+  /// Iterator to write threadblock-scoped tile of A operand scale vector to
+  /// shared memory
   SmemIteratorGammaBeta smem_iterator_A_gamma_beta_;
 
   /// Iterator to write threadblock-scoped tile of B operand to shared memory
@@ -411,7 +411,6 @@ public:
   int warp_idx_n_;
 
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   MmaLayernormMainloopFusionMultistage(
@@ -422,14 +421,12 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      Base(shared_storage, thread_idx, warp_idx, lane_idx),
-      smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
-      smem_iterator_A_gamma_beta_(shared_storage.operand_A_gamma_beta_ref(),
-                                  thread_idx),
-      smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx)
-  {
+      int lane_idx)
+      : Base(shared_storage, thread_idx, warp_idx, lane_idx),
+        smem_iterator_A_(shared_storage.operand_A_ref(), thread_idx),
+        smem_iterator_A_gamma_beta_(shared_storage.operand_A_gamma_beta_ref(),
+                                    thread_idx),
+        smem_iterator_B_(shared_storage.operand_B_ref(), thread_idx) {
     // Compute warp location within threadblock tile by mapping the warp_id to
     // three coordinates:
     //   _m: the warp's position within the threadblock along the M dimension
@@ -454,8 +451,8 @@ public:
   CUTLASS_DEVICE
   void copy_tiles_and_advance(IteratorA &iterator_A,
                               IteratorGammaBeta &iterator_A_gamma_beta,
-                              IteratorB &iterator_B,
-                              int group_start_A = 0, int group_start_B = 0) {
+                              IteratorB &iterator_B, int group_start_A = 0,
+                              int group_start_B = 0) {
     iterator_A.set_iteration_index(group_start_A *
                                    IteratorA::kAccessesPerVector);
     this->smem_iterator_A_.set_iteration_index(group_start_A);
@@ -480,8 +477,8 @@ public:
             cutlass::arch::cp_async_zfill<kSrcBytes, kCacheOpA>(
                 dst_ptr + v, gmem_ptr, iterator_A.valid());
           } else {
-            cutlass::arch::cp_async<kSrcBytes, kCacheOpA>(
-                dst_ptr + v, gmem_ptr, iterator_A.valid());
+            cutlass::arch::cp_async<kSrcBytes, kCacheOpA>(dst_ptr + v, gmem_ptr,
+                                                          iterator_A.valid());
           }
 
           ++iterator_A;
@@ -530,8 +527,8 @@ public:
             cutlass::arch::cp_async_zfill<kSrcBytes, kCacheOpB>(
                 dst_ptr + v, gmem_ptr, iterator_B.valid());
           } else {
-            cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(
-                dst_ptr + v, gmem_ptr, iterator_B.valid());
+            cutlass::arch::cp_async<kSrcBytes, kCacheOpB>(dst_ptr + v, gmem_ptr,
+                                                          iterator_B.valid());
           }
 
           ++iterator_B;
@@ -616,7 +613,8 @@ public:
             IteratorGammaBeta::kElementsPerAccess / 8;
 
         cutlass::arch::cp_async<kSrcBytes, kCacheOpGammaBeta>(
-            dst_ptr, iterator_A_gamma_beta.get(), iterator_A_gamma_beta.valid());
+            dst_ptr, iterator_A_gamma_beta.get(),
+            iterator_A_gamma_beta.valid());
       }
 
       iterator_B.set_iteration_index(0);
@@ -674,11 +672,11 @@ public:
     WarpTransformedFragmentB warp_transformed_frag_B[2];
 
     Operator warp_mma;
-    cutlass::gemm::warp::LayernormScaleBiasTransform<WarpTransformedFragmentA,
-                                            WarpLoadedFragmentVarMean,
-                                            WarpLoadedFragmentGammaBeta>
-                         elementwise_transform;
- 
+    cutlass::gemm::warp::LayernormScaleBiasTransform<
+        WarpTransformedFragmentA, WarpLoadedFragmentVarMean,
+        WarpLoadedFragmentGammaBeta>
+        elementwise_transform;
+
     this->warp_tile_iterator_A_.set_kgroup_index(0);
     this->warp_tile_iterator_A_gamma_beta_.set_kgroup_index(0);
     this->warp_tile_iterator_B_.set_kgroup_index(0);
@@ -702,9 +700,8 @@ public:
     warp_mma.transform(warp_transformed_frag_A[0], warp_transformed_frag_B[0],
                        warp_loaded_frag_A[0], warp_loaded_frag_B[0]);
 
-    elementwise_transform(warp_transformed_frag_A[0],
-                         warp_loaded_frag_var_mean,
-                         warp_loaded_frag_A_gamma_beta[0]);
+    elementwise_transform(warp_transformed_frag_A[0], warp_loaded_frag_var_mean,
+                          warp_loaded_frag_A_gamma_beta[0]);
 
     //
     // Mainloop
@@ -725,15 +722,19 @@ public:
         // Load warp-level tiles from shared memory, wrapping to k offset if
         // this is the last group as the case may be.
 
-        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
         this->warp_tile_iterator_A_gamma_beta_.set_kgroup_index(
             (warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) % Base::kWarpGemmIterations);
-        
-        this->warp_tile_iterator_A_.load(warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+
+        this->warp_tile_iterator_A_.load(
+            warp_loaded_frag_A[(warp_mma_k + 1) % 2]);
         this->warp_tile_iterator_A_gamma_beta_.load(
             warp_loaded_frag_A_gamma_beta[(warp_mma_k + 1) % 2]);
-        this->warp_tile_iterator_B_.load(warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
+        this->warp_tile_iterator_B_.load(
+            warp_loaded_frag_B[(warp_mma_k + 1) % 2]);
 
         ++this->warp_tile_iterator_A_;
         ++this->warp_tile_iterator_A_gamma_beta_;
@@ -746,16 +747,12 @@ public:
                              warp_loaded_frag_B[warp_mma_k % 2]);
 
           elementwise_transform(warp_transformed_frag_A[warp_mma_k % 2],
-                               warp_loaded_frag_var_mean,
-                               warp_loaded_frag_A_gamma_beta[warp_mma_k % 2]);
+                                warp_loaded_frag_var_mean,
+                                warp_loaded_frag_A_gamma_beta[warp_mma_k % 2]);
         }
 
-        warp_mma(
-          accum, 
-          warp_transformed_frag_A[warp_mma_k % 2],
-          warp_transformed_frag_B[warp_mma_k % 2], 
-          accum
-        );
+        warp_mma(accum, warp_transformed_frag_A[warp_mma_k % 2],
+                 warp_transformed_frag_B[warp_mma_k % 2], accum);
 
         // Issue global->shared copies for the this stage
         if (warp_mma_k < Base::kWarpGemmIterations - 1) {
@@ -765,8 +762,8 @@ public:
           group_start_iteration_B = warp_mma_k * Detail::kAccessesPerGroupB;
 
           copy_tiles_and_advance(iterator_A, iterator_A_gamma_beta, iterator_B,
-	  		       group_start_iteration_A, 
-                               group_start_iteration_B);
+                                 group_start_iteration_A,
+                                 group_start_iteration_B);
         }
 
         if (warp_mma_k + 2 == Base::kWarpGemmIterations) {
@@ -777,7 +774,7 @@ public:
               (warp_mma_k + 1) * Detail::kAccessesPerGroupB;
 
           copy_tiles_and_advance(iterator_A, iterator_A_gamma_beta, iterator_B,
-	                               group_start_iteration_A, 
+                                 group_start_iteration_A,
                                  group_start_iteration_B);
 
           // Inserts a memory fence between stages of cp.async instructions.
@@ -800,7 +797,8 @@ public:
           // circular buffer in shared memory
           if (smem_write_stage_idx == (Base::kStages - 1)) {
             this->smem_iterator_A_.add_tile_offset({0, -Base::kStages});
-            this->smem_iterator_A_gamma_beta_.add_tile_offset({0, -Base::kStages});
+            this->smem_iterator_A_gamma_beta_.add_tile_offset(
+                {0, -Base::kStages});
             this->smem_iterator_B_.add_tile_offset({-Base::kStages, 0});
             smem_write_stage_idx = 0;
           } else {
@@ -843,21 +841,20 @@ public:
               warp_loaded_frag_A_gamma_beta[(warp_mma_k + 1) % 2]);
         }
       }
-
     }
-    
-    // commit and drain all pending and predicated cp.async pnz from the GEMM mainloop
+
+    // commit and drain all pending and predicated cp.async pnz from the GEMM
+    // mainloop
     cutlass::arch::cp_async_fence();
     cutlass::arch::cp_async_wait<0>();
     __syncthreads();
-
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

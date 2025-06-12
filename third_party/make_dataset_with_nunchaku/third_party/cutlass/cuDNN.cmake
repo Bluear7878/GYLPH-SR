@@ -33,7 +33,7 @@ endif()
 if(DEFINED CUTLASS_ENABLE_CUDNN AND NOT CUTLASS_ENABLE_CUDNN)
   return()
 endif()
-  
+
 message(STATUS "Configuring cuDNN ...")
 
 find_path(
@@ -67,7 +67,7 @@ if(_CUDNN_INCLUDE_DIR AND _CUDNN_LIBRARY)
 
     message(STATUS "cuDNN: ${_CUDNN_LIBRARY}")
     message(STATUS "cuDNN: ${_CUDNN_INCLUDE_DIR}")
-    
+
     set(CUDNN_FOUND ON CACHE INTERNAL "cuDNN Library Found")
 
 else()
@@ -96,7 +96,7 @@ if (CUTLASS_ENABLE_CUDNN AND NOT TARGET cudnn)
     TARGET cudnn
     PROPERTY IMPORTED_LOCATION
     ${CUDNN_LIBRARY})
-    
+
   target_include_directories(
     cudnn
     INTERFACE

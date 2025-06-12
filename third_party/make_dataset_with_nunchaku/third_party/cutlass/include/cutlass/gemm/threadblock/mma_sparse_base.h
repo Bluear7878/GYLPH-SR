@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -63,7 +64,8 @@ template <
     /// Number of partitions of K dimension of GEMM
     int PartitionsK = 1>
 struct SparseMmaPolicy {
-  /// Warp-level GEMM operator (concept: gemm::warp::MmaTensorOp or gemm::warp::MmaSimt)
+  /// Warp-level GEMM operator (concept: gemm::warp::MmaTensorOp or
+  /// gemm::warp::MmaSimt)
   using Operator = Operator_;
 
   /// Padding used for A operand in shared memory
@@ -93,7 +95,7 @@ template <
     /// Used for partial specialization
     typename Enable = bool>
 class SparseMmaBase {
- public:
+public:
   ///< Size of the Gemm problem - concept: gemm::GemmShape<>
   using Shape = Shape_;
 
@@ -112,9 +114,9 @@ class SparseMmaBase {
   using WarpGemm = typename Policy::Operator::Shape;
 
   /// Shape describing the number of warps filling the CTA
-  using WarpCount = GemmShape<Shape::kM / WarpGemm::kM,
-                              Shape::kN / WarpGemm::kN,
-                              Shape::kK / WarpGemm::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpGemm::kM, Shape::kN / WarpGemm::kN,
+                Shape::kK / WarpGemm::kK>;
 
   /// Number of warp-level GEMM oeprations
   static int const kWarpGemmIterations =
@@ -135,13 +137,16 @@ class SparseMmaBase {
   static int const kElementsPerElementE = Operator::kElementsPerElementE;
 
   /// Tensor reference to the A operand
-  using TensorRefA = TensorRef<typename Operator::ElementA, typename Operator::LayoutA>;
+  using TensorRefA =
+      TensorRef<typename Operator::ElementA, typename Operator::LayoutA>;
 
   /// Tensor reference to the B operand
-  using TensorRefB = TensorRef<typename Operator::ElementB, typename Operator::LayoutB>;
+  using TensorRefB =
+      TensorRef<typename Operator::ElementB, typename Operator::LayoutB>;
 
   /// Tensor reference to the E operand
-  using TensorRefE = TensorRef<typename Operator::ElementE, typename Operator::LayoutE>;
+  using TensorRefE =
+      TensorRef<typename Operator::ElementE, typename Operator::LayoutE>;
 
   //
   // Nested structs
@@ -149,7 +154,7 @@ class SparseMmaBase {
 
   /// Shared storage object needed by threadblock-scoped GEMM
   class SharedStorage {
-   public:
+  public:
     //
     // Type definitions
     //
@@ -160,9 +165,8 @@ class SparseMmaBase {
                                    Policy::SmemPaddingA::kColumn>;
 
     /// Shape of the B matrix operand in shared memory
-    using ShapeB =
-        MatrixShape<Shape::kK * kStages + Policy::SmemPaddingB::kRow,
-                    Shape::kN + Policy::SmemPaddingB::kColumn>;
+    using ShapeB = MatrixShape<Shape::kK * kStages + Policy::SmemPaddingB::kRow,
+                               Shape::kN + Policy::SmemPaddingB::kColumn>;
 
     /// Shape of the E matrix operand in shared memory
     using ShapeE =
@@ -170,7 +174,7 @@ class SparseMmaBase {
                     Shape::kK / kSparse / kElementsPerElementE / 2 * kStages +
                         Policy::SmemPaddingE::kColumn>;
 
-   public:
+  public:
     //
     // Data members
     //
@@ -184,8 +188,7 @@ class SparseMmaBase {
     /// Buffer for E operand
     AlignedBuffer<typename Operator::ElementE, ShapeE::kCount> operand_E;
 
-   public:
-
+  public:
     //
     // Methods
     //
@@ -227,8 +230,7 @@ class SparseMmaBase {
     }
   };
 
- protected:
-
+protected:
   //
   // Data members
   //
@@ -242,9 +244,7 @@ class SparseMmaBase {
   /// Iterator to load a warp-scoped tile of E operand from shared memory
   typename Operator::IteratorE warp_tile_iterator_E_;
 
-
 public:
-
   /// Construct from tensor references
   CUTLASS_DEVICE
   SparseMmaBase(
@@ -255,19 +255,16 @@ public:
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
-      int lane_idx
-    ):
-      warp_tile_iterator_A_(shared_storage.operand_A_ref(), lane_idx),
-      warp_tile_iterator_B_(shared_storage.operand_B_ref(), lane_idx),
-      warp_tile_iterator_E_(shared_storage.operand_E_ref(), lane_idx) {
-
-  }
+      int lane_idx)
+      : warp_tile_iterator_A_(shared_storage.operand_A_ref(), lane_idx),
+        warp_tile_iterator_B_(shared_storage.operand_B_ref(), lane_idx),
+        warp_tile_iterator_E_(shared_storage.operand_E_ref(), lane_idx) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

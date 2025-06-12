@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,39 +18,41 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing loading of convolution tiles mapped to GEMM B (activation tile) 
-    matrix from memory.
+    \brief Templates implementing loading of convolution tiles mapped to GEMM B
+   (activation tile) matrix from memory.
 
     This iterator assumes TensorNDHWC layout of tensors in Global Memory.
 
-    The iterator is specialized for each of the three convolution operators: forward propagation (Fprop),
-    backward data gradient (Dgrad), and backward weight gradient (Wgrad).
+    The iterator is specialized for each of the three convolution operators:
+   forward propagation (Fprop), backward data gradient (Dgrad), and backward
+   weight gradient (Wgrad).
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/conv/conv3d_problem_size.h"
+#include "cutlass/conv/convolution.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/layout/tensor.h"
 #include "cutlass/predicate_vector.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
-#include "cutlass/layout/pitch_linear.h"
-#include "cutlass/layout/tensor.h"
-#include "cutlass/layout/matrix.h"
-#include "cutlass/conv/convolution.h"
-#include "cutlass/conv/conv3d_problem_size.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,14 +62,9 @@ namespace threadblock {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Shape_,
-  typename Element_,
-  typename ThreadMap_
->
+template <typename Shape_, typename Element_, typename ThreadMap_>
 class Conv3dWgradActivationTileAccessIteratorAnalytic {
 public:
-
   //
   // Types
   //
@@ -80,15 +77,16 @@ public:
   using TensorCoord = typename Layout::TensorCoord;
   using Index = typename Layout::Index;
   using LongIndex = typename Layout::LongIndex;
-  static IteratorAlgorithm const kIteratorAlgorithm = conv::IteratorAlgorithm::kAnalytic;
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      conv::IteratorAlgorithm::kAnalytic;
   static StrideSupport const kStrideSupport = conv::StrideSupport::kStrided;
   static int const kConvDim = 3;
   using ConvProblemSize = typename conv::Conv3dProblemSize;
-  
+
   static int const kAccessesPerVector = 1;
- 
+
   static_assert(sizeof_bits<Element>::value >= 8,
-    "WGRAD requires elements of size 8b or greater.");
+                "WGRAD requires elements of size 8b or greater.");
 
   //
   // Parameters structure
@@ -102,26 +100,22 @@ public:
     // Methods
     //
     CUTLASS_HOST_DEVICE
-    Params() { }
+    Params() {}
 
     CUTLASS_HOST_DEVICE
-    Params(
-      Conv3dProblemSize const &problem_size, 
-      Layout const &layout
-    ): layout(layout) {
-
-    }
+    Params(Conv3dProblemSize const &problem_size, Layout const &layout)
+        : layout(layout) {}
   };
 
 private:
-
   Params const &params_;
   Conv3dProblemSize const &problem_size_;
   LongIndex iteration_contiguous_;
   LongIndex iteration_strided_;
   char const *pointer_;
 
-  // Filter postion (t,r,s,c) in contiguous dimension stays constant for each gemm_iteration_k
+  // Filter postion (t,r,s,c) in contiguous dimension stays constant for each
+  // gemm_iteration_k
   int filter_t_[ThreadMap::Iterations::kContiguous];
   int filter_r_[ThreadMap::Iterations::kContiguous];
   int filter_s_[ThreadMap::Iterations::kContiguous];
@@ -130,45 +124,43 @@ private:
   int offset_nzpq_[ThreadMap::Iterations::kStrided];
 
 public:
-
   CUTLASS_HOST_DEVICE
   Conv3dWgradActivationTileAccessIteratorAnalytic(
-    Params const &params, 
-    Conv3dProblemSize const &problem_size,
-    Element const *ptr,
-    int thread_idx,
-    MatrixCoord const &threadblock_offset = MatrixCoord()
-  ):
-    params_(params), 
-    problem_size_(problem_size), 
-    pointer_(reinterpret_cast<char const *>(ptr)) {
+      Params const &params, Conv3dProblemSize const &problem_size,
+      Element const *ptr, int thread_idx,
+      MatrixCoord const &threadblock_offset = MatrixCoord())
+      : params_(params), problem_size_(problem_size),
+        pointer_(reinterpret_cast<char const *>(ptr)) {
 
-    layout::PitchLinearCoord thread_coord = ThreadMap::initial_offset(thread_idx);
-    
+    layout::PitchLinearCoord thread_coord =
+        ThreadMap::initial_offset(thread_idx);
+
     // initialize t,r,s,c filter position for every contiguous iteration
     CUTLASS_PRAGMA_UNROLL
-    for(int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
+    for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
 
-      int trsc_offset = threadblock_offset.column() + thread_coord.contiguous()
-                        + c * ThreadMap::Delta::kContiguous;
+      int trsc_offset = threadblock_offset.column() +
+                        thread_coord.contiguous() +
+                        c * ThreadMap::Delta::kContiguous;
 
-      filter_t_[c] = trsc_offset / (problem_size_.R * problem_size_.S * problem_size_.C);
-      int residual = trsc_offset % (problem_size_.R * problem_size_.S * problem_size_.C);
+      filter_t_[c] =
+          trsc_offset / (problem_size_.R * problem_size_.S * problem_size_.C);
+      int residual =
+          trsc_offset % (problem_size_.R * problem_size_.S * problem_size_.C);
 
       filter_r_[c] = residual / (problem_size_.S * problem_size_.C);
       residual = residual % (problem_size_.S * problem_size_.C);
 
       filter_s_[c] = residual / problem_size_.C;
       filter_c_[c] = residual % problem_size_.C;
-
     }
 
     // initialize n, z, p, q offset for every strided iteration
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
-    
-      offset_nzpq_[s] = threadblock_offset.row() + thread_coord.strided() 
-                      + s * ThreadMap::Delta::kStrided;   
+
+      offset_nzpq_[s] = threadblock_offset.row() + thread_coord.strided() +
+                        s * ThreadMap::Delta::kStrided;
     }
   }
 
@@ -187,7 +179,7 @@ public:
 
   CUTLASS_HOST_DEVICE
   void advance() {
-    
+
     // moves to the next GEMM-K offset (offset_nzpq_) in GEMM-B by a CTA-K tile
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
@@ -195,8 +187,8 @@ public:
     }
   }
 
-  /// Returns the coordinate in the activation tensor x that is currently pointed to
-  /// by the iterator.
+  /// Returns the coordinate in the activation tensor x that is currently
+  /// pointed to by the iterator.
   CUTLASS_HOST_DEVICE
   TensorCoord at() const {
 
@@ -210,18 +202,23 @@ public:
       s = (problem_size_.S - 1 - s);
     }
 
-    int n = offset_nzpq_[iteration_strided_] / (problem_size_.Z * problem_size_.P * problem_size_.Q);
-    int residual = offset_nzpq_[iteration_strided_] % (problem_size_.Z * problem_size_.P * problem_size_.Q);
+    int n = offset_nzpq_[iteration_strided_] /
+            (problem_size_.Z * problem_size_.P * problem_size_.Q);
+    int residual = offset_nzpq_[iteration_strided_] %
+                   (problem_size_.Z * problem_size_.P * problem_size_.Q);
 
     int z = residual / (problem_size_.P * problem_size_.Q);
     residual = residual % (problem_size_.P * problem_size_.Q);
 
     int p = residual / problem_size_.Q;
     int q = residual % problem_size_.Q;
- 
-    int d = z * problem_size_.stride_d - problem_size_.pad_d + t * problem_size_.dilation_d;
-    int h = p * problem_size_.stride_h - problem_size_.pad_h + r * problem_size_.dilation_h;
-    int w = q * problem_size_.stride_w - problem_size_.pad_w + s * problem_size_.dilation_w;
+
+    int d = z * problem_size_.stride_d - problem_size_.pad_d +
+            t * problem_size_.dilation_d;
+    int h = p * problem_size_.stride_h - problem_size_.pad_h +
+            r * problem_size_.dilation_h;
+    int w = q * problem_size_.stride_w - problem_size_.pad_w +
+            s * problem_size_.dilation_w;
 
     return TensorCoord(n, d, h, w, filter_c_[iteration_contiguous_]);
   }
@@ -231,11 +228,10 @@ public:
   bool valid() const {
     TensorCoord coord = at();
 
-    return coord.n() < problem_size_.N &&
-      coord.d() >= 0 && coord.d() < problem_size_.D &&
-      coord.h() >= 0 && coord.h() < problem_size_.H &&
-      coord.w() >= 0 && coord.w() < problem_size_.W &&
-      coord.c() < problem_size_.C;
+    return coord.n() < problem_size_.N && coord.d() >= 0 &&
+           coord.d() < problem_size_.D && coord.h() >= 0 &&
+           coord.h() < problem_size_.H && coord.w() >= 0 &&
+           coord.w() < problem_size_.W && coord.c() < problem_size_.C;
   }
 
   /// Returns a pointer to the vector starting at the current coordinate
@@ -245,7 +241,8 @@ public:
     TensorCoord coord = at();
     LongIndex offset = params_.layout(coord);
 
-    return reinterpret_cast<AccessType const *>(pointer_ + offset * sizeof_bits<Element>::value / 8);
+    return reinterpret_cast<AccessType const *>(
+        pointer_ + offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Increments to the next memory access
@@ -261,7 +258,7 @@ public:
       return *this;
     }
     iteration_strided_ = 0;
- 
+
     return *this;
   }
 
@@ -270,13 +267,12 @@ public:
   static Status can_implement(Conv3dProblemSize const &problem_size) {
 
     // check alignment constraint on iterator's contiguous dimension
-    if (problem_size.C % (128/sizeof_bits<Element>::value)) {
+    if (problem_size.C % (128 / sizeof_bits<Element>::value)) {
       return Status::kErrorInvalidProblem;
     }
 
     return Status::kSuccess;
   }
-  
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -285,5 +281,3 @@ public:
 } // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-
-

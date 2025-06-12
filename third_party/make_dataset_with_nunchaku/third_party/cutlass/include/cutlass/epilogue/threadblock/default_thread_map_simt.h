@@ -29,7 +29,7 @@
  *
  **************************************************************************************************/
 /*! \file
-  \brief 
+  \brief
 
 */
 
@@ -97,20 +97,20 @@ struct DefaultThreadMapSimt {
   //
   // ThreadMap
   //
-  
+
   /// ThreadMap to be used by epilogue::PredicatedTileIterator satisfying concept OutputTileThreadMap
   using Type = OutputTileOptimalThreadMap<
     OutputTileShape<                          // Shape
-      ThreadblockShape::kN, 
-      1, 
-      MmaSimtPolicy::WarpShape::kRow, 
-      Detail::WarpCount::kM, 
+      ThreadblockShape::kN,
+      1,
+      MmaSimtPolicy::WarpShape::kRow,
+      Detail::WarpCount::kM,
       1>,
     OutputTileShape<                          // Count
-      1, 
-      MmaSimtPolicy::LaneMmaShape::kM, 
-      Detail::kGroupCount, 
-      1, 
+      1,
+      MmaSimtPolicy::LaneMmaShape::kM,
+      Detail::kGroupCount,
+      1,
       Detail::kIterations>,
     Detail::kThreads,
     kElementsPerAccess,

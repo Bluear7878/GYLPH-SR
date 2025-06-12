@@ -14,7 +14,7 @@ auto tmp = c.end();
 --tmp;
 return *tmp;
 ```
-    
+
 ## Return value
 
 In case of a structured type (array or object), a reference to the last element is returned. In case of number, string,
@@ -37,23 +37,27 @@ Constant.
 
 !!! info "Precondition"
 
-    The array or object must not be empty. Calling `back` on an empty array or object yields undefined behavior.
+```
+The array or object must not be empty. Calling `back` on an empty array or object yields undefined behavior.
+```
 
 ## Examples
 
 ??? example
 
-    The following code shows an example for `back()`.
-     
-    ```cpp
-    --8<-- "examples/back.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/back.output"
-    ```
+````
+The following code shows an example for `back()`.
+
+```cpp
+--8<-- "examples/back.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/back.output"
+```
+````
 
 ## See also
 

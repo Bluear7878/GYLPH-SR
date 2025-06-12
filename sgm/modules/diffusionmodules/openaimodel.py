@@ -12,15 +12,9 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from ...modules.attention import SpatialTransformer
-from ...modules.diffusionmodules.util import (
-    avg_pool_nd,
-    checkpoint,
-    conv_nd,
-    linear,
-    normalization,
-    timestep_embedding,
-    zero_module,
-)
+from ...modules.diffusionmodules.util import (avg_pool_nd, checkpoint, conv_nd,
+                                              linear, normalization,
+                                              timestep_embedding, zero_module)
 from ...util import default, exists
 
 
@@ -144,7 +138,7 @@ class Upsample(nn.Module):
         else:
             x = F.interpolate(x, scale_factor=2, mode="nearest")
 
-        x = x.to(_dtype) # support fp32 only
+        x = x.to(_dtype)  # support fp32 only
 
         if self.use_conv:
             x = self.conv(x)
@@ -821,27 +815,29 @@ class UNetModel(nn.Module):
                     use_scale_shift_norm=use_scale_shift_norm,
                 )
             ),
-            checkpoint_wrapper_fn(
-                AttentionBlock(
-                    ch,
-                    use_checkpoint=use_checkpoint,
-                    num_heads=num_heads,
-                    num_head_channels=dim_head,
-                    use_new_attention_order=use_new_attention_order,
+            (
+                checkpoint_wrapper_fn(
+                    AttentionBlock(
+                        ch,
+                        use_checkpoint=use_checkpoint,
+                        num_heads=num_heads,
+                        num_head_channels=dim_head,
+                        use_new_attention_order=use_new_attention_order,
+                    )
                 )
-            )
-            if not use_spatial_transformer
-            else checkpoint_wrapper_fn(
-                SpatialTransformer(  # always uses a self-attn
-                    ch,
-                    num_heads,
-                    dim_head,
-                    depth=transformer_depth_middle,
-                    context_dim=context_dim,
-                    disable_self_attn=disable_middle_self_attn,
-                    use_linear=use_linear_in_transformer,
-                    attn_type=spatial_transformer_attn_type,
-                    use_checkpoint=use_checkpoint,
+                if not use_spatial_transformer
+                else checkpoint_wrapper_fn(
+                    SpatialTransformer(  # always uses a self-attn
+                        ch,
+                        num_heads,
+                        dim_head,
+                        depth=transformer_depth_middle,
+                        context_dim=context_dim,
+                        disable_self_attn=disable_middle_self_attn,
+                        use_linear=use_linear_in_transformer,
+                        attn_type=spatial_transformer_attn_type,
+                        use_checkpoint=use_checkpoint,
+                    )
                 )
             ),
             checkpoint_wrapper_fn(
@@ -990,7 +986,9 @@ class UNetModel(nn.Module):
         ), "must specify y if and only if the model is class-conditional"
         hs = []
 
-        t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False).to(x.dtype)
+        t_emb = timestep_embedding(
+            timesteps, self.model_channels, repeat_only=False
+        ).to(x.dtype)
         emb = self.time_embed(t_emb)
 
         if self.num_classes is not None:

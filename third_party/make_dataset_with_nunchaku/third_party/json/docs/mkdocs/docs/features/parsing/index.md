@@ -2,7 +2,9 @@
 
 !!! note
 
-    This page is under construction.
+```
+This page is under construction.
+```
 
 ## Input
 

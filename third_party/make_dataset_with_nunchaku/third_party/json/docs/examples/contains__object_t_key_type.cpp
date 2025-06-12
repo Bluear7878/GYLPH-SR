@@ -11,8 +11,7 @@ int main()
     json j_array = R"( [1, 2, 3] )"_json;
 
     // call contains
-    std::cout << std::boolalpha <<
-              "j_object contains 'key': " << j_object.contains("key") << '\n' <<
-              "j_object contains 'another': " << j_object.contains("another") << '\n' <<
-              "j_array contains 'key': " << j_array.contains("key") << std::endl;
+    std::cout << std::boolalpha << "j_object contains 'key': " << j_object.contains("key") << '\n'
+              << "j_object contains 'another': " << j_object.contains("another") << '\n'
+              << "j_array contains 'key': " << j_array.contains("key") << std::endl;
 }

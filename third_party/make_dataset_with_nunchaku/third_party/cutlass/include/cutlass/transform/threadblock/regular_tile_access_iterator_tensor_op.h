@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -66,7 +67,7 @@ class RegularTileAccessIterator<
     layout::TensorOpMultiplicandCongruous<sizeof_bits<Element_>::value,
                                           int(128 / sizeof(Element_))>,
     AdvanceRank, ThreadMap_, Alignment> {
- public:
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -108,7 +109,7 @@ class RegularTileAccessIterator<
   /// Element type per access
   using AccessType = Array<Element, Layout::kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
@@ -128,14 +129,13 @@ class RegularTileAccessIterator<
   /// Iteration in the strided dimension
   int iteration_strided_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
-      : stride_(ref.stride(0) / Layout::kElementsPerAccess),
-        byte_offset_(0) {
+      : stride_(ref.stride(0) / Layout::kElementsPerAccess), byte_offset_(0) {
     layout::PitchLinearCoord thread_offset_base =
         ThreadMap::initial_offset(thread_id);
 
@@ -242,7 +242,7 @@ class RegularTileAccessIterator<
     layout::ColumnMajorTensorOpMultiplicandCongruous<
         sizeof_bits<Element_>::value, int(128 / sizeof(Element_))>,
     AdvanceRank, ThreadMap_, Alignment> {
- public:
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for column-major iterator may along advance along the "
@@ -272,15 +272,15 @@ class RegularTileAccessIterator<
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
@@ -339,7 +339,7 @@ class RegularTileAccessIterator<
     layout::RowMajorTensorOpMultiplicandCongruous<sizeof_bits<Element_>::value,
                                                   int(128 / sizeof(Element_))>,
     AdvanceRank, ThreadMap_, Alignment> {
- public:
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for row-major iterator may along advance along the "
@@ -369,15 +369,15 @@ class RegularTileAccessIterator<
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
@@ -435,7 +435,7 @@ class RegularTileAccessIterator<Shape_, Element_,
                                 layout::TensorOpMultiplicandCrosswise<
                                     sizeof_bits<Element_>::value, Crosswise>,
                                 AdvanceRank, ThreadMap_, Alignment> {
- public:
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -485,15 +485,15 @@ class RegularTileAccessIterator<Shape_, Element_,
   /// Element type per access
   using AccessType = Array<Element, Layout::kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
 
   /// Total number of sections.  The memory is divided into stages.  One stage
   /// can store one tile.  Stage is divided into sections.  Interleaved layout
-  /// can have multiple sections in a stage.  The rest layout only has one section
-  /// in a stage.
+  /// can have multiple sections in a stage.  The rest layout only has one
+  /// section in a stage.
   int sections_;
 
   /// Sections that a stage has
@@ -514,11 +514,11 @@ class RegularTileAccessIterator<Shape_, Element_,
   /// Iteration in the strided dimension
   int iteration_strided_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : sections_(ref.stride(0) / kCrosswise),
         sections_per_stage_(Shape::kContiguous / kCrosswise),
@@ -634,7 +634,7 @@ class RegularTileAccessIterator<
     layout::ColumnMajorTensorOpMultiplicandCrosswise<
         sizeof_bits<Element_>::value, Crosswise>,
     AdvanceRank, ThreadMap_, Alignment> {
- public:
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for column-major iterator may along advance along the "
@@ -664,15 +664,15 @@ class RegularTileAccessIterator<
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
@@ -730,7 +730,7 @@ class RegularTileAccessIterator<Shape_, Element_,
                                 layout::RowMajorTensorOpMultiplicandCrosswise<
                                     sizeof_bits<Element_>::value, Crosswise>,
                                 AdvanceRank, ThreadMap_, Alignment> {
- public:
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for row-major iterator may along advance along the "
@@ -760,15 +760,15 @@ class RegularTileAccessIterator<Shape_, Element_,
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
@@ -813,8 +813,8 @@ class RegularTileAccessIterator<Shape_, Element_,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

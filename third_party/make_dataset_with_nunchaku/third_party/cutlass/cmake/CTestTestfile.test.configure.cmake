@@ -12,4 +12,3 @@ if (TEST_EXE_WORKING_DIRECTORY)
 endif()
 
 set_tests_properties(@TEST_NAME@ PROPERTIES DISABLED @__DISABLE_TESTS@)
-

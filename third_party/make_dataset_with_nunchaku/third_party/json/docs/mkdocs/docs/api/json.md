@@ -11,17 +11,19 @@ types.
 
 ??? example
 
-    The example below demonstrates how to use the type `nlohmann::json`.
+````
+The example below demonstrates how to use the type `nlohmann::json`.
 
-    ```cpp
-    --8<-- "examples/README.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/README.output"
-    ```
+```cpp
+--8<-- "examples/README.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/README.output"
+```
+````
 
 ## Version history
 

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -35,10 +36,10 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/numeric_types.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/gemm/gemm.h"
 
@@ -51,14 +52,13 @@ namespace threadblock {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Structure to compute the matrix-vector product using SIMT math instructions.
-template <
-  class Core_ //< GemvCore
->
+template <class Core_ //< GemvCore
+          >
 class Gemv {
 public:
   using Shape = typename Core_::Shape;
 
-  /// The MMA operator that computes GEMV 
+  /// The MMA operator that computes GEMV
   using Operator = typename Core_::Operator;
 
   /// Iterates over A in global memory
@@ -84,15 +84,15 @@ public:
 
 public:
   CUTLASS_DEVICE
-  Gemv() { }
+  Gemv() {}
 
   CUTLASS_DEVICE
-  void operator()(
-    GemmCoord const &problem_size,    ///< problem size of batched GEMV
-    FragmentC &accum,                 ///< destination accumulator tile
-    IteratorA iterator_A,             ///< iterator over A operand in global memory
-    IteratorB iterator_B,             ///< iterator over B operand in global memory
-    FragmentC const &src_accum) {     ///< source accumualtor tile
+  void
+  operator()(GemmCoord const &problem_size, ///< problem size of batched GEMV
+             FragmentC &accum,              ///< destination accumulator tile
+             IteratorA iterator_A, ///< iterator over A operand in global memory
+             IteratorB iterator_B, ///< iterator over B operand in global memory
+             FragmentC const &src_accum) { ///< source accumualtor tile
 
     //
     // Prologue
@@ -114,8 +114,7 @@ public:
     Operator thread_mma;
     int gemm_k = problem_size.k();
 
-    if (gemm_k < Shape::kK)
-    {
+    if (gemm_k < Shape::kK) {
       iterator_A.clear_mask();
       iterator_B.clear_mask();
     }
@@ -130,13 +129,11 @@ public:
       ++iterator_A;
       ++iterator_B;
 
-      if (gemm_k < Shape::kK)
-      {
+      if (gemm_k < Shape::kK) {
         iterator_A.clear_mask();
         iterator_B.clear_mask();
       }
     }
-
   }
 };
 

@@ -29,14 +29,16 @@ The default value is detected based on the preprocessor macros `#!cpp __cpp_lib_
 
 ??? example
 
-    The code below forces the library to use the header `<experimental/filesystem>`.
+````
+The code below forces the library to use the header `<experimental/filesystem>`.
 
-    ```cpp
-    #define JSON_HAS_EXPERIMENTAL_FILESYSTEM 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_HAS_EXPERIMENTAL_FILESYSTEM 1
+#include <nlohmann/json.hpp>
 
-    ...
-    ```
+...
+```
+````
 
 ## Version history
 

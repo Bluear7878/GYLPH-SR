@@ -1,5 +1,4 @@
 name: Ubuntu
-
 on:
   push:
     branches:
@@ -8,14 +7,11 @@ on:
       - release/*
   pull_request:
   workflow_dispatch:
-  
 permissions:
   contents: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
-
 jobs:
   ci_test_clang:
     runs-on: ubuntu-latest
@@ -30,7 +26,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_clang
-
   ci_test_gcc:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.4.0
@@ -40,7 +35,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_gcc
-
   ci_static_analysis:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.4.0
@@ -53,7 +47,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ${{ matrix.target }}
-
   ci_static_analysis_ubuntu:
     runs-on: ubuntu-latest
     strategy:
@@ -67,7 +60,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ${{ matrix.target }}
-
   ci_static_analysis_clang:
     runs-on: ubuntu-latest
     container: silkeh/clang:dev
@@ -84,7 +76,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ${{ matrix.target }}
-
   ci_cmake_options:
     runs-on: ubuntu-latest
     container: ubuntu:focal
@@ -101,7 +92,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ${{ matrix.target }}
-
   ci_test_coverage:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.4.0
@@ -124,7 +114,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ${{ github.workspace }}/build/json.info.filtered.noexcept
-
   ci_test_compilers_gcc:
     runs-on: ubuntu-latest
     strategy:
@@ -139,7 +128,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_compiler_default
-
   ci_test_compilers_clang:
     runs-on: ubuntu-latest
     strategy:
@@ -159,7 +147,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_compiler_default
-
   ci_test_compilers:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.4.0
@@ -172,7 +159,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_compiler_${{ matrix.compiler }}
-
   ci_test_standards_gcc:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.4.0
@@ -185,7 +171,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_gcc_cxx${{ matrix.standard }}
-
   ci_test_standards_clang:
     runs-on: ubuntu-latest
     container: silkeh/clang:latest
@@ -202,7 +187,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_test_clang_cxx${{ matrix.standard }}
-
   ci_cuda_example:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.4.0
@@ -212,7 +196,6 @@ jobs:
         run: cmake -S . -B build -DJSON_CI=On
       - name: Build
         run: cmake --build build --target ci_cuda_example
-
   ci_icpc:
     runs-on: ubuntu-latest
     container: ghcr.io/nlohmann/json-ci:v2.2.0
@@ -224,17 +207,15 @@ jobs:
         run: |
           . /opt/intel/oneapi/setvars.sh
           cmake --build build --target ci_icpc
-
   ci_reuse_compliance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
       - name: Install REUSE tool
-        run:  python -m pip install reuse
+        run: python -m pip install reuse
       - name: Run REUSE lint
         run: reuse lint
-
   ci_test_documentation:
     runs-on: ubuntu-latest
     strategy:

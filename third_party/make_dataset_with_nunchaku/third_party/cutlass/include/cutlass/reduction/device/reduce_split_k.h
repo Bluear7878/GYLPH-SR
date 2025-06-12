@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,18 +18,20 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-  \brief Kernel performing a reduction over densely packed tensors in global memory
+  \brief Kernel performing a reduction over densely packed tensors in global
+  memory
 */
 
 #pragma once
@@ -44,10 +46,7 @@ namespace device {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ReductionKernel_
->
-class ReduceSplitK {
+template <typename ReductionKernel_> class ReduceSplitK {
 public:
   using ReductionKernel = ReductionKernel_;
 
@@ -86,40 +85,22 @@ public:
 
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Arguments() : 
-      problem_size(0, 0), 
-      partitions(1), 
-      partition_stride(0) { }
-   
-    CUTLASS_HOST_DEVICE 
-    Arguments(
-      MatrixCoord const & problem_size
-    ):
-      problem_size(problem_size) { }
+    Arguments() : problem_size(0, 0), partitions(1), partition_stride(0) {}
 
     CUTLASS_HOST_DEVICE
-    Arguments(
-      MatrixCoord problem_size_,
-      int partitions_,
-      size_t partition_stride_,
-      WorkspaceTensorRef workspace_,
-      OutputTensorRef destination_,
-      OutputTensorRef source_,
-      typename OutputOp::Params output_ = typename OutputOp::Params(),
-      typename ReductionOp::Params reduction_ = typename ReductionOp::Params()
-    ):
-      problem_size(problem_size_),
-      partitions(partitions_),
-      partition_stride(partition_stride_),
-      workspace(workspace_),
-      destination(destination_),
-      source(source_),
-      output(output_),
-      reduction(reduction_)
-    {
+    Arguments(MatrixCoord const &problem_size) : problem_size(problem_size) {}
 
-    }
-
+    CUTLASS_HOST_DEVICE
+    Arguments(MatrixCoord problem_size_, int partitions_,
+              size_t partition_stride_, WorkspaceTensorRef workspace_,
+              OutputTensorRef destination_, OutputTensorRef source_,
+              typename OutputOp::Params output_ = typename OutputOp::Params(),
+              typename ReductionOp::Params reduction_ =
+                  typename ReductionOp::Params())
+        : problem_size(problem_size_), partitions(partitions_),
+          partition_stride(partition_stride_), workspace(workspace_),
+          destination(destination_), source(source_), output(output_),
+          reduction(reduction_) {}
   };
 
 private:
@@ -128,7 +109,7 @@ private:
 
 public:
   /// Constructs Reduction SplitK
-  ReduceSplitK() { }
+  ReduceSplitK() {}
 
   /// Determines whether the ReduceSplitK can execute the given problem.
   static Status can_implement(Arguments const &args) {
@@ -143,26 +124,17 @@ public:
   }
 
   /// Initializes Reduction state from arguments.
-  Status initialize(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
+
     // initialize the params structure from the arguments
     params_ = typename ReductionKernel::Params(
-      args.problem_size,
-      args.partitions,
-      args.partition_stride,
-      args.workspace,
-      args.destination,
-      args.source,
-      args.output,
-      args.reduction
-    );
+        args.problem_size, args.partitions, args.partition_stride,
+        args.workspace, args.destination, args.source, args.output,
+        args.reduction);
 
     return Status::kSuccess;
-
-   }
+  }
 
   /// Initializes Reduction kernel state from arguments.
   Status update(Arguments const &args, void *workspace = nullptr) {
@@ -186,38 +158,32 @@ public:
     dim3 block = ReductionKernel::block_shape();
     dim3 grid = ReductionKernel::grid_shape(params_.problem_size);
 
-    Kernel<ReductionKernel><<< grid, block, 0, stream >>>(params_);
+    Kernel<ReductionKernel><<<grid, block, 0, stream>>>(params_);
 
     cudaError_t result = cudaGetLastError();
 
     return result == cudaSuccess ? Status::kSuccess : Status::kErrorInternal;
   }
 
+  /// Runs the kernel using initialized state.
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
-  /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
     Status status = initialize(args, workspace, stream);
-    
+
     if (status == Status::kSuccess) {
       status = run(stream);
     }
 
     return status;
   }
-  
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-} // namespace kernel
+} // namespace device
 } // namespace reduction
 } // namespace cutlass

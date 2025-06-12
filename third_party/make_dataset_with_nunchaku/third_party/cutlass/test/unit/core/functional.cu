@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,8 +35,8 @@
 
 #include "../common/cutlass_unit_test.h"
 
-#include "cutlass/functional.h"
 #include "cutlass/core_io.h"
+#include "cutlass/functional.h"
 
 #include "cutlass/layout/matrix.h"
 #include "cutlass/util/host_tensor.h"
@@ -59,7 +60,8 @@ __global__ void unary_operator(Element *d, Element const *a) {
 
 /// Conversion template
 template <typename Element, typename Operator>
-__global__ void binary_operator(Element *d, Element const *a, Element const *b, int Iterations = 1) {
+__global__ void binary_operator(Element *d, Element const *a, Element const *b,
+                                int Iterations = 1) {
 
   Operator op;
 
@@ -70,18 +72,14 @@ __global__ void binary_operator(Element *d, Element const *a, Element const *b, 
   for (int i = 0; i < Iterations; ++i) {
     b_x = op(a_x, b_x);
   }
-  
+
   *d = b_x;
 }
 
 /// Conversion template
 template <typename Element, typename Operator>
-__global__ void trinary_operator(
-  Element *d, 
-  Element const *a, 
-  Element const *b, 
-  Element const *c, 
-  int Iterations = 1) {
+__global__ void trinary_operator(Element *d, Element const *a, Element const *b,
+                                 Element const *c, int Iterations = 1) {
 
   Operator op;
 
@@ -93,7 +91,7 @@ __global__ void trinary_operator(
   for (int i = 0; i < Iterations; ++i) {
     c_x = op(a_x, b_x, c_x);
   }
-  
+
   d[blockIdx.x] = c_x;
 }
 
@@ -105,13 +103,13 @@ __global__ void trinary_operator(
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <int kN>
-void Functional_plus_f16xN() {
+template <int kN> void Functional_plus_f16xN() {
 
   using Element = cutlass::Array<cutlass::half_t, kN>;
   using Operator = cutlass::plus<Element>;
 
-  using Tensor = cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
+  using Tensor =
+      cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
 
   Tensor D({1, kN});
   Tensor A({1, kN});
@@ -128,11 +126,11 @@ void Functional_plus_f16xN() {
   A.sync_device();
   B.sync_device();
 
-  test::core::kernel::binary_operator<Element, Operator><<< dim3(1,1), dim3(1,1) >>>(
-    reinterpret_cast<Element *>(D.device_data()),
-    reinterpret_cast<Element const *>(A.device_data()),
-    reinterpret_cast<Element const *>(B.device_data())
-  );
+  test::core::kernel::binary_operator<Element, Operator>
+      <<<dim3(1, 1), dim3(1, 1)>>>(
+          reinterpret_cast<Element *>(D.device_data()),
+          reinterpret_cast<Element const *>(A.device_data()),
+          reinterpret_cast<Element const *>(B.device_data()));
 
   D.sync_host();
 
@@ -153,23 +151,19 @@ void Functional_plus_f16xN() {
   EXPECT_TRUE(some_d_nonzero);
 }
 
-TEST(Functional, plus_f16x16) {
-  Functional_plus_f16xN<16>();
-}
+TEST(Functional, plus_f16x16) { Functional_plus_f16xN<16>(); }
 
-TEST(Functional, plus_f16x17) {
-  Functional_plus_f16xN<17>();
-}
+TEST(Functional, plus_f16x17) { Functional_plus_f16xN<17>(); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <int kN>
-void Functional_minus_f16xN() {
+template <int kN> void Functional_minus_f16xN() {
 
   using Element = cutlass::Array<cutlass::half_t, kN>;
   using Operator = cutlass::minus<Element>;
 
-  using Tensor = cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
+  using Tensor =
+      cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
 
   Tensor D({1, kN});
   Tensor A({1, kN});
@@ -186,11 +180,11 @@ void Functional_minus_f16xN() {
   A.sync_device();
   B.sync_device();
 
-  test::core::kernel::binary_operator<Element, Operator><<< dim3(1,1), dim3(1,1) >>>(
-    reinterpret_cast<Element *>(D.device_data()),
-    reinterpret_cast<Element const *>(A.device_data()),
-    reinterpret_cast<Element const *>(B.device_data())
-  );
+  test::core::kernel::binary_operator<Element, Operator>
+      <<<dim3(1, 1), dim3(1, 1)>>>(
+          reinterpret_cast<Element *>(D.device_data()),
+          reinterpret_cast<Element const *>(A.device_data()),
+          reinterpret_cast<Element const *>(B.device_data()));
 
   D.sync_host();
 
@@ -211,23 +205,19 @@ void Functional_minus_f16xN() {
   EXPECT_TRUE(some_d_nonzero);
 }
 
-TEST(Functional, minus_f16x16) {
-  Functional_minus_f16xN<16>();
-}
+TEST(Functional, minus_f16x16) { Functional_minus_f16xN<16>(); }
 
-TEST(Functional, minus_f16x17) {
-  Functional_minus_f16xN<17>();
-}
+TEST(Functional, minus_f16x17) { Functional_minus_f16xN<17>(); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <int kN>
-void Functional_multiplies_f16xN() {
+template <int kN> void Functional_multiplies_f16xN() {
 
   using Element = cutlass::Array<cutlass::half_t, kN>;
   using Operator = cutlass::multiplies<Element>;
 
-  using Tensor = cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
+  using Tensor =
+      cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
 
   Tensor D({1, kN});
   Tensor A({1, kN});
@@ -244,11 +234,11 @@ void Functional_multiplies_f16xN() {
   A.sync_device();
   B.sync_device();
 
-  test::core::kernel::binary_operator<Element, Operator><<< dim3(1,1), dim3(1,1) >>>(
-    reinterpret_cast<Element *>(D.device_data()),
-    reinterpret_cast<Element const *>(A.device_data()),
-    reinterpret_cast<Element const *>(B.device_data())
-  );
+  test::core::kernel::binary_operator<Element, Operator>
+      <<<dim3(1, 1), dim3(1, 1)>>>(
+          reinterpret_cast<Element *>(D.device_data()),
+          reinterpret_cast<Element const *>(A.device_data()),
+          reinterpret_cast<Element const *>(B.device_data()));
 
   D.sync_host();
 
@@ -269,25 +259,19 @@ void Functional_multiplies_f16xN() {
   EXPECT_TRUE(some_d_nonzero);
 }
 
-TEST(Functional, multiplies_f16x16) {
+TEST(Functional, multiplies_f16x16) { Functional_multiplies_f16xN<16>(); }
 
-  Functional_multiplies_f16xN<16>();
-}
-
-TEST(Functional, multiplies_f16x17) {
-
-  Functional_multiplies_f16xN<17>();
-}
+TEST(Functional, multiplies_f16x17) { Functional_multiplies_f16xN<17>(); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <int kN>
-void Functional_divides_f16xN() {
+template <int kN> void Functional_divides_f16xN() {
 
   using Element = cutlass::Array<cutlass::half_t, kN>;
   using Operator = cutlass::divides<Element>;
 
-  using Tensor = cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
+  using Tensor =
+      cutlass::HostTensor<cutlass::half_t, cutlass::layout::RowMajor>;
 
   Tensor D({1, kN});
   Tensor A({1, kN});
@@ -304,11 +288,11 @@ void Functional_divides_f16xN() {
   A.sync_device();
   B.sync_device();
 
-  test::core::kernel::binary_operator<Element, Operator><<< dim3(1,1), dim3(1,1) >>>(
-    reinterpret_cast<Element *>(D.device_data()),
-    reinterpret_cast<Element const *>(A.device_data()),
-    reinterpret_cast<Element const *>(B.device_data())
-  );
+  test::core::kernel::binary_operator<Element, Operator>
+      <<<dim3(1, 1), dim3(1, 1)>>>(
+          reinterpret_cast<Element *>(D.device_data()),
+          reinterpret_cast<Element const *>(A.device_data()),
+          reinterpret_cast<Element const *>(B.device_data()));
 
   D.sync_host();
 
@@ -325,13 +309,12 @@ void Functional_divides_f16xN() {
 
     if (std::isnan(expected)) {
       EXPECT_TRUE(std::isnan(d));
-    }
-    else if (std::isinf(expected)) {
+    } else if (std::isinf(expected)) {
       EXPECT_TRUE(std::isinf(d));
-    }
-    else {
+    } else {
       EXPECT_TRUE(std::abs(d - expected) < kThreshold)
-        << "Got: " << d << " = " << a << " / " << b << ", expected: " << (a / b); 
+          << "Got: " << d << " = " << a << " / " << b
+          << ", expected: " << (a / b);
     }
 
     if (d != 0) {
@@ -342,20 +325,13 @@ void Functional_divides_f16xN() {
   EXPECT_TRUE(some_d_nonzero);
 }
 
-TEST(Functional, divides_f16x16) {
+TEST(Functional, divides_f16x16) { Functional_divides_f16xN<16>(); }
 
-  Functional_divides_f16xN<16>();
-}
-
-TEST(Functional, divides_f16x17) {
-
-  Functional_divides_f16xN<17>();
-}
+TEST(Functional, divides_f16x17) { Functional_divides_f16xN<17>(); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T, int kN>
-void Functional_multiply_add_TxN() {
+template <typename T, int kN> void Functional_multiply_add_TxN() {
 
   using Element = cutlass::Array<T, kN>;
   using Operator = cutlass::multiply_add<Element>;
@@ -379,12 +355,12 @@ void Functional_multiply_add_TxN() {
   B.sync_device();
   C.sync_device();
 
-  test::core::kernel::trinary_operator<Element, Operator><<< dim3(1,1), dim3(1,1) >>>(
-    reinterpret_cast<Element *>(D.device_data()),
-    reinterpret_cast<Element const *>(A.device_data()),
-    reinterpret_cast<Element const *>(B.device_data()),
-    reinterpret_cast<Element const *>(C.device_data())
-  );
+  test::core::kernel::trinary_operator<Element, Operator>
+      <<<dim3(1, 1), dim3(1, 1)>>>(
+          reinterpret_cast<Element *>(D.device_data()),
+          reinterpret_cast<Element const *>(A.device_data()),
+          reinterpret_cast<Element const *>(B.device_data()),
+          reinterpret_cast<Element const *>(C.device_data()));
 
   D.sync_host();
 
@@ -428,18 +404,13 @@ TEST(Functional, multiply_add_bf16x17) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename T>
-cutlass::Quaternion<T> random_quaternion(int range) {
+template <typename T> cutlass::Quaternion<T> random_quaternion(int range) {
   return cutlass::Quaternion<T>{
-    T((rand() % range * 2) - range),
-    T((rand() % range * 2) - range),
-    T((rand() % range * 2) - range),
-    T((rand() % range * 2) - range)
-  };
+      T((rand() % range * 2) - range), T((rand() % range * 2) - range),
+      T((rand() % range * 2) - range), T((rand() % range * 2) - range)};
 }
 
-template <typename T>
-void Functional_multiply_add_QuaternionT() {
+template <typename T> void Functional_multiply_add_QuaternionT() {
 
   using Element = cutlass::Quaternion<T>;
   using Operator = cutlass::multiply_add<Element, Element, Element>;
@@ -466,15 +437,12 @@ void Functional_multiply_add_QuaternionT() {
   C.sync_device();
   D.sync_device();
 
-  test::core::kernel::trinary_operator<Element, Operator><<< dim3(kM,1), dim3(1,1) >>>(
-    D.device_data(),
-    A.device_data(),
-    B.device_data(),
-    C.device_data()
-  );
+  test::core::kernel::trinary_operator<Element, Operator>
+      <<<dim3(kM, 1), dim3(1, 1)>>>(D.device_data(), A.device_data(),
+                                    B.device_data(), C.device_data());
 
   D.sync_host();
-  
+
   for (int m = 0; m < kM; ++m) {
 
     Element a = A.at({m, 0});

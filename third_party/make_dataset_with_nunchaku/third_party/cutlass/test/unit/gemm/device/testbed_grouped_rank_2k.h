@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -42,10 +43,10 @@
 #include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
 
-#include "cutlass/gemm/gemm.h"
-#include "cutlass/gemm/kernel/rank_2k_grouped.h"
-#include "cutlass/gemm/kernel/default_rank_2k_grouped.h"
 #include "cutlass/gemm/device/rank_2k_grouped.h"
+#include "cutlass/gemm/gemm.h"
+#include "cutlass/gemm/kernel/default_rank_2k_grouped.h"
+#include "cutlass/gemm/kernel/rank_2k_grouped.h"
 
 #include "cutlass/util/host_tensor.h"
 #include "cutlass/util/reference/host/rank_2k_complex.h"
@@ -63,8 +64,7 @@ namespace device {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Rank2K>
-struct TestbedGrouped {
+template <typename Rank2K> struct TestbedGrouped {
 
   //
   // Type definitions
@@ -96,7 +96,7 @@ struct TestbedGrouped {
 
   int problem_count;
 
-  std::vector<cutlass::gemm::GemmCoord>               problem_sizes_host;
+  std::vector<cutlass::gemm::GemmCoord> problem_sizes_host;
   cutlass::DeviceAllocation<cutlass::gemm::GemmCoord> problem_sizes_device;
 
   std::vector<int64_t> offset_A;
@@ -129,19 +129,16 @@ struct TestbedGrouped {
   //
 
   TestbedGrouped(
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint32_t seed_ = 3080
-  ):
-    init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_) { }
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint32_t seed_ = 3080)
+      : init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_) {}
 
   /// Helper to initialize a tensor view
   template <typename Element, typename Layout>
-  bool initialize_tensor(
-    cutlass::TensorView<Element, Layout> view,
-    cutlass::Distribution::Kind dist_kind,
-    uint32_t seed) {
+  bool initialize_tensor(cutlass::TensorView<Element, Layout> view,
+                         cutlass::Distribution::Kind dist_kind, uint32_t seed) {
 
     if (dist_kind == cutlass::Distribution::Uniform) {
 
@@ -159,8 +156,7 @@ struct TestbedGrouped {
         if (cutlass::sizeof_bits<ElementAccumulator>::value <= 16) {
           scope_max = 5;
           scope_min = -5;
-        }
-        else {
+        } else {
           scope_max = 8;
           scope_min = -8;
         }
@@ -169,23 +165,19 @@ struct TestbedGrouped {
         scope_min = -8;
       }
 
-      cutlass::reference::host::TensorFillRandomUniform(
-        view, seed, scope_max, scope_min, 0);
-    }
-    else if (dist_kind == cutlass::Distribution::Identity) {
+      cutlass::reference::host::TensorFillRandomUniform(view, seed, scope_max,
+                                                        scope_min, 0);
+    } else if (dist_kind == cutlass::Distribution::Identity) {
 
       cutlass::reference::host::TensorFillIdentity(view);
-    }
-    else if (dist_kind == cutlass::Distribution::Gaussian) {
+    } else if (dist_kind == cutlass::Distribution::Gaussian) {
 
       cutlass::reference::host::TensorFillRandomGaussian(view, seed, 0, 0.5);
-    }
-    else if (dist_kind == cutlass::Distribution::Sequential) {
+    } else if (dist_kind == cutlass::Distribution::Sequential) {
 
-      cutlass::reference::host::BlockFillSequential(
-        view.data(), view.capacity());
-    }
-    else {
+      cutlass::reference::host::BlockFillSequential(view.data(),
+                                                    view.capacity());
+    } else {
       // no fill - remain zero
     }
 
@@ -206,7 +198,6 @@ struct TestbedGrouped {
     int64_t total_elements_B = 0;
     int64_t total_elements_C = 0;
     int64_t total_elements_D = 0;
-
 
     lda_host.resize(problem_count);
     ldb_host.resize(problem_count);
@@ -318,21 +309,29 @@ struct TestbedGrouped {
       std::vector<ElementC> matrix_C(layout_C.capacity(extent_C));
       std::vector<ElementC> matrix_D(layout_D.capacity(extent_C));
 
-      initialize_tensor(cutlass::TensorView<ElementA, LayoutA>(matrix_A.data(), layout_A, extent_A), init_A, seed * 2021);
-      initialize_tensor(cutlass::TensorView<ElementB, LayoutB>(matrix_B.data(), layout_B, extent_B), init_B, seed * 2022);
-      initialize_tensor(cutlass::TensorView<ElementC, LayoutC>(matrix_C.data(), layout_C, extent_C), init_C, seed * 2023);
+      initialize_tensor(cutlass::TensorView<ElementA, LayoutA>(
+                            matrix_A.data(), layout_A, extent_A),
+                        init_A, seed * 2021);
+      initialize_tensor(cutlass::TensorView<ElementB, LayoutB>(
+                            matrix_B.data(), layout_B, extent_B),
+                        init_B, seed * 2022);
+      initialize_tensor(cutlass::TensorView<ElementC, LayoutC>(
+                            matrix_C.data(), layout_C, extent_C),
+                        init_C, seed * 2023);
 
-      cutlass::device_memory::copy_to_device(ptr_A_host.at(i), matrix_A.data(), matrix_A.size());
-      cutlass::device_memory::copy_to_device(ptr_B_host.at(i), matrix_B.data(), matrix_B.size());
-      cutlass::device_memory::copy_to_device(ptr_C_host.at(i), matrix_C.data(), matrix_C.size());
-      cutlass::device_memory::copy_to_device(ptr_D_host.at(i), matrix_D.data(), matrix_D.size());
+      cutlass::device_memory::copy_to_device(ptr_A_host.at(i), matrix_A.data(),
+                                             matrix_A.size());
+      cutlass::device_memory::copy_to_device(ptr_B_host.at(i), matrix_B.data(),
+                                             matrix_B.size());
+      cutlass::device_memory::copy_to_device(ptr_C_host.at(i), matrix_C.data(),
+                                             matrix_C.size());
+      cutlass::device_memory::copy_to_device(ptr_D_host.at(i), matrix_D.data(),
+                                             matrix_D.size());
     }
   }
 
   /// Verifies the result is a Rank2K
-  bool verify(
-    ElementCompute alpha,
-    ElementCompute beta) {
+  bool verify(ElementCompute alpha, ElementCompute beta) {
 
     bool passed = true;
 
@@ -354,37 +353,33 @@ struct TestbedGrouped {
       std::vector<ElementC> matrix_D(layout_D.capacity(extent_C));
       std::vector<ElementC> matrix_Ref(layout_D.capacity(extent_C));
 
-      cutlass::device_memory::copy_to_host(matrix_A.data(), block_A.get() + offset_A.at(i), matrix_A.size());
-      cutlass::device_memory::copy_to_host(matrix_B.data(), block_B.get() + offset_B.at(i), matrix_B.size());
-      cutlass::device_memory::copy_to_host(matrix_C.data(), block_C.get() + offset_C.at(i), matrix_C.size());
-      cutlass::device_memory::copy_to_host(matrix_D.data(), block_D.get() + offset_D.at(i), matrix_D.size());
+      cutlass::device_memory::copy_to_host(
+          matrix_A.data(), block_A.get() + offset_A.at(i), matrix_A.size());
+      cutlass::device_memory::copy_to_host(
+          matrix_B.data(), block_B.get() + offset_B.at(i), matrix_B.size());
+      cutlass::device_memory::copy_to_host(
+          matrix_C.data(), block_C.get() + offset_C.at(i), matrix_C.size());
+      cutlass::device_memory::copy_to_host(
+          matrix_D.data(), block_D.get() + offset_D.at(i), matrix_D.size());
 
-      cutlass::TensorView<ElementA, LayoutA> view_A(matrix_A.data(), layout_A, extent_A);
-      cutlass::TensorView<ElementB, LayoutB> view_B(matrix_B.data(), layout_B, extent_B);
-      cutlass::TensorView<ElementC, LayoutC> view_C(matrix_C.data(), layout_C, extent_C);
-      cutlass::TensorView<ElementC, LayoutC> view_D(matrix_D.data(), layout_D, extent_C);
-      cutlass::TensorView<ElementC, LayoutC> view_Ref(matrix_Ref.data(), layout_D, extent_C);
+      cutlass::TensorView<ElementA, LayoutA> view_A(matrix_A.data(), layout_A,
+                                                    extent_A);
+      cutlass::TensorView<ElementB, LayoutB> view_B(matrix_B.data(), layout_B,
+                                                    extent_B);
+      cutlass::TensorView<ElementC, LayoutC> view_C(matrix_C.data(), layout_C,
+                                                    extent_C);
+      cutlass::TensorView<ElementC, LayoutC> view_D(matrix_D.data(), layout_D,
+                                                    extent_C);
+      cutlass::TensorView<ElementC, LayoutC> view_Ref(matrix_Ref.data(),
+                                                      layout_D, extent_C);
 
       // Reference Rank2K
       cutlass::reference::host::Rank2KComplex<
-          ElementA, LayoutA,
-          ElementB, LayoutB,
-          ElementC, LayoutC,
-          ElementCompute, ElementAccumulator
-      >(
-        problem,
-        alpha,
-        view_A,
-        Rank2K::kTransformA,
-        view_B,
-        Rank2K::kTransformB,
-        beta,
-        view_C,
-        view_Ref,
-        ElementAccumulator(0),
-        Rank2K::kFillModeC,
-        Rank2K::kBlasMode
-      );
+          ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+          ElementCompute, ElementAccumulator>(
+          problem, alpha, view_A, Rank2K::kTransformA, view_B,
+          Rank2K::kTransformB, beta, view_C, view_Ref, ElementAccumulator(0),
+          Rank2K::kFillModeC, Rank2K::kBlasMode);
 
       // Ensure that no input or output is entirely zero
       EXPECT_GT(cutlass::reference::host::TensorNorm(view_A), 0);
@@ -399,16 +394,15 @@ struct TestbedGrouped {
       if (!passed) {
         std::ofstream file("testbed_grouped_errors.txt");
 
-        file
-          << "problem: " << problem << "  [group: " << i << "]\n"
-          << ", alpha: " << alpha << ", beta: " << beta << "\n\n";
+        file << "problem: " << problem << "  [group: " << i << "]\n"
+             << ", alpha: " << alpha << ", beta: " << beta << "\n\n";
 
-        file
-          << "A =\n" << view_A
-          << "\nB =\n" << view_B
-          << "\nC =\n" << view_C
-          << "\n\nReference =\n" << view_Ref
-          << "\nComputed =\n" << view_D;
+        file << "A =\n"
+             << view_A << "\nB =\n"
+             << view_B << "\nC =\n"
+             << view_C << "\n\nReference =\n"
+             << view_Ref << "\nComputed =\n"
+             << view_D;
 
         return passed;
       }
@@ -418,22 +412,22 @@ struct TestbedGrouped {
   }
 
   /// Executes one test
-  bool run(
-    int problem_count,
-    ElementCompute alpha = ElementCompute(1),
-    ElementCompute beta = ElementCompute(0)) {
+  bool run(int problem_count, ElementCompute alpha = ElementCompute(1),
+           ElementCompute beta = ElementCompute(0)) {
 
     this->problem_count = problem_count;
 
     // Initialize the problem
     initialize();
 
-    int threadblock_count = Rank2K::sufficient(problem_sizes_host.data(), problem_count);
+    int threadblock_count =
+        Rank2K::sufficient(problem_sizes_host.data(), problem_count);
 
     // Early exit
     if (!threadblock_count) {
       if (CUTLASS_TEST_UNIT_ENABLE_WARNINGS) {
-        std::cerr << "Test waived due to insufficient CUDA device resources." << std::endl;
+        std::cerr << "Test waived due to insufficient CUDA device resources."
+                  << std::endl;
       }
       return true;
     }
@@ -443,21 +437,10 @@ struct TestbedGrouped {
 
     // Configure Rank2K arguments
     typename Rank2K::Arguments args(
-      cutlass::gemm::GemmUniversalMode::kGemm,
-      problem_sizes_device.get(),
-      problem_count,
-      threadblock_count,
-      epilogue_op,
-      ptr_A.get(),
-      ptr_B.get(),
-      ptr_C.get(),
-      ptr_D.get(),
-      lda.get(),
-      ldb.get(),
-      ldc.get(),
-      ldd.get(),
-      problem_sizes_host.data()
-    );
+        cutlass::gemm::GemmUniversalMode::kGemm, problem_sizes_device.get(),
+        problem_count, threadblock_count, epilogue_op, ptr_A.get(), ptr_B.get(),
+        ptr_C.get(), ptr_D.get(), lda.get(), ldb.get(), ldc.get(), ldd.get(),
+        problem_sizes_host.data());
 
     // Initialize the Rank2K object
     Rank2K rank2k;
@@ -482,7 +465,7 @@ struct TestbedGrouped {
     cudaError_t result = cudaDeviceSynchronize();
 
     EXPECT_EQ(result, cudaSuccess)
-      << "Kernel execution error: " << cudaGetErrorString(result);
+        << "Kernel execution error: " << cudaGetErrorString(result);
 
     if (result != cudaSuccess) {
       return false;
@@ -495,8 +478,8 @@ struct TestbedGrouped {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-} // device
-} // gemm
-} // test
+} // namespace device
+} // namespace gemm
+} // namespace test
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

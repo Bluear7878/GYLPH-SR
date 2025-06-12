@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,34 +18,36 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Device-level GEMM with layernorm elementwise operations fused in mainloop
+    \brief Device-level GEMM with layernorm elementwise operations fused in
+   mainloop
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/gemm/gemm.h"
-#include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 #include "cutlass/gemm/kernel/gemm_universal.h"
+#include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
-#include "cutlass/gemm/kernel/default_gemm_layernorm_mainloop_fusion.h"
 #include "cutlass/gemm/device/default_gemm_configuration.h"
 #include "cutlass/gemm/device/gemm_universal_base.h"
+#include "cutlass/gemm/kernel/default_gemm_layernorm_mainloop_fusion.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,9 +57,9 @@ namespace device {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*! 
-  The universal GEMM accommodates serial reductions, parallel reductions, batched strided, and 
-  batched array variants.
+/*!
+  The universal GEMM accommodates serial reductions, parallel reductions,
+  batched strided, and batched array variants.
 */
 template <
     /// Element type for A matrix operand
@@ -101,7 +103,8 @@ template <
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
         ElementAccumulator_>::EpilogueOutputOp,
     /// Threadblock-level swizzling operator
-    typename ThreadblockSwizzle_ = threadblock::GemmIdentityThreadblockSwizzle<>,
+    typename ThreadblockSwizzle_ =
+        threadblock::GemmIdentityThreadblockSwizzle<>,
     /// Number of stages used in the pipelined mainloop
     int Stages =
         DefaultGemmConfiguration<OperatorClass_, ArchTag_, ElementA_, ElementB_,
@@ -117,37 +120,18 @@ template <
     /// Operation performed by GEMM
     typename Operator_ = typename DefaultGemmConfiguration<
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
-        ElementAccumulator_>::Operator
->
-class GemmLayernormMainloopFusion : 
-  public GemmUniversalBase<
-    typename kernel::DefaultGemmLayernormMainloopFusion<
-      ElementA_,
-      LayoutA_,
-      AlignmentA,
-      ElementB_,
-      LayoutB_,
-      AlignmentB,
-      ElementScaleBias_,
-      LayoutScaleBias_,
-      ElementC_,
-      LayoutC_,
-      ElementAccumulator_,
-      OperatorClass_,
-      ArchTag_,
-      ThreadblockShape_,
-      WarpShape_,
-      InstructionShape_,
-      EpilogueOutputOp_,
-      ThreadblockSwizzle_,
-      Stages,
-      Operator_,
-      SharedMemoryClearOption::kNone
-    >::GemmKernel
-  > {
+        ElementAccumulator_>::Operator>
+class GemmLayernormMainloopFusion
+    : public GemmUniversalBase<
+          typename kernel::DefaultGemmLayernormMainloopFusion<
+              ElementA_, LayoutA_, AlignmentA, ElementB_, LayoutB_, AlignmentB,
+              ElementScaleBias_, LayoutScaleBias_, ElementC_, LayoutC_,
+              ElementAccumulator_, OperatorClass_, ArchTag_, ThreadblockShape_,
+              WarpShape_, InstructionShape_, EpilogueOutputOp_,
+              ThreadblockSwizzle_, Stages, Operator_,
+              SharedMemoryClearOption::kNone>::GemmKernel> {
 
- public:
-
+public:
   using ElementAccumulator = ElementAccumulator_;
   using OperatorClass = OperatorClass_;
   using ArchTag = ArchTag_;
@@ -162,31 +146,13 @@ class GemmLayernormMainloopFusion :
   static int const kAlignmentB = AlignmentB;
   static int const kAlignmentC = EpilogueOutputOp::kCount;
 
-  using Base = GemmUniversalBase<
-    typename kernel::DefaultGemmLayernormMainloopFusion<
-      ElementA_,
-      LayoutA_,
-      AlignmentA,
-      ElementB_,
-      LayoutB_,
-      AlignmentB,
-      ElementScaleBias_,
-      LayoutScaleBias_,
-      ElementC_,
-      LayoutC_,
-      ElementAccumulator_,
-      OperatorClass_,
-      ArchTag_,
-      ThreadblockShape_,
-      WarpShape_,
-      InstructionShape_,
-      EpilogueOutputOp_,
-      ThreadblockSwizzle_,
-      Stages,
-      Operator_,
-      SharedMemoryClearOption::kNone
-    >::GemmKernel
-  >;
+  using Base =
+      GemmUniversalBase<typename kernel::DefaultGemmLayernormMainloopFusion<
+          ElementA_, LayoutA_, AlignmentA, ElementB_, LayoutB_, AlignmentB,
+          ElementScaleBias_, LayoutScaleBias_, ElementC_, LayoutC_,
+          ElementAccumulator_, OperatorClass_, ArchTag_, ThreadblockShape_,
+          WarpShape_, InstructionShape_, EpilogueOutputOp_, ThreadblockSwizzle_,
+          Stages, Operator_, SharedMemoryClearOption::kNone>::GemmKernel>;
 
   using Arguments = typename Base::Arguments;
   using GemmKernel = typename Base::GemmKernel;
@@ -194,7 +160,8 @@ class GemmLayernormMainloopFusion :
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Partial specialization for column-major output exchanges problem size and operand.
+/// Partial specialization for column-major output exchanges problem size and
+/// operand.
 template <
     /// Element type for A matrix operand
     typename ElementA_,
@@ -235,18 +202,15 @@ template <
     /// Access granularity of B matrix in units of elements
     int AlignmentB,
     /// Operation performed by GEMM
-    typename Operator_
->
-class GemmLayernormMainloopFusion<ElementA_, LayoutA_, ElementB_, LayoutB_, 
-           ElementScaleBias_, LayoutScaleBias_,
-           ElementC_,
-           layout::ColumnMajor,  // partially specialized on LayoutC
-           ElementAccumulator_, OperatorClass_, ArchTag_, ThreadblockShape_,
-           WarpShape_, InstructionShape_, EpilogueOutputOp_,
-           ThreadblockSwizzle_, Stages, AlignmentA, AlignmentB,
-           Operator_> {
- public:
-
+    typename Operator_>
+class GemmLayernormMainloopFusion<
+    ElementA_, LayoutA_, ElementB_, LayoutB_, ElementScaleBias_,
+    LayoutScaleBias_, ElementC_,
+    layout::ColumnMajor, // partially specialized on LayoutC
+    ElementAccumulator_, OperatorClass_, ArchTag_, ThreadblockShape_,
+    WarpShape_, InstructionShape_, EpilogueOutputOp_, ThreadblockSwizzle_,
+    Stages, AlignmentA, AlignmentB, Operator_> {
+public:
   using ElementA = ElementA_;
   using LayoutA = LayoutA_;
   using TensorRefA = TensorRef<ElementA const, LayoutA>;
@@ -272,28 +236,13 @@ class GemmLayernormMainloopFusion<ElementA_, LayoutA_, ElementB_, LayoutB_,
   static int const kAlignmentA = AlignmentA;
   static int const kAlignmentB = AlignmentB;
 
-  using UnderlyingOperator = typename GemmLayernormMainloopFusion< 
-    ElementB,
-    typename layout::LayoutTranspose<LayoutB>::type,
-    ElementA,
-    typename layout::LayoutTranspose<LayoutA>::type,
-    ElementScaleBias,
-    LayoutScaleBias, 
-    ElementC,
-    layout::RowMajor,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    kAlignmentB,
-    kAlignmentA,
-    Operator
-  >::Base;
+  using UnderlyingOperator = typename GemmLayernormMainloopFusion<
+      ElementB, typename layout::LayoutTranspose<LayoutB>::type, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, ElementScaleBias,
+      LayoutScaleBias, ElementC, layout::RowMajor, ElementAccumulator,
+      OperatorClass, ArchTag, ThreadblockShape, WarpShape, InstructionShape,
+      EpilogueOutputOp, ThreadblockSwizzle, Stages, kAlignmentB, kAlignmentA,
+      Operator>::Base;
 
   using GemmKernel = typename UnderlyingOperator::GemmKernel;
   static int const kAlignmentC = EpilogueOutputOp::kCount;
@@ -302,15 +251,14 @@ class GemmLayernormMainloopFusion<ElementA_, LayoutA_, ElementB_, LayoutB_,
   using Arguments = typename UnderlyingOperator::Arguments;
 
 private:
-
   UnderlyingOperator underlying_operator_;
 
 public:
-
   /// Constructs the GEMM.
-  GemmLayernormMainloopFusion() { }
+  GemmLayernormMainloopFusion() {}
 
-  /// Helper to construct a transposed equivalent for the underlying GEMM operator
+  /// Helper to construct a transposed equivalent for the underlying GEMM
+  /// operator
   static Arguments to_underlying_arguments(Arguments const &args) {
     return args.transposed_problem();
   }
@@ -323,12 +271,13 @@ public:
 
   /// Gets the workspace size
   static size_t get_workspace_size(Arguments const &args) {
-    
-    return UnderlyingOperator::get_workspace_size(to_underlying_arguments(args));
+
+    return UnderlyingOperator::get_workspace_size(
+        to_underlying_arguments(args));
   }
 
   /// Computes the grid shape
-  static dim3 get_grid_shape(Arguments const &args) { 
+  static dim3 get_grid_shape(Arguments const &args) {
     return UnderlyingOperator::get_grid_shape(to_underlying_arguments(args));
   }
 
@@ -338,15 +287,18 @@ public:
   }
 
   /// Initializes GEMM state from arguments.
-  Status initialize(Arguments const &args, void *workspace = nullptr, cudaStream_t stream = nullptr) {
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
-    return underlying_operator_.initialize(to_underlying_arguments(args), workspace, stream);
+    return underlying_operator_.initialize(to_underlying_arguments(args),
+                                           workspace, stream);
   }
 
   /// Lightweight update given a subset of arguments
   Status update(Arguments const &args, void *workspace = nullptr) {
 
-    return underlying_operator_.update(to_underlying_arguments(args), workspace);
+    return underlying_operator_.update(to_underlying_arguments(args),
+                                       workspace);
   }
 
   /// Runs the kernel using initialized state.
@@ -356,18 +308,14 @@ public:
   }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
+
     Status status = initialize(args, workspace, stream);
-    
+
     if (status == Status::kSuccess) {
       status = run(stream);
     }

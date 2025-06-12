@@ -81,20 +81,23 @@ The module can later be used in Python via:
 import logging
 import os
 
-from cutlass_library import ConvKind, ConvKindNames, DataType, SubstituteTemplate
-
 from cutlass import CUTLASS_PATH, logger, swizzle
-from cutlass.backend.gemm_operation import GemmOperationGrouped, GemmOperationUniversal
 from cutlass.backend.conv2d_operation import Conv2dOperation
+from cutlass.backend.gemm_operation import (GemmOperationGrouped,
+                                            GemmOperationUniversal)
 from cutlass.backend.library import ApiVersion
 from cutlass.emit import common
 from cutlass.utils.datatypes import is_torch_available
+from cutlass_library import (ConvKind, ConvKindNames, DataType,
+                             SubstituteTemplate)
 
 if is_torch_available():
     import torch
 
 
-_PYTORCH_CUDA_TEMPLATE = common._CSTYLE_AUTOGEN_COMMENT + """
+_PYTORCH_CUDA_TEMPLATE = (
+    common._CSTYLE_AUTOGEN_COMMENT
+    + """
 #include <cuda_runtime.h>
 #include <torch/extension.h>
 #include <ATen/ATen.h>
@@ -119,8 +122,11 @@ ${includes}
 ${declaration}
 ${impl}
 """
+)
 
-_PYTORCH_GEMM_CPP_TEMPLATE = common._CSTYLE_AUTOGEN_COMMENT + """
+_PYTORCH_GEMM_CPP_TEMPLATE = (
+    common._CSTYLE_AUTOGEN_COMMENT
+    + """
 #include <torch/extension.h>
 #include <ATen/ATen.h>
 #include <pybind11/stl.h>
@@ -137,8 +143,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("run", py::overload_cast<const at::Tensor&, const at::Tensor&, at::optional<const at::Tensor>, float, float>(&${name}), py::arg("A"), py::arg("B"), py::arg("C") = nullptr, py::arg("alpha") = 1.f, py::arg("beta") = 0.f);
 }
 """
+)
 
-_PYTORCH_GROUPED_GEMM_CPP_TEMPLATE = common._CSTYLE_AUTOGEN_COMMENT + """
+_PYTORCH_GROUPED_GEMM_CPP_TEMPLATE = (
+    common._CSTYLE_AUTOGEN_COMMENT
+    + """
 #include <torch/extension.h>
 #include <ATen/ATen.h>
 #include <pybind11/stl.h>
@@ -156,8 +165,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("A"), py::arg("B"), py::arg("C") = nullptr, py::arg("alpha") = 1.f, py::arg("beta") = 0.f);
 }
 """
+)
 
-_PYTORCH_CONV2D_FPROP_CPP_TEMPLATE = common._CSTYLE_AUTOGEN_COMMENT + """
+_PYTORCH_CONV2D_FPROP_CPP_TEMPLATE = (
+    common._CSTYLE_AUTOGEN_COMMENT
+    + """
 #include <torch/extension.h>
 #include <ATen/ATen.h>
 #include <pybind11/stl.h>
@@ -189,8 +201,11 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("split_k_mode") = "serial", py::arg("split_k_slices") = 1);
 }
 """
+)
 
-_PYTORCH_CONV2D_GRAD_CPP_TEMPLATE = common._CSTYLE_AUTOGEN_COMMENT + """
+_PYTORCH_CONV2D_GRAD_CPP_TEMPLATE = (
+    common._CSTYLE_AUTOGEN_COMMENT
+    + """
 #include <torch/extension.h>
 #include <ATen/ATen.h>
 #include <pybind11/stl.h>
@@ -222,6 +237,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
         py::arg("split_k_mode") = "serial", py::arg("split_k_slices") = 1);
 }
 """
+)
 
 _PYTORCH_GEMM_INCLUDES = {
     ApiVersion.v2x: """
@@ -495,7 +511,8 @@ at::Tensor ${name}_kernel(const at::Tensor& A, const at::Tensor& B, at::optional
 
     torch::TensorOptions options = torch::TensorOptions().dtype(${torch_type_C}).device(B.device()).memory_format(at::MemoryFormat::ChannelsLast);
     at::Tensor D = torch::zeros({N, K, P, Q}, options);
-""" + _PYTORCH_CONV2D_IMPL_TEMPLATE_2x
+"""
+    + _PYTORCH_CONV2D_IMPL_TEMPLATE_2x
 )
 
 
@@ -531,7 +548,8 @@ at::Tensor ${name}_kernel(std::tuple<int, int, int, int> input_size, const at::T
 
     torch::TensorOptions options = torch::TensorOptions().dtype(${torch_type_C}).device(B.device()).memory_format(at::MemoryFormat::ChannelsLast);
     at::Tensor D = torch::empty({N, C_, H, W}, options);
-""" + _PYTORCH_CONV2D_IMPL_TEMPLATE_2x
+"""
+    + _PYTORCH_CONV2D_IMPL_TEMPLATE_2x
 )
 
 
@@ -567,11 +585,14 @@ at::Tensor ${name}_kernel(std::tuple<int, int, int, int> weight_size, const at::
 
     torch::TensorOptions options = torch::TensorOptions().dtype(${torch_type_C}).device(B.device()).memory_format(at::MemoryFormat::ChannelsLast);
     at::Tensor D = torch::empty({K, C_, R, S}, options);
-""" + _PYTORCH_CONV2D_IMPL_TEMPLATE_2x
+"""
+    + _PYTORCH_CONV2D_IMPL_TEMPLATE_2x
 )
 
 
-_PYTORCH_SETUP_PY = common._PYSTYLE_AUTOGEN_COMMENT + """
+_PYTORCH_SETUP_PY = (
+    common._PYSTYLE_AUTOGEN_COMMENT
+    + """
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
@@ -591,6 +612,7 @@ setup(
     })
 
 """
+)
 
 
 def _generate_setup(name: str, sourcedir: str):
@@ -693,7 +715,7 @@ def _jit(name: str, cc: int, cpp_file: str, cuda_file: str):
                 os.path.join(CUTLASS_PATH, "include"),
                 os.path.join(CUTLASS_PATH, "tools/util/include"),
             ],
-            verbose=(logger.level == logging.DEBUG)
+            verbose=(logger.level == logging.DEBUG),
         )
     return jitmodule
 

@@ -35,11 +35,9 @@ DAG IR used by Python EVT
 """
 
 import networkx as nx
-
-from cutlass_library import DataType
-
 from cutlass.backend.evt.ir.node import NodeBase
 from cutlass.backend.utils import device_cc
+from cutlass_library import DataType
 
 
 class DAGIR:
@@ -49,7 +47,8 @@ class DAGIR:
 
     In the DAGIR, ``node`` is an string of its name. ``node_meta`` is the underlying class of the node
     """
-    def __init__(self, element_compute=DataType.f32, cc: int=None) -> None:
+
+    def __init__(self, element_compute=DataType.f32, cc: int = None) -> None:
         # The EVT DAGIR is managed through the nextworkX Digraph class
         self._graph = nx.DiGraph()
 
@@ -71,7 +70,7 @@ class DAGIR:
             raise SyntaxError(f"Variable '{meta.name}' cannot be defined twice.")
         self._graph.add_node(meta.name, meta=meta)
 
-    def add_edge(self, src: str, dst: str, weight: int=0):
+    def add_edge(self, src: str, dst: str, weight: int = 0):
         """
         Add an edge src -> dst to dag ir with weight
         """
@@ -167,7 +166,9 @@ class DAGIR:
         """
         Get all the input node metas sorted by edge weight
         """
-        return [self.get_node_meta(input_node) for input_node in self.get_all_inputs(node)]
+        return [
+            self.get_node_meta(input_node) for input_node in self.get_all_inputs(node)
+        ]
 
     def replace_all_uses_with(self, node1, node2):
         """
@@ -216,7 +217,7 @@ class DAGIR:
         Get all node metas
         :return: list[NodeBase]
         """
-        return [data[1]['meta'] for data in self._graph.nodes.data()]
+        return [data[1]["meta"] for data in self._graph.nodes.data()]
 
     @property
     def edges(self):

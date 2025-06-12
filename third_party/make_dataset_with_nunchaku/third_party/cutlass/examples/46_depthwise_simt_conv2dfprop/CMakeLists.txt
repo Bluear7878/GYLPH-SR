@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   46_depthwise_simt_conv2dfprop
   depthwise_simt_conv2dfprop.cu
   )
-

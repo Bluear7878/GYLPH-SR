@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,37 +18,39 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Template for a pipelined GEMM kernel. Does not compute batching or support split-K.
+    \brief Template for a pipelined GEMM kernel. Does not compute batching or
+   support split-K.
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
 #include "cutlass/arch/wmma.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/numeric_types.h"
 
-#include "cutlass/layout/matrix.h"
-#include "cutlass/transform/threadblock/predicated_tile_iterator.h"
-#include "cutlass/transform/threadblock/predicated_tile_iterator_2dthreadtile.h"
 #include "cutlass/gemm/threadblock/default_mma_core_sm70.h"
 #include "cutlass/gemm/threadblock/default_mma_core_sm75.h"
 #include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_mma_core_sparse_sm80.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/transform/threadblock/predicated_tile_iterator.h"
+#include "cutlass/transform/threadblock/predicated_tile_iterator_2dthreadtile.h"
 #if defined(CUTLASS_ARCH_WMMA_ENABLED)
 #include "cutlass/gemm/threadblock/default_mma_core_wmma.h"
-#endif //CUTLASS_ARCH_WMMA_ENABLED
+#endif // CUTLASS_ARCH_WMMA_ENABLED
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -91,8 +93,7 @@ template <
     typename Operator,
     /// Store the accumulators in row major or column major.  Row major is used
     /// when output layout is interleaved.
-    bool AccumulatorsInRowMajor = false
-    >
+    bool AccumulatorsInRowMajor = false>
 struct DefaultSparseMma;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -124,12 +125,11 @@ template <
     /// Number of stages used in the multistage mainloop
     int Stages,
     /// Operation perfomed by GEMM
-    typename Operator
-    >
+    typename Operator>
 struct DefaultSparseMma<ElementA, LayoutA, kAlignmentA, ElementB, LayoutB,
-                  kAlignmentB, ElementAccumulator, layout::RowMajor,
-                  arch::OpClassTensorOp, ArchTag, ThreadblockShape, WarpShape,
-                  InstructionShape, Stages, Operator, false> {
+                        kAlignmentB, ElementAccumulator, layout::RowMajor,
+                        arch::OpClassTensorOp, ArchTag, ThreadblockShape,
+                        WarpShape, InstructionShape, Stages, Operator, false> {
   static cutlass::arch::CacheOperation::Kind const CacheOpA =
       ((sizeof_bits<ElementA>::value * kAlignmentA) == 128)
           ? cutlass::arch::CacheOperation::Global
@@ -139,13 +139,12 @@ struct DefaultSparseMma<ElementA, LayoutA, kAlignmentA, ElementB, LayoutB,
       ((sizeof_bits<ElementB>::value * kAlignmentB) == 128)
           ? cutlass::arch::CacheOperation::Global
           : cutlass::arch::CacheOperation::Always;
-  
 
   // Define the MmaCore components
   using MmaCore = typename cutlass::gemm::threadblock::DefaultSparseMmaCore<
       ThreadblockShape, WarpShape, InstructionShape, ElementA, LayoutA,
-      ElementB, LayoutB, ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp,
-      Stages, Operator, false, CacheOpA, CacheOpB>;
+      ElementB, LayoutB, ElementAccumulator, layout::RowMajor,
+      arch::OpClassTensorOp, Stages, Operator, false, CacheOpA, CacheOpB>;
 
   static int const kSparse = MmaCore::kSparse;
 
@@ -154,7 +153,8 @@ struct DefaultSparseMma<ElementA, LayoutA, kAlignmentA, ElementB, LayoutB,
   using AccessTypeA = cutlass::Array<ElementA, kAlignmentA>;
   using IteratorA =
       cutlass::transform::threadblock::PredicatedTileAccessIterator<
-          cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK / kSparse>,
+          cutlass::MatrixShape<ThreadblockShape::kM,
+                               ThreadblockShape::kK / kSparse>,
           ElementA, LayoutA, 1, ThreadMapA, AccessTypeA>;
 
   // Define iterators over tiles from the B operand
@@ -182,8 +182,8 @@ struct DefaultSparseMma<ElementA, LayoutA, kAlignmentA, ElementB, LayoutB,
   using ThreadblockMma = cutlass::gemm::threadblock::SparseMmaMultistage<
       typename MmaCore::Shape, IteratorA, typename MmaCore::SmemIteratorA,
       MmaCore::kCacheOpA, IteratorB, typename MmaCore::SmemIteratorB,
-      MmaCore::kCacheOpB, ElementAccumulator, layout::RowMajor,
-      IteratorE, typename MmaCore::SmemIteratorE, MmaCore::kCacheOpE,
+      MmaCore::kCacheOpB, ElementAccumulator, layout::RowMajor, IteratorE,
+      typename MmaCore::SmemIteratorE, MmaCore::kCacheOpE,
       typename MmaCore::MmaPolicy, Stages>;
 };
 
@@ -191,6 +191,6 @@ struct DefaultSparseMma<ElementA, LayoutA, kAlignmentA, ElementB, LayoutB,
 
 } // namespace threadblock
 } // namespace gemm
-} // namespace cutlass 
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

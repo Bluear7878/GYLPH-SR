@@ -5,8 +5,8 @@ _CUTLASS 3.0 - January 2023_
 CUTLASS is a collection of CUDA C++ template abstractions for implementing
 high-performance matrix-multiplication (GEMM) at all levels and scales within CUDA.
 It incorporates strategies for hierarchical decomposition and data movement similar
-to those used to implement cuBLAS.  CUTLASS decomposes these "moving parts" into
-reusable, modular software components abstracted by C++ template classes.  These
+to those used to implement cuBLAS. CUTLASS decomposes these "moving parts" into
+reusable, modular software components abstracted by C++ template classes. These
 components can be specialized
 and tuned via custom tiling sizes, data types, and other algorithmic policies. The
 resulting flexibility simplifies their use as building blocks within custom kernels
@@ -16,7 +16,7 @@ To support a wide variety of applications, CUTLASS provides extensive support fo
 mixed-precision computations, providing specialized data-movement and
 multiply-accumulate abstractions for 8-bit integer, half-precision floating
 point (FP16), single-precision floating point (FP32), and double-precision floating
-point (FP64) types.  Furthermore, CUTLASS exploits the _Tensor Cores_ and asynchronous
+point (FP64) types. Furthermore, CUTLASS exploits the _Tensor Cores_ and asynchronous
 memory copy operations of the latest NVIDIA GPU architectures.
 
 # What's New in CUTLASS 3.0

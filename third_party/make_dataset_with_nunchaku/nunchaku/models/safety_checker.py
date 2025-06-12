@@ -23,9 +23,9 @@ class SafetyChecker:
         if not disabled:
             self.device = device
             self.tokenizer = AutoTokenizer.from_pretrained("google/shieldgemma-2b")
-            self.llm = AutoModelForCausalLM.from_pretrained("google/shieldgemma-2b", torch_dtype=torch.bfloat16).to(
-                device
-            )
+            self.llm = AutoModelForCausalLM.from_pretrained(
+                "google/shieldgemma-2b", torch_dtype=torch.bfloat16
+            ).to(device)
         self.disabled = disabled
 
     def __call__(self, user_prompt: str, threshold: float = 0.2) -> bool:
@@ -33,7 +33,9 @@ class SafetyChecker:
             return True
         device = self.device
 
-        inputs = self.tokenizer(safety_check_template.format(user_prompt=user_prompt), return_tensors="pt").to(device)
+        inputs = self.tokenizer(
+            safety_check_template.format(user_prompt=user_prompt), return_tensors="pt"
+        ).to(device)
         with torch.no_grad():
             logits = self.llm(**inputs).logits
 

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,27 +18,29 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-  \brief Epilogue functor specialized for residual blocks in deep neural networks.
+  \brief Epilogue functor specialized for residual blocks in deep neural
+  networks.
 */
 
 #pragma once
 
 #include "cutlass/array.h"
+#include "cutlass/epilogue/thread/detail.hpp"
 #include "cutlass/functional.h"
 #include "cutlass/numeric_conversion.h"
-#include "cutlass/epilogue/thread/detail.hpp"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,15 +48,16 @@ namespace cutlass {
 namespace epilogue {
 namespace thread {
 
-/// Models a residual block of the form: UnaryOp(BinaryOp(BinaryOp(ActivationOp(TensorOp(X) + bias), residual1), residual2))
+/// Models a residual block of the form:
+/// UnaryOp(BinaryOp(BinaryOp(ActivationOp(TensorOp(X) + bias), residual1),
+/// residual2))
 template <typename ElementOutput_, typename ElementAccumulator_,
           typename ElementCompute_, typename ElementC_, int ElementsPerAccess,
           template <typename T> class ActivationOp_,
           template <typename T> class BinaryOp1_,
           template <typename T> class UnaryOp_,
           template <typename T> class BinaryOp2_ = detail::NoOp,
-          bool StoreT_ = false,
-          typename ElementVector_ = ElementC_>
+          bool StoreT_ = false, typename ElementVector_ = ElementC_>
 class LinearCombinationResidualBlock {
 public:
   static bool const kIsSingleSource = false;
@@ -89,10 +92,14 @@ public:
   /// Host-constructable parameters structure
   struct Params {
 
-    ElementCompute alpha;                  ///< scales accumulators
-    ElementCompute beta;                   ///< scales residual input
-    ElementCompute const *alpha_ptr{nullptr};       ///< pointer to accumulator scalar - if not null, loads it from memory
-    ElementCompute const *beta_ptr{nullptr};        ///< pointer to residual scalar - if not null, loads it from memory
+    ElementCompute alpha; ///< scales accumulators
+    ElementCompute beta;  ///< scales residual input
+    ElementCompute const *alpha_ptr{
+        nullptr}; ///< pointer to accumulator scalar - if not null, loads it
+                  ///< from memory
+    ElementCompute const *beta_ptr{
+        nullptr}; ///< pointer to residual scalar - if not null, loads it from
+                  ///< memory
 
     CUTLASS_HOST_DEVICE
     Params() : alpha(ElementCompute(1)), beta(ElementCompute(1)) {}
@@ -107,13 +114,11 @@ public:
   };
 
 private:
-
   ElementCompute alpha_;
   ElementCompute beta_;
   bool skip_elementwise_;
 
 public:
-
   /// Constructor from Params
   CUTLASS_HOST_DEVICE
   LinearCombinationResidualBlock(Params const &params) {
@@ -139,10 +144,12 @@ public:
     }
   }
 
-  /// Applies the operation UnaryOp(BinaryOp(BinaryOp(ActivationOp(AB + bias), residual1), residual2))
+  /// Applies the operation UnaryOp(BinaryOp(BinaryOp(ActivationOp(AB + bias),
+  /// residual1), residual2))
   CUTLASS_HOST_DEVICE
-  void operator()(FragmentOutput &frag_Z, FragmentOutput &, FragmentAccumulator const &AB,
-                  FragmentC const &residual1, FragmentC const &residual2,
+  void operator()(FragmentOutput &frag_Z, FragmentOutput &,
+                  FragmentAccumulator const &AB, FragmentC const &residual1,
+                  FragmentC const &residual2,
                   FragmentCompute const &bias) const {
     UnaryOp unary_op;
     BinaryOp1 binary_op1;
@@ -150,38 +157,44 @@ public:
     ActivationOp activation;
 
     FragmentCompute tmp_Accum =
-        NumericArrayConverter<ElementCompute, ElementAccumulator, kElementsPerAccess>()(AB);
+        NumericArrayConverter<ElementCompute, ElementAccumulator,
+                              kElementsPerAccess>()(AB);
     FragmentCompute tmp_residual1 =
-        NumericArrayConverter<ElementCompute, ElementC, kElementsPerAccess>()(residual1);
+        NumericArrayConverter<ElementCompute, ElementC, kElementsPerAccess>()(
+            residual1);
     FragmentCompute tmp_residual2 =
-        NumericArrayConverter<ElementCompute, ElementC, kElementsPerAccess>()(residual2);
+        NumericArrayConverter<ElementCompute, ElementC, kElementsPerAccess>()(
+            residual2);
 
     FragmentCompute z =
-        binary_op2(binary_op1(activation(alpha_ * tmp_Accum + bias), beta_ * tmp_residual1), beta_ * tmp_residual2);
+        binary_op2(binary_op1(activation(alpha_ * tmp_Accum + bias),
+                              beta_ * tmp_residual1),
+                   beta_ * tmp_residual2);
     FragmentCompute result_Z = skip_elementwise_ ? z : unary_op(z);
 
-    NumericArrayConverter<ElementOutput, ElementCompute, kElementsPerAccess> convert_z;
+    NumericArrayConverter<ElementOutput, ElementCompute, kElementsPerAccess>
+        convert_z;
     frag_Z = convert_z(result_Z);
   }
 
   /// Should never be called
   CUTLASS_HOST_DEVICE
-  void operator()(FragmentOutput &, FragmentOutput &, FragmentAccumulator const &,
-                  FragmentCompute const &) const {}
+  void operator()(FragmentOutput &, FragmentOutput &,
+                  FragmentAccumulator const &, FragmentCompute const &) const {}
 };
 
-/// Models a residual block of the form: UnaryOp(BinaryOp(ActivationOp(TensorOp(X) + bias), residual))
+/// Models a residual block of the form:
+/// UnaryOp(BinaryOp(ActivationOp(TensorOp(X) + bias), residual))
 template <typename ElementOutput_, typename ElementAccumulator_,
           typename ElementCompute_, typename ElementC_, int ElementsPerAccess,
           template <typename T> class ActivationOp_,
           template <typename T> class BinaryOp1_,
-          template <typename T> class UnaryOp_,
-          bool StoreT_,
+          template <typename T> class UnaryOp_, bool StoreT_,
           typename ElementVector_>
-class LinearCombinationResidualBlock<ElementOutput_, ElementAccumulator_,
-          ElementCompute_, ElementC_, ElementsPerAccess,
-          ActivationOp_, BinaryOp1_, UnaryOp_,
-          detail::NoOp, StoreT_, ElementVector_> {
+class LinearCombinationResidualBlock<
+    ElementOutput_, ElementAccumulator_, ElementCompute_, ElementC_,
+    ElementsPerAccess, ActivationOp_, BinaryOp1_, UnaryOp_, detail::NoOp,
+    StoreT_, ElementVector_> {
 public:
   static bool const kIsSingleSource = true;
 
@@ -214,10 +227,14 @@ public:
   /// Host-constructable parameters structure
   struct Params {
 
-    ElementCompute alpha;                  ///< scales accumulators
-    ElementCompute beta;                   ///< scales residual input
-    ElementCompute const *alpha_ptr{nullptr};       ///< pointer to accumulator scalar - if not null, loads it from memory
-    ElementCompute const *beta_ptr{nullptr};        ///< pointer to residual scalar - if not null, loads it from memory
+    ElementCompute alpha; ///< scales accumulators
+    ElementCompute beta;  ///< scales residual input
+    ElementCompute const *alpha_ptr{
+        nullptr}; ///< pointer to accumulator scalar - if not null, loads it
+                  ///< from memory
+    ElementCompute const *beta_ptr{
+        nullptr}; ///< pointer to residual scalar - if not null, loads it from
+                  ///< memory
 
     CUTLASS_HOST_DEVICE
     Params() : alpha(ElementCompute(1)), beta(ElementCompute(1)) {}
@@ -232,13 +249,11 @@ public:
   };
 
 private:
-
   ElementCompute alpha_;
   ElementCompute beta_;
   bool skip_elementwise_;
 
 public:
-
   /// Constructor from Params
   CUTLASS_HOST_DEVICE
   LinearCombinationResidualBlock(Params const &params) {
@@ -266,30 +281,33 @@ public:
 
   /// Applies the operation UnaryOp(BinaryOp(ActivationOp(AB + bias), residual))
   CUTLASS_HOST_DEVICE
-  void operator()(FragmentOutput &frag_Z, FragmentOutput &, FragmentAccumulator const &AB,
-                  FragmentC const &residual,
+  void operator()(FragmentOutput &frag_Z, FragmentOutput &,
+                  FragmentAccumulator const &AB, FragmentC const &residual,
                   FragmentCompute const &bias) const {
     UnaryOp unary_op;
     BinaryOp binary_op;
     ActivationOp activation;
 
     FragmentCompute tmp_Accum =
-        NumericArrayConverter<ElementCompute, ElementAccumulator, kElementsPerAccess>()(AB);
+        NumericArrayConverter<ElementCompute, ElementAccumulator,
+                              kElementsPerAccess>()(AB);
     FragmentCompute tmp_residual =
-        NumericArrayConverter<ElementCompute, ElementC, kElementsPerAccess>()(residual);
+        NumericArrayConverter<ElementCompute, ElementC, kElementsPerAccess>()(
+            residual);
 
     FragmentCompute z =
         binary_op(activation(alpha_ * tmp_Accum + bias), beta_ * tmp_residual);
     FragmentCompute result_Z = skip_elementwise_ ? z : unary_op(z);
 
-    NumericArrayConverter<ElementOutput, ElementCompute, kElementsPerAccess> convert_z;
+    NumericArrayConverter<ElementOutput, ElementCompute, kElementsPerAccess>
+        convert_z;
     frag_Z = convert_z(result_Z);
   }
 
   /// Should never be called
   CUTLASS_HOST_DEVICE
-  void operator()(FragmentOutput &, FragmentOutput &, FragmentAccumulator const &,
-                  FragmentCompute const &) const {}
+  void operator()(FragmentOutput &, FragmentOutput &,
+                  FragmentAccumulator const &, FragmentCompute const &) const {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

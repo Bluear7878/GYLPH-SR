@@ -32,4 +32,3 @@ cutlass_example_add_executable(
   21_quaternion_gemm
   quaternion_gemm.cu
 )
-  

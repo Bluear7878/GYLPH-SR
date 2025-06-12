@@ -9,6 +9,7 @@ Creates a [JSON Patch](http://jsonpatch.com) so that value `source` can be chang
 [`patch`](patch.md) function.
 
 For two JSON values `source` and `target`, the following code yields always `#!cpp true`:
+
 ```cpp
 source.patch(diff(source, target)) == target;
 ```
@@ -16,10 +17,10 @@ source.patch(diff(source, target)) == target;
 ## Parameters
 
 `source` (in)
-:   JSON value to compare from
+: JSON value to compare from
 
 `target` (in)
-:   JSON value to compare against
+: JSON value to compare against
 
 ## Return value
 
@@ -36,22 +37,24 @@ Linear in the lengths of `source` and `target`.
 ## Notes
 
 Currently, only `remove`, `add`, and `replace` operations are generated.
-          
+
 ## Examples
 
 ??? example
 
-    The following code shows how a JSON patch is created as a diff for two JSON values.
-     
-    ```cpp
-    --8<-- "examples/diff.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/diff.output"
-    ```
+````
+The following code shows how a JSON patch is created as a diff for two JSON values.
+
+```cpp
+--8<-- "examples/diff.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/diff.output"
+```
+````
 
 ## See also
 

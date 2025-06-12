@@ -5,7 +5,9 @@ import pytest
 
 EXAMPLES_DIR = "./examples"
 
-example_scripts = [f for f in os.listdir(EXAMPLES_DIR) if f.endswith(".py") and f.startswith("flux")]
+example_scripts = [
+    f for f in os.listdir(EXAMPLES_DIR) if f.endswith(".py") and f.startswith("flux")
+]
 
 
 @pytest.mark.parametrize("script_name", example_scripts)

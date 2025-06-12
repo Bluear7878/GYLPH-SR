@@ -32,4 +32,3 @@ cutlass_example_add_executable(
   33_ampere_3xtf32_tensorop_symm
   ampere_3xtf32_tensorop_symm.cu
   )
-

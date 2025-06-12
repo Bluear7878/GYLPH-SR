@@ -10,7 +10,9 @@ def fetch_or_download(path: str, repo_type: str = "model") -> str:
     if not os.path.exists(path):
         hf_repo_id = os.path.dirname(path)
         filename = os.path.basename(path)
-        path = hf_hub_download(repo_id=hf_repo_id, filename=filename, repo_type=repo_type)
+        path = hf_hub_download(
+            repo_id=hf_repo_id, filename=filename, repo_type=repo_type
+        )
     return path
 
 
@@ -48,7 +50,9 @@ def load_state_dict_in_safetensors(
             loaded SafeTensors.
     """
     state_dict = {}
-    with safetensors.safe_open(fetch_or_download(path), framework="pt", device=device) as f:
+    with safetensors.safe_open(
+        fetch_or_download(path), framework="pt", device=device
+    ) as f:
         for k in f.keys():
             if filter_prefix and not k.startswith(filter_prefix):
                 continue
@@ -56,7 +60,9 @@ def load_state_dict_in_safetensors(
     return state_dict
 
 
-def filter_state_dict(state_dict: dict[str, torch.Tensor], filter_prefix: str = "") -> dict[str, torch.Tensor]:
+def filter_state_dict(
+    state_dict: dict[str, torch.Tensor], filter_prefix: str = ""
+) -> dict[str, torch.Tensor]:
     """Filter state dict.
 
     Args:
@@ -69,26 +75,38 @@ def filter_state_dict(state_dict: dict[str, torch.Tensor], filter_prefix: str = 
         `dict`:
             filtered state dict.
     """
-    return {k.removeprefix(filter_prefix): v for k, v in state_dict.items() if k.startswith(filter_prefix)}
+    return {
+        k.removeprefix(filter_prefix): v
+        for k, v in state_dict.items()
+        if k.startswith(filter_prefix)
+    }
 
 
 def get_precision(
-    precision: str = "auto", device: str | torch.device = "cuda", pretrained_model_name_or_path: str | None = None
+    precision: str = "auto",
+    device: str | torch.device = "cuda",
+    pretrained_model_name_or_path: str | None = None,
 ) -> str:
     assert precision in ("auto", "int4", "fp4")
     if precision == "auto":
         if isinstance(device, str):
             device = torch.device(device)
-        capability = torch.cuda.get_device_capability(0 if device.index is None else device.index)
+        capability = torch.cuda.get_device_capability(
+            0 if device.index is None else device.index
+        )
         sm = f"{capability[0]}{capability[1]}"
         precision = "fp4" if sm == "120" else "int4"
     if pretrained_model_name_or_path is not None:
         if precision == "int4":
             if "fp4" in pretrained_model_name_or_path:
-                warnings.warn("The model may be quantized to fp4, but you are loading it with int4 precision.")
+                warnings.warn(
+                    "The model may be quantized to fp4, but you are loading it with int4 precision."
+                )
         elif precision == "fp4":
             if "int4" in pretrained_model_name_or_path:
-                warnings.warn("The model may be quantized to int4, but you are loading it with fp4 precision.")
+                warnings.warn(
+                    "The model may be quantized to int4, but you are loading it with fp4 precision."
+                )
     return precision
 
 

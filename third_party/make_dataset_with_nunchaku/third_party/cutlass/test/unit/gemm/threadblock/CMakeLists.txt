@@ -43,4 +43,3 @@ cutlass_test_unit_add_executable(
   mma_planar_complex_sm80.cu
 
 )
-

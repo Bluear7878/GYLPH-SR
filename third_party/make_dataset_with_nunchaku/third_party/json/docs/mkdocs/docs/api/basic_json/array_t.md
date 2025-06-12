@@ -7,6 +7,7 @@ using array_t = ArrayType<basic_json, AllocatorType<basic_json>>;
 The type used to store JSON arrays.
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) describes JSON arrays as follows:
+
 > An array is an ordered sequence of zero or more values.
 
 To store objects in C++, a type is defined by the template parameters explained below.
@@ -14,10 +15,10 @@ To store objects in C++, a type is defined by the template parameters explained 
 ## Template parameters
 
 `ArrayType`
-:   container type to store arrays (e.g., `std::vector` or `std::list`)
+: container type to store arrays (e.g., `std::vector` or `std::list`)
 
 `AllocatorType`
-:   the allocator to use for objects (e.g., `std::allocator`)
+: the allocator to use for objects (e.g., `std::allocator`)
 
 ## Notes
 
@@ -36,6 +37,7 @@ std::vector<
 #### Limits
 
 [RFC 8259](https://tools.ietf.org/html/rfc8259) specifies:
+
 > An implementation may set limits on the maximum depth of nesting.
 
 In this class, the array's limit of nesting is not explicitly constrained. However, a maximum depth of nesting may be
@@ -51,17 +53,19 @@ Arrays are stored as pointers in a `basic_json` type. That is, for any access to
 
 ??? example
 
-    The following code shows that `array_t` is by default, a typedef to `#!cpp std::vector<nlohmann::json>`.
-     
-    ```cpp
-    --8<-- "examples/array_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/array_t.output"
-    ```
+````
+The following code shows that `array_t` is by default, a typedef to `#!cpp std::vector<nlohmann::json>`.
+
+```cpp
+--8<-- "examples/array_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/array_t.output"
+```
+````
 
 ## Version history
 

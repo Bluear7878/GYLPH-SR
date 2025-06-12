@@ -21,18 +21,20 @@ When the macro is not defined, the library will define it to its default value.
 
 ??? example
 
-    The example shows how to use `NLOHMANN_JSON_NAMESPACE_NO_VERSION` to disable the version component of the inline
-    namespace.
-    
-    ```cpp
-    --8<-- "examples/nlohmann_json_namespace_no_version.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/nlohmann_json_namespace_no_version.output"
-    ```
+````
+The example shows how to use `NLOHMANN_JSON_NAMESPACE_NO_VERSION` to disable the version component of the inline
+namespace.
+
+```cpp
+--8<-- "examples/nlohmann_json_namespace_no_version.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/nlohmann_json_namespace_no_version.output"
+```
+````
 
 ## See also
 

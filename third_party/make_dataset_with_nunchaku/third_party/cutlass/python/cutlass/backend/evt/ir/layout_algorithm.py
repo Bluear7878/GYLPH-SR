@@ -34,7 +34,7 @@
 Layout algebras
 """
 
-from pycute import Layout, composition, make_layout, flatten, product
+from pycute import Layout, composition, flatten, make_layout, product
 
 
 def _infer_split(old_shape, new_shape):
@@ -57,17 +57,36 @@ def _infer_split(old_shape, new_shape):
     new_dim = new_shape[-1]
     # Exact match
     if old_dim == new_dim:
-        return _infer_split(old_shape[:-1], new_shape[:-1]) + [new_dim,]
+        return _infer_split(old_shape[:-1], new_shape[:-1]) + [
+            new_dim,
+        ]
     # Needs split
     if old_dim > new_dim and old_dim % new_dim == 0:
         residual = old_dim // new_dim
-        return _infer_split(old_shape[:-1] + [residual,], new_shape[:-1]) + [new_dim,]
+        return _infer_split(
+            old_shape[:-1]
+            + [
+                residual,
+            ],
+            new_shape[:-1],
+        ) + [
+            new_dim,
+        ]
     # Needs merge
     if old_dim < new_dim and new_dim % old_dim == 0:
         residual = new_dim // old_dim
-        return _infer_split(old_shape[:-1], new_shape[:-1] + [residual,]) + [old_dim,]
+        return _infer_split(
+            old_shape[:-1],
+            new_shape[:-1]
+            + [
+                residual,
+            ],
+        ) + [
+            old_dim,
+        ]
 
     raise NotImplementedError(f"Unsupported split: {old_shape} -> {new_shape}")
+
 
 def _infer_merge(flatten_shape, shape):
     flatten_shape = _tuple_to_list(flatten_shape)
@@ -83,7 +102,7 @@ def _infer_merge(flatten_shape, shape):
         elif dim > flatten_shape[idx_flat] and dim % flatten_shape[idx_flat] == 0:
             residual = dim
             group = []
-            while(residual > 1):
+            while residual > 1:
                 group.append(flatten_shape[idx_flat])
                 residual = residual // flatten_shape[idx_flat]
                 idx_flat += 1
@@ -93,20 +112,24 @@ def _infer_merge(flatten_shape, shape):
 
     return merged_shape
 
+
 def _list_to_tuple(nested_list):
     if isinstance(nested_list, list) or isinstance(nested_list, tuple):
         return tuple(_list_to_tuple(item) for item in nested_list)
     return nested_list
+
 
 def _tuple_to_list(nested_tuple):
     if isinstance(nested_tuple, list) or isinstance(nested_tuple, tuple):
         return list(_tuple_to_list(item) for item in nested_tuple)
     return nested_tuple
 
+
 def _reverse_tuple(nested_tuple: tuple):
     if isinstance(nested_tuple, tuple):
         return tuple([_reverse_tuple(item) for item in nested_tuple][::-1])
     return nested_tuple
+
 
 def _get_first_lhs_nonzero_stride(stride_list, idx):
     for i in reversed(range(idx)):
@@ -115,12 +138,14 @@ def _get_first_lhs_nonzero_stride(stride_list, idx):
     else:
         return None
 
+
 def _get_first_rhs_nonzero_stride(stride_list, idx):
-    for i in range(idx+1, len(stride_list)):
+    for i in range(idx + 1, len(stride_list)):
         if stride_list[i] != 0:
             return i
         else:
             return None
+
 
 def reshape(layout, new_shape):
     """
@@ -164,15 +189,24 @@ def reshape(layout, new_shape):
                 if lhs_stride is not None and rhs_stride is not None:
                     # We consider shape[idx]:stride[idx]
                     # Case 1: stride[idx - 1] <= stride[idx] <= stride[idx + 1]: column major
-                    if lhs_stride <= old_flatten_stride[idx] and old_flatten_stride[idx] <= rhs_stride:
+                    if (
+                        lhs_stride <= old_flatten_stride[idx]
+                        and old_flatten_stride[idx] <= rhs_stride
+                    ):
                         permuted_splitted_shape.append(dim)
                         split_type.append("C")
                     # Case 2: stride[idx - 1] > stride[idx] > stride[idx + 1]: row major
-                    elif lhs_stride > old_flatten_stride[idx] and old_flatten_stride[idx] > rhs_stride:
+                    elif (
+                        lhs_stride > old_flatten_stride[idx]
+                        and old_flatten_stride[idx] > rhs_stride
+                    ):
                         permuted_splitted_shape.append([d for d in reversed(dim)])
                         split_type.append("R")
                     # Case 3: stride[idx - 1] <= stride[idx] > stride[idx + 1]: concave
-                    elif lhs_stride <= old_flatten_stride[idx] and old_flatten_stride[idx] > rhs_stride:
+                    elif (
+                        lhs_stride <= old_flatten_stride[idx]
+                        and old_flatten_stride[idx] > rhs_stride
+                    ):
                         if lhs_stride >= rhs_stride:
                             permuted_splitted_shape.append(dim)
                             split_type.append("C")
@@ -180,7 +214,10 @@ def reshape(layout, new_shape):
                             permuted_splitted_shape.append([d for d in reversed(dim)])
                             split_type.append("R")
                     # Case 4: stride[idx - 1] > stride[idx] <= stride[idx + 1]: concave
-                    elif lhs_stride > old_flatten_stride[idx] and old_flatten_stride[idx] <= rhs_stride:
+                    elif (
+                        lhs_stride > old_flatten_stride[idx]
+                        and old_flatten_stride[idx] <= rhs_stride
+                    ):
                         if lhs_stride >= rhs_stride:
                             permuted_splitted_shape.append(dim)
                             split_type.append("C")
@@ -207,15 +244,16 @@ def reshape(layout, new_shape):
                         split_type.append("C")
 
     # 1.4 Generate the splitted layout
-    permuted_splitted_layout = composition(layout, Layout(_list_to_tuple(permuted_splitted_shape)))
+    permuted_splitted_layout = composition(
+        layout, Layout(_list_to_tuple(permuted_splitted_shape))
+    )
 
     # 1.5 Reverse the permutation in 1.4 before merge
     splitted_shape = []
     splitted_stride = []
     for shape_dim, stride_dim, type in zip(
-            permuted_splitted_layout.shape,
-            permuted_splitted_layout.stride,
-            split_type):
+        permuted_splitted_layout.shape, permuted_splitted_layout.stride, split_type
+    ):
         if type == "C":
             splitted_shape.append(shape_dim)
             splitted_stride.append(stride_dim)
@@ -223,7 +261,6 @@ def reshape(layout, new_shape):
             splitted_shape.append(tuple([d for d in reversed(shape_dim)]))
             splitted_stride.append(tuple([d for d in reversed(stride_dim)]))
     splitted_layout = Layout(tuple(splitted_shape), tuple(splitted_stride))
-
 
     #
     # Step 2: Merge the splitted dimensions according to the new shape
@@ -261,7 +298,9 @@ def _broadcast(layout, new_shape):
     old_shape = layout.shape
     if isinstance(old_shape, int):
         old_shape = (old_shape,)
-        sub_layouts = [layout,]
+        sub_layouts = [
+            layout,
+        ]
     else:
         sub_layouts = [sub_layout for sub_layout in layout]
     rhs_broadcast_layouts = [Layout(1, 0)] * (len(new_shape) - len(old_shape))
@@ -294,7 +333,9 @@ def debroadcast(layout, dims):
     """
     for dim in dims:
         if layout.stride[dim] != 0:
-            raise ValueError(f"Dim{dim} cannot be debroadcasted as it has stride {layout.stride[dim]}")
+            raise ValueError(
+                f"Dim{dim} cannot be debroadcasted as it has stride {layout.stride[dim]}"
+            )
     new_shape = tuple([s for idx, s in enumerate(layout.shape) if idx not in dims])
     new_stride = tuple([s for idx, s in enumerate(layout.stride) if idx not in dims])
     return Layout(new_shape, new_stride)
@@ -314,6 +355,7 @@ def canonicalization_(shapes, strides):
             return 1, 0
         else:
             return shapes, strides
+
 
 def canonicalization(layout):
     """

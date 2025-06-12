@@ -34,16 +34,9 @@
 Utilities for expressing shapes
 """
 
-from cutlass_library import (
-    ConvMode,
-    ConvKind,
-    LayoutType
-)
-from cutlass.backend.c_types import (
-    Conv2DProblemSize_,
-    GemmCoord_,
-    GemmCoordBatched_
-)
+from cutlass.backend.c_types import (Conv2DProblemSize_, GemmCoord_,
+                                     GemmCoordBatched_)
+from cutlass_library import ConvKind, ConvMode, LayoutType
 
 
 class MatrixCoord:
@@ -74,7 +67,9 @@ class MatrixCoord:
         elif layout == LayoutType.ColumnMajor:
             return self._row
         else:
-            raise Exception(f'Unsupported layout for leading dimension calculation: {layout}')
+            raise Exception(
+                f"Unsupported layout for leading dimension calculation: {layout}"
+            )
 
 
 class GemmCoord:
@@ -117,11 +112,25 @@ class GemmCoord:
 
 class Conv2DProblemSize:
     def __init__(
-        self, n: int, h: int, w: int, c: int,
-        k: int, r: int, s: int, c_: int,
-        pad_h: int, pad_w: int, stride_h: int, stride_w: int,
-        dilation_h: int, dilation_w: int, mode: ConvMode=ConvMode.CrossCorrelation,
-        split_k_slices: int=1, groups: int=1):
+        self,
+        n: int,
+        h: int,
+        w: int,
+        c: int,
+        k: int,
+        r: int,
+        s: int,
+        c_: int,
+        pad_h: int,
+        pad_w: int,
+        stride_h: int,
+        stride_w: int,
+        dilation_h: int,
+        dilation_w: int,
+        mode: ConvMode = ConvMode.CrossCorrelation,
+        split_k_slices: int = 1,
+        groups: int = 1,
+    ):
 
         self.N = n
         self.H = h
@@ -151,20 +160,12 @@ class Conv2DProblemSize:
             return GemmCoord(
                 self.N * self.P * self.Q,
                 self.K,
-                self.R * self.S * self.C // self.groups
+                self.R * self.S * self.C // self.groups,
             )
         elif kind == ConvKind.Dgrad:
-            return GemmCoord(
-                self.N * self.H * self.W,
-                self.C,
-                self.R * self.S * self.K
-            )
+            return GemmCoord(self.N * self.H * self.W, self.C, self.R * self.S * self.K)
         elif kind == ConvKind.Wgrad:
-            return GemmCoord(
-                self.K,
-                self.R * self.S * self.C,
-                self.N * self.P * self.Q
-            )
+            return GemmCoord(self.K, self.R * self.S * self.C, self.N * self.P * self.Q)
 
     @staticmethod
     def from_sizes(input_size, weight_size):
@@ -178,7 +179,10 @@ class Conv2DProblemSize:
         return Conv2DProblemSize(
             *input_size,
             *weight_size,
-            pad_h, pad_w,
-            stride_h, stride_w,
-            dilation_h, dilation_w
+            pad_h,
+            pad_w,
+            stride_h,
+            stride_w,
+            dilation_h,
+            dilation_w,
         )

@@ -32,7 +32,7 @@ include(GNUInstallDirs)
 
 ################################################################################
 
-set(CUTLASS_BUILD_MONO_LIBRARY OFF CACHE BOOL 
+set(CUTLASS_BUILD_MONO_LIBRARY OFF CACHE BOOL
   "Determines whether the cutlass library is generated as a single file or multiple files.")
 
 ################################################################################
@@ -49,8 +49,8 @@ target_include_directories(
   )
 
 target_link_libraries(
-  cutlass_library_includes 
-  INTERFACE 
+  cutlass_library_includes
+  INTERFACE
   CUTLASS
   cutlass_tools_util_includes
   )
@@ -86,9 +86,9 @@ target_link_libraries(
 function(cutlass_add_cutlass_library)
 #
 # Generates static and shared libraries with the given SOURCES. The public CMake
-# targets produces will be cutlass_library(_${SUFFIX})? and 
+# targets produces will be cutlass_library(_${SUFFIX})? and
 # cutlass_library(_${SUFFIX})?_static.
-# 
+#
 # SUFFIX: An additional string to be joined to the default names. If suffix is given,
 #   the generated libraries will be linked as a dependency of the main cutlass library.
 
@@ -113,7 +113,7 @@ function(cutlass_add_cutlass_library)
     ${__NAME}_objs
     OBJECT
     ${__UNPARSED_ARGUMENTS}
-    )  
+    )
 
   target_link_libraries(${__NAME}_objs
     PUBLIC cutlass_library_includes
@@ -123,7 +123,7 @@ function(cutlass_add_cutlass_library)
   if (CUTLASS_BUILD_MONO_LIBRARY AND __SUFFIX)
 
     # If we're only building a single monolithic library then we
-    # simply link the generated object files to the default library. 
+    # simply link the generated object files to the default library.
 
     target_link_libraries(${DEFAULT_NAME} PRIVATE $<BUILD_INTERFACE:${__NAME}_objs>)
     target_link_libraries(${DEFAULT_NAME}_static PRIVATE $<BUILD_INTERFACE:${__NAME}_objs>)
@@ -131,57 +131,57 @@ function(cutlass_add_cutlass_library)
   else()
 
     cutlass_add_library(
-      ${__NAME} 
+      ${__NAME}
       SHARED
       EXPORT_NAME ${__EXPORT_NAME}
       ""
       )
-    
+
     set_target_properties(
       ${__NAME}
       PROPERTIES
       OUTPUT_NAME ${__OUTPUT_NAME}
       WINDOWS_EXPORT_ALL_SYMBOLS 1
       )
-    
+
     target_link_libraries(
       ${__NAME}
       PUBLIC cutlass_library_includes
       PRIVATE $<BUILD_INTERFACE:${__NAME}_objs>
       cuda_driver
       )
-    
+
     set_target_properties(${__NAME} PROPERTIES DEBUG_POSTFIX "${CUTLASS_LIBRARY_DEBUG_POSTFIX}")
-    
+
     cutlass_add_library(
       ${__NAME}_static
       STATIC
       EXPORT_NAME ${__EXPORT_NAME}_static
       ""
       )
-    
+
     if (WIN32)
       set(STATIC_OUTPUT_NAME ${__OUTPUT_NAME}.static)
     else()
       set(STATIC_OUTPUT_NAME ${__OUTPUT_NAME})
     endif()
-    
+
     set_target_properties(
       ${__NAME}_static
       PROPERTIES
       OUTPUT_NAME ${STATIC_OUTPUT_NAME}
       WINDOWS_EXPORT_ALL_SYMBOLS 1
       )
-    
+
     target_link_libraries(
       ${__NAME}_static
       PUBLIC cutlass_library_includes
       PRIVATE $<BUILD_INTERFACE:${__NAME}_objs>
       cuda_driver
       )
-    
+
     set_target_properties(${__NAME}_static PROPERTIES DEBUG_POSTFIX "${CUTLASS_LIBRARY_DEBUG_POSTFIX}")
-    
+
     install(
       TARGETS ${__NAME} ${__NAME}_static
       EXPORT NvidiaCutlass
@@ -189,16 +189,16 @@ function(cutlass_add_cutlass_library)
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       )
-    
+
     if (__SUFFIX)
-    
+
       # The partial libraries generated will be registered as linked libraries
       # to the main cutlass library so users automatically get the necessary link
       # commands to pull in all kernels by default.
-    
+
       target_link_libraries(${DEFAULT_NAME} INTERFACE ${__NAME})
       target_link_libraries(${DEFAULT_NAME}_static INTERFACE ${__NAME}_static)
-    
+
     endif()
 
   endif()
@@ -236,7 +236,7 @@ cutlass_add_cutlass_library(
 
   src/reduction/reduction_device.cu
   src/reduction/init_reduction_operations.cu
-  
+
   # cutlass conv reference instances in cutlass library
 
   src/reference/conv2d.cu
@@ -255,7 +255,7 @@ file(GLOB_RECURSE GENERATOR_PYTHON_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOU
 # auto-instantiation of CUTLASS kernels
 #
 
-# set cutlass generator compiler version to filter kernels in the generator not supported by a specific toolkit. 
+# set cutlass generator compiler version to filter kernels in the generator not supported by a specific toolkit.
 set(CUTLASS_GENERATOR_CUDA_COMPILER_VERSION ${CMAKE_CUDA_COMPILER_VERSION})
 set(CUTLASS_LIBRARY_GENERATED_KERNEL_LIST_FILE ${CMAKE_CURRENT_BINARY_DIR}/generated_kernels.txt CACHE STRING "Generated kernel listing file")
 
@@ -266,7 +266,7 @@ execute_process(
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../python/cutlass_library
   COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CUTLASS_LIBRARY_PACKAGE_DIR}
     ${Python3_EXECUTABLE} ${CUTLASS_SOURCE_DIR}/python/cutlass_library/generator.py
-    --operations "${CUTLASS_LIBRARY_OPERATIONS}" 
+    --operations "${CUTLASS_LIBRARY_OPERATIONS}"
     --build-dir ${PROJECT_BINARY_DIR}
     --curr-build-dir ${CMAKE_CURRENT_BINARY_DIR}
     --generator-target library
@@ -303,4 +303,3 @@ install(
   FILES ${CUTLASS_LIBRARY_GENERATED_KERNEL_LIST_FILE}
   DESTINATION ${CMAKE_INSTALL_INFODIR}/cutlass/
   )
-

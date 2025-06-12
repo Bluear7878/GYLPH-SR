@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -37,9 +38,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 #ifdef CUTLASS_NAMESPACE
-#define concat_tok(a, b) a ## b
+#define concat_tok(a, b) a##b
 #define mkcutlassnamespace(pre, ns) concat_tok(pre, ns)
 #define cutlass mkcutlassnamespace(cutlass_, CUTLASS_NAMESPACE)
 #endif
@@ -59,14 +59,15 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename T>
-CUTLASS_HOST_DEVICE void __CUTLASS_UNUSED(T const &) 
-{ }
+template <typename T> CUTLASS_HOST_DEVICE void __CUTLASS_UNUSED(T const &) {}
 
 #if defined(__GNUC__)
-  #define CUTLASS_UNUSED(expr) __CUTLASS_UNUSED(expr)
+#define CUTLASS_UNUSED(expr) __CUTLASS_UNUSED(expr)
 #else
-  #define CUTLASS_UNUSED(expr) do { ; } while (&expr != &expr)
+#define CUTLASS_UNUSED(expr)                                                   \
+  do {                                                                         \
+    ;                                                                          \
+  } while (&expr != &expr)
 #endif
 
 #ifdef _MSC_VER
@@ -79,28 +80,34 @@ CUTLASS_HOST_DEVICE void __CUTLASS_UNUSED(T const &)
 #endif
 
 #if defined(__CUDA_ARCH__)
-  #if defined(_MSC_VER)
-    #define CUTLASS_NOT_IMPLEMENTED() { printf("%s not implemented\n", __FUNCSIG__); asm volatile ("brkpt;\n"); }
-  #else
-    #define CUTLASS_NOT_IMPLEMENTED() { printf("%s not implemented\n", __PRETTY_FUNCTION__); asm volatile ("brkpt;\n"); }
-  #endif
+#if defined(_MSC_VER)
+#define CUTLASS_NOT_IMPLEMENTED()                                              \
+  {                                                                            \
+    printf("%s not implemented\n", __FUNCSIG__);                               \
+    asm volatile("brkpt;\n");                                                  \
+  }
 #else
-  #if defined(_MSC_VER)
-    #define CUTLASS_NOT_IMPLEMENTED() assert(0 && __FUNCSIG__)
-  #else
-    #define CUTLASS_NOT_IMPLEMENTED() assert(0 && __PRETTY_FUNCTION__)
-  #endif
+#define CUTLASS_NOT_IMPLEMENTED()                                              \
+  {                                                                            \
+    printf("%s not implemented\n", __PRETTY_FUNCTION__);                       \
+    asm volatile("brkpt;\n");                                                  \
+  }
+#endif
+#else
+#if defined(_MSC_VER)
+#define CUTLASS_NOT_IMPLEMENTED() assert(0 && __FUNCSIG__)
+#else
+#define CUTLASS_NOT_IMPLEMENTED() assert(0 && __PRETTY_FUNCTION__)
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace cutlass {
 
-
 #ifndef CUTLASS_CONV_UNIT_TEST_RIGOROUS_SIZE_ENABLED
 #define CUTLASS_CONV_UNIT_TEST_RIGOROUS_SIZE_ENABLED 0
 #endif
-
 
 // CUDA 10.1 introduces the mma instruction
 #if !defined(CUTLASS_ENABLE_TENSOR_CORE_MMA)
@@ -113,23 +120,24 @@ namespace cutlass {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// CUTLASS_PRAGMA_(UNROLL|NO_UNROLL) optimization directives for the CUDA compiler.
+// CUTLASS_PRAGMA_(UNROLL|NO_UNROLL) optimization directives for the CUDA
+// compiler.
 #if defined(__CUDA_ARCH__) && !defined(__INTELLISENSE__)
-  #if defined(__CUDACC_RTC__) || (defined(__clang__) && defined(__CUDA__))
-    #define CUTLASS_PRAGMA_UNROLL _Pragma("unroll")
-    #define CUTLASS_PRAGMA_NO_UNROLL _Pragma("unroll 1")
-  #else
-    #define CUTLASS_PRAGMA_UNROLL #pragma unroll
-    #define CUTLASS_PRAGMA_NO_UNROLL #pragma unroll 1
-  #endif
+#if defined(__CUDACC_RTC__) || (defined(__clang__) && defined(__CUDA__))
+#define CUTLASS_PRAGMA_UNROLL _Pragma("unroll")
+#define CUTLASS_PRAGMA_NO_UNROLL _Pragma("unroll 1")
+#else
+#define CUTLASS_PRAGMA_UNROLL #pragma unroll
+#define CUTLASS_PRAGMA_NO_UNROLL #pragma unroll 1
+#endif
 
-  #define CUTLASS_GEMM_LOOP CUTLASS_PRAGMA_NO_UNROLL
+#define CUTLASS_GEMM_LOOP CUTLASS_PRAGMA_NO_UNROLL
 
 #else
 
-    #define CUTLASS_PRAGMA_UNROLL
-    #define CUTLASS_PRAGMA_NO_UNROLL
-    #define CUTLASS_GEMM_LOOP
+#define CUTLASS_PRAGMA_UNROLL
+#define CUTLASS_PRAGMA_NO_UNROLL
+#define CUTLASS_GEMM_LOOP
 
 #endif
 

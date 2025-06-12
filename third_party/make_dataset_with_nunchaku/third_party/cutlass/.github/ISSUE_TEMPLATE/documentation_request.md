@@ -1,11 +1,12 @@
----
+______________________________________________________________________
+
 name: Documentation request
 about: Report incorrect or needed documentation to improve CUTLASS
 title: "[DOC]"
 labels: "? - Needs Triage, documentation"
 assignees: ''
 
----
+______________________________________________________________________
 
 ## Report incorrect documentation
 
@@ -21,7 +22,7 @@ List any steps you have taken:
 **Suggested fix for documentation**
 Detail proposed changes to fix the documentation if you have any.
 
----
+______________________________________________________________________
 
 ## Report needed documentation
 

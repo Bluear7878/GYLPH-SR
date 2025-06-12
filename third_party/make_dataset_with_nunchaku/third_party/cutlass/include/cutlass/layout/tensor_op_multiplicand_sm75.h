@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,26 +18,27 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief 
+    \brief
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/coord.h"
-#include "cutlass/matrix_coord.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/pitch_linear.h"
+#include "cutlass/matrix_coord.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -50,8 +51,7 @@ namespace layout {
 /// memory and Crosswise size (in elements).
 /// This one is the base class of all Ampere/Turing fp16/bf16/int8/int4/int1
 /// tensor core kernels.  tf32 TN uses this too.
-template <int ElementSize, int Crosswise>
-struct TensorOpMultiplicand {
+template <int ElementSize, int Crosswise> struct TensorOpMultiplicand {
   /// Logical rank of tensor
   static int const kRank = 2;
 
@@ -104,7 +104,7 @@ struct TensorOpMultiplicand {
 
   /// Fundamental tile shape in units of vectors to guarantee bank conflict free
   /// shared memory load/store.
-  /// For kFactor = 1, TileShape = <8, 8> 
+  /// For kFactor = 1, TileShape = <8, 8>
   /// For kFactor > 1, TileShape = <8, 4>
   using TileShape = PitchLinearShape<kTileShapeContiguous, kTileShapeStride>;
 
@@ -118,7 +118,7 @@ struct TensorOpMultiplicand {
   using AccessCount =
       PitchLinearShape<PartitionShape::kContiguous, PartitionShape::kStrided>;
 
- private:
+private:
   //
   // Data members
   //
@@ -126,7 +126,7 @@ struct TensorOpMultiplicand {
   /// Stride data member. For GEMM, it equals to kCrosswise x stage.
   Stride stride_;
 
- public:
+public:
   //
   // Methods
   //
@@ -223,8 +223,7 @@ struct TensorOpMultiplicand {
 
 /// Template based on element size (in bits) - defined in terms of pitch-linear
 /// memory and Crosswise size (in elements).
-template <int ElementSize, int Crosswise>
-struct TensorOpMultiplicandCongruous {
+template <int ElementSize, int Crosswise> struct TensorOpMultiplicandCongruous {
   /// Logical rank of tensor
   static int const kRank = 2;
 
@@ -260,17 +259,17 @@ struct TensorOpMultiplicandCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
- private:
+private:
   //
   // Data members
   //
 
   Base layout_;
 
- public:
+public:
   //
   // Methods
   //
@@ -324,8 +323,7 @@ struct TensorOpMultiplicandCongruous {
 /// Template based on element size (in bits) - defined in terms of pitch-linear
 /// memory and Crosswise size (in elements).
 /// This one is just for TF32 NT kernel.
-template <int Crosswise>
-struct TensorOpMultiplicandCongruous<32, Crosswise> {
+template <int Crosswise> struct TensorOpMultiplicandCongruous<32, Crosswise> {
   /// Logical rank of tensor
   static int const kRank = 2;
 
@@ -370,7 +368,7 @@ struct TensorOpMultiplicandCongruous<32, Crosswise> {
   static int const kElementSize = 32;
   static int const kElementsPerAccess = kAccessSize / kElementSize;
 
- private:
+private:
   //
   // Data members
   //
@@ -378,7 +376,7 @@ struct TensorOpMultiplicandCongruous<32, Crosswise> {
   /// Stride data member.
   Stride stride_;
 
- public:
+public:
   //
   // Methods
   //
@@ -471,11 +469,10 @@ struct ColumnMajorTensorOpMultiplicandCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
 private:
-
   //
   // Data members
   //
@@ -489,19 +486,20 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorTensorOpMultiplicandCongruous(Index ldm = 0): layout_(ldm) { }
+  ColumnMajorTensorOpMultiplicandCongruous(Index ldm = 0) : layout_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorTensorOpMultiplicandCongruous(Stride stride): layout_(stride) { }
+  ColumnMajorTensorOpMultiplicandCongruous(Stride stride) : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static ColumnMajorTensorOpMultiplicandCongruous packed(TensorCoord const &extent) {
+  static ColumnMajorTensorOpMultiplicandCongruous
+  packed(TensorCoord const &extent) {
     return ColumnMajorTensorOpMultiplicandCongruous(extent.row());
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
@@ -512,22 +510,19 @@ public:
   CUTLASS_HOST_DEVICE
   TensorCoord inverse(LongIndex offset) const {
     PitchLinearCoord coord = layout_.inverse(offset);
-    return MatrixCoord(coord.contiguous(), coord.strided());    
+    return MatrixCoord(coord.contiguous(), coord.strided());
   }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return layout_.stride();
-  }
+  Stride stride() const { return layout_.stride(); }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return layout_.stride();
-  }
+  Stride &stride() { return layout_.stride(); }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return layout_.capacity(PitchLinearCoord(extent.row(), extent.column()));
@@ -576,11 +571,10 @@ struct RowMajorTensorOpMultiplicandCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
 private:
-
   //
   // Data members
   //
@@ -594,19 +588,20 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  RowMajorTensorOpMultiplicandCongruous(Index ldm = 0): layout_(ldm) { }
+  RowMajorTensorOpMultiplicandCongruous(Index ldm = 0) : layout_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  RowMajorTensorOpMultiplicandCongruous(Stride stride): layout_(stride) { }
+  RowMajorTensorOpMultiplicandCongruous(Stride stride) : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static RowMajorTensorOpMultiplicandCongruous packed(TensorCoord const &extent) {
+  static RowMajorTensorOpMultiplicandCongruous
+  packed(TensorCoord const &extent) {
     return RowMajorTensorOpMultiplicandCongruous(extent.column());
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
@@ -622,17 +617,14 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return layout_.stride();
-  }
+  Stride stride() const { return layout_.stride(); }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return layout_.stride();
-  }
+  Stride &stride() { return layout_.stride(); }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return layout_.capacity(PitchLinearCoord(extent.column(), extent.row()));
@@ -643,8 +635,7 @@ public:
 
 /// Template based on element size (in bits) - defined in terms of pitch-linear
 /// memory and Crosswise size (in elements).
-template <int ElementSize, int Crosswise>
-struct TensorOpMultiplicandCrosswise {
+template <int ElementSize, int Crosswise> struct TensorOpMultiplicandCrosswise {
   /// Logical rank of tensor
   static int const kRank = 2;
 
@@ -682,17 +673,17 @@ struct TensorOpMultiplicandCrosswise {
   static int const kElementsPerAccess = Base::kElementsPerAccess;
   static int const kCrosswise = Base::kCrosswise;
   static int const kFactor = Base::kFactor;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
- private:
+private:
   //
   // Data members
   //
 
   Base layout_;
 
- public:
+public:
   //
   // Methods
   //
@@ -785,14 +776,14 @@ struct ColumnMajorTensorOpMultiplicandCrosswise {
   using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
- private:
+private:
   //
   // Data members
   //
 
   Base layout_;
 
- public:
+public:
   //
   // Methods
   //
@@ -807,8 +798,8 @@ struct ColumnMajorTensorOpMultiplicandCrosswise {
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static ColumnMajorTensorOpMultiplicandCrosswise packed(
-      TensorCoord const &extent) {
+  static ColumnMajorTensorOpMultiplicandCrosswise
+  packed(TensorCoord const &extent) {
     return ColumnMajorTensorOpMultiplicandCrosswise(extent.row());
   }
 
@@ -886,14 +877,14 @@ struct RowMajorTensorOpMultiplicandCrosswise {
   using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
- private:
+private:
   //
   // Data members
   //
 
   Base layout_;
 
- public:
+public:
   //
   // Methods
   //
@@ -908,8 +899,8 @@ struct RowMajorTensorOpMultiplicandCrosswise {
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static RowMajorTensorOpMultiplicandCrosswise packed(
-      TensorCoord const &extent) {
+  static RowMajorTensorOpMultiplicandCrosswise
+  packed(TensorCoord const &extent) {
     return RowMajorTensorOpMultiplicandCrosswise(extent.column());
   }
 
@@ -945,7 +936,8 @@ struct RowMajorTensorOpMultiplicandCrosswise {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Template based on element size (in bits) - defined in terms of pitch-linear memory.
+/// Template based on element size (in bits) - defined in terms of pitch-linear
+/// memory.
 template <int ElementSize, int InterleavedK>
 struct TensorOpMultiplicandColumnMajorInterleaved {
 
@@ -981,11 +973,10 @@ struct TensorOpMultiplicandColumnMajorInterleaved {
   static int const kElementSize = ElementSize;
   static int const kElementsPerAccess = kAccessSize / kElementSize;
 
-  //static int const kThreadBlockStrided = ThreadBlockStrided;
+  // static int const kThreadBlockStrided = ThreadBlockStrided;
   static int const kInterleavedK = InterleavedK;
-  
-private:
 
+private:
   //
   // Data members
   //
@@ -1000,26 +991,29 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  TensorOpMultiplicandColumnMajorInterleaved(Index ldm = 0): stride_(ldm) { }
+  TensorOpMultiplicandColumnMajorInterleaved(Index ldm = 0) : stride_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  TensorOpMultiplicandColumnMajorInterleaved(Stride stride): stride_(stride) { }
+  TensorOpMultiplicandColumnMajorInterleaved(Stride stride) : stride_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static TensorOpMultiplicandColumnMajorInterleaved packed(TensorCoord const &extent) {
-    return TensorOpMultiplicandColumnMajorInterleaved(extent[0] * kInterleavedK);
+  static TensorOpMultiplicandColumnMajorInterleaved
+  packed(TensorCoord const &extent) {
+    return TensorOpMultiplicandColumnMajorInterleaved(extent[0] *
+                                                      kInterleavedK);
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
     int const rows_per_smem_cache_line = 128 / kInterleavedK;
 
     int row_id = coord.strided() / rows_per_smem_cache_line;
-    int col_id = (coord.strided() % rows_per_smem_cache_line) * kInterleavedK + coord.contiguous();
+    int col_id = (coord.strided() % rows_per_smem_cache_line) * kInterleavedK +
+                 coord.contiguous();
 
     int access_block_id = col_id >> 4;
     int swizzle_access_block_id = access_block_id ^ (row_id & 1);
@@ -1031,17 +1025,14 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return stride_;
-  }
+  Stride stride() const { return stride_; }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return stride_;
-  }
+  Stride &stride() { return stride_; }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return (extent[1] / kInterleavedK) * stride_[0];
@@ -1050,7 +1041,8 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Template based on element size (in bits) - defined in terms of pitch-linear memory.
+/// Template based on element size (in bits) - defined in terms of pitch-linear
+/// memory.
 template <int ElementSize, int InterleavedK>
 struct TensorOpMultiplicandRowMajorInterleaved {
 
@@ -1086,11 +1078,10 @@ struct TensorOpMultiplicandRowMajorInterleaved {
   static int const kElementSize = ElementSize;
   static int const kElementsPerAccess = kAccessSize / kElementSize;
 
-  //static int const kThreadBlockStrided = ThreadBlockStrided;
+  // static int const kThreadBlockStrided = ThreadBlockStrided;
   static int const kInterleavedK = InterleavedK;
-  
-private:
 
+private:
   //
   // Data members
   //
@@ -1105,26 +1096,28 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  TensorOpMultiplicandRowMajorInterleaved(Index ldm = 0): stride_(ldm) { }
+  TensorOpMultiplicandRowMajorInterleaved(Index ldm = 0) : stride_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  TensorOpMultiplicandRowMajorInterleaved(Stride stride): stride_(stride) { }
+  TensorOpMultiplicandRowMajorInterleaved(Stride stride) : stride_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static TensorOpMultiplicandRowMajorInterleaved packed(TensorCoord const &extent) {
+  static TensorOpMultiplicandRowMajorInterleaved
+  packed(TensorCoord const &extent) {
     return TensorOpMultiplicandRowMajorInterleaved(extent[1] * kInterleavedK);
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
     int const rows_per_smem_cache_line = 128 / kInterleavedK;
 
     int row_id = coord.strided() / rows_per_smem_cache_line;
-    int col_id = (coord.strided() % rows_per_smem_cache_line) * kInterleavedK + coord.contiguous();
+    int col_id = (coord.strided() % rows_per_smem_cache_line) * kInterleavedK +
+                 coord.contiguous();
 
     int access_block_id = col_id >> 4;
     int swizzle_access_block_id = access_block_id ^ (row_id & 1);
@@ -1136,17 +1129,14 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return stride_;
-  }
+  Stride stride() const { return stride_; }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return stride_;
-  }
+  Stride &stride() { return stride_; }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return (extent[0] / kInterleavedK) * stride_[0];

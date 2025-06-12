@@ -30,31 +30,12 @@
 #
 #################################################################################################
 
+from cutlass.backend.evt.ir import (  # Load Node; Compute Node; Store Node
+    AccumulatorImpl, AuxLoadImpl, AuxStoreImpl, ColumnBroadcastImpl,
+    ColumnReductionImpl, ComputeImpl, LoadNode, LoadSrcImpl, RowBroadcastImpl,
+    RowReductionImpl, ScalarBroadcastImpl, ScalarReductionImpl)
+from cutlass.backend.library import FloatRoundStyleTag, FunctionalOp, op_tag
 from cutlass_library import DataTypeSize, DataTypeTag
-
-from cutlass.backend.evt.ir import (
-    # Load Node
-    AccumulatorImpl,
-    AuxLoadImpl,
-    ColumnBroadcastImpl,
-    LoadNode,
-    LoadSrcImpl,
-    RowBroadcastImpl,
-    ScalarBroadcastImpl,
-    # Compute Node
-    ComputeImpl,
-    # Store Node
-    AuxStoreImpl,
-    ColumnReductionImpl,
-    RowReductionImpl,
-    ScalarReductionImpl
-)
-
-from cutlass.backend.library import (
-    FloatRoundStyleTag,
-    FunctionalOp,
-    op_tag,
-)
 
 
 class Sm80AccumulatorImpl(AccumulatorImpl):

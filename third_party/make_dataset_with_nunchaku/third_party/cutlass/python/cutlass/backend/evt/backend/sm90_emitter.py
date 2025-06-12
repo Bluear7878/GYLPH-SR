@@ -34,17 +34,15 @@
 Emitter for Sm90 Epilogue Visitor
 """
 
-from cutlass_library import DataTypeTag, EpilogueScheduleTag
 from cutlass.backend import GemmOperationUniversal
 from cutlass.backend.evt.backend.emitter_base import FusionCallbacks
+from cutlass_library import DataTypeTag, EpilogueScheduleTag
 
 
 class CollectiveEpilogue:
-    def __init__(self, tile_description,
-                 schedule,
-                 element_c,
-                 element_d,
-                 fusion_callbacks) -> None:
+    def __init__(
+        self, tile_description, schedule, element_c, element_d, fusion_callbacks
+    ) -> None:
 
         self.cta_tile_mnk = tile_description.threadblock_shape
         self.element_c = element_c
@@ -72,14 +70,17 @@ class CollectiveEpilogue:
 
     def emit(self):
         callback_decl, callback_name = self.fusion_callbacks.emit()
-        return callback_name, f"""
+        return (
+            callback_name,
+            f"""
 using EpilogueDescriptor = cutlass::epilogue::collective::detail::EpilogueDescriptor<
   {self.CtaTileMNK}, {self.EpilogueTileType},
   {DataTypeTag[self.element_c]}, {DataTypeTag[self.element_d]},
   {self.Schedule}
 >;
 {callback_decl}
-"""
+""",
+        )
 
 
 class Sm90Emitter:
@@ -91,7 +92,7 @@ class Sm90Emitter:
             schedule=operation.tile_description.epilogue_schedule,
             element_c=operation.C.element,
             element_d=operation.C.element,
-            fusion_callbacks=fusion_callbacks
+            fusion_callbacks=fusion_callbacks,
         )
 
     def emit(self):

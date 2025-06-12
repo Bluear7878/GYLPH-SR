@@ -22,11 +22,11 @@ namespace fuzzer {
 static const int kSHA1NumBytes = 20;
 
 // Computes SHA1 hash of 'Len' bytes in 'Data', writes kSHA1NumBytes to 'Out'.
-void ComputeSHA1(const uint8_t *Data, size_t Len, uint8_t *Out);
+void ComputeSHA1(const uint8_t* Data, size_t Len, uint8_t* Out);
 
 std::string Sha1ToString(const uint8_t Sha1[kSHA1NumBytes]);
 
-std::string Hash(const Unit &U);
+std::string Hash(const Unit& U);
 
 }  // namespace fuzzer
 

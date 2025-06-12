@@ -202,7 +202,7 @@ TEST(Epilogue_thread_gelu_taylor, device_f32) {
     using Func = cutlass::epilogue::thread::GELU_taylor<cutlass::Array<Element, kV>>;
 
     double tolerance = 0.005;
-    
+
     //
     // Construct workspace
     //
@@ -248,7 +248,7 @@ TEST(Epilogue_thread_gelu_taylor, device_f32) {
             case 218: tolerance_override = 0.013; break;
         }
 
-        EXPECT_LT(std::abs(rel_error), tolerance_override) 
+        EXPECT_LT(std::abs(rel_error), tolerance_override)
             << "Input[" << i << "]: " << input << ", Got: " << got << ", expected: " << expected;
     }
 }
@@ -300,7 +300,7 @@ TEST(Epilogue_thread_gelu_taylor, device_f16) {
         Element expected = Element(GELU_golden_output[i]);
 
         double rel_error = (double(got) - double(expected)) / double(expected);
-        
+
         double tolerance_override = tolerance;
 
         switch (i) {
@@ -313,7 +313,7 @@ TEST(Epilogue_thread_gelu_taylor, device_f16) {
             case 207: tolerance_override = 0.15; break;
         }
 
-        EXPECT_LT(std::abs(rel_error), tolerance_override) 
+        EXPECT_LT(std::abs(rel_error), tolerance_override)
             << "Input[" << i << "]: " << input << ", Got: " << got << ", expected: " << expected;
     }
 }

@@ -24,17 +24,19 @@ Constant.
 
 ??? example
 
-    The following code shows an example for `cbegin()`.
-    
-    ```cpp
-    --8<-- "examples/cbegin.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/cbegin.output"
-    ```
+````
+The following code shows an example for `cbegin()`.
+
+```cpp
+--8<-- "examples/cbegin.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/cbegin.output"
+```
+````
 
 ## Version history
 

@@ -32,7 +32,14 @@ class VanillaCFG:
         c_out = dict()
 
         for k in c:
-            if k in ["vector", "crossattn", "concat", "control", 'control_vector', 'mask_x']:
+            if k in [
+                "vector",
+                "crossattn",
+                "concat",
+                "control",
+                "control_vector",
+                "mask_x",
+            ]:
                 c_out[k] = torch.cat((uc[k], c[k]), 0)
             else:
                 assert c[k] == uc[k]
@@ -40,12 +47,14 @@ class VanillaCFG:
         return torch.cat([x] * 2), torch.cat([s] * 2), c_out
 
 
-
 class LinearCFG:
     def __init__(self, scale, scale_min=None, dyn_thresh_config=None):
         if scale_min is None:
             scale_min = scale
-        scale_schedule = lambda scale, scale_min, sigma: (scale - scale_min) * sigma / 14.6146 + scale_min
+        scale_schedule = (
+            lambda scale, scale_min, sigma: (scale - scale_min) * sigma / 14.6146
+            + scale_min
+        )
         self.scale_schedule = partial(scale_schedule, scale, scale_min)
         self.dyn_thresh = instantiate_from_config(
             default(
@@ -66,13 +75,19 @@ class LinearCFG:
         c_out = dict()
 
         for k in c:
-            if k in ["vector", "crossattn", "concat", "control", 'control_vector', 'mask_x']:
+            if k in [
+                "vector",
+                "crossattn",
+                "concat",
+                "control",
+                "control_vector",
+                "mask_x",
+            ]:
                 c_out[k] = torch.cat((uc[k], c[k]), 0)
             else:
                 assert c[k] == uc[k]
                 c_out[k] = c[k]
         return torch.cat([x] * 2), torch.cat([s] * 2), c_out
-
 
 
 class IdentityGuider:

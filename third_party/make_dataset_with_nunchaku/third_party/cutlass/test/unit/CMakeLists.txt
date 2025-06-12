@@ -31,7 +31,7 @@ include(CTest)
 set(CUTLASS_UNIT_TEST_COMMON_DIR ${CMAKE_CURRENT_LIST_DIR}/common)
 
 cutlass_add_library(
-  cutlass_test_unit_infra 
+  cutlass_test_unit_infra
   OBJECT
   common/filter_architecture.cpp
   )
@@ -138,7 +138,7 @@ if(TARGET nvidia::nvrtc AND TARGET nvidia::cuda_driver)
   set(CUTLASS_NVRTC_ENABLE_INIT ON)
 else()
   set(CUTLASS_NVRTC_ENABLE_INIT OFF)
-endif()  
+endif()
 
 set(CUTLASS_NVRTC_ENABLE ${CUTLASS_NVRTC_ENABLE_INIT} CACHE BOOL "Enable NVRTC support")
 
@@ -153,4 +153,3 @@ foreach(SUBDIR ${SUBDIRS})
   add_dependencies(test_unit test_unit_${SUBDIR})
 
 endforeach()
-

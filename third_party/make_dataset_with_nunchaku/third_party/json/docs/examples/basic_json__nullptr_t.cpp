@@ -12,5 +12,6 @@ int main()
     json j2(nullptr);
 
     // serialize the JSON null value
-    std::cout << j1 << '\n' << j2 << '\n';
+    std::cout << j1 << '\n'
+              << j2 << '\n';
 }

@@ -4,10 +4,10 @@ import contextlib
 import dataclasses
 from collections import defaultdict
 from typing import DefaultDict, Dict, Optional, Tuple
-import torch
-from torch import nn
 
+import torch
 from nunchaku.models.transformers.utils import pad_tensor
+from torch import nn
 
 num_transformer_blocks = 19  # FIXME
 num_single_transformer_blocks = 38  # FIXME
@@ -16,7 +16,9 @@ num_single_transformer_blocks = 38  # FIXME
 @dataclasses.dataclass
 class CacheContext:
     buffers: Dict[str, torch.Tensor] = dataclasses.field(default_factory=dict)
-    incremental_name_counters: DefaultDict[str, int] = dataclasses.field(default_factory=lambda: defaultdict(int))
+    incremental_name_counters: DefaultDict[str, int] = dataclasses.field(
+        default_factory=lambda: defaultdict(int)
+    )
 
     def get_incremental_name(self, name=None):
         if name is None:
@@ -85,13 +87,15 @@ def are_two_tensors_similar(t1, t2, *, threshold, parallelized=False):
 
 @torch.compiler.disable
 def apply_prev_hidden_states_residual(
-    hidden_states: torch.Tensor, encoder_hidden_states: torch.Tensor = None, mode: str = "multi",
+    hidden_states: torch.Tensor,
+    encoder_hidden_states: torch.Tensor = None,
+    mode: str = "multi",
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     if mode == "multi":
         hidden_states_residual = get_buffer("multi_hidden_states_residual")
-        assert hidden_states_residual is not None, (
-            "multi_hidden_states_residual must be set before"
-        )
+        assert (
+            hidden_states_residual is not None
+        ), "multi_hidden_states_residual must be set before"
         hidden_states = hidden_states + hidden_states_residual
         hidden_states = hidden_states.contiguous()
 
@@ -118,7 +122,12 @@ def apply_prev_hidden_states_residual(
 
 
 @torch.compiler.disable
-def get_can_use_cache(first_hidden_states_residual: torch.Tensor, threshold: float, parallelized: bool = False, mode: str = "multi"):
+def get_can_use_cache(
+    first_hidden_states_residual: torch.Tensor,
+    threshold: float,
+    parallelized: bool = False,
+    mode: str = "multi",
+):
     if mode == "multi":
         buffer_name = "first_multi_hidden_states_residual"
     elif mode == "single":
@@ -162,8 +171,10 @@ def check_and_apply_cache(
 
     if can_use_cache:
         if verbose:
-            print(f"[{mode.upper()}] Cache hit! diff={diff:.4f}, "
-                  f"new threshold={threshold:.4f}")
+            print(
+                f"[{mode.upper()}] Cache hit! diff={diff:.4f}, "
+                f"new threshold={threshold:.4f}"
+            )
 
         out = apply_prev_hidden_states_residual(
             hidden_states, encoder_hidden_states, mode=mode
@@ -174,8 +185,10 @@ def check_and_apply_cache(
     old_threshold = threshold
 
     if verbose:
-        print(f"[{mode.upper()}] Cache miss. diff={diff:.4f}, "
-              f"was={old_threshold:.4f} => now={threshold:.4f}")
+        print(
+            f"[{mode.upper()}] Cache miss. diff={diff:.4f}, "
+            f"was={old_threshold:.4f} => now={threshold:.4f}"
+        )
 
     if mode == "multi":
         set_buffer("first_multi_hidden_states_residual", first_residual)
@@ -185,7 +198,7 @@ def check_and_apply_cache(
     result = call_remaining_fn(
         hidden_states=hidden_states,
         encoder_hidden_states=encoder_hidden_states,
-        **remaining_kwargs
+        **remaining_kwargs,
     )
 
     if mode == "multi":
@@ -263,7 +276,8 @@ class SanaCachedTransformerBlocks(nn.Module):
         can_use_cache = get_can_use_cache(
             first_hidden_states_residual,
             threshold=self.residual_diff_threshold,
-            parallelized=self.transformer is not None and getattr(self.transformer, "_is_parallelized", False),
+            parallelized=self.transformer is not None
+            and getattr(self.transformer, "_is_parallelized", False),
         )
 
         torch._dynamo.graph_break()
@@ -278,14 +292,16 @@ class SanaCachedTransformerBlocks(nn.Module):
             set_buffer("first_hidden_states_residual", first_hidden_states_residual)
             del first_hidden_states_residual
 
-            hidden_states, hidden_states_residual = self.call_remaining_transformer_blocks(
-                hidden_states=hidden_states,
-                attention_mask=attention_mask,
-                encoder_hidden_states=encoder_hidden_states,
-                encoder_attention_mask=encoder_attention_mask,
-                timestep=timestep,
-                post_patch_height=post_patch_height,
-                post_patch_width=post_patch_width,
+            hidden_states, hidden_states_residual = (
+                self.call_remaining_transformer_blocks(
+                    hidden_states=hidden_states,
+                    attention_mask=attention_mask,
+                    encoder_hidden_states=encoder_hidden_states,
+                    encoder_attention_mask=encoder_attention_mask,
+                    timestep=timestep,
+                    post_patch_height=post_patch_height,
+                    post_patch_width=post_patch_width,
+                )
             )
             set_buffer("hidden_states_residual", hidden_states_residual)
         torch._dynamo.graph_break()
@@ -368,7 +384,12 @@ class FluxCachedTransformerBlocks(nn.Module):
         rotemb = rotemb.view(B, M, D)
         return rotemb
 
-    def update_residual_diff_threshold(self, Double_FBCache=True, residual_diff_threshold_multi=0.12, residual_diff_threshold_single=0.09):
+    def update_residual_diff_threshold(
+        self,
+        Double_FBCache=True,
+        residual_diff_threshold_multi=0.12,
+        residual_diff_threshold_single=0.09,
+    ):
         self.Double_FBCache = Double_FBCache
         self.residual_diff_threshold_multi = residual_diff_threshold_multi
         self.residual_diff_threshold_single = residual_diff_threshold_single
@@ -399,9 +420,14 @@ class FluxCachedTransformerBlocks(nn.Module):
         if controlnet_block_samples is not None:
 
             controlnet_block_samples = (
-                torch.stack(controlnet_block_samples).to(self.device) if len(controlnet_block_samples) > 0 else None
+                torch.stack(controlnet_block_samples).to(self.device)
+                if len(controlnet_block_samples) > 0
+                else None
             )
-        if controlnet_single_block_samples is not None and len(controlnet_single_block_samples) > 0:
+        if (
+            controlnet_single_block_samples is not None
+            and len(controlnet_single_block_samples) > 0
+        ):
             controlnet_single_block_samples = (
                 torch.stack(controlnet_single_block_samples).to(self.device)
                 if len(controlnet_single_block_samples) > 0
@@ -589,7 +615,12 @@ class FluxCachedTransformerBlocks(nn.Module):
         hidden_states_residual = hidden_states - original_hidden_states
         enc_residual = encoder_hidden_states - original_encoder_hidden_states
 
-        return hidden_states, encoder_hidden_states, hidden_states_residual, enc_residual
+        return (
+            hidden_states,
+            encoder_hidden_states,
+            hidden_states_residual,
+            enc_residual,
+        )
 
     def call_remaining_multi_transformer_blocks(
         self,

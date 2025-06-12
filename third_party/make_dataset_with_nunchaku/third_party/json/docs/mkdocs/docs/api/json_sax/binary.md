@@ -9,7 +9,7 @@ A binary value was read.
 ## Parameters
 
 `val` (in)
-:   binary value
+: binary value
 
 ## Return value
 
@@ -23,17 +23,19 @@ It is safe to move the passed binary value.
 
 ??? example
 
-    The example below shows how the SAX interface is used.
+````
+The example below shows how the SAX interface is used.
 
-    ```cpp
-    --8<-- "examples/sax_parse__binary.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/sax_parse__binary.output"
-    ```
+```cpp
+--8<-- "examples/sax_parse__binary.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/sax_parse__binary.output"
+```
+````
 
 ## Version history
 

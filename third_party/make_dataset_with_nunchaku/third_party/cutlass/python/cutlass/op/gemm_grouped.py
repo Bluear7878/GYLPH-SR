@@ -51,20 +51,14 @@
         plan.run([A0, A1], [B0, B1], [C0, C1], [D0, D1])
 """
 
-from cutlass_library import DataTypeSize
-
-from cutlass.backend.gemm_operation import (
-    GemmGroupedArguments,
-    GemmOperationGrouped,
-)
-from cutlass.backend.library import (
-    SchedulerMode,
-    TensorDescription,
-    TileDescription,
-)
+from cutlass.backend.gemm_operation import (GemmGroupedArguments,
+                                            GemmOperationGrouped)
+from cutlass.backend.library import (SchedulerMode, TensorDescription,
+                                     TileDescription)
 from cutlass.op.gemm import Gemm
 from cutlass.shape import GemmCoord
 from cutlass.utils import check, datatypes
+from cutlass_library import DataTypeSize
 
 
 class GroupedGemm(Gemm):
@@ -111,22 +105,43 @@ class GroupedGemm(Gemm):
     """
 
     def __init__(
-        self, A=None, B=None, C=None, D=None,
-        alpha=1.0, beta=0.0, element_accumulator=None,
-        element=None, layout=None,
-        element_A=None, element_B=None, element_C=None, element_D=None,
-        layout_A=None, layout_B=None, layout_C=None,
+        self,
+        A=None,
+        B=None,
+        C=None,
+        D=None,
+        alpha=1.0,
+        beta=0.0,
+        element_accumulator=None,
+        element=None,
+        layout=None,
+        element_A=None,
+        element_B=None,
+        element_C=None,
+        element_D=None,
+        layout_A=None,
+        layout_B=None,
+        layout_C=None,
         cc: int = None,
     ):
         super().__init__(
-            A=A, B=B, C=C, D=D,
-            alpha=alpha, beta=beta,
+            A=A,
+            B=B,
+            C=C,
+            D=D,
+            alpha=alpha,
+            beta=beta,
             element_accumulator=element_accumulator,
-            element=element, layout=layout,
-            element_A=element_A, element_B=element_B,
-            element_C=element_C, element_D=element_D,
-            layout_A=layout_A, layout_B=layout_B, layout_C=layout_C,
-            cc=cc
+            element=element,
+            layout=layout,
+            element_A=element_A,
+            element_B=element_B,
+            element_C=element_C,
+            element_D=element_D,
+            layout_A=layout_A,
+            layout_B=layout_B,
+            layout_C=layout_C,
+            cc=cc,
         )
 
         # Grouped GEMM specializations for SM90 are currently unavailable. Revert to using SM80
@@ -141,12 +156,17 @@ class GroupedGemm(Gemm):
         """
         Sets the swizzling functor to the type specified by `swizzling_functor`
         """
-        raise Exception('Grouped GEMM does not currently support different swizzling functors')
+        raise Exception(
+            "Grouped GEMM does not currently support different swizzling functors"
+        )
 
-    def construct(self, tile_description: TileDescription = None,
-                  alignment_A: int = None,
-                  alignment_B: int = None,
-                  alignment_C: int = None) -> GemmOperationGrouped:
+    def construct(
+        self,
+        tile_description: TileDescription = None,
+        alignment_A: int = None,
+        alignment_B: int = None,
+        alignment_C: int = None,
+    ) -> GemmOperationGrouped:
         """
         Constructs a ``cutlass.backend.GemmOperationGrouped`` based on the input parameters and current
         kernel specification of the ``Gemm`` object.
@@ -163,18 +183,28 @@ class GroupedGemm(Gemm):
         :return: operation that was constructed
         :rtype: cutlass.backend.GemmOperationGrouped
         """
-        alignment_A = check.alignment_or_default(alignment_A, max(self.possible_operations.alignments("A")))
-        alignment_B = check.alignment_or_default(alignment_B, max(self.possible_operations.alignments("B")))
-        alignment_C = check.alignment_or_default(alignment_C, max(self.possible_operations.alignments("C")))
+        alignment_A = check.alignment_or_default(
+            alignment_A, max(self.possible_operations.alignments("A"))
+        )
+        alignment_B = check.alignment_or_default(
+            alignment_B, max(self.possible_operations.alignments("B"))
+        )
+        alignment_C = check.alignment_or_default(
+            alignment_C, max(self.possible_operations.alignments("C"))
+        )
 
-        self.epilogue_functor = self._reset_epilogue_functor_alignment(alignment_C, self.epilogue_functor)
+        self.epilogue_functor = self._reset_epilogue_functor_alignment(
+            alignment_C, self.epilogue_functor
+        )
 
         tensor_A = TensorDescription(self._element_a, self._layout_b, alignment_A)
         tensor_B = TensorDescription(self._element_b, self._layout_b, alignment_B)
         tensor_C = TensorDescription(self._element_c, self._layout_c, alignment_C)
 
         if tile_description is None:
-            op = self.possible_operations.operations(alignment_A, alignment_B, alignment_C)[0]
+            op = self.possible_operations.operations(
+                alignment_A, alignment_B, alignment_C
+            )[0]
             tile_description = datatypes.td_from_profiler_op(op)
         else:
             valid, err_str = self._valid_tile_description(tile_description)
@@ -185,16 +215,27 @@ class GroupedGemm(Gemm):
         operation = GemmOperationGrouped(
             arch=self.current_cc,
             tile_description=tile_description,
-            A=tensor_A, B=tensor_B, C=tensor_C,
+            A=tensor_A,
+            B=tensor_B,
+            C=tensor_C,
             epilogue_functor=self.epilogue_functor,
             swizzling_functor=self._swizzling_functor,
-            precompute_mode=SchedulerMode.Device)
+            precompute_mode=SchedulerMode.Device,
+        )
 
         return operation
 
-    def run(self, A, B, C, D,
-            alpha=None, beta=None, sync: bool = True,
-            print_module: bool = False) -> GemmGroupedArguments:
+    def run(
+        self,
+        A,
+        B,
+        C,
+        D,
+        alpha=None,
+        beta=None,
+        sync: bool = True,
+        print_module: bool = False,
+    ) -> GemmGroupedArguments:
         """
         Runs the kernel currently specified.
 
@@ -229,26 +270,63 @@ class GroupedGemm(Gemm):
         problem_sizes = []
         As, Bs, Cs, Ds = ([None] * len(A) for _ in range(4))
         for i in range(len(A)):
-            As[i] = self._verify_tensor(A[i], self.A, self._element_a, self._layout_a, "A")
-            Bs[i] = self._verify_tensor(B[i], self.B, self._element_b, self._layout_b, "B")
-            Cs[i] = self._verify_tensor(C[i], self.C, self._element_c, self._layout_c, "C")
-            Ds[i] = self._verify_tensor(D[i], self.D, self._element_d, self._layout_d, "D")
+            As[i] = self._verify_tensor(
+                A[i], self.A, self._element_a, self._layout_a, "A"
+            )
+            Bs[i] = self._verify_tensor(
+                B[i], self.B, self._element_b, self._layout_b, "B"
+            )
+            Cs[i] = self._verify_tensor(
+                C[i], self.C, self._element_c, self._layout_c, "C"
+            )
+            Ds[i] = self._verify_tensor(
+                D[i], self.D, self._element_d, self._layout_d, "D"
+            )
             problem_sizes.append(GemmCoord(A[i].shape[0], B[i].shape[1], A[i].shape[1]))
 
         alpha = self._verify_scalar(alpha, self.alpha, self._element_c, "alpha")
         beta = self._verify_scalar(beta, self.beta, self._element_c, "beta")
 
-        alignment_a = min((self.possible_operations.find_alignment(A.shape, self._layout_a, operand="A") for A in As))
-        alignment_b = min((self.possible_operations.find_alignment(B.shape, self._layout_b, operand="B") for B in Bs))
-        alignment_c = min((self.possible_operations.find_alignment(C.shape, self._layout_c, operand="C") for C in Cs))
-        self.compile(self.tile_description, alignment_A=alignment_a, alignment_B=alignment_b,
-                     alignment_C=alignment_c, print_module=print_module)
+        alignment_a = min(
+            (
+                self.possible_operations.find_alignment(
+                    A.shape, self._layout_a, operand="A"
+                )
+                for A in As
+            )
+        )
+        alignment_b = min(
+            (
+                self.possible_operations.find_alignment(
+                    B.shape, self._layout_b, operand="B"
+                )
+                for B in Bs
+            )
+        )
+        alignment_c = min(
+            (
+                self.possible_operations.find_alignment(
+                    C.shape, self._layout_c, operand="C"
+                )
+                for C in Cs
+            )
+        )
+        self.compile(
+            self.tile_description,
+            alignment_A=alignment_a,
+            alignment_B=alignment_b,
+            alignment_C=alignment_c,
+            print_module=print_module,
+        )
 
         arguments = GemmGroupedArguments(
             operation=self.operation,
             problem_sizes=problem_sizes,
-            A=As, B=Bs, C=Cs, D=Ds,
-            output_op=self.operation.epilogue_type(alpha, beta)
+            A=As,
+            B=Bs,
+            C=Cs,
+            D=Ds,
+            output_op=self.operation.epilogue_type(alpha, beta),
         )
 
         self.operation.run(arguments)

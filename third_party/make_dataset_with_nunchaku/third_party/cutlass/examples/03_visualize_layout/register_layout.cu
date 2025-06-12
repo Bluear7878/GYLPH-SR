@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -42,12 +43,13 @@
 #include "cutlass/layout/tensor_op_multiplicand_sm75.h"
 #include "cutlass/layout/tensor_op_multiplicand_sm80.h"
 
-#include "visualize_layout.h"
 #include "register_layout.h"
+#include "visualize_layout.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void RegisterLayouts(std::map<std::string, std::unique_ptr<VisualizeLayoutBase> > &layouts) {
+void RegisterLayouts(
+    std::map<std::string, std::unique_ptr<VisualizeLayoutBase>> &layouts) {
 
   struct {
     char const *name;
@@ -61,8 +63,8 @@ void RegisterLayouts(std::map<std::string, std::unique_ptr<VisualizeLayoutBase> 
        new VisualizeLayout<cutlass::layout::ColumnMajorInterleaved<4>>},
       {"RowMajorInterleaved<4>",
        new VisualizeLayout<cutlass::layout::RowMajorInterleaved<4>>},
-      // All Ampere/Turing H/Integer matrix multiply tensor core kernels uses the same swizzling
-      // layout implementation with different templates.
+      // All Ampere/Turing H/Integer matrix multiply tensor core kernels uses
+      // the same swizzling layout implementation with different templates.
       //
       // mma.sync.aligned.m8n8k128.s32.b1.b1.s32 Interleaved-256
       // mma.sync.aligned.m16n8k256.s32.b1.b1.s32 Interleaved-256
@@ -134,11 +136,11 @@ void RegisterLayouts(std::map<std::string, std::unique_ptr<VisualizeLayoutBase> 
            cutlass::layout::VoltaTensorOpMultiplicandCongruous<16>>},
       {"VoltaTensorOpMultiplicandCrosswise<16,32>",
        new VisualizeLayout<
-           cutlass::layout::VoltaTensorOpMultiplicandCrosswise<16, 32>>}
-  };
+           cutlass::layout::VoltaTensorOpMultiplicandCrosswise<16, 32>>}};
 
   for (auto layout : layout_pairs) {
-    layouts.emplace(std::string(layout.name), std::unique_ptr<VisualizeLayoutBase>(layout.ptr));
+    layouts.emplace(std::string(layout.name),
+                    std::unique_ptr<VisualizeLayoutBase>(layout.ptr));
   }
 }
 

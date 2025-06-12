@@ -9,10 +9,10 @@ A floating-point number was read.
 ## Parameters
 
 `val` (in)
-:   floating-point value
+: floating-point value
 
 `s` (in)
-:   string representation of the original input
+: string representation of the original input
 
 ## Return value
 
@@ -22,17 +22,19 @@ Whether parsing should proceed.
 
 ??? example
 
-    The example below shows how the SAX interface is used.
+````
+The example below shows how the SAX interface is used.
 
-    ```cpp
-    --8<-- "examples/sax_parse.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/sax_parse.output"
-    ```
+```cpp
+--8<-- "examples/sax_parse.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/sax_parse.output"
+```
+````
 
 ## Version history
 

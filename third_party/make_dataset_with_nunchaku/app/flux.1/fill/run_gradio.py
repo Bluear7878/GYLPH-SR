@@ -5,37 +5,47 @@ import time
 from datetime import datetime
 
 import GPUtil
-import torch
-from diffusers import FluxFillPipeline
-from PIL import Image
-
-from nunchaku.models.safety_checker import SafetyChecker
-from nunchaku.models.transformers.transformer_flux import NunchakuFluxTransformer2dModel
-from utils import get_args
-from vars import DEFAULT_GUIDANCE, DEFAULT_INFERENCE_STEP, DEFAULT_STYLE_NAME, EXAMPLES, MAX_SEED, STYLE_NAMES, STYLES
-
 # import gradio last to avoid conflicts with other imports
 import gradio as gr
+import torch
+from diffusers import FluxFillPipeline
+from nunchaku.models.safety_checker import SafetyChecker
+from nunchaku.models.transformers.transformer_flux import \
+    NunchakuFluxTransformer2dModel
+from PIL import Image
+from vars import (DEFAULT_GUIDANCE, DEFAULT_INFERENCE_STEP, DEFAULT_STYLE_NAME,
+                  EXAMPLES, MAX_SEED, STYLE_NAMES, STYLES)
+
+from utils import get_args
 
 args = get_args()
 
 if args.precision == "bf16":
-    pipeline = FluxFillPipeline.from_pretrained(f"black-forest-labs/FLUX.1-Fill-dev", torch_dtype=torch.bfloat16)
+    pipeline = FluxFillPipeline.from_pretrained(
+        f"black-forest-labs/FLUX.1-Fill-dev", torch_dtype=torch.bfloat16
+    )
     pipeline = pipeline.to("cuda")
     pipeline.precision = "bf16"
 else:
     assert args.precision == "int4"
     pipeline_init_kwargs = {}
-    transformer = NunchakuFluxTransformer2dModel.from_pretrained(f"mit-han-lab/svdq-int4-flux.1-fill-dev")
+    transformer = NunchakuFluxTransformer2dModel.from_pretrained(
+        f"mit-han-lab/svdq-int4-flux.1-fill-dev"
+    )
     pipeline_init_kwargs["transformer"] = transformer
     if args.use_qencoder:
-        from nunchaku.models.text_encoders.t5_encoder import NunchakuT5EncoderModel
+        from nunchaku.models.text_encoders.t5_encoder import \
+            NunchakuT5EncoderModel
 
-        text_encoder_2 = NunchakuT5EncoderModel.from_pretrained("mit-han-lab/svdq-flux.1-t5")
+        text_encoder_2 = NunchakuT5EncoderModel.from_pretrained(
+            "mit-han-lab/svdq-flux.1-t5"
+        )
         pipeline_init_kwargs["text_encoder_2"] = text_encoder_2
 
     pipeline = FluxFillPipeline.from_pretrained(
-        f"black-forest-labs/FLUX.1-Fill-dev", torch_dtype=torch.bfloat16, **pipeline_init_kwargs
+        f"black-forest-labs/FLUX.1-Fill-dev",
+        torch_dtype=torch.bfloat16,
+        **pipeline_init_kwargs,
     )
     pipeline = pipeline.to("cuda")
     pipeline.precision = "int4"
@@ -43,7 +53,13 @@ safety_checker = SafetyChecker("cuda", disabled=args.no_safety_checker)
 
 
 def run(
-    image, prompt: str, style: str, prompt_template: str, num_inference_steps: int, guidance_scale: float, seed: int
+    image,
+    prompt: str,
+    style: str,
+    prompt_template: str,
+    num_inference_steps: int,
+    guidance_scale: float,
+    seed: int,
 ) -> tuple[Image, str]:
 
     print(f"Prompt: {prompt}")
@@ -94,7 +110,9 @@ def run(
     return result_image, latency_str
 
 
-with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Flux.1-Fill-dev Sketch-to-Image Demo") as demo:
+with gr.Blocks(
+    css_paths="assets/style.css", title=f"SVDQuant Flux.1-Fill-dev Sketch-to-Image Demo"
+) as demo:
     with open("assets/description.html", "r") as f:
         DESCRIPTION = f.read()
     gpus = GPUtil.getGPUs()
@@ -121,7 +139,9 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Flux.1-Fill-dev Sk
             )
         else:
             count_info = ""
-        header_str = DESCRIPTION.format(device_info=device_info, notice=notice, count_info=count_info)
+        header_str = DESCRIPTION.format(
+            device_info=device_info, notice=notice, count_info=count_info
+        )
         return header_str
 
     header = gr.HTML(get_header_str())
@@ -148,24 +168,52 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Flux.1-Fill-dev Sk
                     brush=gr.Brush(default_size=30),
                 )
                 with gr.Row():
-                    prompt = gr.Text(label="Prompt", placeholder="Enter your prompt", scale=6)
+                    prompt = gr.Text(
+                        label="Prompt", placeholder="Enter your prompt", scale=6
+                    )
                     run_button = gr.Button("Run", scale=1, elem_id="run_button")
             with gr.Row():
-                style = gr.Dropdown(label="Style", choices=STYLE_NAMES, value=DEFAULT_STYLE_NAME, scale=1)
+                style = gr.Dropdown(
+                    label="Style",
+                    choices=STYLE_NAMES,
+                    value=DEFAULT_STYLE_NAME,
+                    scale=1,
+                )
                 prompt_template = gr.Textbox(
-                    label="Prompt Style Template", value=STYLES[DEFAULT_STYLE_NAME], scale=2, max_lines=1
+                    label="Prompt Style Template",
+                    value=STYLES[DEFAULT_STYLE_NAME],
+                    scale=2,
+                    max_lines=1,
                 )
 
             with gr.Row():
-                seed = gr.Slider(label="Seed", show_label=True, minimum=0, maximum=MAX_SEED, value=233, step=1, scale=4)
-                randomize_seed = gr.Button("Random Seed", scale=1, min_width=50, elem_id="random_seed")
+                seed = gr.Slider(
+                    label="Seed",
+                    show_label=True,
+                    minimum=0,
+                    maximum=MAX_SEED,
+                    value=233,
+                    step=1,
+                    scale=4,
+                )
+                randomize_seed = gr.Button(
+                    "Random Seed", scale=1, min_width=50, elem_id="random_seed"
+                )
             with gr.Accordion("Advanced options", open=False):
                 with gr.Group():
                     num_inference_steps = gr.Slider(
-                        label="Inference Steps", minimum=10, maximum=50, step=1, value=DEFAULT_INFERENCE_STEP
+                        label="Inference Steps",
+                        minimum=10,
+                        maximum=50,
+                        step=1,
+                        value=DEFAULT_INFERENCE_STEP,
                     )
                     guidance_scale = gr.Slider(
-                        label="Guidance Scale", minimum=1, maximum=50, step=1, value=DEFAULT_GUIDANCE
+                        label="Guidance Scale",
+                        minimum=1,
+                        maximum=50,
+                        step=1,
+                        value=DEFAULT_GUIDANCE,
                     )
 
         with gr.Column(elem_id="column_output"):
@@ -191,7 +239,15 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Flux.1-Fill-dev Sk
             gr.Markdown("**4**. Adjust guidance scale using the slider")
             gr.Markdown("**5**. Try different seeds to generate different results")
 
-    run_inputs = [canvas, prompt, style, prompt_template, num_inference_steps, guidance_scale, seed]
+    run_inputs = [
+        canvas,
+        prompt,
+        style,
+        prompt_template,
+        num_inference_steps,
+        guidance_scale,
+        seed,
+    ]
     run_outputs = [result, latency_result]
     gr.Examples(examples=EXAMPLES, inputs=run_inputs, outputs=run_outputs, fn=run)
 
@@ -210,9 +266,17 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Flux.1-Fill-dev Sk
         api_name=False,
         queue=False,
     )
-    gr.on(triggers=[prompt.submit, run_button.click], fn=run, inputs=run_inputs, outputs=run_outputs, api_name=False)
+    gr.on(
+        triggers=[prompt.submit, run_button.click],
+        fn=run,
+        inputs=run_inputs,
+        outputs=run_outputs,
+        api_name=False,
+    )
 
-    gr.Markdown("MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility")
+    gr.Markdown(
+        "MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility"
+    )
 
 
 if __name__ == "__main__":

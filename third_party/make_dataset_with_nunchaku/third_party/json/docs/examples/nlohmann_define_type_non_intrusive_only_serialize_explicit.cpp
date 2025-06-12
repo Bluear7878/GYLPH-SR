@@ -4,8 +4,7 @@
 using json = nlohmann::json;
 using namespace nlohmann::literals;
 
-namespace ns
-{
+namespace ns {
 struct person
 {
     std::string name;
@@ -19,7 +18,7 @@ void to_json(nlohmann::json& nlohmann_json_j, const person& nlohmann_json_t)
     nlohmann_json_j["address"] = nlohmann_json_t.address;
     nlohmann_json_j["age"] = nlohmann_json_t.age;
 }
-} // namespace ns
+}  // namespace ns
 
 int main()
 {

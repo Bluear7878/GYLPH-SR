@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -36,11 +37,11 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
 #include "cutlass/coord.h"
-#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
 #include "cutlass/layout/tensor.h"
 #include "cutlass/matrix_coord.h"
 #include "cutlass/matrix_shape.h"
@@ -68,8 +69,7 @@ template <
     /// Number of elements for each access
     int ElementsPerAccess,
     /// Support residual tile
-    bool EnableResidualAccess = false
->
+    bool EnableResidualAccess = false>
 class PredicatedVectorAccessIterator;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,23 +77,12 @@ class PredicatedVectorAccessIterator;
 /// Vector access iterator specialized for vectors, e.g. scale and bias
 /// Thread arrangements are for TensorOps
 ///
-template <
-  typename Shape_, 
-  typename WarpShape_, 
-  typename Element_, 
-  int ElementsPerAccess, 
-  bool EnableResidualAccess
->
-class PredicatedVectorAccessIterator <
-  Shape_,
-  WarpShape_,
-  Element_,
-  layout::PitchLinear,
-  ElementsPerAccess,
-  EnableResidualAccess
-> {
-  public:
-
+template <typename Shape_, typename WarpShape_, typename Element_,
+          int ElementsPerAccess, bool EnableResidualAccess>
+class PredicatedVectorAccessIterator<Shape_, WarpShape_, Element_,
+                                     layout::PitchLinear, ElementsPerAccess,
+                                     EnableResidualAccess> {
+public:
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using Element = Element_;
@@ -109,22 +98,23 @@ class PredicatedVectorAccessIterator <
   using ConstPointer = const Element *;
   using NonConstPointer = typename platform::remove_const<Element>::type *;
 
-//  static int const kElementsPerAccess = 128 / sizeof_bits<Element>::value;
+  //  static int const kElementsPerAccess = 128 / sizeof_bits<Element>::value;
   static int const kElementsPerAccess = ElementsPerAccess;
   static int const kThreads = 32;
   static int const kRowsPerIteration = 8;
   static int const kThreadsPerRow = kThreads / kRowsPerIteration;
   static int const kThreadsPerRowMask = 0x3;
-  static int const kIterations = WarpShape::kContiguous / (kThreadsPerRow * kElementsPerAccess); 
+  static int const kIterations =
+      WarpShape::kContiguous / (kThreadsPerRow * kElementsPerAccess);
   static int const kWarpCountStrided = Shape::kStrided / WarpShape::kStrided;
 
   using AccessType = AlignedArray<Element, kElementsPerAccess>;
 
- private:
+private:
   /// Internal pointer type permits fast address arithmetic
   using BytePointer = char *;
 
- private:
+private:
   //
   // Data members
   //
@@ -147,38 +137,38 @@ class PredicatedVectorAccessIterator <
   /// residual offset of each thread
   TensorCoord residual_offset_;
 
- public:
+public:
   /// Constructs a vector access iterator
   CUTLASS_HOST_DEVICE
   PredicatedVectorAccessIterator(
-    /// Pointer to the start of the vector
-    ConstPointer pointer,
-    /// Extent of vector
-    TensorCoord extent,
-    /// ID of each participating thread
-    int thread_id,
-    /// ID of each participating warp
-    int warp_id,
-    /// Initial offset of threadblock
-    TensorCoord const &threadblock_offset)
-    : pointer_(reinterpret_cast<BytePointer>(
-                       const_cast<NonConstPointer>(pointer))),
-      extent_(extent),
-      is_residual_(false) {
-
+      /// Pointer to the start of the vector
+      ConstPointer pointer,
+      /// Extent of vector
+      TensorCoord extent,
+      /// ID of each participating thread
+      int thread_id,
+      /// ID of each participating warp
+      int warp_id,
+      /// Initial offset of threadblock
+      TensorCoord const &threadblock_offset)
+      : pointer_(reinterpret_cast<BytePointer>(
+            const_cast<NonConstPointer>(pointer))),
+        extent_(extent), is_residual_(false) {
 
     int warp_offset = (warp_id / kWarpCountStrided) * WarpShape::kContiguous;
 
     // Per-thread offset in logical coordinates of tensor
 
-    thread_offset_ = threadblock_offset + TensorCoord(warp_offset, 0) +
+    thread_offset_ =
+        threadblock_offset + TensorCoord(warp_offset, 0) +
         TensorCoord((thread_id & kThreadsPerRowMask) * kElementsPerAccess, 0);
 
     set_iteration_index(0);
 
-    if(EnableResidualAccess) {
+    if (EnableResidualAccess) {
       // compute residual offset
-      typename TensorCoord::Index residual_size = extent_.contiguous() % WarpShape::kContiguous;
+      typename TensorCoord::Index residual_size =
+          extent_.contiguous() % WarpShape::kContiguous;
       if (residual_size) {
         is_residual_ = true;
         residual_offset_ = make_Coord(residual_size, 0);
@@ -189,28 +179,25 @@ class PredicatedVectorAccessIterator <
   /// Construct a PredicatedVectorAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   PredicatedVectorAccessIterator(
-    /// Pointer to start of vector
-    ConstPointer pointer,
-    /// Extent of vector
-    TensorCoord extent,
-    ///< ID of each participating thread
-    int thread_id,
-    /// ID of each participating warp
-    int warp_id)
-    : PredicatedVectorAccessIterator(pointer, extent, thread_id, warp_id,
-                                     make_Coord(0, 0)) {}
-
+      /// Pointer to start of vector
+      ConstPointer pointer,
+      /// Extent of vector
+      TensorCoord extent,
+      ///< ID of each participating thread
+      int thread_id,
+      /// ID of each participating warp
+      int warp_id)
+      : PredicatedVectorAccessIterator(pointer, extent, thread_id, warp_id,
+                                       make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
-  void set_iteration_index(int index) {
-    iteration_ = index;
-  }
+  void set_iteration_index(int index) { iteration_ = index; }
 
-  /// Advances an iterator along logical dimensions of matrix in units of whole tiles
+  /// Advances an iterator along logical dimensions of matrix in units of whole
+  /// tiles
   CUTLASS_DEVICE
-  void add_tile_offset(
-      TensorCoord const &tile_offset) {
+  void add_tile_offset(TensorCoord const &tile_offset) {
 
     thread_offset_ =
         thread_offset_ +
@@ -222,17 +209,17 @@ class PredicatedVectorAccessIterator <
   AccessType *get() const {
 
     return reinterpret_cast<AccessType *>(
-        pointer_ +
-        ((thread_offset_.contiguous() + iteration_ * kThreadsPerRow * kElementsPerAccess) 
-        * sizeof_bits<Element>::value / 8));
+        pointer_ + ((thread_offset_.contiguous() +
+                     iteration_ * kThreadsPerRow * kElementsPerAccess) *
+                    sizeof_bits<Element>::value / 8));
   }
 
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
   PredicatedVectorAccessIterator &operator++() {
     ++iteration_;
-    if(iteration_ >= kIterations)
-      iteration_ = 0; 
+    if (iteration_ >= kIterations)
+      iteration_ = 0;
 
     return *this;
   }
@@ -240,11 +227,10 @@ class PredicatedVectorAccessIterator <
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
   void advance() {
-    if(EnableResidualAccess && is_residual_) {
+    if (EnableResidualAccess && is_residual_) {
       is_residual_ = false;
-      thread_offset_ += residual_offset_; 
-    }
-    else
+      thread_offset_ += residual_offset_;
+    } else
       add_tile_offset(TensorCoord(1, 0));
   }
 
@@ -259,8 +245,9 @@ class PredicatedVectorAccessIterator <
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
   bool valid() {
-    return ((thread_offset_.contiguous() + 
-              iteration_ * kThreadsPerRow * kElementsPerAccess) < extent_.contiguous());
+    return ((thread_offset_.contiguous() +
+             iteration_ * kThreadsPerRow * kElementsPerAccess) <
+            extent_.contiguous());
   }
 };
 
@@ -268,23 +255,12 @@ class PredicatedVectorAccessIterator <
 
 /// Specialization of PredicatedVectorAccessIterator for row-major data.
 ///
-template <
-  typename Shape_,
-  typename WarpShape_,
-  typename Element_,
-  int ElementsPerAccess,
-  bool EnableResidualAccess
->
-class PredicatedVectorAccessIterator<
-  Shape_,
-  WarpShape_,
-  Element_,
-  layout::RowMajor,
-  ElementsPerAccess,
-  EnableResidualAccess
-> {
- public:
-
+template <typename Shape_, typename WarpShape_, typename Element_,
+          int ElementsPerAccess, bool EnableResidualAccess>
+class PredicatedVectorAccessIterator<Shape_, WarpShape_, Element_,
+                                     layout::RowMajor, ElementsPerAccess,
+                                     EnableResidualAccess> {
+public:
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using Element = Element_;
@@ -301,12 +277,9 @@ class PredicatedVectorAccessIterator<
   using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedVectorAccessIterator<
-      layout::PitchLinearShape<Shape::kColumn, Shape::kRow>, 
-      layout::PitchLinearShape<WarpShape::kColumn, WarpShape::kRow>, 
-      Element,
-      layout::PitchLinear,
-      ElementsPerAccess,
-      EnableResidualAccess>;
+      layout::PitchLinearShape<Shape::kColumn, Shape::kRow>,
+      layout::PitchLinearShape<WarpShape::kColumn, WarpShape::kRow>, Element,
+      layout::PitchLinear, ElementsPerAccess, EnableResidualAccess>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
   static int const kElementsPerAccess = UnderlyingIterator::kElementsPerAccess;
@@ -314,7 +287,7 @@ class PredicatedVectorAccessIterator<
   static int const kThreads = UnderlyingIterator::kThreads;
   static int const kIterations = UnderlyingIterator::kIterations;
 
- private:
+private:
   //
   // Data members
   //
@@ -322,7 +295,7 @@ class PredicatedVectorAccessIterator<
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -337,7 +310,8 @@ class PredicatedVectorAccessIterator<
       int warp_id,
       ///< Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : iterator_(pointer, layout::PitchLinearCoord(extent.column(), extent.row()),
+      : iterator_(pointer,
+                  layout::PitchLinearCoord(extent.column(), extent.row()),
                   thread_id, warp_id,
                   layout::PitchLinearCoord(threadblock_offset.column(),
                                            threadblock_offset.row())) {}
@@ -345,13 +319,13 @@ class PredicatedVectorAccessIterator<
   /// Construct a PredicatedVectorAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   PredicatedVectorAccessIterator(
-      ConstPointer pointer,   ///< Pointer to the start of the vector
-      TensorCoord extent,     ///< Extent of tensor
-      int thread_id,          ///< ID of each participating thread
-      int warp_id             ///< ID of each participating warp
+      ConstPointer pointer, ///< Pointer to the start of the vector
+      TensorCoord extent,   ///< Extent of tensor
+      int thread_id,        ///< ID of each participating thread
+      int warp_id           ///< ID of each participating warp
       )
-      : PredicatedVectorAccessIterator(pointer, extent, thread_id, warp_id, 
-                                        make_Coord(0, 0)) {}
+      : PredicatedVectorAccessIterator(pointer, extent, thread_id, warp_id,
+                                       make_Coord(0, 0)) {}
 
   /// Overrides the internal iteration index
   CUTLASS_HOST_DEVICE
@@ -397,21 +371,15 @@ class PredicatedVectorAccessIterator<
 
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
-  void advance() {
-    iterator_.advance();
-  }
+  void advance() { iterator_.advance(); }
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
-  bool valid() {
-    return iterator_.valid();
-  }
+  bool valid() { return iterator_.valid(); }
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform 
-}  // namespace cutlass
-
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass

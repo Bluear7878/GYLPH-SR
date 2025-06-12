@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,19 +18,20 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
     \brief Tests for device-wide GEMM interface
-    
+
 */
 
 #include <iostream>
@@ -55,8 +56,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-TEST(SM80_Device_GemmUniversal_f16t_u8t_f16t_mixed_input_tensor_op_f16, 128x128x64_64x64x64) {
+TEST(SM80_Device_GemmUniversal_f16t_u8t_f16t_mixed_input_tensor_op_f16,
+     128x128x64_64x64x64) {
 
   using ElementA = cutlass::half_t;
   using ElementB = uint8_t;
@@ -64,29 +65,20 @@ TEST(SM80_Device_GemmUniversal_f16t_u8t_f16t_mixed_input_tensor_op_f16, 128x128x
   using ElementAccumulator = cutlass::half_t;
 
   using Gemm = cutlass::gemm::device::GemmUniversal<
-    ElementA, 
-    cutlass::layout::RowMajor, 
-    ElementB,
-    cutlass::layout::ColumnMajor, 
-    ElementOutput, 
-    cutlass::layout::RowMajor,
-    ElementAccumulator, 
-    cutlass::arch::OpClassTensorOp, 
-    cutlass::arch::Sm80,
-    cutlass::gemm::GemmShape<128, 128, 64>,
-    cutlass::gemm::GemmShape<64, 64, 64>,
-    cutlass::gemm::GemmShape<16, 8, 16>,
+      ElementA, cutlass::layout::RowMajor, ElementB,
+      cutlass::layout::ColumnMajor, ElementOutput, cutlass::layout::RowMajor,
+      ElementAccumulator, cutlass::arch::OpClassTensorOp, cutlass::arch::Sm80,
+      cutlass::gemm::GemmShape<128, 128, 64>,
+      cutlass::gemm::GemmShape<64, 64, 64>, cutlass::gemm::GemmShape<16, 8, 16>,
       cutlass::epilogue::thread::LinearCombination<
           ElementOutput, 128 / cutlass::sizeof_bits<ElementOutput>::value,
           ElementAccumulator, ElementAccumulator>,
-    cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>, 
-    4,  // Stages
-    8,  // AlignmentA
-    16, // AlignmentB
-    cutlass::arch::OpMultiplyAddMixedInputUpcast,
-    cutlass::ComplexTransform::kNone,
-    cutlass::ComplexTransform::kNone
-  >;
+      cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>,
+      4,  // Stages
+      8,  // AlignmentA
+      16, // AlignmentB
+      cutlass::arch::OpMultiplyAddMixedInputUpcast,
+      cutlass::ComplexTransform::kNone, cutlass::ComplexTransform::kNone>;
 
   EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());
 }

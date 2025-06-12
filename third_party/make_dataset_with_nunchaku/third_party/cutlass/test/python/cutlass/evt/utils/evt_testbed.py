@@ -34,12 +34,12 @@
 Testbed classes of EVT
 """
 
-import torch
 import unittest
 
 import cutlass
-from cutlass import Tensor
 import cutlass.backend.evt
+import torch
+from cutlass import Tensor
 from cutlass.shape import GemmCoord
 from cutlass.utils.datatypes import torch_type
 from cutlass.utils.profiler import CUDAEventProfiler
@@ -82,53 +82,58 @@ class EVTReferenceModule:
 
     def __call__(self, A, B, C, problem_size, batch=1, epilogue_args=None):
         # Running the mainloop
-        accum = self.run(
-            A, B, C, problem_size, 1.0, 0.0, batch=batch
-        ).reshape(batch, problem_size.m, problem_size.n)
-        
+        accum = self.run(A, B, C, problem_size, 1.0, 0.0, batch=batch).reshape(
+            batch, problem_size.m, problem_size.n
+        )
+
         # Running the epilogue
         epilogue_args["accum"] = accum
         references = self.epilogue_visitor(**epilogue_args)
-        
+
         # Return the results
         if not isinstance(references, tuple):
             references = (references,)
         return references
-        
+
 
 class EVTTestBed:
     """
     Epilogue Visitor Testbed
     """
-    def __init__(self, element, evt_fn, example_inputs, profile=False, **kwargs) -> None:
+
+    def __init__(
+        self, element, evt_fn, example_inputs, profile=False, **kwargs
+    ) -> None:
         self.element = element
         layout = cutlass.LayoutType.RowMajor
         self.example_inputs = example_inputs
-        
+
         # Create the Gemm plan
-        self.plan = cutlass.op.Gemm(element=element, layout=layout, element_accumulator=torch.float32)
-        
+        self.plan = cutlass.op.Gemm(
+            element=element, layout=layout, element_accumulator=torch.float32
+        )
+
         if "tile_description" in kwargs:
             self.plan.tile_description = kwargs["tile_description"]
-        
+
         if "swizzling_functor" in kwargs:
             self.plan.swizzling_functor = kwargs["swizzling_functor"]
-        
+
         # Compile the epilogue visitor
         epilogue_visitor = cutlass.epilogue.trace(evt_fn, example_inputs)
         if "epilogue_stages" in kwargs:
             epilogue_visitor.epilogue_stages = kwargs["epilogue_stages"]
         self.plan.epilogue_visitor = epilogue_visitor
-        
+
         # Reference model
         self.reference_fn = EVTReferenceModule(layout, layout, layout, epilogue_visitor)
-        
+
         self.profile = profile
 
     def get_torch_tensor(self, shape, dtype=None, fill=None):
         if dtype is None:
             dtype = self.element
-        
+
         dtype = torch_type(dtype)
         if fill is None:
             return torch.ceil(
@@ -136,7 +141,7 @@ class EVTTestBed:
             )
         else:
             return torch.full(shape, fill, dtype=dtype, device="cuda")
-    
+
     def verify(self, problem_size, input_keys, result_keys, batch_count=1):
         """
         Verify the results
@@ -146,14 +151,16 @@ class EVTTestBed:
         # Initiate the GEMM arguments
         tensor_A = self.get_torch_tensor((batch_count, problem_size.m, problem_size.k))
         tensor_B = self.get_torch_tensor((batch_count, problem_size.k, problem_size.n))
-        
+
         # Initialize the epilogue args
         epilogue_args = {}
         for key in self.example_inputs.keys():
             if key in input_keys:
                 tensor = self.example_inputs[key]
                 if isinstance(tensor, Tensor):
-                    epilogue_args[key] = self.get_torch_tensor(tensor.shape, tensor.element)
+                    epilogue_args[key] = self.get_torch_tensor(
+                        tensor.shape, tensor.element
+                    )
                 else:
                     epilogue_args[key] = tensor
             elif key in result_keys:
@@ -163,35 +170,46 @@ class EVTTestBed:
                         fill = -1000
                     else:
                         fill = 0
-                    epilogue_args[key] = self.get_torch_tensor(tensor.shape, tensor.element, fill=fill)
+                    epilogue_args[key] = self.get_torch_tensor(
+                        tensor.shape, tensor.element, fill=fill
+                    )
                 else:
                     epilogue_args[key] = tensor
-        
+
         tensor_D = epilogue_args["D"]
         if "C" in epilogue_args:
             tensor_C = epilogue_args["C"]
         else:
             tensor_C = tensor_D
         # Run the device kernel
-        self.plan.run(tensor_A, tensor_B, tensor_C, tensor_D, visitor_args=epilogue_args)
-        
+        self.plan.run(
+            tensor_A, tensor_B, tensor_C, tensor_D, visitor_args=epilogue_args
+        )
+
         # Run the host reference
         evt_args_inputs = {}
         for key in input_keys:
             evt_args_inputs[key] = epilogue_args[key]
-        
+
         reference_results = self.reference_fn(
-            tensor_A, tensor_B, tensor_C, problem_size, batch_count, evt_args_inputs)
-        
+            tensor_A, tensor_B, tensor_C, problem_size, batch_count, evt_args_inputs
+        )
+
         # Compare the results
         for result, ref in zip(result_keys, reference_results):
             assert torch.equal(epilogue_args[result].flatten(), ref.flatten())
-        
+
         # Run profile
         if self.profile:
             profiler = CUDAEventProfiler(
-                self.plan, 100, 100, tensor_A, tensor_B, tensor_C, tensor_D,
-                visitor_args = epilogue_args
+                self.plan,
+                100,
+                100,
+                tensor_A,
+                tensor_B,
+                tensor_C,
+                tensor_D,
+                visitor_args=epilogue_args,
             )
             print(f"Cutlass Python Duration: {profiler()}")
 
@@ -200,20 +218,30 @@ class EVTTestCaseBase(unittest.TestCase):
     """
     Base class for EVT Unittest
     """
+
     def __init__(self, methodName: str = "runTest", lmnk=(6, 512, 256, 128)) -> None:
         super().__init__(methodName)
-        
+
         self.element = cutlass.DataType.f16
         self.l, self.m, self.n, self.k = lmnk
-        
+
         self.problem_size = (self.m, self.n, self.k)
-        
+
         torch.random.manual_seed(42)
-    
+
     def fake_tensor(self, element, shape):
-        return Tensor(element=element, shape=shape, layout_tag=cutlass.LayoutType.RowMajor)
-    
-    def get_problem_sizes(self, alignment, k=None, batch_count=[3,]):
+        return Tensor(
+            element=element, shape=shape, layout_tag=cutlass.LayoutType.RowMajor
+        )
+
+    def get_problem_sizes(
+        self,
+        alignment,
+        k=None,
+        batch_count=[
+            3,
+        ],
+    ):
         k = k if k else self.k
         problem_size_m = [alignment, 512 - 3 * alignment]
         problem_size_n = [alignment, 512 - alignment]
@@ -226,5 +254,5 @@ class EVTTestCaseBase(unittest.TestCase):
             for n in problem_size_n:
                 for l in problem_size_l:
                     problem_sizes.append((m, n, k, l))
-        
+
         return problem_sizes

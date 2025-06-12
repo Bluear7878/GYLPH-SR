@@ -53,6 +53,7 @@ class TestEVTLoadSM90(EVTTestCaseBase):
         """
         Load extra tensor with shape [m, n]
         """
+
         def evt_tensor_load(accum, C, aux, aux_batch):
             D = accum + C + aux + aux_batch
             return D
@@ -75,6 +76,7 @@ class TestEVTLoadSM90(EVTTestCaseBase):
         """
         Load extra tensor with shape [1, n]
         """
+
         def evt_row_broadcast(accum, C, bias, bias_batch):
             D = accum + C + bias + bias_batch
             return D
@@ -97,6 +99,7 @@ class TestEVTLoadSM90(EVTTestCaseBase):
         """
         Load extra tensor with shape [m, 1]
         """
+
         def evt_column_broadcast(accum, C, bias, bias_batch):
             D = accum + C + bias + bias_batch
             return D
@@ -119,6 +122,7 @@ class TestEVTLoadSM90(EVTTestCaseBase):
         """
         Load extra tensor with shape [1, 1]
         """
+
         def evt_scalar_broadcast(accum, C, alpha, alpha_batch):
             D = accum + C + alpha + alpha_batch
             return D
@@ -138,5 +142,5 @@ class TestEVTLoadSM90(EVTTestCaseBase):
             launcher.verify((m, n, k), input_keys, result_keys, l)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

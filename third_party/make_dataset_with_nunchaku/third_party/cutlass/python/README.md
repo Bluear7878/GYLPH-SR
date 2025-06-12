@@ -1,12 +1,14 @@
 ![ALT](/media/images/gemm-hierarchy-with-epilogue-no-labels.png "Complete CUDA GEMM decomposition")
 
 # Python packages associated with CUTLASS
+
 This directory contains Python packages that are associated with CUTLASS:
 
-* `cutlass`: the CUTLASS Python interface, which enables one to compile and run CUTLASS kernels from within Python
-* `cutlass_library`: utilities used for enumerating and emitting C++ code for CUTLASS kernels
+- `cutlass`: the CUTLASS Python interface, which enables one to compile and run CUTLASS kernels from within Python
+- `cutlass_library`: utilities used for enumerating and emitting C++ code for CUTLASS kernels
 
 ## CUTLASS Python Interface
+
 The CUTLASS Python interface enables one to compile and run CUTLASS operations from within Python.
 
 ```python
@@ -19,16 +21,18 @@ plan.run(A, B, C, D)
 ```
 
 ### Overview
+
 The CUTLASS Python interface aims to provide an ease-of-use interface for using CUTLASS via Python. Toward this goal,
 the CUTLASS Python interface attempts to:
 
-* Present high-level interfaces for operators that require only few parameters
-* Select sensible default configurations for an operator given the parameters that have been specified
-* Enumerate configurations for users that are known to work in a given setting
-* Reduce the occurrence of C++ compile-time errors in favor of descriptive Python exceptions
-* Make it easy to export CUTLASS kernels to framework extensions (e.g., PyTorch CUDA extensions)
+- Present high-level interfaces for operators that require only few parameters
+- Select sensible default configurations for an operator given the parameters that have been specified
+- Enumerate configurations for users that are known to work in a given setting
+- Reduce the occurrence of C++ compile-time errors in favor of descriptive Python exceptions
+- Make it easy to export CUTLASS kernels to framework extensions (e.g., PyTorch CUDA extensions)
 
 #### Non-goals
+
 The CUTLASS Python interface does not intended to:
 
 **Select optimal kernel configurations.**
@@ -47,6 +51,7 @@ The CUTLASS Python interface intends to enable one to use CUTLASS via Python. It
 Python to CUDA kernels, but does not set out to be such a framework.
 
 #### Comparison to PyCUTLASS
+
 The CUTLASS Python interface builds atop CUTLASS's [PyCUTLASS](https://github.com/NVIDIA/cutlass/tree/v3.0.0/tools/library/scripts/pycutlass) library. PyCUTLASS enables
 one to declare, compile, and run GEMMs, convolutions, and grouped GEMM operators with nearly the same configuration
 space as CUTLASS's C++ interface. While this flexibility enables one to achieve the similar levels of functionality
@@ -57,13 +62,16 @@ In contrast, the CUTLASS Python interface aims to provide a higher-level API for
 kernels that does not require exhaustively defining template parameters.
 
 ### Current functionality
+
 The CUTLASS Python interface currently supports the following operations:
-* GEMMs
-* GEMMs with fused elementwise epilogues (e.g., ReLU) (for pre-SM90 kernels)
-* Stream K swizzling (for pre-SM90 kernels)
-* Grouped GEMM (for pre-SM90 kernels)
+
+- GEMMs
+- GEMMs with fused elementwise epilogues (e.g., ReLU) (for pre-SM90 kernels)
+- Stream K swizzling (for pre-SM90 kernels)
+- Grouped GEMM (for pre-SM90 kernels)
 
 ### Getting started
+
 We recommend using the CUTLASS Python interface via an [NGC PyTorch Docker container](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch):
 
 ```bash
@@ -73,44 +81,55 @@ docker run --gpus all -it --rm nvcr.io/nvidia/pytorch:23.08-py3
 The CUTLASS Python interface has been tested with CUDA 11.8, 12.0, and 12.1 on Python 3.8 and 3.9.
 
 #### Optional environment variables
+
 Prior to installing the CUTLASS Python interface, one may optionally set the following environment variables:
-* `CUTLASS_PATH`: the path to the cloned CUTLASS repository
-* `CUDA_INSTALL_PATH`: the path to the installation of CUDA
+
+- `CUTLASS_PATH`: the path to the cloned CUTLASS repository
+- `CUDA_INSTALL_PATH`: the path to the installation of CUDA
 
 If these environment variables are not set, the installation process will infer them to be the following:
-* `CUTLASS_PATH`: either one directory level above the current directory (i.e., `$(pwd)/..`) if installed locally or in the `source` directory of the location in which `cutlass_library` was installed
-* `CUDA_INSTALL_PATH`: the directory holding `/bin/nvcc` for the first version of `nvcc` on `$PATH` (i.e., `which nvcc | awk -F'/bin/nvcc' '{print $1}'`)
+
+- `CUTLASS_PATH`: either one directory level above the current directory (i.e., `$(pwd)/..`) if installed locally or in the `source` directory of the location in which `cutlass_library` was installed
+- `CUDA_INSTALL_PATH`: the directory holding `/bin/nvcc` for the first version of `nvcc` on `$PATH` (i.e., `which nvcc | awk -F'/bin/nvcc' '{print $1}'`)
 
 **NOTE:** The version of `cuda-python` installed must match the CUDA version in `CUDA_INSTALL_PATH`.
 
 #### Installation
+
 Stable releases of the CUTLASS Python interface are available via the `nvidia-cutlass` PyPI package. Any other packages with the name `cutlass` are not affiliated with NVIDIA CUTLASS.
+
 ```bash
 pip install nvidia-cutlass
 ```
 
 The CUTLASS Python interface can also be installed from source by navigating to the root of the CUTLASS directory and performing
+
 ```bash
 pip install .
 ```
 
 If you would like to be able to make changes to CUTLASS Python interface and have them reflected when using the interface, perform:
+
 ```bash
 pip install -e .
 ```
 
 ### Examples
+
 Jupyter notebook examples of using the CUTLASS Python interface are located in [examples/python](/examples/python).
 
 To launch these notebooks from this directory, run:
+
 ```bash
 jupyter-lab ../examples/python
 ```
 
 ### Building documentation
+
 The CUTLASS Python interface uses [Sphinx](https://www.sphinx-doc.org/en/master/) for documentation.
 
 Building the documentation requires additional packages. These can be installed via:
+
 ```bash
 sudo apt-get install pandoc
 pip install --upgrade Sphinx furo pandoc myst-parser sphinx-copybutton nbsphinx nbsphinx-link sphinx-inline-tabs
@@ -120,6 +139,7 @@ To build documentation, you must first have installed the CUTLASS Python interfa
 [installation instructions](#installation).
 
 Documentation can then be built via the following commands:
+
 ```bash
 sphinx-apidoc -o docs_src/source/ cutlass/ cutlass/backend*
 cd docs_src
@@ -128,10 +148,12 @@ mv _build/* ../docs
 ```
 
 ## CUTLASS library package
+
 [cutlass_library](/python/cutlass_library) contains utilities for enumerating and emitting CUTLASS C++ kernels.
 It is used by the CUTLASS CMake system to construct a library of kernels that can be profiled using the CUTLASS profiler.
 
 To install the `cutlass_library` package, run
+
 ```bash
 python setup_library.py develop --user
 ```

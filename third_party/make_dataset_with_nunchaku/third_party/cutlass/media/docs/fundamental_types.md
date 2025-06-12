@@ -5,7 +5,7 @@
 # Fundamental Types
 
 CUTLASS defies several fundamental numeric and container classes upon which computations and
-algorithms algorithms for linear algebra computations are implemented. 
+algorithms algorithms for linear algebra computations are implemented.
 
 Where possible, CUTLASS fundamental types mirror the C++ Standard Library. However, there are circumstances that necessitate divergence from the Standard Library's specification. In such cases, the CUTLASS implementation adopts unique capitalization to distinguish that standard vocabulary types may not be safely substituted in all cases.
 
@@ -15,21 +15,22 @@ Most types in CUTLASS are usable in both host code and device code. Moreover, th
 
 CUTLASS defines classes for the following numeric data types.
 
-* `half_t`: IEEE half-precision floating point (exponent: 5b, mantissa: 10b; literal suffix `_hf`)
-* `bfloat16_t`: BFloat16 data type (exponent: 8b, mantissa: 7b; literal suffix `_bf16`)
-* `tfloat32_t`: Tensor Float 32 data type (exponent: 8b, mantissa: 10b; literal suffix `_tf32`)
-* `int4_t`, `uint4_t`: 4b signed and unsigned integer (literal suffx `_s4`, `_u4`)
-* `bin1_t`: 1b binary numeric type (literal suffix `_b1`)
-* `complex<T>`: defines complex-valued data type based on the supplied real-valued numeric type
+- `half_t`: IEEE half-precision floating point (exponent: 5b, mantissa: 10b; literal suffix `_hf`)
+- `bfloat16_t`: BFloat16 data type (exponent: 8b, mantissa: 7b; literal suffix `_bf16`)
+- `tfloat32_t`: Tensor Float 32 data type (exponent: 8b, mantissa: 10b; literal suffix `_tf32`)
+- `int4_t`, `uint4_t`: 4b signed and unsigned integer (literal suffx `_s4`, `_u4`)
+- `bin1_t`: 1b binary numeric type (literal suffix `_b1`)
+- `complex<T>`: defines complex-valued data type based on the supplied real-valued numeric type
 
 Numeric types in CUTLASS may be used in both host and device code and are intended to function
-like any other plain-old-data type. 
+like any other plain-old-data type.
 
-If CUTLASS is compiled with `CUTLASS_F16C_ENABLED`, then hardware conversion is used for 
-half-precision types in host code. Regardless, `cutlass::half_t` uses the most efficient 
+If CUTLASS is compiled with `CUTLASS_F16C_ENABLED`, then hardware conversion is used for
+half-precision types in host code. Regardless, `cutlass::half_t` uses the most efficient
 NVIDIA GPU hardware instructions available in device code.
 
 Example:
+
 ```c++
 #include <iostream>
 #include <cutlass/numeric_types.h>
@@ -66,16 +67,18 @@ template <
 class Array;
 ```
 
-`Array<class T, int N>` defines a statically sized array of elements of type _T_ and size _N_. This class is similar to 
+`Array<class T, int N>` defines a statically sized array of elements of type _T_ and size _N_. This class is similar to
 [`std::array<>`](https://en.cppreference.com/w/cpp/container/array) in the Standard Library with two notable exceptions:
-* constructors for each element may not be called
-* partial specializations exist to pack or unpack elements smaller than one byte.
+
+- constructors for each element may not be called
+- partial specializations exist to pack or unpack elements smaller than one byte.
 
 `Array<>` is intended to be a convenient and uniform container class to store arrays of numeric elements regardless of data type or vector length. The storage needed is expected to be the minimum necessary given the logical size of each numeric type in bits (numeric types smaller than one byte are densely packed). Nevertheless, the size reported by `sizeof(Array<T, N>)` is always an integer multiple of bytes.
 
 Storing numeric elements in a C++ STL-style container class enables useful modern C++ mechanisms such as range-based for loops. For example, to print the elements of `Array<>`, the following range-based for loop syntax is always valid regardless of numeric data type, compute capability, or context in host or device code.
 
 Example:
+
 ```c++
 int const kN;
 Array<T, kN> elements;
@@ -89,6 +92,7 @@ for (auto x : elements) {
 When copying `Array<>` objects or passing them as arguments to methods, it is best to avoid accessing individual elements. This enables the use of vector instructions to perform the operation more efficiently. For example, setting all elements to zero is best performed by calling the `clear()` method. Copies should be performed by assigning the entire object.
 
 Example:
+
 ```c++
 #include <cutlass/array.h>
 
@@ -102,6 +106,7 @@ destination = source;   // copy to `destination`
 ```
 
 `Array<>` may be used to store elements smaller than one byte such as 4b integers.
+
 ```c++
 Array<int4b_t, 2> packed_integers;
 
@@ -134,6 +139,7 @@ class AlignedArray;
 `AlignedArray` is derived from `Array<T, N>` and supports an optional alignment field. Pointers to objects of type `AlignedArray<>` reliably yield vectorized memory accesses when dereferenced.
 
 Example:
+
 ```c++
 int const kN = 8;
 ArrayAligned<half_t, kN> source;
@@ -154,13 +160,14 @@ class AlignedBuffer;
 ```
 
 `AlignedBuffer` provides a uniform way to define aligned memory allocations for all data types. This is particularly
-useful in defining allocations within shared memory with guaranteed memory alignment needed for vectorized access. 
-Note, constructors of the elements within AlignedBuffer<> are not called, and so the elements are initially in an
+useful in defining allocations within shared memory with guaranteed memory alignment needed for vectorized access.
+Note, constructors of the elements within AlignedBuffer\<> are not called, and so the elements are initially in an
 undefined state.
 
 Use `AlignedBuffer<>::data()` to obtain a pointer to the first element of the buffer.
 
 **Example:** Guaranteed aligned shared memory allocation. Note, shared memory contents are uninitialized.
+
 ```c++
 int const kN = 32;
 int const kAlignment = 16;                  // alignment in bytes
@@ -174,6 +181,7 @@ complex<half_t> *ptr = matrix_tile.data();  // ptr is guaranteed to have 128b (1
 Note, `AlignedBuffer<>` only guarantees that its internal memory allocation is aligned, obtained by `AlignedBuffer<>::data()`. There is no guarantee that the `AlignedBuffer<>` object itself satisfies alignment constraints or that its internal memory allocation is contiguous. Device code performing vectorized memory accesses should use the `AlignedArray<>` type.
 
 **_Example_:** Vectorized memory access to shared memory allocations.
+
 ```c++
 int const kN = 1024;
 
@@ -186,7 +194,7 @@ AlignedArray<half_t, 8> x = ptr[threadIdx.x];     // 128b shared memory load
 
 ### Numeric Conversion
 
-CUTLASS defines procedures for performing numeric conversion between data types in `cutlass/numeric_conversion.h`. 
+CUTLASS defines procedures for performing numeric conversion between data types in `cutlass/numeric_conversion.h`.
 Where possible, these target hardware acceleration on the target architecture and support multiple rounding modes.
 
 ```c++
@@ -201,7 +209,7 @@ tfloat32_t y = convert_f32_to_tf32(3.14159f);
 ```
 
 Recent GPU architectures such as NVIDIA Turing and Ampere combine numeric conversion with efficient packing
-into bit vectors. Consequently, CUTLASS defines conversion on both scalars and `Array<>` objects to implement 
+into bit vectors. Consequently, CUTLASS defines conversion on both scalars and `Array<>` objects to implement
 the optimal code sequence on all architectures.
 
 ```c++
@@ -230,24 +238,27 @@ class Coord;
 `Coord<Rank, class T = int>` is a container used explicitly for defining logical coordinates in tensors of known rank. Traditional vector operators are defined such as `+`, `-`, and scalar multiplication `*` to simplify the creation of vector-valued expressions on tensor coordinates.
 
 **Example:** Vector operations on coordinates.
+
 ```c++
 Coord<2> compute_offset(Coord<2> const & base) {
-  
+
   Coord<2> stride = make_Coord(1, kM);
 
-  return base + stride * make_Coord(threadIdx.x, threadIdx.y); 
+  return base + stride * make_Coord(threadIdx.x, threadIdx.y);
 }
 ```
 
 Instances of `Coord<>` are used throughout CUTLASS to compute indices into tensors. Frequently, the dimensions of tensors of known layouts may be given names such as "rows" or "columns". To clarify the code, we have implemented several classes derived from `Coord<>` with accessors for each coordinate member.
 
 Such classes include:
+
 ```c++
 struct MatrixCoord : public Coord<2> {
   Index & row();
   Index & column();
 };
 ```
+
 and
 
 ```c++
@@ -261,13 +272,14 @@ struct Tensor4DCoord : public Coord<4> {
 
 ### PredicateVector<int Bits>
 
-`PredicateVector<int Bits>` contains a statically sized array of hardware predicates packed into registers to enable efficient access within unrolled loops. 
+`PredicateVector<int Bits>` contains a statically sized array of hardware predicates packed into registers to enable efficient access within unrolled loops.
 
 This container is optimized for sequential access through iterators, though these are only efficient when used within fully unrolled loops.
 
 Moreover, instances of `PredicateVector<>` are not guaranteed to be updated until any non-const iterator objects have gone out of scope. This is because iterators are effectively caches that update the `PredicateVector<>` instance's internal storage as a batch.
 
 **Example:** Managing an array of predicates.
+
 ```c++
 
 unsigned mask;
@@ -306,6 +318,7 @@ CUTLASS defines function objects corresponding to basic arithmetic operations mo
 CUTLASS extends this by defining `multiply_add<T>` which computes `d = a * b + c`. The partial specialization `multiply_add<complex<T>>` computes complex-valued multiplication and addition using four real-valued multiply-add operations; these may correspond to native hardware instructions.
 
 Example:
+
 ```c++
 complex<float> a;
 complex<float> b;
@@ -320,6 +333,7 @@ d = mad_op(a, b, c);    // four single-precision multiply-add instructions
 CUTLASS defines partial specializations for type `Array<T, N>`, performing elementwise operations on each element. A further partial specialization for `Array<half_t, N>` targets may target native SIMD instructions for compute capability SM60 and beyond.
 
 **Example:** Fused multiply-add of arrays of half-precision elements.
+
 ```c++
 static int const kN = 8;
 
@@ -340,6 +354,7 @@ terms of individual numeric elements and on arrays which enable the possibility 
 support on current and future NVIDIA GPUs.
 
 **Example:** Converting between 32-b and 8-b integers.
+
 ```c++
 
 ```

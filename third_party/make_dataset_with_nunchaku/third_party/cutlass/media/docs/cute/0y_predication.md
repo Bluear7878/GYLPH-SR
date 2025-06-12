@@ -55,14 +55,14 @@ The general procedure is that we
 1. create an "identity" layout (`Layout idA  = make_layout(shape(A))`,
    in the above example) with the same shape as our original data;
 
-2. repeat the same tiling/partitioning/slicing (possibly rounding up)
+1. repeat the same tiling/partitioning/slicing (possibly rounding up)
    on that identity layout (`Layout idAB = logical_divide(idA, B)`);
 
-3. create a "predicate tensor" by comparing the coordinates
+1. create a "predicate tensor" by comparing the coordinates
    of that reference layout with the bounds of the original layout;
    and then
 
-4. use the predicate tensor to mask off accesses to out-of-bounds elements.
+1. use the predicate tensor to mask off accesses to out-of-bounds elements.
 
 For example, suppose that we've partitioned A and B tiles
 across threads as follows.
@@ -172,11 +172,11 @@ Here are some advantages of this "reference tensor" approach.
 1. It doesn't depend on the layout/strides of the tensor
    being predicated, just the logical bounds being imposed.
 
-2. The partitioning stage can be anything.
+1. The partitioning stage can be anything.
 
-3. It naturally extends to any-dimensional predication.
+1. It naturally extends to any-dimensional predication.
 
-4. It's a natural generalization of a typical CUDA 1-D
+1. It's a natural generalization of a typical CUDA 1-D
    parallel vector access pattern,
    which computes an access index `k`
    (e.g., as `blockDim.x * blockIdx.x + threadIdx.x`)

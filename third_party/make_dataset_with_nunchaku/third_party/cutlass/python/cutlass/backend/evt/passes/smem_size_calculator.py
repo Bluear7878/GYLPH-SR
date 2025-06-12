@@ -34,18 +34,18 @@
 Compute the shared memory size in bytes
 """
 
-import cutlass_library
-from pycute import shape_div, product
-
 import cutlass
-from cutlass.backend.evt.ir import TopoVisitorNode, DAGIR
+import cutlass_library
+from cutlass.backend.evt.ir import DAGIR, TopoVisitorNode
 from cutlass.backend.library import DataTypeSize
+from pycute import product, shape_div
 
 
 class GetSmemSize:
     """
     Get the size in byte of shared memory used by the kernel
     """
+
     def __init__(self, dag_ir: DAGIR) -> None:
         self.dag_ir = dag_ir
         self.cc = self.dag_ir.cc
@@ -59,7 +59,10 @@ class GetSmemSize:
         schedule = tile_description.epilogue_schedule
         if schedule == cutlass_library.EpilogueScheduleType.TmaWarpSpecialized:
             epilogue_tile_mn = (64, 32)
-        elif schedule == cutlass_library.EpilogueScheduleType.TmaWarpSpecializedCooperative:
+        elif (
+            schedule
+            == cutlass_library.EpilogueScheduleType.TmaWarpSpecializedCooperative
+        ):
             if tile_description.threadblock_shape[0] >= 128:
                 epilogue_tile_mn = (128, 32)
             else:
@@ -69,7 +72,9 @@ class GetSmemSize:
 
         # Get the pipeline stages
         stages_d = 2
-        epi_tiles = product(shape_div(tuple(tile_description.threadblock_shape)[:2], epilogue_tile_mn))
+        epi_tiles = product(
+            shape_div(tuple(tile_description.threadblock_shape)[:2], epilogue_tile_mn)
+        )
         if self.dag_ir.has_node("C"):
             element_c = self.dag_ir.get_node_meta("C").element
         else:
@@ -105,8 +110,12 @@ class GetSmemSize:
             meta = self.dag_ir.get_node_meta(node)
             if not meta.disabled:
                 self.smem_types[node] = meta.underlying_impl.get_smem_size(
-                    self.cta_tile_mnk, self.epilogue_tile_mn,
-                    self.stages_c, self.stages_d, self.epi_tiles)
+                    self.cta_tile_mnk,
+                    self.epilogue_tile_mn,
+                    self.stages_c,
+                    self.stages_d,
+                    self.epi_tiles,
+                )
             if node == "D":
                 continue
             if isinstance(meta, TopoVisitorNode):
@@ -118,14 +127,24 @@ class GetSmemSize:
         # Get the Tensor Storage
         tensors = []
         if self.is_source_supported:
-            smem_C = DataTypeSize[self.element_c] * product(self.epilogue_tile_mn) * self.stages_c // 8
+            smem_C = (
+                DataTypeSize[self.element_c]
+                * product(self.epilogue_tile_mn)
+                * self.stages_c
+                // 8
+            )
             tensors.append((smem_C, 128))
         else:
             tensors.append((0, 1))
         if self.reuse_smem_c:
             tensors.append((0, 128))
         else:
-            smem_D = DataTypeSize[self.element_d] * product(self.epilogue_tile_mn) * self.stages_d // 8
+            smem_D = (
+                DataTypeSize[self.element_d]
+                * product(self.epilogue_tile_mn)
+                * self.stages_d
+                // 8
+            )
             tensors.append((smem_D, 128))
         tensors.append((thread_smem_size, 128))
 
@@ -160,7 +179,9 @@ class GetSmemSize:
 
             for type_size, _ in members:
                 if type_size != 0:
-                    offset = ((offset + max_alignment - 1) // max_alignment) * max_alignment
+                    offset = (
+                        (offset + max_alignment - 1) // max_alignment
+                    ) * max_alignment
                 if type_size == 0 and not ebo:
                     offset += 1
                 else:
@@ -179,7 +200,9 @@ class GetSmemSize:
 
     def get_evt_smem_type(self, node):
         # Sort the input nodes by edge weight
-        input_types = [self.smem_types[child] for child in self.dag_ir.get_all_inputs(node)]
+        input_types = [
+            self.smem_types[child] for child in self.dag_ir.get_all_inputs(node)
+        ]
         input_types.append(self.smem_types[node])
         if len(input_types) > 1:
             ebo = len(input_types) > 4
@@ -196,8 +219,12 @@ class GetSmemSize:
                 continue
             else:
                 self.smem_types[n] = m.underlying_impl.get_smem_size(
-                    self.cta_tile_mnk, self.epilogue_tile_mn,
-                    self.stages_c, self.stages_d, self.epi_tiles)
+                    self.cta_tile_mnk,
+                    self.epilogue_tile_mn,
+                    self.stages_c,
+                    self.stages_d,
+                    self.epi_tiles,
+                )
         input_types = [self.smem_types[child] for child in subgraph_nodes[:-1]]
         if len(input_types) > 0:
             ebo = len(input_types) > 4

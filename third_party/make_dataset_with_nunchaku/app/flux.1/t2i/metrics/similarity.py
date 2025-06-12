@@ -6,24 +6,35 @@ import torchmetrics
 import torchvision
 from PIL import Image
 from torch.utils import data
-from torchmetrics.image import (
-    LearnedPerceptualImagePatchSimilarity,
-    PeakSignalNoiseRatio,
-    StructuralSimilarityIndexMeasure,
-)
+from torchmetrics.image import (LearnedPerceptualImagePatchSimilarity,
+                                PeakSignalNoiseRatio,
+                                StructuralSimilarityIndexMeasure)
 from tqdm import tqdm
 
 
 class MultiImageDataset(data.Dataset):
-    def __init__(self, gen_dirpath: str, ref_dirpath_or_dataset: str | datasets.Dataset):
+    def __init__(
+        self, gen_dirpath: str, ref_dirpath_or_dataset: str | datasets.Dataset
+    ):
         super(data.Dataset, self).__init__()
         self.gen_names = sorted(
-            [name for name in os.listdir(gen_dirpath) if name.endswith(".png") or name.endswith(".jpg")]
+            [
+                name
+                for name in os.listdir(gen_dirpath)
+                if name.endswith(".png") or name.endswith(".jpg")
+            ]
         )
-        self.gen_dirpath, self.ref_dirpath_or_dataset = gen_dirpath, ref_dirpath_or_dataset
+        self.gen_dirpath, self.ref_dirpath_or_dataset = (
+            gen_dirpath,
+            ref_dirpath_or_dataset,
+        )
         if isinstance(ref_dirpath_or_dataset, str):
             self.ref_names = sorted(
-                [name for name in os.listdir(ref_dirpath_or_dataset) if name.endswith(".png") or name.endswith(".jpg")]
+                [
+                    name
+                    for name in os.listdir(ref_dirpath_or_dataset)
+                    if name.endswith(".png") or name.endswith(".jpg")
+                ]
             )
             assert len(self.ref_names) == len(self.gen_names)
         else:
@@ -39,7 +50,9 @@ class MultiImageDataset(data.Dataset):
         if isinstance(self.ref_dirpath_or_dataset, str):
             name = self.ref_names[idx]
             assert name == self.gen_names[idx]
-            ref_image = Image.open(os.path.join(self.ref_dirpath_or_dataset, name)).convert("RGB")
+            ref_image = Image.open(
+                os.path.join(self.ref_dirpath_or_dataset, name)
+            ).convert("RGB")
         else:
             row = self.ref_dirpath_or_dataset[idx]
             ref_image = row["image"].convert("RGB")
@@ -68,7 +81,9 @@ def compute_image_similarity_metrics(
     metrics: dict[str, torchmetrics.Metric] = {}
     for metric_name in metric_names:
         if metric_name == "psnr":
-            metric = PeakSignalNoiseRatio(data_range=(0, 1), reduction="elementwise_mean", dim=(1, 2, 3)).to(device)
+            metric = PeakSignalNoiseRatio(
+                data_range=(0, 1), reduction="elementwise_mean", dim=(1, 2, 3)
+            ).to(device)
         elif metric_name == "lpips":
             metric = LearnedPerceptualImagePatchSimilarity(normalize=True).to(device)
         elif metric_name == "ssim":
@@ -78,7 +93,11 @@ def compute_image_similarity_metrics(
         metrics[metric_name] = metric
     dataset = MultiImageDataset(gen_dirpath, ref_dirpath_or_dataset)
     dataloader = data.DataLoader(
-        dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False, drop_last=False
+        dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        shuffle=False,
+        drop_last=False,
     )
     with torch.no_grad():
         desc = (
@@ -90,5 +109,7 @@ def compute_image_similarity_metrics(
             batch = [tensor.to(device) for tensor in batch]
             for metric in metrics.values():
                 metric.update(batch[0], batch[1])
-    result = {metric_name: metric.compute().item() for metric_name, metric in metrics.items()}
+    result = {
+        metric_name: metric.compute().item() for metric_name, metric in metrics.items()
+    }
     return result

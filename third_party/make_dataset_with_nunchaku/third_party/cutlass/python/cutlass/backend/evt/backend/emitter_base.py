@@ -34,8 +34,8 @@
 Base class for Epilogue Visitor Emitter
 """
 
+from cutlass.backend.evt.ir import DAGIR, TopoVisitorNode
 from cutlass_library import DataTypeTag
-from cutlass.backend.evt.ir import TopoVisitorNode, DAGIR
 
 
 class FusionCallbacks:
@@ -107,7 +107,9 @@ using EVT{node.name_camel} = cutlass::epilogue::{self.namespace}::Sm{self.cc}EVT
     {node.name_camel},
 """
         sorted_children = self.dag_ir.get_all_inputs(node.name)
-        evt_node_strs = [f"    {self.get_visitor_name(child_name)}" for child_name in sorted_children]
+        evt_node_strs = [
+            f"    {self.get_visitor_name(child_name)}" for child_name in sorted_children
+        ]
         evt_tmp += ",\n".join(evt_node_strs) + ">;\n"
 
         return evt_tmp
@@ -119,8 +121,12 @@ using EVT{node.name_camel} = cutlass::epilogue::{self.namespace}::Sm{self.cc}EVT
         edge_tuples = "cute::tuple<\n"
         for n in subgraph_nodes[:-1]:
             in_edges = subgraph.in_edges(n)
-            edge_weights = [subgraph.get_edge_weight(edge[0], edge[1]) for edge in in_edges]
-            sorted_children = [edge[0] for _, edge in sorted(zip(edge_weights, in_edges))]
+            edge_weights = [
+                subgraph.get_edge_weight(edge[0], edge[1]) for edge in in_edges
+            ]
+            sorted_children = [
+                edge[0] for _, edge in sorted(zip(edge_weights, in_edges))
+            ]
             edge_tuple = "        cute::seq<"
             edge_str = [str(subgraph_nodes.index(child)) for child in sorted_children]
             edge_tuple += ", ".join(edge_str) + ">,\n"

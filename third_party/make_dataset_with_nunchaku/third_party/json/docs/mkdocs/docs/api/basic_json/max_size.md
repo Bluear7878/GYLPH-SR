@@ -6,20 +6,20 @@ size_type max_size() const noexcept;
 
 Returns the maximum number of elements a JSON value is able to hold due to system or library implementation limitations,
 i.e. `std::distance(begin(), end())` for the JSON value.
-    
+
 ## Return value
 
 The return value depends on the different types and is defined as follows:
 
-| Value type | return value                              |
+| Value type | return value |
 |------------|-------------------------------------------|
-| null       | `0` (same as [`size()`](size.md))         |
-| boolean    | `1` (same as [`size()`](size.md))         |
-| string     | `1` (same as [`size()`](size.md))         |
-| number     | `1` (same as [`size()`](size.md))         |
-| binary     | `1` (same as [`size()`](size.md))         |
-| object     | result of function `object_t::max_size()` |
-| array      | result of function `array_t::max_size()`  |
+| null | `0` (same as [`size()`](size.md)) |
+| boolean | `1` (same as [`size()`](size.md)) |
+| string | `1` (same as [`size()`](size.md)) |
+| number | `1` (same as [`size()`](size.md)) |
+| binary | `1` (same as [`size()`](size.md)) |
+| object | result of function `object_t::max_size()` |
+| array | result of function `array_t::max_size()` |
 
 ## Exception safety
 
@@ -40,19 +40,21 @@ string elements the JSON value can store which is `1`.
 
 ??? example
 
-    The following code calls `max_size()` on the different value types.
-        
-    ```cpp
-    --8<-- "examples/max_size.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/max_size.output"
-    ```
+````
+The following code calls `max_size()` on the different value types.
 
-    Note the output is platform-dependent.
+```cpp
+--8<-- "examples/max_size.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/max_size.output"
+```
+
+Note the output is platform-dependent.
+````
 
 ## Version history
 

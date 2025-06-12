@@ -14,15 +14,17 @@ and use the namespaced imported target from the generated package configuration:
 
 !!! example
 
-    ```cmake title="CMakeLists.txt"
-    cmake_minimum_required(VERSION 3.1)
-    project(ExampleProject LANGUAGES CXX)
-    
-    find_package(nlohmann_json 3.11.3 REQUIRED)
-    
-    add_executable(example example.cpp)
-    target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
-    ```
+````
+```cmake title="CMakeLists.txt"
+cmake_minimum_required(VERSION 3.1)
+project(ExampleProject LANGUAGES CXX)
+
+find_package(nlohmann_json 3.11.3 REQUIRED)
+
+add_executable(example example.cpp)
+target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
+```
+````
 
 The package configuration file, `nlohmann_jsonConfig.cmake`, can be used either from an install tree or directly out of
 the build tree.
@@ -34,26 +36,29 @@ To embed the library directly into an existing CMake project, place the entire s
 
 !!! example
 
-    ```cmake title="CMakeLists.txt"
-    cmake_minimum_required(VERSION 3.1)
-    project(ExampleProject LANGUAGES CXX)
+````
+```cmake title="CMakeLists.txt"
+cmake_minimum_required(VERSION 3.1)
+project(ExampleProject LANGUAGES CXX)
 
-    # If you only include this third party in PRIVATE source files, you do not need to install it
-    # when your main project gets installed.
-    set(JSON_Install OFF CACHE INTERNAL "")
-    
-    add_subdirectory(nlohmann_json)
+# If you only include this third party in PRIVATE source files, you do not need to install it
+# when your main project gets installed.
+set(JSON_Install OFF CACHE INTERNAL "")
 
-    add_executable(example example.cpp)
-    target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
-    ```
+add_subdirectory(nlohmann_json)
+
+add_executable(example example.cpp)
+target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
+```
+````
 
 !!! note
 
-    Do not use `#!cmake include(nlohmann_json/CMakeLists.txt)`, since that carries with it unintended consequences that
-    will break the build. It is generally discouraged (although not necessarily well documented as such) to use
-    `#!cmake include(...)` for pulling in other CMake projects anyways.
-
+```
+Do not use `#!cmake include(nlohmann_json/CMakeLists.txt)`, since that carries with it unintended consequences that
+will break the build. It is generally discouraged (although not necessarily well documented as such) to use
+`#!cmake include(...)` for pulling in other CMake projects anyways.
+```
 
 ### Supporting Both
 
@@ -62,30 +67,31 @@ to the following.
 
 !!! example
 
-    ```cmake title="CMakeLists.txt"
-    project(ExampleProject LANGUAGES CXX)
+````
+```cmake title="CMakeLists.txt"
+project(ExampleProject LANGUAGES CXX)
 
-    option(EXAMPLE_USE_EXTERNAL_JSON "Use an external JSON library" OFF)
+option(EXAMPLE_USE_EXTERNAL_JSON "Use an external JSON library" OFF)
 
-    add_subdirectory(thirdparty)
+add_subdirectory(thirdparty)
 
-    add_executable(example example.cpp)
+add_executable(example example.cpp)
 
-    # Note that the namespaced target will always be available regardless of the import method
-    target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
-    ```
-    
-    ```cmake title="thirdparty/CMakeLists.txt"
-    if(EXAMPLE_USE_EXTERNAL_JSON)
-        find_package(nlohmann_json 3.11.3 REQUIRED)
-    else()
-        set(JSON_BuildTests OFF CACHE INTERNAL "")
-        add_subdirectory(nlohmann_json)
-    endif()
-    ```
-    
-    `thirdparty/nlohmann_json` is then a complete copy of this source tree.
+# Note that the namespaced target will always be available regardless of the import method
+target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
+```
 
+```cmake title="thirdparty/CMakeLists.txt"
+if(EXAMPLE_USE_EXTERNAL_JSON)
+    find_package(nlohmann_json 3.11.3 REQUIRED)
+else()
+    set(JSON_BuildTests OFF CACHE INTERNAL "")
+    add_subdirectory(nlohmann_json)
+endif()
+```
+
+`thirdparty/nlohmann_json` is then a complete copy of this source tree.
+````
 
 ### FetchContent
 
@@ -94,34 +100,38 @@ automatically download a release as a dependency at configure type.
 
 !!! example
 
-    ```cmake title="CMakeLists.txt"
-    cmake_minimum_required(VERSION 3.11)
-    project(ExampleProject LANGUAGES CXX)
+````
+```cmake title="CMakeLists.txt"
+cmake_minimum_required(VERSION 3.11)
+project(ExampleProject LANGUAGES CXX)
 
-    include(FetchContent)
-    
-    FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
-    FetchContent_MakeAvailable(json)
-    
-    add_executable(example example.cpp)
-    target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
-    ```
+include(FetchContent)
+
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
+add_executable(example example.cpp)
+target_link_libraries(example PRIVATE nlohmann_json::nlohmann_json)
+```
+````
 
 !!! Note
 
-    It is recommended to use the URL approach described above which is supported as of version 3.10.0. It is also
-    possible to pass the Git repository like
+````
+It is recommended to use the URL approach described above which is supported as of version 3.10.0. It is also
+possible to pass the Git repository like
 
-    ```cmake
-    FetchContent_Declare(json
-        GIT_REPOSITORY https://github.com/nlohmann/json
-        GIT_TAG v3.11.3
-    )
-    ```
+```cmake
+FetchContent_Declare(json
+    GIT_REPOSITORY https://github.com/nlohmann/json
+    GIT_TAG v3.11.3
+)
+```
 
-    However, the repository <https://github.com/nlohmann/json> download size is quite large. You might want to depend on
-    a smaller repository. For instance, you might want to replace the URL in the example by
-    <https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent>.
+However, the repository <https://github.com/nlohmann/json> download size is quite large. You might want to depend on
+a smaller repository. For instance, you might want to replace the URL in the example by
+<https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent>.
+````
 
 ## CMake Options
 

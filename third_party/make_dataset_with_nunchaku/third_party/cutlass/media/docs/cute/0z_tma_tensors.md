@@ -6,12 +6,12 @@ TMA tensors have three differences from
 1. The tensor's iterator stores a base coordinate,
    not a pointer.
 
-2. The tensor's actual global memory pointer
+1. The tensor's actual global memory pointer
    does not live in the tensor.
    Instead, it lives in a TMA descriptor,
    which is stored in the TMA `Copy_Traits` specialization.
 
-3. The tensor's strides aren't just integers.
+1. The tensor's strides aren't just integers.
    Instead, they are linear combinations of "basis functions."
 
 The following sections will elaborate these differences.
@@ -35,7 +35,7 @@ the iterator's coordinate goes into the PTX instruction.
 this happens in the `private` member function `copy_unpack_`.)
 The coordinate represents the tensor's "base coordinate."
 For tiled TMA, the base coordinate of the whole tensor
-might start out as (0, 0, ..., 0).  However, slicing the tensor
+might start out as (0, 0, ..., 0). However, slicing the tensor
 might result in a different base coordinate.
 For im2col TMA load, the base coordinate is the lower corner.
 
@@ -74,7 +74,7 @@ then the inner product of the input coordinate `(i, j)`
 with the strides is `i@0 + j@1`.
 The `i` here is a coefficient of the basis function `@0`,
 and `j` is a coefficient of the basis function `@1`.
-The result is a vector sum.  We _interpret_ this result as
+The result is a vector sum. We _interpret_ this result as
 "the zeroth coefficient is i, and the first coefficient is j."
 That translates into the (TMA) coordinate `(i, j)`.
 If we wanted to reverse the coordinates,

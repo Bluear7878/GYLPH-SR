@@ -37,16 +37,17 @@ Base & visitor classes of DAGIR Nodes
 import ctypes
 from re import sub
 
-from cutlass_library import LayoutType
-
-from cutlass.backend.evt.ir.layout_algorithm import _list_to_tuple, _reverse_tuple
+from cutlass.backend.evt.ir.layout_algorithm import (_list_to_tuple,
+                                                     _reverse_tuple)
 from cutlass.backend.evt.ir.tensor import Tensor
+from cutlass_library import LayoutType
 
 
 class ImplBase:
     """
     Base class for Node Implementation
     """
+
     def __init__(self, node) -> None:
         self.node = node
         self.name = node.name
@@ -66,6 +67,7 @@ class ImplBase:
         """
         Default class for Argument Type
         """
+
         class _Argument(ctypes.Structure):
             _fields_ = []
 
@@ -96,14 +98,19 @@ class ImplBase:
                 decl += self._emit_cute_tuple(item) + ", "
             return decl[:-2] + ">"
         else:
-            raise ValueError(f"_emit_cute_tuple only accepts tuple or int, got {type(py_tuple).__name__}")
+            raise ValueError(
+                f"_emit_cute_tuple only accepts tuple or int, got {type(py_tuple).__name__}"
+            )
 
     @property
     def stride_mnl(self):
         """
         Typename StrideMNL
         """
-        stride = _list_to_tuple([self.stride[-2], self.stride[-1]] + list(_reverse_tuple(tuple(self.stride[:-2]))))
+        stride = _list_to_tuple(
+            [self.stride[-2], self.stride[-1]]
+            + list(_reverse_tuple(tuple(self.stride[:-2])))
+        )
         return self._emit_cute_tuple(stride)
 
     def get_non_constant_stride(self, py_tuple):
@@ -123,7 +130,10 @@ class ImplBase:
         """
         Get the non-zero stride mnl. This is used in argument construction
         """
-        stride = _list_to_tuple([self.stride[-2], self.stride[-1]] + list(_reverse_tuple(tuple(self.stride[:-2]))))
+        stride = _list_to_tuple(
+            [self.stride[-2], self.stride[-1]]
+            + list(_reverse_tuple(tuple(self.stride[:-2])))
+        )
         return stride
 
     def get_smem_size(self, *args, **kwargs):
@@ -137,6 +147,7 @@ class NoOpImpl(ImplBase):
     """
     The NoOpImpl does nothing but forward its input to users
     """
+
     def __init__(self, node) -> None:
         super().__init__(node)
 
@@ -151,6 +162,7 @@ class NodeBase:
     """
     Base class of DAG Node
     """
+
     def __init__(self, name: str) -> None:
         self.name = name
         self.underlying_impl = None
@@ -207,19 +219,29 @@ class NodeBase:
                 len_difference = len(shape) - len(src_shape)
                 if len_difference > 0:
                     for _ in range(len_difference):
-                        src_shape = [1, ] + list(src_shape)
+                        src_shape = [
+                            1,
+                        ] + list(src_shape)
                 elif len_difference < 0:
                     for _ in range(-len_difference):
-                        shape = [1, ] + list(shape)
+                        shape = [
+                            1,
+                        ] + list(shape)
                 broadcasted_shape = []
                 # Infer broadcast shape
                 for shape_dim, src_dim in zip(reversed(shape), reversed(src_shape)):
                     if shape_dim == 1:
-                        broadcasted_shape = [src_dim, ] + list(broadcasted_shape)
+                        broadcasted_shape = [
+                            src_dim,
+                        ] + list(broadcasted_shape)
                     elif src_dim == 1:
-                        broadcasted_shape = [shape_dim, ] + list(broadcasted_shape)
+                        broadcasted_shape = [
+                            shape_dim,
+                        ] + list(broadcasted_shape)
                     elif shape_dim == src_dim:
-                        broadcasted_shape = [shape_dim, ] + list(broadcasted_shape)
+                        broadcasted_shape = [
+                            shape_dim,
+                        ] + list(broadcasted_shape)
                     else:
                         error_msg = "Dimension mismatch between "
                         for src_ in input_node_metas:
@@ -228,7 +250,9 @@ class NodeBase:
                         raise RuntimeError(error_msg)
                 shape = tuple(broadcasted_shape)
 
-        self._tensor = Tensor(element=self.element_output, shape=shape, layout_tag=LayoutType.RowMajor)
+        self._tensor = Tensor(
+            element=self.element_output, shape=shape, layout_tag=LayoutType.RowMajor
+        )
 
     def type_propagation(self, *args, **kwargs):
         """
@@ -240,9 +264,11 @@ class NodeBase:
         * Store Node: data type of tensor in gmem
         This function must be overloaded in the derived classes
         """
-        raise NotImplementedError(f"Function `type_propagation` is not overloaded in {self.__class__.__name__}")
+        raise NotImplementedError(
+            f"Function `type_propagation` is not overloaded in {self.__class__.__name__}"
+        )
 
-    def broadcast_propagation(self, input_node_metas: 'list[NodeBase]'):
+    def broadcast_propagation(self, input_node_metas: "list[NodeBase]"):
         """
         Propagate the broadcast in the reversed topological order.
         For example:
@@ -261,7 +287,9 @@ class NodeBase:
         Get the underlying implementation of the current node.
         """
         if self.tensor is None:
-            raise RuntimeError(f"The Layout of node {self.name} is unknown. Please call PassShapeTypePropagation first.")
+            raise RuntimeError(
+                f"The Layout of node {self.name} is unknown. Please call PassShapeTypePropagation first."
+            )
 
         for impl in self.possible_impls:
             if impl.match(self, problem_size):
@@ -269,20 +297,26 @@ class NodeBase:
                 break
 
         if self.underlying_impl is None:
-            raise NotImplementedError(f"No matching op for node {self.name} with stride {self.tensor.stride}.")
+            raise NotImplementedError(
+                f"No matching op for node {self.name} with stride {self.tensor.stride}."
+            )
+
 
 #
 # Visitor Nodes & Impls
 #
 
+
 class TopoVisitorImpl(ImplBase):
     """
     Impl for topological visitor
     """
+
     def __init__(self, node) -> None:
         super().__init__(node.output_node)
         self.name = node.name
         self.element_output = node.output_node.element_output
+
 
 class TopoVisitorNode(NodeBase):
     def __init__(self, name: str, subgraph, output_node) -> None:

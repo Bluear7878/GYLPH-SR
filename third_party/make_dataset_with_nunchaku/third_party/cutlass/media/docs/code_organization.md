@@ -6,14 +6,14 @@
 
 This document describes the layout of the CUTLASS repository. The main components are:
 
-* **CUTLASS Template Library** - CUDA Templates for Linear Algebra Subroutines and Solvers (header only)
-* **CuTe Template Library** - CUTLASS's core vocabulary layout type and associated algebra (header only)
-* **CUTLASS Utilities** - Additional templates 
-* **CUTLASS Instance Library** - instantiations of CUTLASS templates covering the design space
-* **CUTLASS Profiler** - CUTLASS Library, Profiler, and Utilities
-* **Examples** - SDK examples of CUTLASS Template Library and components
-* **Media** - supporting documentation and media content
-* **Tests** - test components for CUTLASS Template Library and tools
+- **CUTLASS Template Library** - CUDA Templates for Linear Algebra Subroutines and Solvers (header only)
+- **CuTe Template Library** - CUTLASS's core vocabulary layout type and associated algebra (header only)
+- **CUTLASS Utilities** - Additional templates
+- **CUTLASS Instance Library** - instantiations of CUTLASS templates covering the design space
+- **CUTLASS Profiler** - CUTLASS Library, Profiler, and Utilities
+- **Examples** - SDK examples of CUTLASS Template Library and components
+- **Media** - supporting documentation and media content
+- **Tests** - test components for CUTLASS Template Library and tools
 
 ## CUTLASS Template Library
 
@@ -93,7 +93,7 @@ The `tools/` directory contains clients of the CUTLASS Template library and incl
 ## CUTLASS Instance Library
 
 The CUTLASS Instance Library contains instantiations of the above CUTLASS templates covering supported configurations,
-data types, block structure, and tile sizes. These instantiations are procedurally generated using a set of 
+data types, block structure, and tile sizes. These instantiations are procedurally generated using a set of
 scripts to span the design space.
 
 ```
@@ -106,7 +106,7 @@ tools/
         library/             # header files for CUTLASS Deliverables Library (in cutlass::library:: namespace)
 
           handle.h           # implements a host-side API for launching kernels, similar to cuBLAS
-          library.h          # defines enums and structs to describe the tiled structure of operator instances          
+          library.h          # defines enums and structs to describe the tiled structure of operator instances
           manifest.h         # collection of all instances
 
     src/
@@ -126,14 +126,16 @@ instantiations in `build/tools/library/generated/`.
 ### CUTLASS Profiler
 
 The CUTLASS Profiler is designed to load the CUTLASS Instance Library and execute all operations contained therein.
-This command-line driven application constructs an execution environment for evaluating functionality and performance. 
+This command-line driven application constructs an execution environment for evaluating functionality and performance.
 It is implemented in
+
 ```
 tools/
   profiler/
 ```
 
 and may be built as follows.
+
 ```
 $ make cutlass_profiler -j
 ```
@@ -153,7 +155,7 @@ tools/
 
           reference/            #  functional reference implementation of CUTLASS operators
                                 #    (minimal consideration for performance)
-            
+
             detail/
               *
 
@@ -168,10 +170,9 @@ tools/
 
 [More details about CUTLASS Utilities may be found here.](/media/docs/utilities.md)
 
-
 ## Examples
 
-To demonstrate CUTLASS components, several SDK examples are implemented in `examples/`. 
+To demonstrate CUTLASS components, several SDK examples are implemented in `examples/`.
 
 CUTLASS SDK examples apply CUTLASS templates to implement basic computations.
 
@@ -180,9 +181,9 @@ examples/
   00_basic_gemm/             # launches a basic GEMM with single precision inputs and outputs
 
   01_cutlass_utilities/      # demonstrates CUTLASS Utilities for allocating and initializing tensors
-  
+
   02_dump_reg_smem/          # debugging utilities for printing register and shared memory contents
-  
+
   03_visualize_layout/       # utility for visualizing all layout functions in CUTLASS
 
   04_tile_iterator/          # example demonstrating an iterator over tiles in memory
@@ -211,6 +212,7 @@ This directory contains documentation, images, and performance result data which
 ## Tests
 
 Test programs for CUTLASS. Tests are organized hierarchically, mirroring the organization of source files.
+
 ```
 test/                        # unit tests for CUTLASS Template Library
   unit/
@@ -229,6 +231,7 @@ test/                        # unit tests for CUTLASS Template Library
       threadblock/
       *
 ```
+
 Tests can be built and run at the top level scope by invoking `make test_unit` or by building
 and explicitly executing each individual target, e.g. `cutlass_test_unit_gemm_device`.
 

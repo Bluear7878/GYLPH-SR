@@ -53,6 +53,7 @@ class TestEVTStoreSM90(EVTTestCaseBase):
         """
         Returning a tensor with shape [m, n]
         """
+
         def evt_aux_store(accum, alpha, C):
             F = alpha * accum
             D = F + C
@@ -76,8 +77,14 @@ class TestEVTStoreSM90(EVTTestCaseBase):
         """
         Reduction [m, n] -> [m, 1]
         """
+
         def evt_row_reduce(accum, alpha, C):
-            acc_row_max = max(accum, dim=[2,])
+            acc_row_max = max(
+                accum,
+                dim=[
+                    2,
+                ],
+            )
             F = alpha * accum
             F_row_max = max(F, dim=[0, 2])
             D = F + C
@@ -102,8 +109,14 @@ class TestEVTStoreSM90(EVTTestCaseBase):
         """
         Reduction [m, n] -> [n]
         """
+
         def evt_col_reduce(accum, alpha, C):
-            acc_col_max = max(accum, dim=[1,])
+            acc_col_max = max(
+                accum,
+                dim=[
+                    1,
+                ],
+            )
             F = alpha * accum
             F_col_max = max(F, dim=[0, 1])
             D = F + C
@@ -128,6 +141,7 @@ class TestEVTStoreSM90(EVTTestCaseBase):
         """
         Reduction [m, n] -> [1,]
         """
+
         def evt_scalar_reduce(accum, alpha, C):
             acc_max = max(accum, dim=[1, 2])
             F = alpha * accum
@@ -151,5 +165,5 @@ class TestEVTStoreSM90(EVTTestCaseBase):
             launcher.verify((m, n, k), input_keys, result_keys, l)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

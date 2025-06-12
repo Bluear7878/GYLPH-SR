@@ -11,7 +11,7 @@
 
 #include <nlohmann/json.hpp>
 #ifdef JSON_TEST_NO_GLOBAL_UDLS
-    using namespace nlohmann::literals; // NOLINT(google-build-using-namespace)
+using namespace nlohmann::literals;  // NOLINT(google-build-using-namespace)
 #endif
 
 // build test with C++14
@@ -626,13 +626,17 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                     Json j_nonobject(Json::value_t::boolean);
                     const Json j_const_nonobject(j_nonobject);
                     CHECK_THROWS_WITH_AS(j_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean",
+                                         typename Json::type_error&);
 
 #ifdef JSON_HAS_CPP_17
                     CHECK_THROWS_WITH_AS(j_nonobject[std::string_view("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with boolean", typename Json::type_error&);
@@ -645,13 +649,17 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                     Json j_nonobject(Json::value_t::string);
                     const Json j_const_nonobject(j_nonobject);
                     CHECK_THROWS_WITH_AS(j_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with string",
+                                         typename Json::type_error&);
 
 #ifdef JSON_HAS_CPP_17
                     CHECK_THROWS_WITH_AS(j_nonobject[std::string_view("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with string", typename Json::type_error&);
@@ -664,12 +672,15 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                     Json j_nonobject(Json::value_t::array);
                     const Json j_const_nonobject(j_nonobject);
                     CHECK_THROWS_WITH_AS(j_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with array", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with array",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_nonobject[typename Json::object_t::key_type("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with array", typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with array", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with array",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with array", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with array",
+                                         typename Json::type_error&);
 
 #ifdef JSON_HAS_CPP_17
                     CHECK_THROWS_WITH_AS(j_nonobject[std::string_view("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with array", typename Json::type_error&);
@@ -682,13 +693,17 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                     Json j_nonobject(Json::value_t::number_integer);
                     const Json j_const_nonobject(j_nonobject);
                     CHECK_THROWS_WITH_AS(j_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
 
 #ifdef JSON_HAS_CPP_17
                     CHECK_THROWS_WITH_AS(j_nonobject[std::string_view("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
@@ -701,13 +716,17 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                     Json j_nonobject(Json::value_t::number_unsigned);
                     const Json j_const_nonobject(j_nonobject);
                     CHECK_THROWS_WITH_AS(j_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
 
 #ifdef JSON_HAS_CPP_17
                     CHECK_THROWS_WITH_AS(j_nonobject[std::string_view("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
@@ -720,13 +739,17 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                     Json j_nonobject(Json::value_t::number_float);
                     const Json j_const_nonobject(j_nonobject);
                     CHECK_THROWS_WITH_AS(j_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject["foo"],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
                     CHECK_THROWS_WITH_AS(j_const_nonobject[typename Json::object_t::key_type("foo")],
-                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
+                                         "[json.exception.type_error.305] cannot use operator[] with a string argument with number",
+                                         typename Json::type_error&);
 
 #ifdef JSON_HAS_CPP_17
                     CHECK_THROWS_WITH_AS(j_nonobject[std::string_view("foo")], "[json.exception.type_error.305] cannot use operator[] with a string argument with number", typename Json::type_error&);
@@ -916,25 +939,33 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}, {"d", false}, {"e", true}};
                         Json jobject2 = {{"a", "a"}, {"b", 1}, {"c", 17u}};
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject2.begin()),
-                                             "[json.exception.invalid_iterator.202] iterator does not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.202] iterator does not fit current value",
+                                             typename Json::invalid_iterator&);
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject.begin(), jobject2.end()),
-                                             "[json.exception.invalid_iterator.203] iterators do not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.203] iterators do not fit current value",
+                                             typename Json::invalid_iterator&);
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject2.begin(), jobject.end()),
-                                             "[json.exception.invalid_iterator.203] iterators do not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.203] iterators do not fit current value",
+                                             typename Json::invalid_iterator&);
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject2.begin(), jobject2.end()),
-                                             "[json.exception.invalid_iterator.203] iterators do not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.203] iterators do not fit current value",
+                                             typename Json::invalid_iterator&);
                     }
                     {
                         Json jobject = {{"a", "a"}, {"b", 1}, {"c", 17u}, {"d", false}, {"e", true}};
                         Json jobject2 = {{"a", "a"}, {"b", 1}, {"c", 17u}};
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject2.cbegin()),
-                                             "[json.exception.invalid_iterator.202] iterator does not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.202] iterator does not fit current value",
+                                             typename Json::invalid_iterator&);
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject.cbegin(), jobject2.cend()),
-                                             "[json.exception.invalid_iterator.203] iterators do not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.203] iterators do not fit current value",
+                                             typename Json::invalid_iterator&);
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject2.cbegin(), jobject.cend()),
-                                             "[json.exception.invalid_iterator.203] iterators do not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.203] iterators do not fit current value",
+                                             typename Json::invalid_iterator&);
                         CHECK_THROWS_WITH_AS(jobject.erase(jobject2.cbegin(), jobject2.cend()),
-                                             "[json.exception.invalid_iterator.203] iterators do not fit current value", typename Json::invalid_iterator&);
+                                             "[json.exception.invalid_iterator.203] iterators do not fit current value",
+                                             typename Json::invalid_iterator&);
                     }
                 }
             }
@@ -1008,8 +1039,7 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
             SECTION("existing element")
             {
                 for (const auto* key :
-                        {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"
-                        })
+                     {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"})
                 {
                     CHECK(j.find(key) != j.end());
                     CHECK(*j.find(key) == j.at(key));
@@ -1018,8 +1048,7 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
                 }
 #ifdef JSON_HAS_CPP_17
                 for (const std::string_view key :
-                        {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"
-                        })
+                     {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"})
                 {
                     CHECK(j.find(key) != j.end());
                     CHECK(*j.find(key) == j.at(key));
@@ -1161,16 +1190,14 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
             SECTION("existing element")
             {
                 for (const auto* key :
-                        {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"
-                        })
+                     {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"})
                 {
                     CHECK(j.count(key) == 1);
                     CHECK(j_const.count(key) == 1);
                 }
 #ifdef JSON_HAS_CPP_17
                 for (const std::string_view key :
-                        {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"
-                        })
+                     {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"})
                 {
                     CHECK(j.count(key) == 1);
                     CHECK(j_const.count(key) == 1);
@@ -1310,8 +1337,7 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
             SECTION("existing element")
             {
                 for (const auto* key :
-                        {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"
-                        })
+                     {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"})
                 {
                     CHECK(j.contains(key) == true);
                     CHECK(j_const.contains(key) == true);
@@ -1319,8 +1345,7 @@ TEST_CASE_TEMPLATE("element access 2", Json, nlohmann::json, nlohmann::ordered_j
 
 #ifdef JSON_HAS_CPP_17
                 for (const std::string_view key :
-                        {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"
-                        })
+                     {"integer", "unsigned", "floating", "null", "string", "boolean", "object", "array"})
                 {
                     CHECK(j.contains(key) == true);
                     CHECK(j_const.contains(key) == true);
@@ -1500,14 +1525,12 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
     // test assumes string_t and object_t::key_type are the same
     REQUIRE(std::is_same<string_t, typename Json::object_t::key_type>::value);
 
-    Json j
-    {
+    Json j{
         {"foo", "bar"},
-        {"baz", 42}
-    };
+        {"baz", 42}};
 
     const char* cpstr = "default";
-    const char castr[] = "default"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+    const char castr[] = "default";  // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
     string_t const str = "default";
 
     number_integer_t integer = 69;
@@ -1566,9 +1589,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 
         SECTION("const char(&)[] key")
         {
-            const char key[] = "foo"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
-            const char key2[] = "baz"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
-            const char key_notfound[] = "bar"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+            const char key[] = "foo";           // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+            const char key2[] = "baz";          // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+            const char key_notfound[] = "bar";  // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
 
             CHECK(j.value(key, "default") == "bar");
             CHECK(j.value(key, cpstr) == "bar");
@@ -1700,9 +1723,9 @@ TEST_CASE_TEMPLATE("element access 2 (additional value() tests)", Json, nlohmann
 
         SECTION("const char(&)[] key")
         {
-            const char key[] = "foo"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
-            const char key2[] = "baz"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
-            const char key_notfound[] = "bar"; // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+            const char key[] = "foo";           // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+            const char key2[] = "baz";          // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
+            const char key_notfound[] = "bar";  // NOLINT(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
 
             CHECK(j.template value<string_t>(key, "default") == "bar");
             CHECK(j.template value<string_t>(key, cpstr) == "bar");

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,20 +18,22 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 #pragma once
 
 /*! \file
-    \brief This header contains a class to parametrize a statistical distribution function.
+    \brief This header contains a class to parametrize a statistical
+   distribution function.
 */
 
 #include <ostream>
@@ -43,7 +45,15 @@ namespace cutlass {
 /// Distribution type
 struct Distribution {
   /// Variant types
-  enum Kind { Invalid, Uniform, Gaussian, Identity, Sequential, AllZeros, AllOnes };
+  enum Kind {
+    Invalid,
+    Uniform,
+    Gaussian,
+    Identity,
+    Sequential,
+    AllZeros,
+    AllOnes
+  };
 
   /// Distribution state
   union {
@@ -92,7 +102,8 @@ struct Distribution {
   }
 
   /// Configures distribution as Gaussian distribution
-  Distribution &set_gaussian(double _mean, double _stddev, int _int_scale = 0, double _pnz = 100.0) {
+  Distribution &set_gaussian(double _mean, double _stddev, int _int_scale = 0,
+                             double _pnz = 100.0) {
     kind = Gaussian;
     gaussian.mean = _mean;
     gaussian.stddev = _stddev;
@@ -117,29 +128,32 @@ struct Distribution {
   }
 };
 
-}  // namespace cutlass
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Prints a Distribution to ostream
-inline std::ostream &operator<<(std::ostream &out, cutlass::Distribution const &dist) {
+inline std::ostream &operator<<(std::ostream &out,
+                                cutlass::Distribution const &dist) {
   switch (dist.kind) {
-    case cutlass::Distribution::Uniform:
-      out << "uniform, min: " << dist.uniform.min << ", max: " << dist.uniform.max;
-      break;
-    case cutlass::Distribution::Gaussian:
-      out << "gaussian, mean: " << dist.gaussian.mean << ", stddev: " << dist.gaussian.stddev
-          << ", pnzA: " << dist.gaussian.pnzA << ", pnzB: "
-          << dist.gaussian.pnzB << ", pnzC: " << dist.gaussian.pnzC;
-      break;
-    case cutlass::Distribution::Identity:
-      out << "identity";
-      break;
-    case cutlass::Distribution::Sequential:
-      out << "sequential";
-      break;
-    default:
-      out << "unknown";
+  case cutlass::Distribution::Uniform:
+    out << "uniform, min: " << dist.uniform.min
+        << ", max: " << dist.uniform.max;
+    break;
+  case cutlass::Distribution::Gaussian:
+    out << "gaussian, mean: " << dist.gaussian.mean
+        << ", stddev: " << dist.gaussian.stddev
+        << ", pnzA: " << dist.gaussian.pnzA << ", pnzB: " << dist.gaussian.pnzB
+        << ", pnzC: " << dist.gaussian.pnzC;
+    break;
+  case cutlass::Distribution::Identity:
+    out << "identity";
+    break;
+  case cutlass::Distribution::Sequential:
+    out << "sequential";
+    break;
+  default:
+    out << "unknown";
   }
 
   out << ", int_scale: " << dist.int_scale;

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -35,23 +36,23 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/platform/platform.h"
 
+#include "cutlass/matrix_shape.h"
 #include "cutlass/numeric_conversion.h"
 #include "cutlass/numeric_types.h"
-#include "cutlass/matrix_shape.h"
 
 #include "cutlass/arch/memory_sm75.h"
-#include "cutlass/arch/mma_sm75.h" 
+#include "cutlass/arch/mma_sm75.h"
 #include "cutlass/arch/mma_sm80.h"
 
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/warp/mma.h"
 
-#include "cutlass/gemm/warp/mma_tensor_op_policy.h"
 #include "cutlass/gemm/warp/mma_tensor_op.h"
+#include "cutlass/gemm/warp/mma_tensor_op_policy.h"
 
 #include "cutlass/gemm/warp/mma_tensor_op_tile_iterator.h"
 #include "cutlass/gemm/warp/mma_tensor_op_tile_iterator_sm80.h"
@@ -65,32 +66,32 @@ namespace warp {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Structure to compute the matrix product targeting CUDA cores and SIMT math instructions.
+/// Structure to compute the matrix product targeting CUDA cores and SIMT math
+/// instructions.
 template <
-  /// Size of the Gemm problem - concept: gemm::GemmShape<>
-  typename Shape_,
-  /// Data type of A elements
-  typename ElementA_,
-  /// Layout of A matrix (concept: MatrixLayout)
-  typename LayoutA_,
-  /// Data type of B elements
-  typename ElementB_,
-  /// Layout of B matrix (concept: MatrixLayout)
-  typename LayoutB_,
-  /// Element type of C matrix
-  typename ElementC_,
-  /// Layout of C matrix (concept: MatrixLayout)
-  typename LayoutC_,
-  /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp policy)
-  typename Policy_,
-  /// Number of partitions along K dimension
-  int PartitionsK_ = 1,
-  /// Store the accumulators in row major or column major.  Row major is used
-  /// when output layout is interleaved.
-  bool AccumulatorsInRowMajor = false,
-  /// Used for partial specialization
-  typename Enable = bool
->
+    /// Size of the Gemm problem - concept: gemm::GemmShape<>
+    typename Shape_,
+    /// Data type of A elements
+    typename ElementA_,
+    /// Layout of A matrix (concept: MatrixLayout)
+    typename LayoutA_,
+    /// Data type of B elements
+    typename ElementB_,
+    /// Layout of B matrix (concept: MatrixLayout)
+    typename LayoutB_,
+    /// Element type of C matrix
+    typename ElementC_,
+    /// Layout of C matrix (concept: MatrixLayout)
+    typename LayoutC_,
+    /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp policy)
+    typename Policy_,
+    /// Number of partitions along K dimension
+    int PartitionsK_ = 1,
+    /// Store the accumulators in row major or column major.  Row major is used
+    /// when output layout is interleaved.
+    bool AccumulatorsInRowMajor = false,
+    /// Used for partial specialization
+    typename Enable = bool>
 class SparseMmaTensorOp {
 public:
   /// Shape of warp-level matrix operation (concept: GemmShape)
@@ -125,9 +126,9 @@ public:
   /// Underlying matrix multiply operator (concept: arch::Mma)
   using ArchMmaOperator = typename Base::ArchMmaOperator;
 
-  /// Indicates math operator 
+  /// Indicates math operator
   using MathOperator = typename ArchMmaOperator::Operator;
-  
+
   /// Architecture tag from underlying instruction
   using ArchTag = typename Base::ArchTag;
 
@@ -152,13 +153,13 @@ public:
   /// Sparsity in Operand A
   static int const kSparse = Policy::Operator::kSparse;
 
-  /// Meta data size in bits 
+  /// Meta data size in bits
   static int const kMetaSizeInBits = Policy::Operator::kMetaSizeInBits;
 
   /// Max ID2
   static int const kMaxID2 = Policy::Operator::kMaxID2;
 
-    static int const kVerticalVisit = false;
+  static int const kVerticalVisit = false;
   /// Data type of meta E that is moved at the same time
   using ElementE =
       typename cutlass::platform::conditional<kMaxID2 == 1, uint32_t,
@@ -171,64 +172,61 @@ public:
   /// Meta data is essentially interleaved but mapped to ColumnMajor internally
   static int const kInterleaved = 2;
 
-  /// Layout of meta E 
+  /// Layout of meta E
   using LayoutE = cutlass::layout::ColumnMajor;
 
- public:
-
+public:
   /// Iterates over the A operand in memory
- using IteratorA = MmaTensorOpMultiplicandTileIterator<
-     MatrixShape<Shape::kM, Shape::kK / kSparse>, Operand::kA, ElementA,
-     LayoutA,
-     MatrixShape<Policy::Operator::Shape::kM,
-                 Policy::Operator::Shape::kK / kSparse>,
-     Policy::OpDelta::kRow, kThreadCount, kPartitionsK>;
+  using IteratorA = MmaTensorOpMultiplicandTileIterator<
+      MatrixShape<Shape::kM, Shape::kK / kSparse>, Operand::kA, ElementA,
+      LayoutA,
+      MatrixShape<Policy::Operator::Shape::kM,
+                  Policy::Operator::Shape::kK / kSparse>,
+      Policy::OpDelta::kRow, kThreadCount, kPartitionsK>;
 
- /// Storage for A tile
- using FragmentA = typename IteratorA::Fragment;
+  /// Storage for A tile
+  using FragmentA = typename IteratorA::Fragment;
 
- /// Storage for transformed A tile
- using TransformedFragmentA =
-     Array<typename Policy::Operator::ElementA, FragmentA::kElements>;
+  /// Storage for transformed A tile
+  using TransformedFragmentA =
+      Array<typename Policy::Operator::ElementA, FragmentA::kElements>;
 
- /// Iterates over the B operand in memory
- using IteratorB = typename Base::IteratorB;
+  /// Iterates over the B operand in memory
+  using IteratorB = typename Base::IteratorB;
 
- /// Storage for B tile
- using FragmentB = typename Base::FragmentB;
+  /// Storage for B tile
+  using FragmentB = typename Base::FragmentB;
 
- /// Storage for transformed B tile
- using TransformedFragmentB = typename Base::TransformedFragmentB;
+  /// Storage for transformed B tile
+  using TransformedFragmentB = typename Base::TransformedFragmentB;
 
- /// Iterates over the C operand in memory
- using IteratorC = typename Base::IteratorC;
+  /// Iterates over the C operand in memory
+  using IteratorC = typename Base::IteratorC;
 
- /// Storage for C tile
- using FragmentC = typename Base::FragmentC;
+  /// Storage for C tile
+  using FragmentC = typename Base::FragmentC;
 
- /// Iterates over the E operand in memory
- using IteratorE = SparseMmaTensorOpMetaTileIterator<
-     MatrixShape<Shape::kM * kInterleaved,
-                 Shape::kK / kSparse / kElementsPerElementE / kInterleaved>,
-     ElementE, LayoutE,
-     MatrixShape<Policy::Operator::Shape::kM,
-                 Policy::Operator::Shape::kK / kSparse / kElementsPerElementE /
-                     kInterleaved>,
-     Policy::OpDelta::kRow, kThreadCount, kPartitionsK>;
+  /// Iterates over the E operand in memory
+  using IteratorE = SparseMmaTensorOpMetaTileIterator<
+      MatrixShape<Shape::kM * kInterleaved,
+                  Shape::kK / kSparse / kElementsPerElementE / kInterleaved>,
+      ElementE, LayoutE,
+      MatrixShape<Policy::Operator::Shape::kM,
+                  Policy::Operator::Shape::kK / kSparse / kElementsPerElementE /
+                      kInterleaved>,
+      Policy::OpDelta::kRow, kThreadCount, kPartitionsK>;
 
- /// Storage for E tile
- using FragmentE = typename IteratorE::Fragment;
+  /// Storage for E tile
+  using FragmentE = typename IteratorE::Fragment;
 
- /// Number of mma operations performed
- using MmaIterations = typename Base::MmaIterations;
+  /// Number of mma operations performed
+  using MmaIterations = typename Base::MmaIterations;
 
 public:
-
   /// Underlying matrix multiply operator (concept: arch::Mma)
   ArchMmaOperator mma;
 
 public:
-
   //
   // Methods
   //
@@ -239,13 +237,9 @@ public:
 
   /// Performs a warp-level matrix multiply-accumulate operation
   CUTLASS_DEVICE
-  void operator()(
-    FragmentC &D, 
-    TransformedFragmentA const &A, 
-    TransformedFragmentB const &B, 
-    FragmentC const &C,
-    FragmentE const &E
-  ) const {
+  void operator()(FragmentC &D, TransformedFragmentA const &A,
+                  TransformedFragmentB const &B, FragmentC const &C,
+                  FragmentE const &E) const {
 
     using MmaOperandA = typename Policy::Operator::FragmentA;
     using MmaOperandB = typename Policy::Operator::FragmentB;
@@ -269,22 +263,16 @@ public:
           int m_serpentine = ((n % 2) ? (MmaIterations::kRow - 1 - m) : m);
           int id2 = m_serpentine % kMaxID2;
 
-          if (AccumulatorsInRowMajor) {  // matrix B is reordered
-            mma(
-              ptr_D[n + m_serpentine * MmaIterations::kColumn],
-              ptr_A[m_serpentine],
-              ptr_B[n],
-              ptr_D[n + m_serpentine * MmaIterations::kColumn],
-              ptr_E[(m_serpentine / kMaxID2)],
-              id2);
+          if (AccumulatorsInRowMajor) { // matrix B is reordered
+            mma(ptr_D[n + m_serpentine * MmaIterations::kColumn],
+                ptr_A[m_serpentine], ptr_B[n],
+                ptr_D[n + m_serpentine * MmaIterations::kColumn],
+                ptr_E[(m_serpentine / kMaxID2)], id2);
           } else {
-            mma(
-              ptr_D[m_serpentine + n * MmaIterations::kRow],
-              ptr_A[m_serpentine],
-              ptr_B[n],
-              ptr_D[m_serpentine + n * MmaIterations::kRow],
-              ptr_E[(m_serpentine / kMaxID2)],
-              id2);
+            mma(ptr_D[m_serpentine + n * MmaIterations::kRow],
+                ptr_A[m_serpentine], ptr_B[n],
+                ptr_D[m_serpentine + n * MmaIterations::kRow],
+                ptr_E[(m_serpentine / kMaxID2)], id2);
           }
         }
       }
@@ -299,21 +287,16 @@ public:
 
           int n_serpentine = ((m % 2) ? (MmaIterations::kColumn - 1 - n) : n);
 
-          if (AccumulatorsInRowMajor) {  // matrix B is reordered
-            mma(
-              ptr_D[n_serpentine + m * MmaIterations::kColumn],
-              ptr_A[m],
-              ptr_B[n_serpentine],
-              ptr_D[n_serpentine + m * MmaIterations::kColumn],
-              ptr_E[(m / kMaxID2)],
-              id2);
+          if (AccumulatorsInRowMajor) { // matrix B is reordered
+            mma(ptr_D[n_serpentine + m * MmaIterations::kColumn], ptr_A[m],
+                ptr_B[n_serpentine],
+                ptr_D[n_serpentine + m * MmaIterations::kColumn],
+                ptr_E[(m / kMaxID2)], id2);
           } else {
-            mma(ptr_D[m + n_serpentine * MmaIterations::kRow],
-                ptr_A[m],
+            mma(ptr_D[m + n_serpentine * MmaIterations::kRow], ptr_A[m],
                 ptr_B[n_serpentine],
                 ptr_D[m + n_serpentine * MmaIterations::kRow],
-                ptr_E[(m / kMaxID2)],
-                id2);
+                ptr_E[(m / kMaxID2)], id2);
           }
         }
       }
@@ -337,19 +320,21 @@ public:
 
     if (kVerticalVisit) {
       detail::ConvertAndPack<typename ArchMmaOperator::ElementA, ElementA,
-                            FragmentA::kElements, kRoundA>
+                             FragmentA::kElements, kRoundA>
           convert_A;
       NumericArrayConverter<typename ArchMmaOperator::ElementB, ElementB,
                             FragmentB::kElements / 2, kRoundB>
           convert_B;
       Array<ElementB, FragmentB::kElements / 2> const *ptr_B =
-          reinterpret_cast<Array<ElementB, FragmentB::kElements / 2> const *>(&B);
-      Array<typename ArchMmaOperator::ElementB, FragmentB::kElements / 2> *
-          ptr_dst_B = reinterpret_cast<Array<typename ArchMmaOperator::ElementB,
-                                             FragmentB::kElements / 2> *>(&dst_B);
-  
+          reinterpret_cast<Array<ElementB, FragmentB::kElements / 2> const *>(
+              &B);
+      Array<typename ArchMmaOperator::ElementB, FragmentB::kElements / 2>
+          *ptr_dst_B =
+              reinterpret_cast<Array<typename ArchMmaOperator::ElementB,
+                                     FragmentB::kElements / 2> *>(&dst_B);
+
       dst_A = convert_A(A);
-  
+
       ptr_dst_B[0] = convert_B(ptr_B[0]);
       ptr_dst_B[1] = convert_B(ptr_B[1]);
     } else {
@@ -360,13 +345,15 @@ public:
                             FragmentB::kElements, kRoundB>
           convert_B;
       Array<ElementA, FragmentA::kElements / 2> const *ptr_A =
-          reinterpret_cast<Array<ElementA, FragmentA::kElements / 2> const *>(&A);
-      Array<typename ArchMmaOperator::ElementA, FragmentA::kElements / 2> *
-          ptr_dst_A = reinterpret_cast<Array<typename ArchMmaOperator::ElementA,
-                                             FragmentA::kElements / 2> *>(&dst_A);
-  
+          reinterpret_cast<Array<ElementA, FragmentA::kElements / 2> const *>(
+              &A);
+      Array<typename ArchMmaOperator::ElementA, FragmentA::kElements / 2>
+          *ptr_dst_A =
+              reinterpret_cast<Array<typename ArchMmaOperator::ElementA,
+                                     FragmentA::kElements / 2> *>(&dst_A);
+
       dst_B = convert_B(B);
-  
+
       ptr_dst_A[0] = convert_A(ptr_A[0]);
       ptr_dst_A[1] = convert_A(ptr_A[1]);
     }

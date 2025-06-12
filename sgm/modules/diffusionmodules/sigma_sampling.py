@@ -14,7 +14,14 @@ class EDMSampling:
 
 
 class DiscreteSampling:
-    def __init__(self, discretization_config, num_idx, do_append_zero=False, flip=True, idx_range=None):
+    def __init__(
+        self,
+        discretization_config,
+        num_idx,
+        do_append_zero=False,
+        flip=True,
+        idx_range=None,
+    ):
         self.num_idx = num_idx
         self.sigmas = instantiate_from_config(discretization_config)(
             num_idx, do_append_zero=do_append_zero, flip=flip
@@ -37,4 +44,3 @@ class DiscreteSampling:
                 torch.randint(self.idx_range[0], self.idx_range[1], (n_samples,)),
             )
         return self.idx_to_sigma(idx)
-

@@ -36,14 +36,13 @@ Classes containing valid operations for a given compute capability and data type
 
 import logging
 
-from cuda import __version__
-import cutlass_library
-from cutlass_library.library import ConvKind, IteratorAlgorithm, StrideSupport, GroupMode
-
 import cutlass
+import cutlass_library
+from cuda import __version__
 from cutlass.utils.check import valid_stage_count
-from cutlass.utils.datatypes import td_from_profiler_td, td_from_profiler_op
-
+from cutlass.utils.datatypes import td_from_profiler_op, td_from_profiler_td
+from cutlass_library.library import (ConvKind, GroupMode, IteratorAlgorithm,
+                                     StrideSupport)
 
 _generator_ccs = [50, 60, 61, 70, 75, 80, 90]
 
@@ -69,7 +68,9 @@ class KernelsForDataType:
         """
         Add an operation to the list of supported kernels
         """
-        alignment_key = f"{operation.A.alignment} {operation.B.alignment} {operation.C.alignment}"
+        alignment_key = (
+            f"{operation.A.alignment} {operation.B.alignment} {operation.C.alignment}"
+        )
         if alignment_key not in self.kernels_by_alignment:
             self.kernels_by_alignment[alignment_key] = []
         self.kernels_by_alignment[alignment_key].append(operation)
@@ -85,7 +86,9 @@ class KernelsForDataType:
         :rtype: list
         """
         operand_idx = self._operand_idx(operand)
-        return [int(key.split(" ")[operand_idx]) for key in self.kernels_by_alignment.keys()]
+        return [
+            int(key.split(" ")[operand_idx]) for key in self.kernels_by_alignment.keys()
+        ]
 
     @property
     def all_operations(self):
@@ -141,7 +144,9 @@ class KernelsForDataType:
 
         return operand_list.index(key)
 
-    def find_alignment(self, shape: tuple, layout: cutlass.LayoutType, operand=str) -> int:
+    def find_alignment(
+        self, shape: tuple, layout: cutlass.LayoutType, operand=str
+    ) -> int:
         """
         Returns the most preferable alignment for a given shape and layout
 
@@ -213,8 +218,8 @@ class ArchOptions:
         allowed_math_operations: list = [
             cutlass_library.MathOperation.multiply_add,
             cutlass_library.MathOperation.multiply_add_saturate,
-            cutlass_library.MathOperation.multiply_add_mixed_input_upcast
-        ]
+            cutlass_library.MathOperation.multiply_add_mixed_input_upcast,
+        ],
     ):
         self.cc = kernel_cc
 
@@ -240,7 +245,7 @@ class ArchOptions:
         # for the target CC
         args = [
             "--kernels=all",
-            f"--log-level={logging.getLevelName(cutlass.logger.level)}"
+            f"--log-level={logging.getLevelName(cutlass.logger.level)}",
         ]
         manifest_args = cutlass_library.generator.define_parser().parse_args(args)
         manifest = cutlass_library.manifest.Manifest(manifest_args)
@@ -249,14 +254,21 @@ class ArchOptions:
         if operation_kind not in manifest.operations:
             # No kernels generated for this architecture, this could be because the CUDA
             # toolkit is insufficient to support operations in this CC
-            cutlass.logger.warning(f"No operations of type {operation_kind} found for CC {kernel_cc}")
+            cutlass.logger.warning(
+                f"No operations of type {operation_kind} found for CC {kernel_cc}"
+            )
             return
 
         # Only one CC should be returned, given the setup above of calling only the generation scripts
         # for a given CC
-        if len(manifest.operations[operation_kind].keys()) != 1 or kernel_cc not in manifest.operations[operation_kind]:
-            raise Exception(f"Error finding kernels for SM{kernel_cc}. Check that your CUDA toolkit version "
-                             "is sufficient for the architecture in question.")
+        if (
+            len(manifest.operations[operation_kind].keys()) != 1
+            or kernel_cc not in manifest.operations[operation_kind]
+        ):
+            raise Exception(
+                f"Error finding kernels for SM{kernel_cc}. Check that your CUDA toolkit version "
+                "is sufficient for the architecture in question."
+            )
 
         # Iterate through the available operations for this operation kind and
         # find available opclasses and data types
@@ -284,17 +296,27 @@ class ArchOptions:
                 layout_comb = (op.A.layout, op.B.layout)
 
                 # Register TF32 kernels as F32 to enable F32 -> TF32 conversion + TF32 Tensor Core operations
-                if datatype_comb == (cutlass_library.DataType.tf32, cutlass_library.DataType.tf32, cutlass_library.DataType.f32):
+                if datatype_comb == (
+                    cutlass_library.DataType.tf32,
+                    cutlass_library.DataType.tf32,
+                    cutlass_library.DataType.f32,
+                ):
                     # TF32 kernels only supported on SM80 and beyond
                     if self.cc < 80:
                         continue
                     elif self.cc == 90:
-                        if (op.A.element != cutlass_library.DataType.f32
+                        if (
+                            op.A.element != cutlass_library.DataType.f32
                             or op.B.element != cutlass_library.DataType.f32
-                            or op.C.element != cutlass_library.DataType.f32):
+                            or op.C.element != cutlass_library.DataType.f32
+                        ):
                             continue
 
-                    datatype_comb = (cutlass_library.DataType.f32, cutlass_library.DataType.f32, cutlass_library.DataType.f32)
+                    datatype_comb = (
+                        cutlass_library.DataType.f32,
+                        cutlass_library.DataType.f32,
+                        cutlass_library.DataType.f32,
+                    )
 
                 opclass_dict = self.operations_by_opclass[mi.opcode_class]
                 key = (datatype_comb, layout_comb)
@@ -315,33 +337,90 @@ class ArchOptions:
 
         if operation_kind == cutlass_library.OperationKind.Gemm:
             types = [
-                (cutlass_library.DataType.s8, cutlass_library.DataType.s8, cutlass_library.DataType.s8),
-                (cutlass_library.DataType.s8, cutlass_library.DataType.s8, cutlass_library.DataType.s32),
-                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f16),
-                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f32),
-                (cutlass_library.DataType.f32, cutlass_library.DataType.f32, cutlass_library.DataType.f32),
-                (cutlass_library.DataType.f64, cutlass_library.DataType.f64, cutlass_library.DataType.f64),
+                (
+                    cutlass_library.DataType.s8,
+                    cutlass_library.DataType.s8,
+                    cutlass_library.DataType.s8,
+                ),
+                (
+                    cutlass_library.DataType.s8,
+                    cutlass_library.DataType.s8,
+                    cutlass_library.DataType.s32,
+                ),
+                (
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f16,
+                ),
+                (
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f32,
+                ),
+                (
+                    cutlass_library.DataType.f32,
+                    cutlass_library.DataType.f32,
+                    cutlass_library.DataType.f32,
+                ),
+                (
+                    cutlass_library.DataType.f64,
+                    cutlass_library.DataType.f64,
+                    cutlass_library.DataType.f64,
+                ),
             ]
 
             layouts = [
-                (cutlass_library.LayoutType.RowMajor, cutlass_library.LayoutType.RowMajor),
-                (cutlass_library.LayoutType.RowMajor, cutlass_library.LayoutType.ColumnMajor),
-                (cutlass_library.LayoutType.ColumnMajor, cutlass_library.LayoutType.RowMajor),
-                (cutlass_library.LayoutType.ColumnMajor, cutlass_library.LayoutType.ColumnMajor),
+                (
+                    cutlass_library.LayoutType.RowMajor,
+                    cutlass_library.LayoutType.RowMajor,
+                ),
+                (
+                    cutlass_library.LayoutType.RowMajor,
+                    cutlass_library.LayoutType.ColumnMajor,
+                ),
+                (
+                    cutlass_library.LayoutType.ColumnMajor,
+                    cutlass_library.LayoutType.RowMajor,
+                ),
+                (
+                    cutlass_library.LayoutType.ColumnMajor,
+                    cutlass_library.LayoutType.ColumnMajor,
+                ),
             ]
         elif operation_kind == cutlass_library.OperationKind.Conv2d:
             types = [
-                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f16),
-                (cutlass_library.DataType.f16, cutlass_library.DataType.f16, cutlass_library.DataType.f32),
-                (cutlass_library.DataType.f32, cutlass_library.DataType.f32, cutlass_library.DataType.f32),
-                (cutlass_library.DataType.f64, cutlass_library.DataType.f64, cutlass_library.DataType.f64),
+                (
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f16,
+                ),
+                (
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f16,
+                    cutlass_library.DataType.f32,
+                ),
+                (
+                    cutlass_library.DataType.f32,
+                    cutlass_library.DataType.f32,
+                    cutlass_library.DataType.f32,
+                ),
+                (
+                    cutlass_library.DataType.f64,
+                    cutlass_library.DataType.f64,
+                    cutlass_library.DataType.f64,
+                ),
             ]
 
             layouts = [
-                (cutlass_library.LayoutType.TensorNHWC, cutlass_library.LayoutType.TensorNHWC),
+                (
+                    cutlass_library.LayoutType.TensorNHWC,
+                    cutlass_library.LayoutType.TensorNHWC,
+                ),
             ]
         else:
-            raise NotImplementedError(f"Operation kind {operation_kind} is currently unsupported.")
+            raise NotImplementedError(
+                f"Operation kind {operation_kind} is currently unsupported."
+            )
 
         alignment = 1
         epilogue_functor = cutlass_library.EpilogueFunctor.LinearCombination
@@ -352,42 +431,70 @@ class ArchOptions:
                 if comb in self.operations_by_opclass[cutlass_library.OpcodeClass.Simt]:
                     continue
 
-                A = cutlass_library.TensorDescription(type_comb[0], layout_comb[0], alignment)
-                B = cutlass_library.TensorDescription(type_comb[1], layout_comb[1], alignment)
-                C = cutlass_library.TensorDescription(type_comb[2], cutlass_library.LayoutType.ColumnMajor, alignment)
+                A = cutlass_library.TensorDescription(
+                    type_comb[0], layout_comb[0], alignment
+                )
+                B = cutlass_library.TensorDescription(
+                    type_comb[1], layout_comb[1], alignment
+                )
+                C = cutlass_library.TensorDescription(
+                    type_comb[2], cutlass_library.LayoutType.ColumnMajor, alignment
+                )
                 math_inst = cutlass_library.MathInstruction(
                     [1, 1, 1],
                     type_comb[0],
                     type_comb[1],
                     type_comb[2],
                     cutlass_library.OpcodeClass.Simt,
-                    cutlass_library.MathOperation.multiply_add
+                    cutlass_library.MathOperation.multiply_add,
                 )
 
                 td = cutlass_library.TileDescription(
-                    [128, 128, 8], 2, [4, 2, 1], math_inst, 50, 1024)
+                    [128, 128, 8], 2, [4, 2, 1], math_inst, 50, 1024
+                )
 
                 # Prune operations that don't fit in shared memory
-                if not valid_stage_count(target_cc, kernel_cc, td_from_profiler_td(td), verbose=False)[0]:
+                if not valid_stage_count(
+                    target_cc, kernel_cc, td_from_profiler_td(td), verbose=False
+                )[0]:
                     continue
 
                 new_kernels = KernelsForDataType(type_comb, layout_comb)
 
                 if operation_kind == cutlass_library.OperationKind.Gemm:
                     new_operation = cutlass_library.manifest.GemmOperation(
-                        cutlass_library.GemmKind.Universal, td.minimum_compute_capability,
-                        td, A, B, C, type_comb[2], epilogue_functor, swizzling_functor)
+                        cutlass_library.GemmKind.Universal,
+                        td.minimum_compute_capability,
+                        td,
+                        A,
+                        B,
+                        C,
+                        type_comb[2],
+                        epilogue_functor,
+                        swizzling_functor,
+                    )
                     new_kernels.add(new_operation)
                 elif operation_kind == cutlass_library.OperationKind.Conv2d:
                     for conv_kind in [ConvKind.Fprop, ConvKind.Dgrad, ConvKind.Wgrad]:
                         new_operation = cutlass_library.manifest.Conv2dOperation(
-                            conv_kind, IteratorAlgorithm.Analytic, td.minimum_compute_capability, td,
-                            A, B, C, type_comb[2], StrideSupport.Strided, epilogue_functor, swizzling_functor,
-                            group_mode=GroupMode.SingleGroup
+                            conv_kind,
+                            IteratorAlgorithm.Analytic,
+                            td.minimum_compute_capability,
+                            td,
+                            A,
+                            B,
+                            C,
+                            type_comb[2],
+                            StrideSupport.Strided,
+                            epilogue_functor,
+                            swizzling_functor,
+                            group_mode=GroupMode.SingleGroup,
                         )
                         new_kernels.add(new_operation)
 
-                self.operations_by_opclass[cutlass_library.OpcodeClass.Simt][comb] = new_kernels
+                self.operations_by_opclass[cutlass_library.OpcodeClass.Simt][
+                    comb
+                ] = new_kernels
 
         # Sort all operations
         for oc in self.operations_by_opclass.keys():
@@ -395,7 +502,10 @@ class ArchOptions:
                 self.operations_by_opclass[oc][comb].sort()
 
     def opclass_supports_combination(
-        self, op_class: cutlass_library.OpcodeClass, datatype_comb: tuple, layout_comb: tuple
+        self,
+        op_class: cutlass_library.OpcodeClass,
+        datatype_comb: tuple,
+        layout_comb: tuple,
     ) -> bool:
         """
         Returns whether the provided operation class supports the provided data type and layout combination
@@ -498,13 +608,23 @@ class OptionRegistry:
     def __init__(self, target_cc: int):
         self.registry = {}
 
-        gemm_kinds = [cutlass_library.GemmKind.Universal, cutlass_library.GemmKind.Universal3x]
-        operation_kinds = [cutlass_library.OperationKind.Gemm, cutlass_library.OperationKind.Conv2d]
+        gemm_kinds = [
+            cutlass_library.GemmKind.Universal,
+            cutlass_library.GemmKind.Universal3x,
+        ]
+        operation_kinds = [
+            cutlass_library.OperationKind.Gemm,
+            cutlass_library.OperationKind.Conv2d,
+        ]
         # Construct options for each CC
         for kernel_cc in _generator_ccs:
             self.registry[kernel_cc] = {}
             for opkind in operation_kinds:
-                self.registry[kernel_cc][opkind] = ArchOptions(target_cc, kernel_cc, opkind, gemm_kinds)
+                self.registry[kernel_cc][opkind] = ArchOptions(
+                    target_cc, kernel_cc, opkind, gemm_kinds
+                )
 
-    def options_for_cc(self, cc: int, op_kind=cutlass_library.OperationKind.Gemm) -> ArchOptions:
+    def options_for_cc(
+        self, cc: int, op_kind=cutlass_library.OperationKind.Gemm
+    ) -> ArchOptions:
         return self.registry.get(cc, None)[op_kind]

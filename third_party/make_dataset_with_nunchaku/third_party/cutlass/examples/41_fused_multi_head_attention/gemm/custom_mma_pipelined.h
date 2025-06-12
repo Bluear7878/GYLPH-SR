@@ -81,19 +81,17 @@ template <
     typename Policy_,
     /// Transformation applied to A operand
     typename TransformA_ = NumericArrayConverter<
-        typename SmemIteratorA_::Element,
-        typename IteratorA_::Element,
+        typename SmemIteratorA_::Element, typename IteratorA_::Element,
         IteratorA_::Fragment::kElements>,
     ///
     /// Transformation applied to B operand
     typename TransformB_ = NumericArrayConverter<
-        typename SmemIteratorB_::Element,
-        typename IteratorB_::Element,
+        typename SmemIteratorB_::Element, typename IteratorB_::Element,
         IteratorB_::Fragment::kElements>,
     /// Used for partial specialization
     typename Enable = bool>
 class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
- public:
+public:
   ///< Base class
   using Base = CustomMmaBase<Shape_, Policy_, 2>;
 
@@ -104,8 +102,8 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
   using IteratorB =
       IteratorB_; ///< Iterates over tiles of B operand in global memory
   using ElementC = ElementC_; ///< Data type of accumulator matrix
-  using LayoutC = LayoutC_; ///< Layout of accumulator matrix
-  using Policy = Policy_; ///< Policy describing tuning details
+  using LayoutC = LayoutC_;   ///< Layout of accumulator matrix
+  using Policy = Policy_;     ///< Policy describing tuning details
 
   using SmemIteratorA = SmemIteratorA_;
   using SmemIteratorB = SmemIteratorB_;
@@ -139,33 +137,31 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
   static ComplexTransform const kTransformB = Operator::kTransformB;
 
   // staticaly assert kStages for MmaPipelined is two (Double-buffered pipeline)
-  static_assert(
-      (Base::kStages == 2),
-      "MmaPipelined requires kStages set to value 2");
+  static_assert((Base::kStages == 2),
+                "MmaPipelined requires kStages set to value 2");
 
   static bool const kSmemContainsEntireMat = false;
 
- private:
+private:
   using WarpFragmentA = typename Operator::FragmentA;
   using WarpFragmentB = typename Operator::FragmentB;
 
- protected:
+protected:
   /// Iterator to write threadblock-scoped tile of A operand to shared memory
   SmemIteratorA smem_iterator_A_;
 
   /// Iterator to write threadblock-scoped tile of B operand to shared memory
   SmemIteratorB smem_iterator_B_;
 
- public:
+public:
   /// Construct from tensor references
   CUTLASS_DEVICE
-  CustomMmaPipelined(
-      typename Base::SharedStorageA& shared_storageA,
-      typename Base::SharedStorageB& shared_storageB,
-      int thread_idx, ///< ID within the threadblock
-      int warp_idx, ///< ID of warp
-      int lane_idx ///< ID of each thread within a warp
-      )
+  CustomMmaPipelined(typename Base::SharedStorageA &shared_storageA,
+                     typename Base::SharedStorageB &shared_storageB,
+                     int thread_idx, ///< ID within the threadblock
+                     int warp_idx,   ///< ID of warp
+                     int lane_idx    ///< ID of each thread within a warp
+                     )
       : Base(shared_storageA, shared_storageB, thread_idx, warp_idx, lane_idx),
         smem_iterator_A_(shared_storageA.ref(), thread_idx),
         smem_iterator_B_(shared_storageB.ref(), thread_idx) {
@@ -190,19 +186,15 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
   CUTLASS_DEVICE
   CustomMmaPipelined(
       ///< Shared storage needed for internal use by threadblock-scoped GEMM
-      typename Base::SharedStorage& st,
+      typename Base::SharedStorage &st,
       ///< ID within the threadblock
       int thread_idx,
       ///< ID of warp
       int warp_idx,
       ///< ID of each thread within a warp
       int lane_idx)
-      : CustomMmaPipelined(
-            st.operand_A,
-            st.operand_B,
-            thread_idx,
-            warp_idx,
-            lane_idx) {}
+      : CustomMmaPipelined(st.operand_A, st.operand_B, thread_idx, warp_idx,
+                           lane_idx) {}
 
   CUTLASS_DEVICE
   bool set_prologue_done(bool value) {
@@ -216,48 +208,40 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
   }
 
   template <bool kLoadA = true, bool kLoadB = true>
-  CUTLASS_DEVICE static void prologue(
-      typename Base::SharedStorage& shared_storage,
-      ///< iterator over A operand in global memory
-      IteratorA iterator_A,
-      ///< iterator over B operand in global memory
-      IteratorB iterator_B,
-      int thread_idx,
-      int problem_size_k) {
-    prologue<kLoadA, kLoadB>(
-        shared_storage.operand_A,
-        shared_storage.operand_B,
-        iterator_A,
-        iterator_B,
-        thread_idx,
-        problem_size_k);
+  CUTLASS_DEVICE static void
+  prologue(typename Base::SharedStorage &shared_storage,
+           ///< iterator over A operand in global memory
+           IteratorA iterator_A,
+           ///< iterator over B operand in global memory
+           IteratorB iterator_B, int thread_idx, int problem_size_k) {
+    prologue<kLoadA, kLoadB>(shared_storage.operand_A, shared_storage.operand_B,
+                             iterator_A, iterator_B, thread_idx,
+                             problem_size_k);
   }
 
   template <bool kLoadA = true, bool kLoadB = true>
-  CUTLASS_DEVICE static void prologue(
-      typename Base::SharedStorageA& shared_storageA,
-      typename Base::SharedStorageB& shared_storageB,
-      ///< iterator over A operand in global memory
-      IteratorA iterator_A,
-      ///< iterator over B operand in global memory
-      IteratorB iterator_B,
-      int thread_idx,
-      int problem_size_k) {
+  CUTLASS_DEVICE static void
+  prologue(typename Base::SharedStorageA &shared_storageA,
+           typename Base::SharedStorageB &shared_storageB,
+           ///< iterator over A operand in global memory
+           IteratorA iterator_A,
+           ///< iterator over B operand in global memory
+           IteratorB iterator_B, int thread_idx, int problem_size_k) {
     // NOT IMPLEMENTED FOR PIPELINED
   }
 
   /// Perform a threadblock-scoped matrix multiply-accumulate
   CUTLASS_DEVICE
-  void operator()(
-      int gemm_k_iterations, ///< number of iterations of the mainloop
-      FragmentC& accum, ///< destination accumulator tile
-      IteratorA iterator_A, ///< iterator over A operand in global memory
-      IteratorB iterator_B, ///< iterator over B operand in global memory
-      FragmentC const& src_accum, ///< source accumulator tile
-      TransformA transform_A =
-          TransformA(), ///< transformation applied to A fragment
-      TransformB transform_B =
-          TransformB()) { ///< transformation applied to B fragment
+  void
+  operator()(int gemm_k_iterations, ///< number of iterations of the mainloop
+             FragmentC &accum,      ///< destination accumulator tile
+             IteratorA iterator_A, ///< iterator over A operand in global memory
+             IteratorB iterator_B, ///< iterator over B operand in global memory
+             FragmentC const &src_accum, ///< source accumulator tile
+             TransformA transform_A =
+                 TransformA(), ///< transformation applied to A fragment
+             TransformB transform_B =
+                 TransformB()) { ///< transformation applied to B fragment
 
     //
     // Prologue
@@ -348,9 +332,8 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
             this->smem_iterator_B_.add_tile_offset({-Base::kStages, 0});
           } else {
             this->warp_tile_iterator_A_.add_tile_offset(
-                {0,
-                 -Base::kStages * Policy::kPartitionsK *
-                     Base::kWarpGemmIterations});
+                {0, -Base::kStages * Policy::kPartitionsK *
+                        Base::kWarpGemmIterations});
             this->warp_tile_iterator_B_.add_tile_offset(
                 {-Base::kStages * Policy::kPartitionsK *
                      Base::kWarpGemmIterations,
@@ -360,10 +343,10 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
           smem_write_stage_idx ^= 1;
         }
 
-        this->warp_tile_iterator_A_.set_kgroup_index(
-            (warp_mma_k + 1) % Base::kWarpGemmIterations);
-        this->warp_tile_iterator_B_.set_kgroup_index(
-            (warp_mma_k + 1) % Base::kWarpGemmIterations);
+        this->warp_tile_iterator_A_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
+        this->warp_tile_iterator_B_.set_kgroup_index((warp_mma_k + 1) %
+                                                     Base::kWarpGemmIterations);
 
         this->warp_tile_iterator_A_.load(warp_frag_A[(warp_mma_k + 1) % 2]);
         this->warp_tile_iterator_B_.load(warp_frag_B[(warp_mma_k + 1) % 2]);
@@ -383,11 +366,8 @@ class CustomMmaPipelined : public CustomMmaBase<Shape_, Policy_, 2> {
           iterator_B.clear_mask(gemm_k_iterations <= 2);
         }
 
-        warp_mma(
-            accum,
-            warp_frag_A[warp_mma_k % 2],
-            warp_frag_B[warp_mma_k % 2],
-            accum);
+        warp_mma(accum, warp_frag_A[warp_mma_k % 2],
+                 warp_frag_B[warp_mma_k % 2], accum);
       }
     }
   }

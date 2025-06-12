@@ -1,11 +1,12 @@
-import os
-import json
 import glob
+import itertools
+import json
+import os
+
 import pandas as pd
 import pytest
-import itertools
-
 from nunchaku.utils import get_precision, is_turing
+
 from .utils import run_test
 
 residual_diff_threshold_single_list = [0.01]
@@ -25,28 +26,32 @@ for doubleFB, single_thr, multi_thr in itertools.product(
     residual_diff_threshold_single_list,
     residual_diff_threshold_multi_list,
 ):
-    params.append((
-        doubleFB,
-        single_thr,
-        multi_thr,
-        height,
-        width,
-        num_inference_steps,
-        lora_name,
-        lora_strength,
-        expected_lpips,
-    ))
-    params.append((
-        doubleFB,
-        single_thr,
-        multi_thr,
-        height,
-        width,
-        num_inference_steps,
-        lora_name,
-        lora_strength,
-        expected_lpips,
-    ))
+    params.append(
+        (
+            doubleFB,
+            single_thr,
+            multi_thr,
+            height,
+            width,
+            num_inference_steps,
+            lora_name,
+            lora_strength,
+            expected_lpips,
+        )
+    )
+    params.append(
+        (
+            doubleFB,
+            single_thr,
+            multi_thr,
+            height,
+            width,
+            num_inference_steps,
+            lora_name,
+            lora_strength,
+            expected_lpips,
+        )
+    )
 
 
 @pytest.mark.skipif(is_turing(), reason="Skip tests for Turing GPUs")

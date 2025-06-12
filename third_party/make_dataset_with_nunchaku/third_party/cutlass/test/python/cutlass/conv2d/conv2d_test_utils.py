@@ -34,27 +34,16 @@
 Utility functions for Conv2d tests.
 """
 
-from cutlass_library import SubstituteTemplate
-import torch
-
 import cutlass
-from cutlass_library import (
-    ConvKind,
-    ConvMode,
-    DataType,
-    DataTypeNames,
-    EpilogueScheduleSuffixes,
-    KernelScheduleSuffixes,
-    LayoutType,
-    OpcodeClassNames,
-    ShortDataTypeNames,
-    ShortLayoutTypeNames,
-    SplitKMode,
-)
+import torch
+from conv2d_problem_sizes import TestbedConv2dProblemSizes
 from cutlass.shape import Conv2DProblemSize
 from cutlass.utils.datatypes import numpy_type, torch_type
-
-from conv2d_problem_sizes import TestbedConv2dProblemSizes
+from cutlass_library import (ConvKind, ConvMode, DataType, DataTypeNames,
+                             EpilogueScheduleSuffixes, KernelScheduleSuffixes,
+                             LayoutType, OpcodeClassNames, ShortDataTypeNames,
+                             ShortLayoutTypeNames, SplitKMode,
+                             SubstituteTemplate)
 
 
 def get_name_conv2d(
@@ -72,7 +61,7 @@ def get_name_conv2d(
     swizzle,
     split_k_mode,
     split_k_slices,
-    activation
+    activation,
 ):
     """
     Generates a procedural name for a test case for conv2d
@@ -128,75 +117,145 @@ def get_name_conv2d(
             "swizzle": str(swizzle),
             "split_k_mode": split_k_mode,
             "split_k_slices": str(split_k_slices),
-            "activation": activation
-        }
+            "activation": activation,
+        },
     )
 
 
 def conv2d_few_channel_problemsizes(channels):
     problem_sizes = [
         Conv2DProblemSize(
-            1, 8, 8, channels,
-            16, 3, 3, channels,
-            1, 1,
-            2, 2,
-            1, 1,
+            1,
+            8,
+            8,
+            channels,
+            16,
+            3,
+            3,
+            channels,
+            1,
+            1,
+            2,
+            2,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
         Conv2DProblemSize(
-            1, 16, 16, channels,
-            16, 3, 3, channels,
-            1, 1,
-            2, 2,
-            1, 1,
+            1,
+            16,
+            16,
+            channels,
+            16,
+            3,
+            3,
+            channels,
+            1,
+            1,
+            2,
+            2,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
         Conv2DProblemSize(
-            1, 16, 16, channels,
-            16, 7, 7, channels,
-            1, 1,
-            1, 1,
-            1, 1,
+            1,
+            16,
+            16,
+            channels,
+            16,
+            7,
+            7,
+            channels,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
         Conv2DProblemSize(
-            1, 224, 224, channels,
-            32, 7, 7, channels,
-            1, 1,
-            1, 1,
-            1, 1,
+            1,
+            224,
+            224,
+            channels,
+            32,
+            7,
+            7,
+            channels,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
         Conv2DProblemSize(
-            1, 224, 224, channels,
-            64, 7, 7, channels,
-            1, 1,
-            2, 2,
-            1, 1,
+            1,
+            224,
+            224,
+            channels,
+            64,
+            7,
+            7,
+            channels,
+            1,
+            1,
+            2,
+            2,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
         Conv2DProblemSize(
-            1, 224, 224, channels,
-            64, 5, 5, channels,
-            1, 1,
-            1, 1,
-            1, 1,
+            1,
+            224,
+            224,
+            channels,
+            64,
+            5,
+            5,
+            channels,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
         Conv2DProblemSize(
-            1, 224, 224, channels,
-            64, 5, 5, channels,
-            1, 1,
-            2, 2,
-            1, 1,
+            1,
+            224,
+            224,
+            channels,
+            64,
+            5,
+            5,
+            channels,
+            1,
+            1,
+            2,
+            2,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
     ]
 
@@ -210,7 +269,11 @@ def validate_problem_size(ps, conv_kind, split_k_slices):
         return False
 
     # Split-K (serial or parallel) is not supported for strided dgrad
-    if conv_kind == "dgrad" and split_k_slices > 1 and (ps.stride_h > 1 or ps.stride_w > 1):
+    if (
+        conv_kind == "dgrad"
+        and split_k_slices > 1
+        and (ps.stride_h > 1 or ps.stride_w > 1)
+    ):
         return False
     return True
 
@@ -241,35 +304,49 @@ class Conv2dLauncherFrontend:
 
     def uniform_init(self, size, dtype):
         tensor = torch.ceil(
-            torch.empty(size=size, dtype=torch_type(dtype), device="cuda").uniform_(-self.rand_max - 0.5, self.rand_max - 0.5)
+            torch.empty(size=size, dtype=torch_type(dtype), device="cuda").uniform_(
+                -self.rand_max - 0.5, self.rand_max - 0.5
+            )
         ).to(memory_format=torch.channels_last)
         return tensor
 
     def reference(self, ps, A, B, C, alpha, beta, activation):
         if self.conv_kind == ConvKind.Fprop:
-            torch_result = alpha * torch.ops.aten.conv2d(
-                A,
-                B,
-                stride=(ps.stride_h, ps.stride_w),
-                padding=(ps.pad_h, ps.pad_w),
-                dilation=(ps.dilation_h, ps.dilation_w)
-            ) + beta * C
+            torch_result = (
+                alpha
+                * torch.ops.aten.conv2d(
+                    A,
+                    B,
+                    stride=(ps.stride_h, ps.stride_w),
+                    padding=(ps.pad_h, ps.pad_w),
+                    dilation=(ps.dilation_h, ps.dilation_w),
+                )
+                + beta * C
+            )
         elif self.conv_kind == ConvKind.Dgrad:
-            torch_result = alpha * torch.nn.grad.conv2d_input(
-                (ps.N, ps.C, ps.H, ps.W),
-                B,
-                A,
-                padding=(ps.pad_h, ps.pad_w),
-                stride=(ps.stride_h, ps.stride_w)
-            ) + beta * C
+            torch_result = (
+                alpha
+                * torch.nn.grad.conv2d_input(
+                    (ps.N, ps.C, ps.H, ps.W),
+                    B,
+                    A,
+                    padding=(ps.pad_h, ps.pad_w),
+                    stride=(ps.stride_h, ps.stride_w),
+                )
+                + beta * C
+            )
         elif self.conv_kind == ConvKind.Wgrad:
-            torch_result = alpha * torch.nn.grad.conv2d_weight(
-                B,
-                (ps.K, ps.C, ps.R, ps.S),
-                A,
-                padding=(ps.pad_h, ps.pad_w),
-                stride=(ps.stride_h, ps.stride_w)
-            ) + beta * C
+            torch_result = (
+                alpha
+                * torch.nn.grad.conv2d_weight(
+                    B,
+                    (ps.K, ps.C, ps.R, ps.S),
+                    A,
+                    padding=(ps.pad_h, ps.pad_w),
+                    stride=(ps.stride_h, ps.stride_w),
+                )
+                + beta * C
+            )
         else:
             raise Exception(f"Conv kind {self.conv_kind} is currently unsupported.")
 
@@ -279,7 +356,9 @@ class Conv2dLauncherFrontend:
             torch_result = torch.nn.functional.leaky_relu(torch_result, 0.5)
         return torch_result
 
-    def run(self, ps, split_k_mode=SplitKMode.Serial, split_k_slices=1, alpha=1.0, beta=0.0):
+    def run(
+        self, ps, split_k_mode=SplitKMode.Serial, split_k_slices=1, alpha=1.0, beta=0.0
+    ):
         if self.conv_kind == ConvKind.Fprop:
             tensor_A_size = (ps.N, ps.C, ps.H, ps.W)
             tensor_B_size = (ps.K, ps.C, ps.R, ps.S)
@@ -301,16 +380,24 @@ class Conv2dLauncherFrontend:
         tensor_B = self.uniform_init(size=tensor_B_size, dtype=self.dtype_B)
         tensor_C = self.uniform_init(size=tensor_C_size, dtype=self.dtype_C)
         tensor_D = torch.zeros_like(tensor_C).to(memory_format=torch.channels_last)
-        args = self.operation.run(tensor_A, tensor_B, tensor_C, tensor_D,
+        args = self.operation.run(
+            tensor_A,
+            tensor_B,
+            tensor_C,
+            tensor_D,
             stride=(ps.stride_h, ps.stride_w),
             padding=(ps.pad_h, ps.pad_w),
             dilation=(ps.dilation_h, ps.dilation_w),
-            alpha=alpha, beta=beta,
-            split_k=(split_k_mode, split_k_slices))
+            alpha=alpha,
+            beta=beta,
+            split_k=(split_k_mode, split_k_slices),
+        )
 
         args.sync()
 
-        tensor_D_ref = self.reference(ps, tensor_A, tensor_B, tensor_C, alpha, beta, self.activation)
+        tensor_D_ref = self.reference(
+            ps, tensor_A, tensor_B, tensor_C, alpha, beta, self.activation
+        )
 
         torch.cuda.synchronize()
         passed = torch.allclose(tensor_D, tensor_D_ref, atol=2e-06)
@@ -335,13 +422,26 @@ def add_test(
     swizzle=None,
     split_k_mode="serial",
     split_k_slices=1,
-    activation = "identity"
+    activation="identity",
 ):
     """Create a test-running function with the given specification"""
     test_name = get_name_conv2d(
-        cc, conv_kind, element, element_accumulator,
-        element_output, opclass, threadblock_shape, warp_count, instruction_shape, stages,
-        iterator_algorithm, swizzle, split_k_mode, split_k_slices, activation)
+        cc,
+        conv_kind,
+        element,
+        element_accumulator,
+        element_output,
+        opclass,
+        threadblock_shape,
+        warp_count,
+        instruction_shape,
+        stages,
+        iterator_algorithm,
+        swizzle,
+        split_k_mode,
+        split_k_slices,
+        activation,
+    )
 
     def run(self):
         # Create the plan
@@ -350,7 +450,7 @@ def add_test(
             element=element,
             element_accumulator=element_accumulator,
             element_C=element_output,
-            element_D=element_output
+            element_D=element_output,
         )
 
         # Set the opclass
@@ -383,7 +483,9 @@ def add_test(
             if not validate_problem_size(ps, conv_kind, split_k_slices):
                 continue
 
-            self.assertTrue(conv2d_launcher.run(ps, split_k_mode, split_k_slices, 1.0, 2.0))
+            self.assertTrue(
+                conv2d_launcher.run(ps, split_k_mode, split_k_slices, 1.0, 2.0)
+            )
 
     setattr(cls, test_name, run)
 
@@ -397,31 +499,29 @@ def get_conv_problems():
     # Insert alignment 4 & 2 tests
     conv_problems += [
         Conv2DProblemSize(
-            1, 4, 4, 12,
-            8, 3, 3, 12,
-            0, 0,
-            3, 3,
-            1, 1,
-            ConvMode.CrossCorrelation,
-            1, 1
+            1, 4, 4, 12, 8, 3, 3, 12, 0, 0, 3, 3, 1, 1, ConvMode.CrossCorrelation, 1, 1
         ),
         Conv2DProblemSize(
-            1, 4, 4, 14,
-            8, 3, 3, 14,
-            0, 0,
-            3, 3,
-            1, 1,
-            ConvMode.CrossCorrelation,
-            1, 1
+            1, 4, 4, 14, 8, 3, 3, 14, 0, 0, 3, 3, 1, 1, ConvMode.CrossCorrelation, 1, 1
         ),
         Conv2DProblemSize(
-            1, 23, 56, 98,
-            128, 3, 3, 98,
-            4, 5,
-            3, 3,
-            1, 1,
+            1,
+            23,
+            56,
+            98,
+            128,
+            3,
+            3,
+            98,
+            4,
+            5,
+            3,
+            3,
+            1,
+            1,
             ConvMode.CrossCorrelation,
-            1, 1
+            1,
+            1,
         ),
     ]
 

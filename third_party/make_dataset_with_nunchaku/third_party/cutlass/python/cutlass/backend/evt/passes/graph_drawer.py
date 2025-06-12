@@ -32,11 +32,9 @@
 
 import subprocess
 
-from cutlass_library import DataTypeTag
 import pydot
-
 from cutlass.backend.evt.ir.dag_ir import DAGIR
-
+from cutlass_library import DataTypeTag
 
 _COLOR_MAP = {
     "load": '"AliceBlue"',
@@ -44,7 +42,7 @@ _COLOR_MAP = {
     "accumulator": "LightGrey",
     "store": "PowderBlue",
     "layout": "lightseagreen",
-    "dag": "darkorange"
+    "dag": "darkorange",
 }
 
 
@@ -52,11 +50,8 @@ class EVTGraphDrawer:
     """
     Visualize a EVT DAGIR with graphviz
     """
-    def __init__(
-        self,
-        graph: DAGIR,
-        name: str
-    ):
+
+    def __init__(self, graph: DAGIR, name: str):
         self._name = name
         self._dot_graphs = {}
 
@@ -70,7 +65,8 @@ class EVTGraphDrawer:
         try:
             # Run the 'dot' command and capture its output
             result = subprocess.run(
-                ["dot", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                ["dot", "-V"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
             # Check if the command was successful and the output contains version information
             if result.returncode == 0 and "dot - graphviz" in result.stderr:
                 return True
@@ -124,18 +120,12 @@ class EVTGraphDrawer:
         label += "}"
         return label
 
-    def _to_dot(
-        self,
-        graph: DAGIR,
-        name: str
-    ):
+    def _to_dot(self, graph: DAGIR, name: str):
         dot_graph = pydot.Dot(name, randir="TB")
         for node in graph.nodes_meta:
             style = self._get_node_style(node)
             label = self._get_node_label(node)
-            dot_node = pydot.Node(
-                node.name, label=label, **style
-            )
+            dot_node = pydot.Node(node.name, label=label, **style)
             dot_graph.add_node(dot_node)
             if node.op == "dag":
                 dot_subgraph = self._to_dot(node.subgraph, name=node.name)
@@ -149,7 +139,9 @@ class EVTGraphDrawer:
         return dot_graph
 
     def get_dot_graph(self) -> pydot.Dot:
-        return [(key, self.get_dot_graph_by_name(key)) for key in self._dot_graphs.keys()]
+        return [
+            (key, self.get_dot_graph_by_name(key)) for key in self._dot_graphs.keys()
+        ]
 
     def get_dot_graph_by_name(self, name) -> pydot.Dot:
         return self._dot_graphs[name]

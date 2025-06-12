@@ -1,7 +1,7 @@
 import pytest
 import torch
-
 from nunchaku.utils import get_precision, is_turing
+
 from .utils import run_test
 
 
@@ -140,5 +140,7 @@ def test_flux_dev_redux():
         attention_impl="nunchaku-fp16",
         cpu_offload=False,
         cache_threshold=0,
-        expected_lpips=(0.162 if get_precision() == "int4" else 0.466),  # not sure why the fp4 model is so different
+        expected_lpips=(
+            0.162 if get_precision() == "int4" else 0.466
+        ),  # not sure why the fp4 model is so different
     )

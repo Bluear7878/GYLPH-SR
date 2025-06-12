@@ -1,5 +1,4 @@
-serve_header.py
-===============
+# serve_header.py
 
 Serves the `single_include/nlohmann/json.hpp` header file over HTTP(S).
 
@@ -10,14 +9,17 @@ The header file is automatically amalgamated on demand.
 ## Prerequisites
 
 1. Make sure these Python packages are installed.
-    ```
-    PyYAML
-    watchdog
-    ```
-    (see `tools/serve_header/requirements.txt`)
 
-2. To serve the header over HTTPS (which is required by Compiler Explorer at this time), a certificate is needed.
+   ```
+   PyYAML
+   watchdog
+   ```
+
+   (see `tools/serve_header/requirements.txt`)
+
+1. To serve the header over HTTPS (which is required by Compiler Explorer at this time), a certificate is needed.
    The recommended method for creating a locally-trusted certificate is to use [`mkcert`](https://github.com/FiloSottile/mkcert).
+
    - Install the `mkcert` certificate authority into your trust store(s):
      ```
      $ mkcert -install
@@ -34,11 +36,13 @@ The header file is automatically amalgamated on demand.
 The built-in configuration expects the certificate `localhost.pem` and the private key `localhost-key.pem`to be located in the top level or project root directory.
 
 To start serving the `json.hpp` header file at `https://localhost:8443/json.hpp`, run this command from the top level or project root directory:
+
 ```
 $ make serve_header
 ```
 
 Open [Compiler Explorer](https://godbolt.org/) and try it out:
+
 ```cpp
 #include <https://localhost:8443/json.hpp>
 using namespace nlohmann;
@@ -64,6 +68,7 @@ An annotated example configuration can be found in `tools/serve_header/serve_hea
 
 `serve_header.py` was designed with the goal of supporting multiple project roots or working trees at the same time.
 The recommended directory structure is shown below but `serve_header.py` can work with other structures as well, including a nested hierarchy.
+
 ```
 json/          ⮜ the parent or web server root directory
 ├── develop/   ⮜ the main git checkout
@@ -77,15 +82,19 @@ json/          ⮜ the parent or web server root directory
 ```
 
 To serve the header of each working tree at `https://localhost:8443/<worktree>/json.hpp`, a configuration file is needed.
+
 1. Create the file `serve_header.yml` in the top level or project root directory of any working tree:
-    ```yaml
-    root: ..
-    ```
+
+   ```yaml
+   root: ..
+   ```
+
    By shifting the web server root directory up one level, the `single_include/nlohmann/json.hpp` header files relative to each sibling directory or working tree will be served.
 
-2. Start `serve_header.py` by running this command from the same top level or project root directory the configuration file is located in:
-    ```
-    $ make serve_header
-    ```
+1. Start `serve_header.py` by running this command from the same top level or project root directory the configuration file is located in:
+
+   ```
+   $ make serve_header
+   ```
 
 `serve_header.py` will automatically detect the addition or removal of working trees anywhere within the configured web server root directory.

@@ -1,5 +1,5 @@
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -25,11 +25,13 @@ int main()
     )"_json;
 
     // output original document
-    std::cout << "Before\n" << std::setw(4) << doc << std::endl;
+    std::cout << "Before\n"
+              << std::setw(4) << doc << std::endl;
 
     // apply the patch
     doc.patch_inplace(patch);
 
     // output patched document
-    std::cout << "\nAfter\n" << std::setw(4) << doc << std::endl;
+    std::cout << "\nAfter\n"
+              << std::setw(4) << doc << std::endl;
 }

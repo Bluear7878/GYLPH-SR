@@ -31,6 +31,5 @@
 
 cutlass_example_add_executable(
   39_gemm_permute
-  gemm_permute.cu 
+  gemm_permute.cu
   )
-

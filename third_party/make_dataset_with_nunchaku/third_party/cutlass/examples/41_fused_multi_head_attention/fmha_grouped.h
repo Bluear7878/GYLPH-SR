@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -35,31 +36,31 @@
 
 #pragma once
 
+#include "cutlass/complex.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/fast_math.h"
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/matrix_coord.h"
-#include "cutlass/complex.h"
 #include "cutlass/semaphore.h"
 
+#include "cutlass/gemm/kernel/gemm_transpose_operands.h"
 #include "cutlass/layout/matrix.h"
 #include "cutlass/trace.h"
-#include "cutlass/gemm/kernel/gemm_transpose_operands.h"
 
-#include "fmha_grouped_problem_visitor.h"
-#include "gemm_kernel_utils.h"
-#include "gemm/mma_accum_lambda_iterator.h"
 #include "epilogue/epilogue_rescale_output.h"
-
+#include "fmha_grouped_problem_visitor.h"
+#include "gemm/mma_accum_lambda_iterator.h"
+#include "gemm_kernel_utils.h"
 
 namespace {
-  static CUTLASS_DEVICE float atomicMaxFloat(float* addr, float value) {
+static CUTLASS_DEVICE float atomicMaxFloat(float *addr, float value) {
   // source: https://stackoverflow.com/a/51549250
   return (value >= 0)
-      ? __int_as_float(atomicMax((int*)addr, __float_as_int(value)))
-      : __uint_as_float(atomicMin((unsigned int*)addr, __float_as_uint(value)));
+             ? __int_as_float(atomicMax((int *)addr, __float_as_int(value)))
+             : __uint_as_float(
+                   atomicMin((unsigned int *)addr, __float_as_uint(value)));
 }
-}
+} // namespace
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,16 +70,15 @@ namespace kernel {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename MM0_,                           ///! Structure for computing P = Q @ K
-  typename MM1_,                           ///! Structure for computing O = P @ V
-  typename scalar_t_,
-  typename accum_t_,
-  typename output_t_,
-  typename output_accum_t_,
-  bool kKeepOutputInRF,                    ///! Whether the intermediate output from MM0_ should be kept in the register file
-  GroupScheduleMode GroupScheduleMode_     ///! Type of scheduling to perform
->
+template <typename MM0_, ///! Structure for computing P = Q @ K
+          typename MM1_, ///! Structure for computing O = P @ V
+          typename scalar_t_, typename accum_t_, typename output_t_,
+          typename output_accum_t_,
+          bool kKeepOutputInRF, ///! Whether the intermediate output from MM0_
+                                /// should be kept in the register file
+          GroupScheduleMode GroupScheduleMode_ ///! Type of scheduling to
+                                               /// perform
+          >
 struct FMHAGrouped {
 public:
   using MM0 = MM0_;
@@ -91,7 +91,8 @@ public:
 
   static GroupScheduleMode const kGroupScheduleMode = GroupScheduleMode_;
 
-  static constexpr bool kNeedsOutputAccumulatorBuffer = !kKeepOutputInRF &&
+  static constexpr bool kNeedsOutputAccumulatorBuffer =
+      !kKeepOutputInRF &&
       !cutlass::platform::is_same<output_accum_t, output_t>::value;
 
   // Parameters to satisfy BaseGrouped
@@ -127,8 +128,9 @@ public:
   using LayoutV = typename MM1::LayoutB;
   using LayoutO = typename MM1::LayoutC;
 
-  static bool const kPreloadV = (MM1::Mma::ArchTag::kMinComputeCapability >= 80 &&
-                                 cutlass::sizeof_bits<ElementV>::value == 16);
+  static bool const kPreloadV =
+      (MM1::Mma::ArchTag::kMinComputeCapability >= 80 &&
+       cutlass::sizeof_bits<ElementV>::value == 16);
 
   static int const kAlignmentQ = MM0::kAlignmentA;
   static int const kAlignmentK = MM0::kAlignmentB;
@@ -148,13 +150,11 @@ public:
   static int const kThreadCount = kThreadsPerWarp * WarpCount::kCount;
 
   static constexpr int kNumWarpsPerBlock =
-    kQueriesPerBlock * kKeysPerBlock / (kThreadsPerWarp * kThreadsPerWarp);
+      kQueriesPerBlock * kKeysPerBlock / (kThreadsPerWarp * kThreadsPerWarp);
 
-  using ProblemVisitor = FMHAGroupedProblemVisitor<
-                            ThreadblockShape,
-                            kGroupScheduleMode,
-                            kThreadCount,
-                            kThreadCount>;
+  using ProblemVisitor =
+      FMHAGroupedProblemVisitor<ThreadblockShape, kGroupScheduleMode,
+                                kThreadCount, kThreadCount>;
 
   //
   // Structures
@@ -173,12 +173,12 @@ public:
     int problem_count;
     int threadblock_count;
 
-    ElementQ ** ptr_Q;
-    ElementK ** ptr_K;
-    ElementP ** ptr_P;
-    ElementV ** ptr_V;
-    ElementO ** ptr_O;
-    ElementOAccum ** ptr_O_accum;
+    ElementQ **ptr_Q;
+    ElementK **ptr_K;
+    ElementP **ptr_P;
+    ElementV **ptr_V;
+    ElementO **ptr_O;
+    ElementOAccum **ptr_O_accum;
 
     typename LayoutQ::Stride::LongIndex *ldq;
     typename LayoutK::Stride::LongIndex *ldk;
@@ -200,68 +200,31 @@ public:
 
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Arguments():
-      problem_count(0),
-      threadblock_count(0),
-      ptr_Q(nullptr),
-      ptr_K(nullptr),
-      ptr_P(nullptr),
-      ptr_V(nullptr),
-      ptr_O(nullptr),
-      ptr_O_accum(nullptr),
-      ldq(nullptr),
-      ldk(nullptr),
-      ldv(nullptr),
-      ldo(nullptr),
-      scale(0),
-      causal(false),
-      host_problem_sizes(nullptr)
-    {
-
-    }
+    Arguments()
+        : problem_count(0), threadblock_count(0), ptr_Q(nullptr),
+          ptr_K(nullptr), ptr_P(nullptr), ptr_V(nullptr), ptr_O(nullptr),
+          ptr_O_accum(nullptr), ldq(nullptr), ldk(nullptr), ldv(nullptr),
+          ldo(nullptr), scale(0), causal(false), host_problem_sizes(nullptr) {}
 
     /// Ctor
     CUTLASS_HOST_DEVICE
-    Arguments(
-      GemmCoord *problem_sizes0,
-      GemmCoord *problem_sizes1,
-      int problem_count,
-      int threadblock_count,
-      ElementQ ** ptr_Q,
-      ElementK ** ptr_K,
-      ElementP ** ptr_P,
-      ElementV ** ptr_V,
-      ElementO ** ptr_O,
-      ElementOAccum ** ptr_O_accum,
-      typename LayoutQ::Stride::LongIndex *ldq,
-      typename LayoutK::Stride::LongIndex *ldk,
-      typename LayoutP::Stride::LongIndex *ldp,
-      typename LayoutV::Stride::LongIndex *ldv,
-      typename LayoutO::Stride::LongIndex *ldo,
-      bool causal,
-      ElementAccumulator scale,
-      GemmCoord *host_problem_sizes=nullptr
-    ):
-      problem_sizes0(problem_sizes0),
-      problem_sizes1(problem_sizes1),
-      problem_count(problem_count),
-      threadblock_count(threadblock_count),
-      ptr_Q(ptr_Q),
-      ptr_K(ptr_K),
-      ptr_P(ptr_P),
-      ptr_V(ptr_V),
-      ptr_O(ptr_O),
-      ptr_O_accum(kNeedsOutputAccumulatorBuffer ? ptr_O_accum : (accum_t**)ptr_O),
-      ldq(ldq),
-      ldk(ldk),
-      ldv(ldv),
-      ldo(ldo),
-      causal(causal),
-      scale(scale),
-      host_problem_sizes(host_problem_sizes)
-    {
-
-    }
+    Arguments(GemmCoord *problem_sizes0, GemmCoord *problem_sizes1,
+              int problem_count, int threadblock_count, ElementQ **ptr_Q,
+              ElementK **ptr_K, ElementP **ptr_P, ElementV **ptr_V,
+              ElementO **ptr_O, ElementOAccum **ptr_O_accum,
+              typename LayoutQ::Stride::LongIndex *ldq,
+              typename LayoutK::Stride::LongIndex *ldk,
+              typename LayoutP::Stride::LongIndex *ldp,
+              typename LayoutV::Stride::LongIndex *ldv,
+              typename LayoutO::Stride::LongIndex *ldo, bool causal,
+              ElementAccumulator scale, GemmCoord *host_problem_sizes = nullptr)
+        : problem_sizes0(problem_sizes0), problem_sizes1(problem_sizes1),
+          problem_count(problem_count), threadblock_count(threadblock_count),
+          ptr_Q(ptr_Q), ptr_K(ptr_K), ptr_P(ptr_P), ptr_V(ptr_V), ptr_O(ptr_O),
+          ptr_O_accum(kNeedsOutputAccumulatorBuffer ? ptr_O_accum
+                                                    : (accum_t **)ptr_O),
+          ldq(ldq), ldk(ldk), ldv(ldv), ldo(ldo), causal(causal), scale(scale),
+          host_problem_sizes(host_problem_sizes) {}
 
     bool __host__ check_supported() {
       CHECK_ALIGNED_PTR(ptr_Q, kAlignmentQ);
@@ -284,12 +247,12 @@ public:
     typename ProblemVisitor::Params problem_visitor;
     int threadblock_count;
 
-    ElementQ ** ptr_Q;
-    ElementK ** ptr_K;
-    ElementP ** ptr_P;
-    ElementV ** ptr_V;
-    ElementO ** ptr_O;
-    ElementOAccum ** ptr_O_accum;
+    ElementQ **ptr_Q;
+    ElementK **ptr_K;
+    ElementP **ptr_P;
+    ElementV **ptr_V;
+    ElementO **ptr_O;
+    ElementOAccum **ptr_O_accum;
 
     typename LayoutQ::Stride::LongIndex *ldq;
     typename LayoutK::Stride::LongIndex *ldk;
@@ -304,60 +267,38 @@ public:
     //
 
     CUTLASS_HOST_DEVICE
-    Params():
-      ptr_Q(nullptr),
-      ptr_K(nullptr),
-      ptr_P(nullptr),
-      ptr_V(nullptr),
-      ptr_O(nullptr),
-      ptr_O_accum(nullptr),
-      ldq(nullptr),
-      ldk(nullptr),
-      ldv(nullptr),
-      ldo(nullptr),
-      causal(false),
-      scale(0)
-    { }
+    Params()
+        : ptr_Q(nullptr), ptr_K(nullptr), ptr_P(nullptr), ptr_V(nullptr),
+          ptr_O(nullptr), ptr_O_accum(nullptr), ldq(nullptr), ldk(nullptr),
+          ldv(nullptr), ldo(nullptr), causal(false), scale(0) {}
 
     CUTLASS_HOST_DEVICE
-    Params(Arguments const &args,
-          void *workspace = nullptr,
-          int tile_count = 0):
-      problem_visitor(args.problem_sizes0, args.problem_sizes1, args.problem_count, workspace, tile_count),
-      threadblock_count(args.threadblock_count),
-      ptr_Q(args.ptr_Q),
-      ptr_K(args.ptr_K),
-      ptr_P(args.ptr_P),
-      ptr_V(args.ptr_V),
-      ptr_O(args.ptr_O),
-      ptr_O_accum(kNeedsOutputAccumulatorBuffer ? args.ptr_O_accum : (accum_t**)args.ptr_O),
-      ldq(args.ldq),
-      ldk(args.ldk),
-      ldv(args.ldv),
-      ldo(args.ldo),
-      causal(args.causal),
-      scale(args.scale)
-    { 
-
-    }
+    Params(Arguments const &args, void *workspace = nullptr, int tile_count = 0)
+        : problem_visitor(args.problem_sizes0, args.problem_sizes1,
+                          args.problem_count, workspace, tile_count),
+          threadblock_count(args.threadblock_count), ptr_Q(args.ptr_Q),
+          ptr_K(args.ptr_K), ptr_P(args.ptr_P), ptr_V(args.ptr_V),
+          ptr_O(args.ptr_O),
+          ptr_O_accum(kNeedsOutputAccumulatorBuffer ? args.ptr_O_accum
+                                                    : (accum_t **)args.ptr_O),
+          ldq(args.ldq), ldk(args.ldk), ldv(args.ldv), ldo(args.ldo),
+          causal(args.causal), scale(args.scale) {}
 
     CUTLASS_HOST_DEVICE
-    void update(
-      Arguments const &args,
-      void *workspace = nullptr,
-      int tile_count = 0) {
+    void update(Arguments const &args, void *workspace = nullptr,
+                int tile_count = 0) {
 
-      problem_visitor = typename ProblemVisitor::Params(args.problem_sizes0,
-                                                        args.problem_sizes1,
-                                                        args.problem_count,
-                                                        workspace, tile_count);
+      problem_visitor = typename ProblemVisitor::Params(
+          args.problem_sizes0, args.problem_sizes1, args.problem_count,
+          workspace, tile_count);
       threadblock_count = args.threadblock_count;
       ptr_Q = args.ptr_Q;
       ptr_K = args.ptr_K;
       ptr_P = args.ptr_P;
       ptr_V = args.ptr_V;
       ptr_O = args.ptr_O;
-      ptr_O_accum = kNeedsOutputAccumulatorBuffer ? args.ptr_O_accum : (accum_t**)args.ptr_O;
+      ptr_O_accum = kNeedsOutputAccumulatorBuffer ? args.ptr_O_accum
+                                                  : (accum_t **)args.ptr_O;
       ldq = args.ldq;
       ldk = args.ldk;
       ldv = args.ldv;
@@ -373,7 +314,8 @@ public:
     cutlass::Array<ElementAccumulator, kQueriesPerBlock> s_prime;
     cutlass::Array<ElementAccumulator, kQueriesPerBlock> mi;
     cutlass::Array<ElementAccumulator, kQueriesPerBlock> out_rescale;
-    cutlass::Array<ElementAccumulator, kQueriesPerBlock * MM0::MmaCore::WarpCount::kN>
+    cutlass::Array<ElementAccumulator,
+                   kQueriesPerBlock * MM0::MmaCore::WarpCount::kN>
         addition_storage;
   };
 
@@ -390,7 +332,7 @@ public:
       typename MM1::DefaultEpilogue::SharedStorage epilogue;
     };
 
-    CUTLASS_DEVICE typename MM1::DefaultEpilogue::SharedStorage&
+    CUTLASS_DEVICE typename MM1::DefaultEpilogue::SharedStorage &
     epilogue_shared_storage() {
       return epilogue;
     }
@@ -412,7 +354,7 @@ public:
       SharedStorageAfterMM0 after_mm0;
     };
 
-    CUTLASS_DEVICE typename MM1::DefaultEpilogue::SharedStorage&
+    CUTLASS_DEVICE typename MM1::DefaultEpilogue::SharedStorage &
     epilogue_shared_storage() {
       return after_mm0.epilogue;
     }
@@ -422,12 +364,10 @@ public:
   };
 
   using SharedStorage = typename cutlass::platform::conditional<
-      kKeepOutputInRF,
-      SharedStorageEpilogueAtEnd,
+      kKeepOutputInRF, SharedStorageEpilogueAtEnd,
       SharedStorageEpilogueInLoop>::type;
 
 private:
-
   // Parameters to be used by an individual tile
   struct TileParams {
 
@@ -439,37 +379,39 @@ private:
     // Returns whether this threadblock computes within the number of queries,
     // which is determined by the M dimension of problem 0
     CUTLASS_HOST_DEVICE
-    static bool can_compute(int threadblock_idx, const GemmCoord& problem_size0) {
+    static bool can_compute(int threadblock_idx,
+                            const GemmCoord &problem_size0) {
       return query_start(threadblock_idx) < problem_size0.m();
     }
 
     CUTLASS_HOST_DEVICE
-    static int num_queries(int threadblock_idx, const GemmCoord& problem_size0) {
+    static int num_queries(int threadblock_idx,
+                           const GemmCoord &problem_size0) {
       return problem_size0.m() - query_start(threadblock_idx);
     }
 
     CUTLASS_HOST_DEVICE
-    static int num_keys(int threadblock_idx, const GemmCoord& problem_size0, bool causal) {
+    static int num_keys(int threadblock_idx, const GemmCoord &problem_size0,
+                        bool causal) {
       int nk = problem_size0.n();
       if (causal) {
-        nk = cutlass::fast_min(int32_t(query_start(threadblock_idx) + kQueriesPerBlock), nk);
+        nk = cutlass::fast_min(
+            int32_t(query_start(threadblock_idx) + kQueriesPerBlock), nk);
       }
       return nk;
     }
-
   };
 
 public:
-
   //
   // Methods
   //
 
   CUTLASS_DEVICE
-  FMHAGrouped() { }
+  FMHAGrouped() {}
 
   /// Determines whether kernel satisfies alignment
-  static Status can_implement(cutlass::gemm::GemmCoord const & problem_size) {
+  static Status can_implement(cutlass::gemm::GemmCoord const &problem_size) {
     return Status::kSuccess;
   }
 
@@ -477,9 +419,7 @@ public:
     return Status::kSuccess;
   }
 
-  static CUTLASS_DEVICE int16_t thread_id() {
-    return threadIdx.x;
-  }
+  static CUTLASS_DEVICE int16_t thread_id() { return threadIdx.x; }
 
   static CUTLASS_DEVICE int8_t warp_id() {
     return threadIdx.x / kThreadsPerWarp;
@@ -492,23 +432,22 @@ public:
   /// Executes one GEMM
   CUTLASS_DEVICE
   void operator()(Params const &params, SharedStorage &shared_storage) {
-    auto& m_prime = shared_storage.m_prime;
-    auto& s_prime = shared_storage.s_prime;
-    [[maybe_unused]] auto& si = shared_storage.after_mm0.si;
-    auto& mi = shared_storage.mi;
-    auto& out_rescale = shared_storage.out_rescale;
+    auto &m_prime = shared_storage.m_prime;
+    auto &s_prime = shared_storage.s_prime;
+    [[maybe_unused]] auto &si = shared_storage.after_mm0.si;
+    auto &mi = shared_storage.mi;
+    auto &out_rescale = shared_storage.out_rescale;
 
-    ProblemVisitor problem_visitor(
-      params.problem_visitor,
-      shared_storage.problem_visitor,
-      blockIdx.x);
+    ProblemVisitor problem_visitor(params.problem_visitor,
+                                   shared_storage.problem_visitor, blockIdx.x);
 
     // Outer 'persistent' loop to iterate over tiles
     while (problem_visitor.next_tile()) {
 
       GemmCoord problem_size0 = problem_visitor.problem_size0();
       GemmCoord problem_size1 = problem_visitor.problem_size1();
-      const int32_t threadblock_idx = int32_t(problem_visitor.threadblock_idx());
+      const int32_t threadblock_idx =
+          int32_t(problem_visitor.threadblock_idx());
 
       if (!TileParams::can_compute(threadblock_idx, problem_size0)) {
         problem_visitor.advance(gridDim.x);
@@ -522,68 +461,73 @@ public:
         out_rescale[thread_id()] = accum_t(1.0);
         m_prime[thread_id()] =
             -cutlass::platform::numeric_limits<ElementAccumulator>::infinity();
-        mi[thread_id()] = -cutlass::platform::numeric_limits<ElementAccumulator>::infinity();
+        mi[thread_id()] =
+            -cutlass::platform::numeric_limits<ElementAccumulator>::infinity();
       }
 
-      ElementO *ptr_O = params.ptr_O[problem_idx]  + TileParams::query_start(threadblock_idx) * params.ldo[problem_idx];
-      ElementOAccum *ptr_O_accum = params.ptr_O_accum[problem_idx]  + TileParams::query_start(threadblock_idx) * params.ldo[problem_idx];
-      const int num_queries = TileParams::num_queries(threadblock_idx, problem_size0);
+      ElementO *ptr_O =
+          params.ptr_O[problem_idx] +
+          TileParams::query_start(threadblock_idx) * params.ldo[problem_idx];
+      ElementOAccum *ptr_O_accum =
+          params.ptr_O_accum[problem_idx] +
+          TileParams::query_start(threadblock_idx) * params.ldo[problem_idx];
+      const int num_queries =
+          TileParams::num_queries(threadblock_idx, problem_size0);
 
       auto createOutputIter = [&](int col) -> typename MM1::OutputTileIterator {
         using OutputTileIterator = typename MM1::OutputTileIterator;
         return OutputTileIterator(
-            typename OutputTileIterator::Params{(int32_t)params.ldo[problem_idx]},
+            typename OutputTileIterator::Params{
+                (int32_t)params.ldo[problem_idx]},
             ptr_O,
-            typename OutputTileIterator::TensorCoord{
-                num_queries, problem_size1.n()},
-            thread_id(),
-            {0, col});
+            typename OutputTileIterator::TensorCoord{num_queries,
+                                                     problem_size1.n()},
+            thread_id(), {0, col});
       };
 
-      auto createOutputAccumIter = [&](int col) ->
-        typename MM1::OutputTileIteratorAccum {
-          using OutputTileIteratorAccum = typename MM1::OutputTileIteratorAccum;
-          return OutputTileIteratorAccum(
-              typename OutputTileIteratorAccum::Params{(int32_t)params.ldo[problem_idx]},
-              ptr_O_accum,
-              typename OutputTileIteratorAccum::TensorCoord{
-                  num_queries, problem_size1.n()},
-              thread_id(),
-              {0, col});
-        };
+      auto createOutputAccumIter =
+          [&](int col) -> typename MM1::OutputTileIteratorAccum {
+        using OutputTileIteratorAccum = typename MM1::OutputTileIteratorAccum;
+        return OutputTileIteratorAccum(
+            typename OutputTileIteratorAccum::Params{
+                (int32_t)params.ldo[problem_idx]},
+            ptr_O_accum,
+            typename OutputTileIteratorAccum::TensorCoord{num_queries,
+                                                          problem_size1.n()},
+            thread_id(), {0, col});
+      };
 
       typename MM1::Mma::FragmentC accum_o;
       accum_o.clear();
 
-      const int num_keys = TileParams::num_keys(threadblock_idx, problem_size0, params.causal);
+      const int num_keys =
+          TileParams::num_keys(threadblock_idx, problem_size0, params.causal);
 
       for (int32_t iter_key_start = 0; iter_key_start < num_keys;
            iter_key_start += kKeysPerBlock) {
         int32_t problem_size_0_m =
             cutlass::fast_min((int32_t)kQueriesPerBlock, num_queries);
-        int32_t problem_size_0_n = cutlass::fast_min(
-            (int32_t)kKeysPerBlock, num_keys - iter_key_start);
-        int32_t const& problem_size_0_k = problem_size0.k();
-        int32_t const& problem_size_1_n = problem_size1.n();
-        int32_t const& problem_size_1_k = problem_size_0_n;
+        int32_t problem_size_0_n = cutlass::fast_min((int32_t)kKeysPerBlock,
+                                                     num_keys - iter_key_start);
+        int32_t const &problem_size_0_k = problem_size0.k();
+        int32_t const &problem_size_1_n = problem_size1.n();
+        int32_t const &problem_size_1_k = problem_size_0_n;
 
         auto prologueV = [&](int blockN) {
           typename MM1::Mma::IteratorB iterator_V(
-              typename MM1::IteratorB::Params{MM1::LayoutB(params.ldv[problem_idx])},
-              params.ptr_V[problem_idx] + iter_key_start * params.ldv[problem_idx],
-              {problem_size_1_k, problem_size_1_n},
-              thread_id(),
+              typename MM1::IteratorB::Params{
+                  MM1::LayoutB(params.ldv[problem_idx])},
+              params.ptr_V[problem_idx] +
+                  iter_key_start * params.ldv[problem_idx],
+              {problem_size_1_k, problem_size_1_n}, thread_id(),
               cutlass::MatrixCoord{0, blockN * MM1::Mma::Shape::kN});
 
-          MM1::Mma::prologue(
-              shared_storage.after_mm0.mm1,
-              iterator_V,
-              thread_id(),
-              problem_size_1_k);
+          MM1::Mma::prologue(shared_storage.after_mm0.mm1, iterator_V,
+                             thread_id(), problem_size_1_k);
         };
 
-        __syncthreads(); // Need to have shared memory initialized, and `m_prime`
-                         // updated from end of prev iter
+        __syncthreads(); // Need to have shared memory initialized, and
+                         // `m_prime` updated from end of prev iter
 
         //
         // MATMUL: Q.K_t
@@ -595,28 +539,26 @@ public:
         // and stores that into `shared_storage.si`
         //
 
-        ElementQ *ptr_Q = params.ptr_Q[problem_idx] + TileParams::query_start(threadblock_idx) * params.ldq[problem_idx];
+        ElementQ *ptr_Q =
+            params.ptr_Q[problem_idx] +
+            TileParams::query_start(threadblock_idx) * params.ldq[problem_idx];
 
         // Construct iterators to A and B operands
         typename MM0::IteratorA iterator_A(
-          typename MM0::IteratorA::Params(
-              typename MM0::MmaCore::LayoutA(params.ldq[problem_idx])),
-          ptr_Q,
-          {problem_size_0_m, problem_size_0_k},
-          thread_id(),
-          {0, 0});
+            typename MM0::IteratorA::Params(
+                typename MM0::MmaCore::LayoutA(params.ldq[problem_idx])),
+            ptr_Q, {problem_size_0_m, problem_size_0_k}, thread_id(), {0, 0});
 
         typename MM0::IteratorB iterator_B(
             typename MM0::IteratorB::Params(
                 typename MM0::MmaCore::LayoutB(params.ldk[problem_idx])),
-            params.ptr_K[problem_idx] + iter_key_start * params.ldk[problem_idx],
-            {problem_size_0_k, problem_size_0_n},
-            thread_id(),
-            {0, 0});
+            params.ptr_K[problem_idx] +
+                iter_key_start * params.ldk[problem_idx],
+            {problem_size_0_k, problem_size_0_n}, thread_id(), {0, 0});
 
         // Construct thread-scoped matrix multiply
-        typename MM0::Mma mma(
-            shared_storage.mm0, thread_id(), warp_id(), lane_id());
+        typename MM0::Mma mma(shared_storage.mm0, thread_id(), warp_id(),
+                              lane_id());
 
         typename MM0::Mma::FragmentC accum;
 
@@ -636,10 +578,8 @@ public:
         }
 
         typename MM0::Mma::Operator::IteratorC::TensorCoord
-          iteratorC_tile_offset = {
-              (warp_id() % MM0::Mma::WarpCount::kM),
-              (warp_id() / MM0::Mma::WarpCount::kM)
-            };
+            iteratorC_tile_offset = {(warp_id() % MM0::Mma::WarpCount::kM),
+                                     (warp_id() / MM0::Mma::WarpCount::kM)};
 
         // Mask out last if causal
         if (params.causal && num_keys - iter_key_start <= kKeysPerBlock) {
@@ -649,7 +589,8 @@ public:
           MM0::AccumLambdaIterator::iterateRows(
               lane_offset,
               [&](int accum_m) {
-                last_col = TileParams::query_start(threadblock_idx) + accum_m - iter_key_start;
+                last_col = TileParams::query_start(threadblock_idx) + accum_m -
+                           iter_key_start;
               },
               [&](int accum_m, int accum_n, int idx) {
                 if (accum_n > last_col) {
@@ -687,30 +628,20 @@ public:
         // Update `mi` from accum stored in registers
         // Also does accum[i] <- exp(accum[i] - mi)
         iterative_softmax<typename MM0::Mma::Operator::IteratorC>(
-            accum_o,
-            accum,
-            mi,
-            m_prime,
-            s_prime,
-            out_rescale,
-            shared_storage.addition_storage,
-            lane_id(),
-            thread_id(),
-            warp_id(),
-            num_keys - iter_key_start,
-            iter_key_start == 0,
-            iteratorC_tile_offset,
-            kSupportsBias ? 1.0f : params.scale);
+            accum_o, accum, mi, m_prime, s_prime, out_rescale,
+            shared_storage.addition_storage, lane_id(), thread_id(), warp_id(),
+            num_keys - iter_key_start, iter_key_start == 0,
+            iteratorC_tile_offset, kSupportsBias ? 1.0f : params.scale);
 
         // Output results to shared-memory
-        int warp_idx_mn_0 = warp_id() %
-            (MM0::Mma::Base::WarpCount::kM * MM0::Mma::Base::WarpCount::kN);
-        auto output_tile_coords = cutlass::MatrixCoord{
-            warp_idx_mn_0 % MM0::Mma::Base::WarpCount::kM,
-            warp_idx_mn_0 / MM0::Mma::Base::WarpCount::kM};
+        int warp_idx_mn_0 = warp_id() % (MM0::Mma::Base::WarpCount::kM *
+                                         MM0::Mma::Base::WarpCount::kN);
+        auto output_tile_coords =
+            cutlass::MatrixCoord{warp_idx_mn_0 % MM0::Mma::Base::WarpCount::kM,
+                                 warp_idx_mn_0 / MM0::Mma::Base::WarpCount::kM};
 
-        MM0::B2bGemm::accumToSmem(
-            shared_storage.after_mm0.si, accum, lane_id(), output_tile_coords);
+        MM0::B2bGemm::accumToSmem(shared_storage.after_mm0.si, accum, lane_id(),
+                                  output_tile_coords);
 
         __syncthreads();
 
@@ -721,38 +652,37 @@ public:
         // `V` is read from global memory (with iterator_B)
         //
 
-        const int64_t nBlockN = kKeepOutputInRF ? 1
-                                                : ceil_div(
-                                                      (int64_t)problem_size_1_n,
-                                                      int64_t(MM1::ThreadblockShape::kN));
+        const int64_t nBlockN =
+            kKeepOutputInRF ? 1
+                            : ceil_div((int64_t)problem_size_1_n,
+                                       int64_t(MM1::ThreadblockShape::kN));
 
         // Iterate over the N dimension of GEMM1
         for (int blockN = 0; blockN < nBlockN; ++blockN) {
-          int gemm_k_iterations =
-              (problem_size_1_k + MM1::Mma::Shape::kK - 1) / MM1::Mma::Shape::kK;
+          int gemm_k_iterations = (problem_size_1_k + MM1::Mma::Shape::kK - 1) /
+                                  MM1::Mma::Shape::kK;
 
-          // Compute threadblock-scoped matrix multiply-add and store it in accum
-          // (in registers)
+          // Compute threadblock-scoped matrix multiply-add and store it in
+          // accum (in registers)
           if (!kPreloadV) {
             __syncthreads(); // we share shmem between mma and epilogue
           }
 
           typename MM1::Mma::IteratorB iterator_V(
-            typename MM1::IteratorB::Params{MM1::LayoutB(params.ldv[problem_idx])},
-            params.ptr_V[problem_idx] + iter_key_start * params.ldv[problem_idx],
-            {problem_size_1_k, problem_size_1_n},
-            thread_id(),
-            cutlass::MatrixCoord{0, blockN * MM1::Mma::Shape::kN});
+              typename MM1::IteratorB::Params{
+                  MM1::LayoutB(params.ldv[problem_idx])},
+              params.ptr_V[problem_idx] +
+                  iter_key_start * params.ldv[problem_idx],
+              {problem_size_1_k, problem_size_1_n}, thread_id(),
+              cutlass::MatrixCoord{0, blockN * MM1::Mma::Shape::kN});
 
           typename MM1::Mma mma_pv(
-            // operand A: Pij_dropped in shared memory
-            shared_storage.after_mm0.si.accum_ref(),
-            // operand B: shared memory staging area for Vj, which is loaded
-            // from global memory
-            shared_storage.after_mm0.mm1.operand_B_ref(),
-            (int)thread_id(),
-            (int)warp_id(),
-            (int)lane_id());
+              // operand A: Pij_dropped in shared memory
+              shared_storage.after_mm0.si.accum_ref(),
+              // operand B: shared memory staging area for Vj, which is loaded
+              // from global memory
+              shared_storage.after_mm0.mm1.operand_B_ref(), (int)thread_id(),
+              (int)warp_id(), (int)lane_id());
 
           mma_pv.set_prologue_done(kPreloadV);
           if (!kKeepOutputInRF) {
@@ -771,34 +701,31 @@ public:
             DISPATCH_BOOL(
                 iter_key_start == 0, kIsFirst, ([&] {
                   DISPATCH_BOOL(
-                      (iter_key_start + kKeysPerBlock) >= num_keys,
-                      kIsLast,
+                      (iter_key_start + kKeysPerBlock) >= num_keys, kIsLast,
                       ([&] {
                         using DefaultEpilogue = typename MM1::DefaultEpilogue;
-                        using DefaultOp = typename MM1::DefaultConfig::EpilogueOutputOp;
-                        using ElementCompute = typename DefaultOp::ElementCompute;
+                        using DefaultOp =
+                            typename MM1::DefaultConfig::EpilogueOutputOp;
+                        using ElementCompute =
+                            typename DefaultOp::ElementCompute;
                         using EpilogueOutputOp = typename cutlass::epilogue::
                             thread::MemoryEfficientAttentionNormalize<
                                 typename cutlass::platform::conditional<
-                                    kIsLast,
-                                    output_t,
-                                    output_accum_t>::type,
-                                output_accum_t,
-                                DefaultOp::kCount,
+                                    kIsLast, output_t, output_accum_t>::type,
+                                output_accum_t, DefaultOp::kCount,
                                 typename DefaultOp::ElementAccumulator,
-                                output_accum_t,
-                                kIsFirst,
-                                kIsLast,
-                                cutlass::Array<ElementCompute, kQueriesPerBlock>>;
-                        using Epilogue = typename cutlass::epilogue::threadblock::
-                            EpiloguePipelined<
+                                output_accum_t, kIsFirst, kIsLast,
+                                cutlass::Array<ElementCompute,
+                                               kQueriesPerBlock>>;
+                        using Epilogue = typename cutlass::epilogue::
+                            threadblock::EpiloguePipelined<
                                 typename DefaultEpilogue::Shape,
                                 typename MM1::Mma::Operator,
                                 DefaultEpilogue::kPartitionsK,
                                 typename cutlass::platform::conditional<
-                                    kIsLast,
-                                    typename MM1::OutputTileIterator,
-                                    typename MM1::OutputTileIteratorAccum>::type,
+                                    kIsLast, typename MM1::OutputTileIterator,
+                                    typename MM1::OutputTileIteratorAccum>::
+                                    type,
                                 typename DefaultEpilogue::
                                     AccumulatorFragmentIterator,
                                 typename DefaultEpilogue::WarpTileIterator,
@@ -807,23 +734,21 @@ public:
                                 typename DefaultEpilogue::Padding,
                                 DefaultEpilogue::kFragmentsPerIteration,
                                 true, // IterationsUnroll
-                                typename MM1::OutputTileIteratorAccum // Read
-                                                                      // iterator
+                                typename MM1::
+                                    OutputTileIteratorAccum // Read
+                                                            // iterator
                                 >;
 
                         int col = blockN * MM1::Mma::Shape::kN;
                         auto source_iter = createOutputAccumIter(col);
                         auto dest_iter = gemm_kernel_utils::call_conditional<
-                            kIsLast,
-                            decltype(createOutputIter),
+                            kIsLast, decltype(createOutputIter),
                             decltype(createOutputAccumIter)>::
                             apply(createOutputIter, createOutputAccumIter, col);
                         EpilogueOutputOp rescale(s_prime, out_rescale);
                         Epilogue epilogue(
                             shared_storage.epilogue_shared_storage(),
-                            thread_id(),
-                            warp_id(),
-                            lane_id());
+                            thread_id(), warp_id(), lane_id());
                         epilogue(rescale, dest_iter, accum_o, source_iter);
                       }));
                 }));
@@ -832,7 +757,7 @@ public:
             }
           }
         }
-         __syncthreads(); // we modify `m_prime` after
+        __syncthreads(); // we modify `m_prime` after
       }
 
       if (kKeepOutputInRF) {
@@ -841,64 +766,55 @@ public:
         using DefaultEpilogue = typename MM1::DefaultEpilogue;
         using DefaultOp = typename MM1::DefaultConfig::EpilogueOutputOp;
         using ElementCompute = typename DefaultOp::ElementCompute;
-        using EpilogueOutputOp =
-            typename cutlass::epilogue::thread::MemoryEfficientAttentionNormalize<
+        using EpilogueOutputOp = typename cutlass::epilogue::thread::
+            MemoryEfficientAttentionNormalize<
                 output_t,       // output
                 output_accum_t, // source
                 DefaultOp::kCount,
                 typename DefaultOp::ElementAccumulator, // accum
-                output_accum_t, // compute
-                kIsFirst,
-                kIsLast,
+                output_accum_t,                         // compute
+                kIsFirst, kIsLast,
                 cutlass::Array<ElementCompute, kQueriesPerBlock>>;
         using Epilogue =
             typename cutlass::epilogue::threadblock::EpiloguePipelined<
-                typename DefaultEpilogue::Shape,
-                typename MM1::Mma::Operator,
+                typename DefaultEpilogue::Shape, typename MM1::Mma::Operator,
                 DefaultEpilogue::kPartitionsK,
                 typename MM1::OutputTileIterator, // destination
                 typename DefaultEpilogue::AccumulatorFragmentIterator,
                 typename DefaultEpilogue::WarpTileIterator,
-                typename DefaultEpilogue::SharedLoadIterator,
-                EpilogueOutputOp,
+                typename DefaultEpilogue::SharedLoadIterator, EpilogueOutputOp,
                 typename DefaultEpilogue::Padding,
                 DefaultEpilogue::kFragmentsPerIteration,
-                true, // IterationsUnroll
+                true,                                 // IterationsUnroll
                 typename MM1::OutputTileIteratorAccum // source tile
                 >;
         auto dest_iter = createOutputIter(0);
         EpilogueOutputOp rescale(s_prime, out_rescale);
-        Epilogue epilogue(
-            shared_storage.epilogue_shared_storage(),
-            thread_id(),
-            warp_id(),
-            lane_id());
+        Epilogue epilogue(shared_storage.epilogue_shared_storage(), thread_id(),
+                          warp_id(), lane_id());
         MM1::Mma::drain_cp_asyncs();
         epilogue(rescale, dest_iter, accum_o);
       }
 
       // Next tile
       problem_visitor.advance(gridDim.x);
-      __syncthreads(); // Don't start the next iteration until all threads are done using shared memory.
+      __syncthreads(); // Don't start the next iteration until all threads are
+                       // done using shared memory.
     }
   }
 
   template <typename WarpIteratorC>
   CUTLASS_DEVICE static void iterative_softmax(
-      typename WarpIteratorC::Fragment& frag_o, // output so far
-      typename WarpIteratorC::Fragment& frag,
-      cutlass::Array<accum_t, kQueriesPerBlock>& mi,
-      cutlass::Array<accum_t, kQueriesPerBlock>& m_prime,
-      cutlass::Array<accum_t, kQueriesPerBlock>& s_prime,
-      cutlass::Array<accum_t, kQueriesPerBlock>& out_rescale,
-      cutlass::Array<accum_t, kQueriesPerBlock * MM0::MmaCore::WarpCount::kN>&
-          addition_storage,
-      int8_t lane_id,
-      int8_t thread_id,
-      int8_t warp_id,
-      int max_col,
-      bool is_first,
-      typename WarpIteratorC::TensorCoord const& tile_offset,
+      typename WarpIteratorC::Fragment &frag_o, // output so far
+      typename WarpIteratorC::Fragment &frag,
+      cutlass::Array<accum_t, kQueriesPerBlock> &mi,
+      cutlass::Array<accum_t, kQueriesPerBlock> &m_prime,
+      cutlass::Array<accum_t, kQueriesPerBlock> &s_prime,
+      cutlass::Array<accum_t, kQueriesPerBlock> &out_rescale,
+      cutlass::Array<accum_t, kQueriesPerBlock * MM0::MmaCore::WarpCount::kN>
+          &addition_storage,
+      int8_t lane_id, int8_t thread_id, int8_t warp_id, int max_col,
+      bool is_first, typename WarpIteratorC::TensorCoord const &tile_offset,
       float scaling) {
     /* Iterates on the accumulator and corresponding position on result matrix
 
@@ -912,10 +828,9 @@ public:
     on shared memory for the next matmul with Value.
     */
     using Fragment = typename WarpIteratorC::Fragment;
-    using LambdaIterator = typename DefaultMmaAccumLambdaIterator<
-        WarpIteratorC,
-        accum_t,
-        kThreadsPerWarp>::Iterator;
+    using LambdaIterator =
+        typename DefaultMmaAccumLambdaIterator<WarpIteratorC, accum_t,
+                                               kThreadsPerWarp>::Iterator;
     // Convert to `accum_t` (rather than double)
     constexpr float kLog2e = 1.4426950408889634074; // log_2(e) = M_LOG2E
 
@@ -989,27 +904,23 @@ public:
     {
       accum_t mi_row, total_row;
       LambdaIterator::iterateRows(
-          lane_offset,
-          [&](int accum_m) { mi_row = mi[accum_m]; },
+          lane_offset, [&](int accum_m) { mi_row = mi[accum_m]; },
           [&](int accum_m, int accum_n, int idx) {
             frag[idx] =
                 (accum_n < max_col) ? exp2f(frag[idx] - mi_row) : accum_t(0.0);
           },
           [&](int accum_m) {});
       LambdaIterator::iterateRows(
-          lane_offset,
-          [&](int accum_m) { total_row = 0.0; },
+          lane_offset, [&](int accum_m) { total_row = 0.0; },
           [&](int accum_m, int accum_n, int idx) { total_row += frag[idx]; },
           [&](int accum_m) {
             if (LambdaIterator::reduceSameRow(
-                    lane_id, total_row, [](accum_t a, accum_t b) {
-                      return a + b;
-                    })) {
+                    lane_id, total_row,
+                    [](accum_t a, accum_t b) { return a + b; })) {
               // NOTE: we could atomically add `total_row` to `s_prime`, but
               // it's faster (and deterministic) to avoid atomics here
-              addition_storage
-                  [accum_m + kQueriesPerBlock * tile_offset.column()] =
-                      total_row;
+              addition_storage[accum_m + kQueriesPerBlock *
+                                             tile_offset.column()] = total_row;
             }
           });
     }

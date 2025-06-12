@@ -65,24 +65,28 @@ When iterating over an array, `key()` will return the index of the element as st
 
 !!! danger "Lifetime issues"
 
-    Using `items()` on temporary objects is dangerous. Make sure the object's lifetime exceeds the iteration. See
-    <https://github.com/nlohmann/json/issues/2040> for more information.
+```
+Using `items()` on temporary objects is dangerous. Make sure the object's lifetime exceeds the iteration. See
+<https://github.com/nlohmann/json/issues/2040> for more information.
+```
 
 ## Examples
 
 ??? example
 
-    The following code shows an example for `items()`.
-    
-    ```cpp
-    --8<-- "examples/items.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/items.output"
-    ```
+````
+The following code shows an example for `items()`.
+
+```cpp
+--8<-- "examples/items.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/items.output"
+```
+````
 
 ## Version history
 
@@ -92,9 +96,11 @@ When iterating over an array, `key()` will return the index of the element as st
 
 !!! warning "Deprecation"
 
-    This function replaces the static function `iterator_wrapper` which was introduced in version 1.0.0, but has been
-    deprecated in version 3.1.0. Function `iterator_wrapper` will be removed in version 4.0.0. Please replace all
-    occurrences of `#!cpp iterator_wrapper(j)` with `#!cpp j.items()`.
+```
+This function replaces the static function `iterator_wrapper` which was introduced in version 1.0.0, but has been
+deprecated in version 3.1.0. Function `iterator_wrapper` will be removed in version 4.0.0. Please replace all
+occurrences of `#!cpp iterator_wrapper(j)` with `#!cpp j.items()`.
 
-    You should be warned by your compiler with a `-Wdeprecated-declarations` warning if you are using a deprecated
-    function.
+You should be warned by your compiler with a `-Wdeprecated-declarations` warning if you are using a deprecated
+function.
+```

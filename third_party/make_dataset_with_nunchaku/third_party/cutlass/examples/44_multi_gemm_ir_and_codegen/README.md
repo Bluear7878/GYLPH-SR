@@ -1,8 +1,10 @@
 This example provides utilities for generating back-to-back (B2B) GEMMs using CUTLASS.
 
 ## Quick start
+
 A configuration file containing the GEMMs to be fused together is located in [config.json](config.json). Edit
 this to change the configuration that you would like to run.
+
 ```shell
 cd ir_gen
 
@@ -25,10 +27,12 @@ make -j
 ```
 
 ## Current restrictions
+
 This experimental example has the following restrictions:
+
 1. N tile should not exceed 256, or register spilling will occur.
-2. Only FP16 is supported currently
-3. Matrix A must be row major, matrix B must be column major, matrices C and D must be row major.
+1. Only FP16 is supported currently
+1. Matrix A must be row major, matrix B must be column major, matrices C and D must be row major.
 
 ## Copyright
 

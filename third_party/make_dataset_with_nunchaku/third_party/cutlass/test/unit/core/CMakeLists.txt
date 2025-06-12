@@ -63,4 +63,3 @@ add_executable(
 
   cpp11.cu
 )
-

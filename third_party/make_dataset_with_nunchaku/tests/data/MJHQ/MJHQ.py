@@ -31,7 +31,9 @@ _LICENSE = (
 
 IMAGE_URL = "https://huggingface.co/datasets/playgroundai/MJHQ-30K/resolve/main/mjhq30k_imgs.zip"
 
-META_URL = "https://huggingface.co/datasets/playgroundai/MJHQ-30K/resolve/main/meta_data.json"
+META_URL = (
+    "https://huggingface.co/datasets/playgroundai/MJHQ-30K/resolve/main/meta_data.json"
+)
 
 CONTROL_URL = "https://huggingface.co/datasets/mit-han-lab/svdquant-datasets/resolve/main/MJHQ-5000.zip"
 
@@ -55,7 +57,9 @@ class MJHQ(datasets.GeneratorBasedBuilder):
     BUILDER_CONFIG_CLASS = MJHQConfig
     BUILDER_CONFIGS = [
         MJHQConfig(name="MJHQ", version=VERSION, description="MJHQ-30K full dataset"),
-        MJHQConfig(name="MJHQ-control", version=VERSION, description="MJHQ-5K with controls"),
+        MJHQConfig(
+            name="MJHQ-control", version=VERSION, description="MJHQ-5K with controls"
+        ),
     ]
     DEFAULT_CONFIG_NAME = "MJHQ"
 
@@ -77,7 +81,11 @@ class MJHQ(datasets.GeneratorBasedBuilder):
             }
         )
         return datasets.DatasetInfo(
-            description=_DESCRIPTION, features=features, homepage=_HOMEPAGE, license=_LICENSE, citation=_CITATION
+            description=_DESCRIPTION,
+            features=features,
+            homepage=_HOMEPAGE,
+            license=_LICENSE,
+            citation=_CITATION,
         )
 
     def _split_generators(self, dl_manager: datasets.download.DownloadManager):
@@ -86,7 +94,8 @@ class MJHQ(datasets.GeneratorBasedBuilder):
             image_root = dl_manager.download_and_extract(IMAGE_URL)
             return [
                 datasets.SplitGenerator(
-                    name=datasets.Split.TRAIN, gen_kwargs={"meta_path": meta_path, "image_root": image_root}
+                    name=datasets.Split.TRAIN,
+                    gen_kwargs={"meta_path": meta_path, "image_root": image_root},
                 ),
             ]
         else:
@@ -96,7 +105,10 @@ class MJHQ(datasets.GeneratorBasedBuilder):
             return [
                 datasets.SplitGenerator(
                     name=datasets.Split.TRAIN,
-                    gen_kwargs={"meta_path": os.path.join(control_root, "prompts.yaml"), "image_root": control_root},
+                    gen_kwargs={
+                        "meta_path": os.path.join(control_root, "prompts.yaml"),
+                        "image_root": control_root,
+                    },
                 ),
             ]
 
@@ -148,8 +160,16 @@ class MJHQ(datasets.GeneratorBasedBuilder):
                     "image_root": image_root,
                     "image_path": os.path.join(image_root, "images", f"{name}.png"),
                     "split": self.config.name,
-                    "canny_image_path": os.path.join(image_root, "canny_images", f"{name}.png"),
-                    "cropped_image_path": os.path.join(image_root, "cropped_images", f"{name}.png"),
-                    "depth_image_path": os.path.join(image_root, "depth_images", f"{name}.png"),
-                    "mask_image_path": os.path.join(image_root, "mask_images", f"{name}.png"),
+                    "canny_image_path": os.path.join(
+                        image_root, "canny_images", f"{name}.png"
+                    ),
+                    "cropped_image_path": os.path.join(
+                        image_root, "cropped_images", f"{name}.png"
+                    ),
+                    "depth_image_path": os.path.join(
+                        image_root, "depth_images", f"{name}.png"
+                    ),
+                    "mask_image_path": os.path.join(
+                        image_root, "mask_images", f"{name}.png"
+                    ),
                 }

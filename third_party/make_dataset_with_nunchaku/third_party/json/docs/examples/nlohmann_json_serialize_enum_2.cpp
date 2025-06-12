@@ -3,20 +3,24 @@
 
 using json = nlohmann::json;
 
-namespace ns
-{
+namespace ns {
 enum class Color
 {
-    red, green, blue, unknown
+    red,
+    green,
+    blue,
+    unknown
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(Color,
-{
-    { Color::unknown, "unknown" }, { Color::red, "red" },
-    { Color::green, "green" }, { Color::blue, "blue" },
-    { Color::red, "rot" } // a second conversion for Color::red
-})
-}
+                             {
+                                 {Color::unknown, "unknown"},
+                                 {Color::red, "red"},
+                                 {Color::green, "green"},
+                                 {Color::blue, "blue"},
+                                 {Color::red, "rot"}  // a second conversion for Color::red
+                             })
+}  // namespace ns
 
 int main()
 {

@@ -14,32 +14,34 @@ byte_container_with_subtype(container_type&& container, subtype_type subtype);
 ```
 
 1. Create empty binary container without subtype.
-2. Create binary container without subtype.
-3. Create binary container with subtype.
+1. Create binary container without subtype.
+1. Create binary container with subtype.
 
 ## Parameters
 
 `container` (in)
-:   binary container
+: binary container
 
 `subtype` (in)
-:   subtype
+: subtype
 
 ## Examples
 
 ??? example
 
-    The example below demonstrates how byte containers can be created.
+````
+The example below demonstrates how byte containers can be created.
 
-    ```cpp
-    --8<-- "examples/byte_container_with_subtype__byte_container_with_subtype.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/byte_container_with_subtype__byte_container_with_subtype.output"
-    ```
+```cpp
+--8<-- "examples/byte_container_with_subtype__byte_container_with_subtype.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/byte_container_with_subtype__byte_container_with_subtype.output"
+```
+````
 
 ## Version history
 

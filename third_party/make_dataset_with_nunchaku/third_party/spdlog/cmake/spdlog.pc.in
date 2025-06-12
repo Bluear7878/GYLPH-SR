@@ -10,4 +10,3 @@ Version: @SPDLOG_VERSION@
 CFlags: -I${includedir} @PKG_CONFIG_DEFINES@
 Libs: -L${libdir} -lspdlog -pthread
 Requires: @PKG_CONFIG_REQUIRES@
-

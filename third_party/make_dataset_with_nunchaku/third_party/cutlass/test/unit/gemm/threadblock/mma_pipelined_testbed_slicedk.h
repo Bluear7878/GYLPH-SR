@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -54,13 +55,13 @@
 #include "cutlass/util/reference/host/tensor_compare.h"
 #include "cutlass/util/reference/host/tensor_fill.h"
 
+#include "cutlass/cutlass.h"
 #include "cutlass/gemm/threadblock/default_mma_core_simt.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm75.h"
 #include "cutlass/gemm/threadblock/default_mma_core_sm70.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm75.h"
+#include "cutlass/platform/platform.h"
 #include "cutlass/transform/threadblock/predicated_tile_iterator.h"
 #include "cutlass/transform/threadblock/predicated_tile_iterator_2dthreadtile.h"
-#include "cutlass/cutlass.h"
-#include "cutlass/platform/platform.h"
 
 namespace test {
 namespace gemm {
@@ -113,21 +114,21 @@ __global__ void kernel_mma(cutlass::gemm::GemmCoord problem_size,
 
   accum.clear();
 
-  int gemm_k_iterations = (problem_size.k() + Mma::Shape::kK - 1) / Mma::Shape::kK;
+  int gemm_k_iterations =
+      (problem_size.k() + Mma::Shape::kK - 1) / Mma::Shape::kK;
 
   // Compute threadblock-scoped matrix multiply-add
   mma(gemm_k_iterations, accum, iterator_A, iterator_B, accum);
 
   // Output results
-  typename Mma::Operator::IteratorC iterator_C({ptr_C[partitionsK_idx], ldc}, lane_id);
-
+  typename Mma::Operator::IteratorC iterator_C({ptr_C[partitionsK_idx], ldc},
+                                               lane_id);
 
   int warp_idx_mn = warp_id % (Mma::WarpCount::kM * Mma::WarpCount::kN);
-  iterator_C.add_tile_offset(
-      {(tb_tile_offset.m() * Mma::WarpCount::kM) +
-           (warp_idx_mn % Mma::WarpCount::kM),
-       (tb_tile_offset.n() * Mma::WarpCount::kN) +
-           (warp_idx_mn / Mma::WarpCount::kM)});
+  iterator_C.add_tile_offset({(tb_tile_offset.m() * Mma::WarpCount::kM) +
+                                  (warp_idx_mn % Mma::WarpCount::kM),
+                              (tb_tile_offset.n() * Mma::WarpCount::kN) +
+                                  (warp_idx_mn / Mma::WarpCount::kM)});
 
   iterator_C.store(accum);
 }
@@ -152,33 +153,39 @@ struct Testbed {
   using LayoutC = typename MmaCore::LayoutC;
 
   // Define iterators over tiles from the A operand
-  static const bool use_idp4a = cutlass::platform::is_same<ElementA, int8_t>::value && 
-                                cutlass::platform::is_same<ElementB, int8_t>::value && 
-                                cutlass::platform::is_same<typename MmaCore::OperatorClass, cutlass::arch::OpClassSimt>::value;
+  static const bool use_idp4a =
+      cutlass::platform::is_same<ElementA, int8_t>::value &&
+      cutlass::platform::is_same<ElementB, int8_t>::value &&
+      cutlass::platform::is_same<typename MmaCore::OperatorClass,
+                                 cutlass::arch::OpClassSimt>::value;
 
-  static const bool transposeA =  cutlass::platform::is_same< LayoutA, cutlass::layout::ColumnMajor >::value;
-  static const bool transposeB =  cutlass::platform::is_same< LayoutB, cutlass::layout::RowMajor >::value;
+  static const bool transposeA =
+      cutlass::platform::is_same<LayoutA, cutlass::layout::ColumnMajor>::value;
+  static const bool transposeB =
+      cutlass::platform::is_same<LayoutB, cutlass::layout::RowMajor>::value;
 
-  using IteratorA = typename cutlass::platform::conditional< use_idp4a,
+  using IteratorA = typename cutlass::platform::conditional<
+      use_idp4a,
       cutlass::transform::threadblock::PredicatedTileIterator2dThreadTile<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, typename MmaCore::IteratorThreadMapA, transposeA> ,
-        
+          ElementA, LayoutA, 1, typename MmaCore::IteratorThreadMapA,
+          transposeA>,
+
       cutlass::transform::threadblock::PredicatedTileIterator<
           cutlass::MatrixShape<ThreadblockShape::kM, ThreadblockShape::kK>,
-          ElementA, LayoutA, 1, typename MmaCore::IteratorThreadMapA>
-      >::type;
+          ElementA, LayoutA, 1, typename MmaCore::IteratorThreadMapA>>::type;
 
   // Define iterators over tiles from the B operand
-  using IteratorB = typename cutlass::platform::conditional< use_idp4a,
+  using IteratorB = typename cutlass::platform::conditional<
+      use_idp4a,
       cutlass::transform::threadblock::PredicatedTileIterator2dThreadTile<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, typename MmaCore::IteratorThreadMapB, transposeB> ,
+          ElementB, LayoutB, 0, typename MmaCore::IteratorThreadMapB,
+          transposeB>,
 
       cutlass::transform::threadblock::PredicatedTileIterator<
           cutlass::MatrixShape<ThreadblockShape::kK, ThreadblockShape::kN>,
-          ElementB, LayoutB, 0, typename MmaCore::IteratorThreadMapB>
-      >::type;
+          ElementB, LayoutB, 0, typename MmaCore::IteratorThreadMapB>>::type;
 
   // Define the threadblock-scoped pipelined matrix multiply
   using Mma = cutlass::gemm::threadblock::MmaPipelined<
@@ -186,7 +193,7 @@ struct Testbed {
       IteratorB, typename MmaCore::SmemIteratorB, ElementC, LayoutC,
       typename MmaCore::MmaPolicy>;
 
-  static int const kPartitionsK = MmaCore::MmaPolicy::kPartitionsK; 
+  static int const kPartitionsK = MmaCore::MmaPolicy::kPartitionsK;
 
   //
   // Data members
@@ -196,7 +203,8 @@ struct Testbed {
   cutlass::HostTensor<ElementB, LayoutB> matrix_B;
   cutlass::HostTensor<ElementC, LayoutC> matrix_C_computed[kPartitionsK];
   cutlass::HostTensor<ElementC, LayoutC> matrix_C_reference;
-  cutlass::HostTensor<ElementC*, cutlass::layout::PackedVectorLayout> matrix_C_pointers;
+  cutlass::HostTensor<ElementC *, cutlass::layout::PackedVectorLayout>
+      matrix_C_pointers;
 
   cutlass::gemm::GemmCoord problem_size;
   float alpha, beta;
@@ -212,7 +220,7 @@ struct Testbed {
     matrix_B.reset(cutlass::make_Coord(k, n));
 
     CUTLASS_PRAGMA_UNROLL
-    for(int k = 0; k < kPartitionsK; k++)
+    for (int k = 0; k < kPartitionsK; k++)
       matrix_C_computed[k].reset(cutlass::make_Coord(m, n));
 
     matrix_C_reference.reset(cutlass::make_Coord(m, n), false);
@@ -220,8 +228,8 @@ struct Testbed {
   }
 
   /// Runs the test
-  bool run(
-      dim3 grid, dim3 block,
+  bool
+  run(dim3 grid, dim3 block,
       cutlass::Distribution::Kind init_A = cutlass::Distribution::Uniform,
       cutlass::Distribution::Kind init_B = cutlass::Distribution::Uniform) {
     //
@@ -279,7 +287,7 @@ struct Testbed {
     }
 
     CUTLASS_PRAGMA_UNROLL
-    for(int k = 0; k < kPartitionsK; k++)
+    for (int k = 0; k < kPartitionsK; k++)
       cutlass::reference::host::TensorFill(matrix_C_computed[k].host_view());
 
     cutlass::reference::host::TensorFill(matrix_C_reference.host_view());
@@ -288,15 +296,16 @@ struct Testbed {
     matrix_B.sync_device();
 
     CUTLASS_PRAGMA_UNROLL
-    for(int k = 0; k < kPartitionsK; k++)
+    for (int k = 0; k < kPartitionsK; k++)
       matrix_C_computed[k].sync_device();
 
     typename IteratorA::Params params_A(matrix_A.layout());
     typename IteratorB::Params params_B(matrix_B.layout());
 
     CUTLASS_PRAGMA_UNROLL
-    for(int k = 0; k < kPartitionsK; k++)
-      matrix_C_pointers.at(cutlass::Coord<1>(k)) = matrix_C_computed[k].device_data();
+    for (int k = 0; k < kPartitionsK; k++)
+      matrix_C_pointers.at(cutlass::Coord<1>(k)) =
+          matrix_C_computed[k].device_data();
 
     matrix_C_pointers.sync_device();
 
@@ -314,7 +323,7 @@ struct Testbed {
         << " kernel error: " << cudaGetErrorString(result);
 
     CUTLASS_PRAGMA_UNROLL
-    for(int k = 0; k < kPartitionsK; k++)
+    for (int k = 0; k < kPartitionsK; k++)
       matrix_C_computed[k].sync_host();
 
     // TODO: this is temporary. it will be removed after slicing can de
@@ -323,11 +332,11 @@ struct Testbed {
     // Reduce matrix_C_computed
     //
     CUTLASS_PRAGMA_UNROLL
-    for(int k = 1; k < kPartitionsK; k++) {
+    for (int k = 1; k < kPartitionsK; k++) {
       CUTLASS_PRAGMA_UNROLL
-      for(int m = 0; m < matrix_C_computed[0].extent().row(); m++){
+      for (int m = 0; m < matrix_C_computed[0].extent().row(); m++) {
         CUTLASS_PRAGMA_UNROLL
-        for(int n = 0; n < matrix_C_computed[0].extent().column(); n++){
+        for (int n = 0; n < matrix_C_computed[0].extent().column(); n++) {
           matrix_C_computed[0].at({m, n}) += matrix_C_computed[k].at({m, n});
         }
       }
@@ -338,9 +347,9 @@ struct Testbed {
                                    typename MmaCore::Operator>
         reference_gemm;
 
-    reference_gemm(
-        problem_size, ElementC(alpha), matrix_A.host_view(),
-        matrix_B.host_view(), ElementC(beta), matrix_C_reference.host_view());
+    reference_gemm(problem_size, ElementC(alpha), matrix_A.host_view(),
+                   matrix_B.host_view(), ElementC(beta),
+                   matrix_C_reference.host_view());
 
     bool passed = cutlass::reference::host::TensorEquals(
         matrix_C_computed[0].host_view(), matrix_C_reference.host_view());
@@ -350,13 +359,14 @@ struct Testbed {
     if (!passed) {
       std::ofstream output("mma_pipelined_testbed_errors.txt");
 
-      output
-        << "A:\n" << matrix_A.host_view() << "\n"
-        << "B:\n" << matrix_B.host_view() << "\n"
-        << "Reference:\n"
-        << matrix_C_reference.host_view() << "\n"
-        << "Computed:\n"
-        << matrix_C_computed[0].host_view() << "\n";
+      output << "A:\n"
+             << matrix_A.host_view() << "\n"
+             << "B:\n"
+             << matrix_B.host_view() << "\n"
+             << "Reference:\n"
+             << matrix_C_reference.host_view() << "\n"
+             << "Computed:\n"
+             << matrix_C_computed[0].host_view() << "\n";
     }
 
     return passed;
@@ -365,6 +375,6 @@ struct Testbed {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace test
+} // namespace threadblock
+} // namespace gemm
+} // namespace test

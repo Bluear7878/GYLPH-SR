@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,10 +35,10 @@
 
 #pragma once
 
-#include "cutlass/array.h"
-#include "cutlass/layout/matrix.h"
 #include "cute/arch/copy_sm75.hpp"
 #include "cute/arch/util.hpp"
+#include "cutlass/array.h"
+#include "cutlass/layout/matrix.h"
 
 namespace cutlass {
 namespace arch {
@@ -45,12 +46,11 @@ namespace arch {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <
-  /// Layout of destination matrix (column-major implies transpose)
-  typename Layout,
-  /// .x1, .x2, or .x4
-  int MatrixCount
->
-inline __device__ void ldsm(Array<unsigned, MatrixCount> & D, void const* ptr);
+    /// Layout of destination matrix (column-major implies transpose)
+    typename Layout,
+    /// .x1, .x2, or .x4
+    int MatrixCount>
+inline __device__ void ldsm(Array<unsigned, MatrixCount> &D, void const *ptr);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -71,73 +71,77 @@ inline __device__ unsigned cutlass_get_smem_pointer(void const *ptr) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <>
-inline __device__ void ldsm<layout::RowMajor, 1>(
-    Array<unsigned, 1> & D,
-    void const* ptr) {
+inline __device__ void ldsm<layout::RowMajor, 1>(Array<unsigned, 1> &D,
+                                                 void const *ptr) {
 
-  #if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
+#if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
 
-    unsigned addr = cutlass_get_smem_pointer(ptr);
+  unsigned addr = cutlass_get_smem_pointer(ptr);
 
-    int x;
-    asm volatile ("ldmatrix.sync.aligned.x1.m8n8.shared.b16 {%0}, [%1];" : "=r"(x) : "r"(addr));
-    reinterpret_cast<int &>(D) = x;
+  int x;
+  asm volatile("ldmatrix.sync.aligned.x1.m8n8.shared.b16 {%0}, [%1];"
+               : "=r"(x)
+               : "r"(addr));
+  reinterpret_cast<int &>(D) = x;
 
-  #else
+#else
 
-    CUTLASS_UNUSED(D);
-    CUTLASS_UNUSED(ptr);
-    CUTLASS_NOT_IMPLEMENTED();
+  CUTLASS_UNUSED(D);
+  CUTLASS_UNUSED(ptr);
+  CUTLASS_NOT_IMPLEMENTED();
 
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <>
-inline __device__ void ldsm<layout::RowMajor, 2>(
-    Array<unsigned, 2> & D,
-    void const* ptr) {
+inline __device__ void ldsm<layout::RowMajor, 2>(Array<unsigned, 2> &D,
+                                                 void const *ptr) {
 
-  #if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
+#if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
 
-    unsigned addr = cutlass_get_smem_pointer(ptr);
+  unsigned addr = cutlass_get_smem_pointer(ptr);
 
-    int x, y;
-    asm volatile ("ldmatrix.sync.aligned.x2.m8n8.shared.b16 {%0, %1}, [%2];" : "=r"(x), "=r"(y) : "r"(addr));
-    reinterpret_cast<int2 &>(D) = make_int2(x, y);
+  int x, y;
+  asm volatile("ldmatrix.sync.aligned.x2.m8n8.shared.b16 {%0, %1}, [%2];"
+               : "=r"(x), "=r"(y)
+               : "r"(addr));
+  reinterpret_cast<int2 &>(D) = make_int2(x, y);
 
-  #else
+#else
 
-    CUTLASS_UNUSED(D);
-    CUTLASS_UNUSED(ptr);
-    CUTLASS_NOT_IMPLEMENTED();
+  CUTLASS_UNUSED(D);
+  CUTLASS_UNUSED(ptr);
+  CUTLASS_NOT_IMPLEMENTED();
 
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <>
-inline __device__ void ldsm<layout::RowMajor, 4>(
-    Array<unsigned, 4> & D,
-    void const* ptr) {
+inline __device__ void ldsm<layout::RowMajor, 4>(Array<unsigned, 4> &D,
+                                                 void const *ptr) {
 
-  #if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
+#if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
 
-    unsigned addr = cutlass_get_smem_pointer(ptr);
+  unsigned addr = cutlass_get_smem_pointer(ptr);
 
-    int x, y, z, w;
-    asm volatile ("ldmatrix.sync.aligned.x4.m8n8.shared.b16 {%0, %1, %2, %3}, [%4];" : "=r"(x), "=r"(y), "=r"(z), "=r"(w) : "r"(addr));
-    reinterpret_cast<int4 &>(D) = make_int4(x, y, z, w);
+  int x, y, z, w;
+  asm volatile(
+      "ldmatrix.sync.aligned.x4.m8n8.shared.b16 {%0, %1, %2, %3}, [%4];"
+      : "=r"(x), "=r"(y), "=r"(z), "=r"(w)
+      : "r"(addr));
+  reinterpret_cast<int4 &>(D) = make_int4(x, y, z, w);
 
-  #else
+#else
 
-    CUTLASS_UNUSED(D);
-    CUTLASS_UNUSED(ptr);
-    CUTLASS_NOT_IMPLEMENTED();
+  CUTLASS_UNUSED(D);
+  CUTLASS_UNUSED(ptr);
+  CUTLASS_NOT_IMPLEMENTED();
 
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,82 +151,85 @@ inline __device__ void ldsm<layout::RowMajor, 4>(
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <>
-inline __device__ void ldsm<layout::ColumnMajor, 1>(
-    Array<unsigned, 1> & D,
-    void const* ptr) {
+inline __device__ void ldsm<layout::ColumnMajor, 1>(Array<unsigned, 1> &D,
+                                                    void const *ptr) {
 
-  #if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
+#if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
 
-    unsigned addr = cutlass_get_smem_pointer(ptr);
+  unsigned addr = cutlass_get_smem_pointer(ptr);
 
-    int x;
-    asm volatile ("ldmatrix.sync.aligned.x1.trans.m8n8.shared.b16 {%0}, [%1];" : "=r"(x) : "r"(addr));
-    reinterpret_cast<int &>(D) = x;
+  int x;
+  asm volatile("ldmatrix.sync.aligned.x1.trans.m8n8.shared.b16 {%0}, [%1];"
+               : "=r"(x)
+               : "r"(addr));
+  reinterpret_cast<int &>(D) = x;
 
-  #else
+#else
 
-    CUTLASS_UNUSED(D);
-    CUTLASS_UNUSED(ptr);
-    CUTLASS_NOT_IMPLEMENTED();
+  CUTLASS_UNUSED(D);
+  CUTLASS_UNUSED(ptr);
+  CUTLASS_NOT_IMPLEMENTED();
 
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <>
-inline __device__ void ldsm<layout::ColumnMajor, 2>(
-    Array<unsigned, 2> & D,
-    void const* ptr) {
+inline __device__ void ldsm<layout::ColumnMajor, 2>(Array<unsigned, 2> &D,
+                                                    void const *ptr) {
 
-  #if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
+#if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
 
-    unsigned addr = cutlass_get_smem_pointer(ptr);
+  unsigned addr = cutlass_get_smem_pointer(ptr);
 
-    int x, y;
-    asm volatile ("ldmatrix.sync.aligned.x2.trans.m8n8.shared.b16 {%0, %1}, [%2];" : "=r"(x), "=r"(y) : "r"(addr));
-    reinterpret_cast<int2 &>(D) = make_int2(x, y);
+  int x, y;
+  asm volatile("ldmatrix.sync.aligned.x2.trans.m8n8.shared.b16 {%0, %1}, [%2];"
+               : "=r"(x), "=r"(y)
+               : "r"(addr));
+  reinterpret_cast<int2 &>(D) = make_int2(x, y);
 
-  #else
+#else
 
-    CUTLASS_UNUSED(D);
-    CUTLASS_UNUSED(ptr);
-    CUTLASS_NOT_IMPLEMENTED();
+  CUTLASS_UNUSED(D);
+  CUTLASS_UNUSED(ptr);
+  CUTLASS_NOT_IMPLEMENTED();
 
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <>
-inline __device__ void ldsm<layout::ColumnMajor, 4>(
-    Array<unsigned, 4> & D,
-    void const* ptr) {
+inline __device__ void ldsm<layout::ColumnMajor, 4>(Array<unsigned, 4> &D,
+                                                    void const *ptr) {
 
-  #if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
+#if defined(CUTE_ARCH_LDSM_SM75_ACTIVATED)
 
-    unsigned addr = cutlass_get_smem_pointer(ptr);
+  unsigned addr = cutlass_get_smem_pointer(ptr);
 
-    int x, y, z, w;
-    asm volatile ("ldmatrix.sync.aligned.x4.trans.m8n8.shared.b16 {%0, %1, %2, %3}, [%4];" : "=r"(x), "=r"(y), "=r"(z), "=r"(w) : "r"(addr));
-    reinterpret_cast<int4 &>(D) = make_int4(x, y, z, w);
+  int x, y, z, w;
+  asm volatile(
+      "ldmatrix.sync.aligned.x4.trans.m8n8.shared.b16 {%0, %1, %2, %3}, [%4];"
+      : "=r"(x), "=r"(y), "=r"(z), "=r"(w)
+      : "r"(addr));
+  reinterpret_cast<int4 &>(D) = make_int4(x, y, z, w);
 
-  #else
+#else
 
-    CUTLASS_UNUSED(D);
-    CUTLASS_UNUSED(ptr);
-    CUTLASS_NOT_IMPLEMENTED();
+  CUTLASS_UNUSED(D);
+  CUTLASS_UNUSED(ptr);
+  CUTLASS_NOT_IMPLEMENTED();
 
-  #endif
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename AccessType, int Bytes>
-struct shared_load_op {
+template <typename AccessType, int Bytes> struct shared_load_op {
   CUTLASS_DEVICE
   shared_load_op(AccessType &D, void const *ptr) {
-    D = *reinterpret_cast<AccessType const *>(ptr);  
+    D = *reinterpret_cast<AccessType const *>(ptr);
   }
 };
 
@@ -233,15 +240,15 @@ CUTLASS_DEVICE void shared_load(AccessType &D, void const *ptr) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename AccessType>
-struct shared_load_op<AccessType, 16> {
+template <typename AccessType> struct shared_load_op<AccessType, 16> {
   CUTLASS_DEVICE
   shared_load_op(AccessType &D, void const *ptr) {
     unsigned addr = cutlass_get_smem_pointer(ptr);
 
     uint4 v;
-    asm volatile ("ld.shared.v4.b32 {%0, %1, %2, %3}, [%4];" : 
-      "=r"(v.x), "=r"(v.y), "=r"(v.z), "=r"(v.w) : "r"(addr));
+    asm volatile("ld.shared.v4.b32 {%0, %1, %2, %3}, [%4];"
+                 : "=r"(v.x), "=r"(v.y), "=r"(v.z), "=r"(v.w)
+                 : "r"(addr));
 
     D = reinterpret_cast<AccessType const &>(v);
   }
@@ -249,15 +256,15 @@ struct shared_load_op<AccessType, 16> {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename AccessType>
-struct shared_load_op<AccessType, 8> {
+template <typename AccessType> struct shared_load_op<AccessType, 8> {
   CUTLASS_DEVICE
   shared_load_op(AccessType &D, void const *ptr) {
     unsigned addr = cutlass_get_smem_pointer(ptr);
 
     uint2 v;
-    asm volatile ("ld.shared.v2.b32 {%0, %1}, [%2];" : 
-      "=r"(v.x), "=r"(v.y) : "r"(addr));
+    asm volatile("ld.shared.v2.b32 {%0, %1}, [%2];"
+                 : "=r"(v.x), "=r"(v.y)
+                 : "r"(addr));
 
     D = reinterpret_cast<AccessType const &>(v);
   }

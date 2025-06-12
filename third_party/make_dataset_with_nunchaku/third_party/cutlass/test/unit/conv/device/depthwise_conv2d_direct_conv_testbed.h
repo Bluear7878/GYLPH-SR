@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -54,10 +55,8 @@ namespace test {
 namespace conv {
 namespace device {
 
-template <typename Conv2d>
-class TestbedDepthwiseDirectConv2d {
- public:
- 
+template <typename Conv2d> class TestbedDepthwiseDirectConv2d {
+public:
   using ElementA = typename Conv2d::ElementA;
   using LayoutA = typename Conv2d::LayoutA;
   using ElementB = typename Conv2d::ElementB;
@@ -68,9 +67,10 @@ class TestbedDepthwiseDirectConv2d {
   using ElementCompute = typename Conv2d::ElementCompute;
   using EpilogueOutputOp = typename Conv2d::EpilogueOutputOp;
 
-  static cutlass::conv::Operator const kConvolutionalOperator = Conv2d::kConvolutionalOperator;
+  static cutlass::conv::Operator const kConvolutionalOperator =
+      Conv2d::kConvolutionalOperator;
 
- public:
+public:
   /// Initialization
   cutlass::Distribution::Kind init_A;
   cutlass::Distribution::Kind init_B;
@@ -86,18 +86,19 @@ class TestbedDepthwiseDirectConv2d {
 
   int tested_problem_count;
 
- public:
-  TestbedDepthwiseDirectConv2d(cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-                               cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-                               cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-                               uint64_t seed_ = 2080)
-      : init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_), tested_problem_count(0) {}
+public:
+  TestbedDepthwiseDirectConv2d(
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint64_t seed_ = 2080)
+      : init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_),
+        tested_problem_count(0) {}
 
   /// Helper to initialize a tensor view
   template <typename Element, typename Layout>
   void initialize_tensor(cutlass::TensorView<Element, Layout> view,
-                         cutlass::Distribution::Kind dist_kind,
-                         uint64_t seed) {
+                         cutlass::Distribution::Kind dist_kind, uint64_t seed) {
     if (dist_kind == cutlass::Distribution::Uniform) {
       int scope;
       int bits = cutlass::sizeof_bits<Element>::value;
@@ -113,25 +114,34 @@ class TestbedDepthwiseDirectConv2d {
       } else {
         scope = 8;
       }
-      cutlass::reference::host::TensorFillRandomUniform(view, seed, scope, -scope, 0);
+      cutlass::reference::host::TensorFillRandomUniform(view, seed, scope,
+                                                        -scope, 0);
     } else if (dist_kind == cutlass::Distribution::Identity) {
       cutlass::reference::host::TensorFillIdentity(view);
 
     } else if (dist_kind == cutlass::Distribution::Gaussian) {
       cutlass::reference::host::TensorFillRandomGaussian(view, seed, 0, 0.5);
     } else if (dist_kind == cutlass::Distribution::Sequential) {
-      cutlass::reference::host::BlockFillSequential(view.data(), view.capacity());
+      cutlass::reference::host::BlockFillSequential(view.data(),
+                                                    view.capacity());
     } else {
     }
   }
 
-  void initialize(cutlass::conv::Conv2dProblemSize const &problem_size, uint64_t seed = 2019) {
-    tensor_A.resize(implicit_gemm_tensor_a_extent(kConvolutionalOperator, problem_size));
-    tensor_B.resize(implicit_gemm_tensor_b_extent(kConvolutionalOperator, problem_size));
-    tensor_reordered_B.resize(implicit_gemm_tensor_b_extent(kConvolutionalOperator, problem_size));
-    tensor_C.resize(implicit_gemm_tensor_c_extent(kConvolutionalOperator, problem_size));
-    tensor_D_computed.resize(implicit_gemm_tensor_c_extent(kConvolutionalOperator, problem_size));
-    tensor_D_reference.resize(implicit_gemm_tensor_c_extent(kConvolutionalOperator, problem_size));
+  void initialize(cutlass::conv::Conv2dProblemSize const &problem_size,
+                  uint64_t seed = 2019) {
+    tensor_A.resize(
+        implicit_gemm_tensor_a_extent(kConvolutionalOperator, problem_size));
+    tensor_B.resize(
+        implicit_gemm_tensor_b_extent(kConvolutionalOperator, problem_size));
+    tensor_reordered_B.resize(
+        implicit_gemm_tensor_b_extent(kConvolutionalOperator, problem_size));
+    tensor_C.resize(
+        implicit_gemm_tensor_c_extent(kConvolutionalOperator, problem_size));
+    tensor_D_computed.resize(
+        implicit_gemm_tensor_c_extent(kConvolutionalOperator, problem_size));
+    tensor_D_reference.resize(
+        implicit_gemm_tensor_c_extent(kConvolutionalOperator, problem_size));
 
     initialize_tensor(tensor_A.host_view(), init_A, seed);
     initialize_tensor(tensor_B.host_view(), init_B, seed * 17);
@@ -174,7 +184,8 @@ class TestbedDepthwiseDirectConv2d {
 
   /// Executes one test
   bool run(cutlass::conv::Conv2dProblemSize const &problem_size,
-           cutlass::conv::SplitKMode const &split_k_mode = cutlass::conv::SplitKMode::kSerial,
+           cutlass::conv::SplitKMode const &split_k_mode =
+               cutlass::conv::SplitKMode::kSerial,
            ElementCompute alpha = ElementCompute(1.5),
            ElementCompute beta = ElementCompute(1)) {
     // increment tested problem count run by the testbed
@@ -194,14 +205,10 @@ class TestbedDepthwiseDirectConv2d {
     // configure the operator
     Conv2d conv2d_op;
 
-    typename Conv2d::Arguments conv2d_args(problem_size,
-                                           tensor_A.device_ref(),
-                                           tensor_B.device_ref(),
-                                           tensor_C.device_ref(),
-                                           tensor_D_computed.device_ref(),
-                                           {alpha, beta},
-                                           tensor_reordered_B.device_ref(),
-                                           split_k_mode);
+    typename Conv2d::Arguments conv2d_args(
+        problem_size, tensor_A.device_ref(), tensor_B.device_ref(),
+        tensor_C.device_ref(), tensor_D_computed.device_ref(), {alpha, beta},
+        tensor_reordered_B.device_ref(), split_k_mode);
 
     // find workspace requirement for parallel split-k reduction
     size_t workspace_size = Conv2d::get_workspace_size(conv2d_args);
@@ -212,7 +219,8 @@ class TestbedDepthwiseDirectConv2d {
 
     if (status != cutlass::Status::kSuccess) {
       cudaError_t error = cudaGetLastError();
-      std::cerr << "This test is not supported: " << cudaGetErrorString(error) << "\n";
+      std::cerr << "This test is not supported: " << cudaGetErrorString(error)
+                << "\n";
       return true;
     }
 
@@ -220,13 +228,15 @@ class TestbedDepthwiseDirectConv2d {
 
     if (status != cutlass::Status::kSuccess) {
       cudaError_t error = cudaGetLastError();
-      std::cerr << "This test is not supported: " << cudaGetErrorString(error) << "\n";
+      std::cerr << "This test is not supported: " << cudaGetErrorString(error)
+                << "\n";
       return true;
     }
 
     if (!sufficient(conv2d_op.get_smem_size())) {
       if (CUTLASS_TEST_UNIT_ENABLE_WARNINGS) {
-        std::cerr << "Test waived due to insufficient CUDA device." << std::endl;
+        std::cerr << "Test waived due to insufficient CUDA device."
+                  << std::endl;
       }
       return true;
     }
@@ -243,7 +253,8 @@ class TestbedDepthwiseDirectConv2d {
     bool passed = false;
 
     cudaError_t result = cudaDeviceSynchronize();
-    EXPECT_EQ(result, cudaSuccess) << " device reference error: " << cudaGetErrorString(result);
+    EXPECT_EQ(result, cudaSuccess)
+        << " device reference error: " << cudaGetErrorString(result);
 
     tensor_D_computed.sync_host();
 
@@ -252,20 +263,11 @@ class TestbedDepthwiseDirectConv2d {
     //
 
     CachedTestKey cached_test_key =
-        CreateCachedConv2dTestKey<ElementA,
-                                  LayoutA,
-                                  ElementB,
-                                  LayoutB,
-                                  ElementC,
-                                  LayoutC,
-                                  ElementAccumulator,
-                                  ElementCompute>(kConvolutionalOperator,
-                                                  problem_size,
-                                                  alpha,
-                                                  beta,
-                                                  tensor_A.host_view(),
-                                                  tensor_B.host_view(),
-                                                  tensor_C.host_view());
+        CreateCachedConv2dTestKey<ElementA, LayoutA, ElementB, LayoutB,
+                                  ElementC, LayoutC, ElementAccumulator,
+                                  ElementCompute>(
+            kConvolutionalOperator, problem_size, alpha, beta,
+            tensor_A.host_view(), tensor_B.host_view(), tensor_C.host_view());
 
     //
     // Look for the cached key
@@ -292,42 +294,25 @@ class TestbedDepthwiseDirectConv2d {
     if (!cached_result_loaded) {
 #if CUTLASS_CONV_TEST_UNIT_REFERENCE_DEVICE_ENABLED
 
-      cutlass::reference::device::Conv2d<ElementA,
-                                         LayoutA,
-                                         ElementB,
-                                         LayoutB,
-                                         ElementC,
-                                         LayoutC,
-                                         ElementCompute,
-                                         ElementAccumulator>(kConvolutionalOperator,
-                                                             problem_size,
-                                                             tensor_A.device_ref(),
-                                                             tensor_B.device_ref(),
-                                                             tensor_C.device_ref(),
-                                                             tensor_D_reference.device_ref(),
-                                                             alpha,
-                                                             beta);
+      cutlass::reference::device::Conv2d<ElementA, LayoutA, ElementB, LayoutB,
+                                         ElementC, LayoutC, ElementCompute,
+                                         ElementAccumulator>(
+          kConvolutionalOperator, problem_size, tensor_A.device_ref(),
+          tensor_B.device_ref(), tensor_C.device_ref(),
+          tensor_D_reference.device_ref(), alpha, beta);
 
-      // sync host (copy device data to host) for dumping error output in case of mismatches
+      // sync host (copy device data to host) for dumping error output in case
+      // of mismatches
       tensor_D_reference.sync_host();
 
 #else
 
-      cutlass::reference::host::Conv2d<ElementA,
-                                       LayoutA,
-                                       ElementB,
-                                       LayoutB,
-                                       ElementC,
-                                       LayoutC,
-                                       ElementCompute,
-                                       ElementAccumulator>(kConvolutionalOperator,
-                                                           problem_size,
-                                                           tensor_A.host_ref(),
-                                                           tensor_B.host_ref(),
-                                                           tensor_C.host_ref(),
-                                                           tensor_D_reference.host_ref(),
-                                                           alpha,
-                                                           beta);
+      cutlass::reference::host::Conv2d<ElementA, LayoutA, ElementB, LayoutB,
+                                       ElementC, LayoutC, ElementCompute,
+                                       ElementAccumulator>(
+          kConvolutionalOperator, problem_size, tensor_A.host_ref(),
+          tensor_B.host_ref(), tensor_C.host_ref(),
+          tensor_D_reference.host_ref(), alpha, beta);
 
 #endif
 
@@ -347,54 +332,52 @@ class TestbedDepthwiseDirectConv2d {
     if (CUTLASS_TEST_ENABLE_CACHED_RESULTS) {
       passed = (tensor_D_hash == cached_test_result.D);
 
-      EXPECT_EQ(tensor_D_hash, cached_test_result.D) 
-        << "Hash-based comparison failed for key:" << "\n" << cached_test_key << "\n";
-    }
-    else {
+      EXPECT_EQ(tensor_D_hash, cached_test_result.D)
+          << "Hash-based comparison failed for key:" << "\n"
+          << cached_test_key << "\n";
+    } else {
 
       passed = cutlass::reference::host::TensorEquals(
-        tensor_D_computed.host_view(), 
-                                                      tensor_D_reference.host_view());
+          tensor_D_computed.host_view(), tensor_D_reference.host_view());
     }
 
     EXPECT_TRUE(passed);
 
     std::stringstream ss_problem_size_text;
-    ss_problem_size_text         << "nhwc_"
-        << problem_size.N << "x"
-        << problem_size.H << "x"
-        << problem_size.W << "x"
-        << problem_size.C
-        << "_krsc_"
-        << problem_size.K << "x"
-        << problem_size.R << "x"
-        << problem_size.S << "x"
-        << problem_size.C
-        << "_padding_"
-        << problem_size.pad_h << "x"
-        << problem_size.pad_w
-        << "_stride_"
-        << problem_size.stride_h << "x"
-        << problem_size.stride_w
-        << "_dilation_"
-        << problem_size.dilation_h << "x"
+    ss_problem_size_text << "nhwc_" << problem_size.N << "x" << problem_size.H
+                         << "x" << problem_size.W << "x" << problem_size.C
+                         << "_krsc_" << problem_size.K << "x" << problem_size.R
+                         << "x" << problem_size.S << "x" << problem_size.C
+                         << "_padding_" << problem_size.pad_h << "x"
+                         << problem_size.pad_w << "_stride_"
+                         << problem_size.stride_h << "x"
+                         << problem_size.stride_w << "_dilation_"
+                         << problem_size.dilation_h << "x"
                          << problem_size.dilation_w << "_"
-        << (problem_size.mode == cutlass::conv::Mode::kCrossCorrelation ? "xcorr_" : "conv_");
+                         << (problem_size.mode ==
+                                     cutlass::conv::Mode::kCrossCorrelation
+                                 ? "xcorr_"
+                                 : "conv_");
 
     if (!passed) {
       std::stringstream fname;
 
       fname << "error_Conv2d_DirectConv_device_"
-        << (split_k_mode == cutlass::conv::SplitKMode::kSerial ? "serial_reduction_" : "parallel_reduction_")
-        << (Conv2d::kConvolutionalOperator == cutlass::conv::Operator::kFprop ? "fprop_" :
-            (Conv2d::kConvolutionalOperator == cutlass::conv::Operator::kDgrad ? "dgrad_" : "wgrad_"))
-        << ss_problem_size_text.str()
-        << Conv2d::ThreadblockShape::kM << "x"  
-        << Conv2d::ThreadblockShape::kN << "x"  
-        << Conv2d::ThreadblockShape::kK << "_"
-        << Conv2d::WarpShape::kM << "x"  
-        << Conv2d::WarpShape::kN << "x"  
-        << Conv2d::WarpShape::kK << ".txt";
+            << (split_k_mode == cutlass::conv::SplitKMode::kSerial
+                    ? "serial_reduction_"
+                    : "parallel_reduction_")
+            << (Conv2d::kConvolutionalOperator ==
+                        cutlass::conv::Operator::kFprop
+                    ? "fprop_"
+                    : (Conv2d::kConvolutionalOperator ==
+                               cutlass::conv::Operator::kDgrad
+                           ? "dgrad_"
+                           : "wgrad_"))
+            << ss_problem_size_text.str() << Conv2d::ThreadblockShape::kM << "x"
+            << Conv2d::ThreadblockShape::kN << "x"
+            << Conv2d::ThreadblockShape::kK << "_" << Conv2d::WarpShape::kM
+            << "x" << Conv2d::WarpShape::kN << "x" << Conv2d::WarpShape::kK
+            << ".txt";
 
       std::cout << fname.str() << std::endl;
 
@@ -402,33 +385,32 @@ class TestbedDepthwiseDirectConv2d {
 
       results << problem_size << std::endl;
 
-      results
-        << "\nA:\n" << tensor_A.host_view() << "\n"
-        << "\nB:\n" << tensor_B.host_view() << "\n"
-        << "\nC:\n" << tensor_C.host_view() << "\n";
+      results << "\nA:\n"
+              << tensor_A.host_view() << "\n"
+              << "\nB:\n"
+              << tensor_B.host_view() << "\n"
+              << "\nC:\n"
+              << tensor_C.host_view() << "\n";
 
       results << "\nD reference (hash: " << cached_test_result.D << ")\n";
 
       if (!cached_result_loaded) {
-        results
-          << tensor_D_reference.host_view() << "\n";  
+        results << tensor_D_reference.host_view() << "\n";
       }
 
-      results
-        << "\nD computed (hash: " << tensor_D_hash << ")\n" 
+      results << "\nD computed (hash: " << tensor_D_hash << ")\n"
               << tensor_D_computed.host_view() << "\n";
-
     }
 
     return passed;
   }
-
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename DirectConv>
-bool TestSpecificDepthwiseDirectConv2d(const Conv2dProblemVector &problem_sizes) {
+bool TestSpecificDepthwiseDirectConv2d(
+    const Conv2dProblemVector &problem_sizes) {
   bool passed = true;
 
   //
@@ -436,25 +418,24 @@ bool TestSpecificDepthwiseDirectConv2d(const Conv2dProblemVector &problem_sizes)
   //
   TestbedDepthwiseDirectConv2d<DirectConv> testbed;
 
-  // Sweep conv2d problem sizes (split-k-mode=kSerial, split-k-slice=1, alpha=1.0, beta=0.0)
+  // Sweep conv2d problem sizes (split-k-mode=kSerial, split-k-slice=1,
+  // alpha=1.0, beta=0.0)
   for (auto conv_problem : problem_sizes) {
     //
     // Test
     //
 
     // test mode = xcross
-    passed = testbed.run(
-      conv_problem,
-      cutlass::conv::SplitKMode::kSerial);
+    passed = testbed.run(conv_problem, cutlass::conv::SplitKMode::kSerial);
 
     if (!passed) {
       return false;
     }
 
     // test mode = convolution
-    passed = testbed.run(
-      conv_problem.reset_mode(cutlass::conv::Mode::kConvolution),
-      cutlass::conv::SplitKMode::kSerial);
+    passed =
+        testbed.run(conv_problem.reset_mode(cutlass::conv::Mode::kConvolution),
+                    cutlass::conv::SplitKMode::kSerial);
 
     if (!passed) {
       return false;
@@ -466,8 +447,8 @@ bool TestSpecificDepthwiseDirectConv2d(const Conv2dProblemVector &problem_sizes)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace device
-}  // namespace conv
-}  // namespace test
+} // namespace device
+} // namespace conv
+} // namespace test
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

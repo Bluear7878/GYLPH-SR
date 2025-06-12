@@ -12,9 +12,9 @@ The complete default namespace name is derived as follows:
 - The root namespace is always `nlohmann`.
 - The inline namespace starts with `json_abi` and is followed by serveral optional ABI tags according to the value of
   these ABI-affecting macros, in order:
-    - [`JSON_DIAGNOSTICS`](../api/macros/json_diagnostics.md) defined non-zero appends `_diag`.
-    - [`JSON_USE_LEGACY_DISCARDED_VALUE_COMPARISON`](../api/macros/json_use_legacy_discarded_value_comparison.md)
-      defined non-zero appends `_ldvcmp`.
+  - [`JSON_DIAGNOSTICS`](../api/macros/json_diagnostics.md) defined non-zero appends `_diag`.
+  - [`JSON_USE_LEGACY_DISCARDED_VALUE_COMPARISON`](../api/macros/json_use_legacy_discarded_value_comparison.md)
+    defined non-zero appends `_ldvcmp`.
 - The inline namespace ends with the suffix `_v` followed by the 3 components of the version number separated by
   underscores. To omit the version component, see [Disabling the version component](#disabling-the-version-component)
   below.
@@ -68,8 +68,11 @@ section to emulate the effect of the `NLOHMANN_JSON_NAMESPACE_NO_VERSION` macro.
 
 !!! danger "Use at your own risk"
 
-    Disabling the namespace version component and mixing ABI-incompatible versions will result in crashes or incorrect
-    behavior. You have been warned!
+```
+Disabling the namespace version component and mixing ABI-incompatible versions will result in crashes or incorrect
+behavior. You have been warned!
+```
+
 ## Disabling the inline namespace completely
 
 When interoperability with code using a pre-3.11.0 version of the library is required, users can, **at their own risk**
@@ -84,8 +87,10 @@ follows:
 
 !!! danger "Use at your own risk"
 
-    Overriding the namespace and mixing ABI-incompatible versions will result in crashes or incorrect behavior. You
-    have been warned!
+```
+Overriding the namespace and mixing ABI-incompatible versions will result in crashes or incorrect behavior. You
+have been warned!
+```
 
 ## Version history
 

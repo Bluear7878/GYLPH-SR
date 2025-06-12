@@ -5,8 +5,8 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,22 +18,23 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 #pragma once
 
-#include <cutlass/library/types.h>
 #include <cutlass/blas3_types.h>
 #include <cutlass/gemm_coord.h>
+#include <cutlass/library/types.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,32 +62,26 @@ struct MathInstructionDescription {
   //
 
   MathInstructionDescription(
-    cutlass::gemm::GemmCoord instruction_shape = cutlass::gemm::GemmCoord(),
-    NumericTypeID element_accumulator = NumericTypeID::kInvalid,
-    OpcodeClassID opcode_class = OpcodeClassID::kInvalid,
-    MathOperationID math_operation = MathOperationID::kMultiplyAdd
-  ):
-    instruction_shape(instruction_shape), 
-    element_accumulator(element_accumulator), 
-    opcode_class(opcode_class),
-    math_operation(math_operation) {}
+      cutlass::gemm::GemmCoord instruction_shape = cutlass::gemm::GemmCoord(),
+      NumericTypeID element_accumulator = NumericTypeID::kInvalid,
+      OpcodeClassID opcode_class = OpcodeClassID::kInvalid,
+      MathOperationID math_operation = MathOperationID::kMultiplyAdd)
+      : instruction_shape(instruction_shape),
+        element_accumulator(element_accumulator), opcode_class(opcode_class),
+        math_operation(math_operation) {}
 
   // Equality operator
-  inline
-  bool operator==(MathInstructionDescription const& rhs) const{
-    return (
-      (instruction_shape == rhs.instruction_shape) &&
-      (element_accumulator == rhs.element_accumulator) &&
-      (opcode_class == rhs.opcode_class) &&
-      (math_operation == rhs.math_operation));
+  inline bool operator==(MathInstructionDescription const &rhs) const {
+    return ((instruction_shape == rhs.instruction_shape) &&
+            (element_accumulator == rhs.element_accumulator) &&
+            (opcode_class == rhs.opcode_class) &&
+            (math_operation == rhs.math_operation));
   }
 
   // Inequality operator
-  inline
-  bool operator!=(MathInstructionDescription const& rhs) const {
+  inline bool operator!=(MathInstructionDescription const &rhs) const {
     return !(*this == rhs);
   }
-
 };
 
 /// Structure describing the tiled structure of a GEMM-like computation
@@ -104,10 +99,12 @@ struct TileDescription {
   /// Core math instruction
   MathInstructionDescription math_instruction;
 
-  /// Minimum compute capability (e.g. 70, 75) of a device eligible to run the operation.
+  /// Minimum compute capability (e.g. 70, 75) of a device eligible to run the
+  /// operation.
   int minimum_compute_capability;
 
-  /// Minimum compute capability (e.g. 70, 75) of a device eligible to run the operation.
+  /// Minimum compute capability (e.g. 70, 75) of a device eligible to run the
+  /// operation.
   int maximum_compute_capability;
 
   /// Describes the shape of a cluster (in blocks)
@@ -118,37 +115,33 @@ struct TileDescription {
   //
 
   TileDescription(
-    cutlass::gemm::GemmCoord threadblock_shape = cutlass::gemm::GemmCoord(),
-    int threadblock_stages = 0,
-    cutlass::gemm::GemmCoord warp_count = cutlass::gemm::GemmCoord(),
-    MathInstructionDescription math_instruction = MathInstructionDescription(),
-    int minimum_compute_capability = 0,
-    int maximum_compute_capability = 0,
-    cutlass::gemm::GemmCoord cluster_shape = cutlass::gemm::GemmCoord(1,1,1)
-  ):
-    threadblock_shape(threadblock_shape), 
-    threadblock_stages(threadblock_stages), 
-    warp_count(warp_count),
-    math_instruction(math_instruction),
-    minimum_compute_capability(minimum_compute_capability),
-    maximum_compute_capability(maximum_compute_capability),
-    cluster_shape(cluster_shape) { }
+      cutlass::gemm::GemmCoord threadblock_shape = cutlass::gemm::GemmCoord(),
+      int threadblock_stages = 0,
+      cutlass::gemm::GemmCoord warp_count = cutlass::gemm::GemmCoord(),
+      MathInstructionDescription math_instruction =
+          MathInstructionDescription(),
+      int minimum_compute_capability = 0, int maximum_compute_capability = 0,
+      cutlass::gemm::GemmCoord cluster_shape = cutlass::gemm::GemmCoord(1, 1,
+                                                                        1))
+      : threadblock_shape(threadblock_shape),
+        threadblock_stages(threadblock_stages), warp_count(warp_count),
+        math_instruction(math_instruction),
+        minimum_compute_capability(minimum_compute_capability),
+        maximum_compute_capability(maximum_compute_capability),
+        cluster_shape(cluster_shape) {}
 
   // Equality operator
-  inline
-  bool operator==(TileDescription const& rhs) const{
-    return (
-      (threadblock_shape == rhs.threadblock_shape) &&
-      (threadblock_stages == rhs.threadblock_stages) &&
-      (warp_count == rhs.warp_count) &&
-      (math_instruction == rhs.math_instruction) &&
-      (minimum_compute_capability == rhs.minimum_compute_capability) &&
-      (maximum_compute_capability == rhs.maximum_compute_capability));
+  inline bool operator==(TileDescription const &rhs) const {
+    return ((threadblock_shape == rhs.threadblock_shape) &&
+            (threadblock_stages == rhs.threadblock_stages) &&
+            (warp_count == rhs.warp_count) &&
+            (math_instruction == rhs.math_instruction) &&
+            (minimum_compute_capability == rhs.minimum_compute_capability) &&
+            (maximum_compute_capability == rhs.maximum_compute_capability));
   }
 
   // Inequality operator
-  inline
-  bool operator!=(TileDescription const& rhs) const {
+  inline bool operator!=(TileDescription const &rhs) const {
     return !(*this == rhs);
   }
 };
@@ -157,7 +150,7 @@ struct TileDescription {
 struct OperationDescription {
 
   /// Unique identifier describing the operation
-  char const * name;
+  char const *name;
 
   /// Operation provider
   Provider provider;
@@ -172,12 +165,11 @@ struct OperationDescription {
   // Methods
   //
   OperationDescription(
-    char const * name = "unknown",
-    Provider provider = Provider::kInvalid,
-    OperationKind kind = OperationKind::kInvalid, 
-    TileDescription const&  tile_description = TileDescription()
-  ):
-    name(name), provider(provider), kind(kind), tile_description(tile_description) { }
+      char const *name = "unknown", Provider provider = Provider::kInvalid,
+      OperationKind kind = OperationKind::kInvalid,
+      TileDescription const &tile_description = TileDescription())
+      : name(name), provider(provider), kind(kind),
+        tile_description(tile_description) {}
 };
 
 /// Structure describing the properties of a tensor
@@ -197,23 +189,18 @@ struct TensorDescription {
 
   /// log2() of the maximum value each relevant stride may have
   int log_stride_range;
-  
+
   //
   // Methods
   //
 
-  TensorDescription(
-    NumericTypeID element = NumericTypeID::kInvalid,
-    LayoutTypeID layout = LayoutTypeID::kInvalid,
-    int alignment = 1,
-    int log_extent_range = 24,
-    int log_stride_range = 24
-  ):
-    element(element), 
-    layout(layout), 
-    alignment(alignment), 
-    log_extent_range(log_extent_range), 
-    log_stride_range(log_stride_range)  { }
+  TensorDescription(NumericTypeID element = NumericTypeID::kInvalid,
+                    LayoutTypeID layout = LayoutTypeID::kInvalid,
+                    int alignment = 1, int log_extent_range = 24,
+                    int log_stride_range = 24)
+      : element(element), layout(layout), alignment(alignment),
+        log_extent_range(log_extent_range), log_stride_range(log_stride_range) {
+  }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +210,7 @@ struct GemmDescription : public OperationDescription {
 
   /// Indicates the kind of GEMM performed
   GemmKind gemm_kind;
-  
+
   /// Describes the A operand
   TensorDescription A;
 
@@ -255,49 +242,27 @@ struct GemmDescription : public OperationDescription {
   // Methods
   //
 
-  GemmDescription(
-    GemmKind gemm_kind = GemmKind::kGemm,
-    TensorDescription const& A = TensorDescription(),
-    TensorDescription const& B = TensorDescription(),
-    TensorDescription const& C = TensorDescription(),
-    TensorDescription const& D = TensorDescription(),
-    NumericTypeID element_epilogue = NumericTypeID::kInvalid,
-    SplitKMode split_k_mode = SplitKMode::kNone,
-    ComplexTransform transform_A = ComplexTransform::kNone,
-    ComplexTransform transform_B = ComplexTransform::kNone
-  ):
-    gemm_kind(gemm_kind),
-    A(A),
-    B(B),
-    C(C),
-    D(D),
-    element_epilogue(element_epilogue),
-    split_k_mode(split_k_mode),
-    transform_A(transform_A),
-    transform_B(transform_B) {} 
+  GemmDescription(GemmKind gemm_kind = GemmKind::kGemm,
+                  TensorDescription const &A = TensorDescription(),
+                  TensorDescription const &B = TensorDescription(),
+                  TensorDescription const &C = TensorDescription(),
+                  TensorDescription const &D = TensorDescription(),
+                  NumericTypeID element_epilogue = NumericTypeID::kInvalid,
+                  SplitKMode split_k_mode = SplitKMode::kNone,
+                  ComplexTransform transform_A = ComplexTransform::kNone,
+                  ComplexTransform transform_B = ComplexTransform::kNone)
+      : gemm_kind(gemm_kind), A(A), B(B), C(C), D(D),
+        element_epilogue(element_epilogue), split_k_mode(split_k_mode),
+        transform_A(transform_A), transform_B(transform_B) {}
 
-  GemmDescription(
-    OperationDescription op_desc,
-    GemmKind gemm_kind,
-    TensorDescription const& A,
-    TensorDescription const& B,
-    TensorDescription const& C,
-    TensorDescription const& D,
-    NumericTypeID element_epilogue,
-    SplitKMode split_k_mode,
-    ComplexTransform transform_A,
-    ComplexTransform transform_B
-  ):
-    OperationDescription(op_desc),
-    gemm_kind(gemm_kind),
-    A(A),
-    B(B),
-    C(C),
-    D(D),
-    element_epilogue(element_epilogue),
-    split_k_mode(split_k_mode),
-    transform_A(transform_A),
-    transform_B(transform_B) {}
+  GemmDescription(OperationDescription op_desc, GemmKind gemm_kind,
+                  TensorDescription const &A, TensorDescription const &B,
+                  TensorDescription const &C, TensorDescription const &D,
+                  NumericTypeID element_epilogue, SplitKMode split_k_mode,
+                  ComplexTransform transform_A, ComplexTransform transform_B)
+      : OperationDescription(op_desc), gemm_kind(gemm_kind), A(A), B(B), C(C),
+        D(D), element_epilogue(element_epilogue), split_k_mode(split_k_mode),
+        transform_A(transform_A), transform_B(transform_B) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,19 +272,20 @@ struct SparseGemmDescription : public GemmDescription {
 
   /// Description structure for structured sparse GEMM
   SparseGemmDescription(
-    GemmKind gemm_kind = GemmKind::kGemm,
-    TensorDescription const& A = TensorDescription(),
-    TensorDescription const& B = TensorDescription(),
-    TensorDescription const& C = TensorDescription(),
-    TensorDescription const& D = TensorDescription(),
-    TensorDescription const& E = TensorDescription(),
-    NumericTypeID element_epilogue = NumericTypeID::kInvalid,
-    SplitKMode split_k_mode = SplitKMode::kNone,
-    ComplexTransform transform_A = ComplexTransform::kNone,
-    ComplexTransform transform_B = ComplexTransform::kNone
-  ):
-    GemmDescription(gemm_kind, A, B, C, D, element_epilogue, split_k_mode, transform_A, transform_B)
-     {this->E = E;}
+      GemmKind gemm_kind = GemmKind::kGemm,
+      TensorDescription const &A = TensorDescription(),
+      TensorDescription const &B = TensorDescription(),
+      TensorDescription const &C = TensorDescription(),
+      TensorDescription const &D = TensorDescription(),
+      TensorDescription const &E = TensorDescription(),
+      NumericTypeID element_epilogue = NumericTypeID::kInvalid,
+      SplitKMode split_k_mode = SplitKMode::kNone,
+      ComplexTransform transform_A = ComplexTransform::kNone,
+      ComplexTransform transform_B = ComplexTransform::kNone)
+      : GemmDescription(gemm_kind, A, B, C, D, element_epilogue, split_k_mode,
+                        transform_A, transform_B) {
+    this->E = E;
+  }
 };
 
 /// Description of all Reduction operations
@@ -343,7 +309,7 @@ struct RankKDescription : public OperationDescription {
 
   /// Number of rank update (rank k or rank 2k)
   int num_ranks;
-  
+
   /// Describes the A operand
   TensorDescription A;
 
@@ -375,30 +341,21 @@ struct RankKDescription : public OperationDescription {
   // Methods
   //
 
-  RankKDescription(
-    RankKKind rank_k_kind = RankKKind::kUniversal,
-    int num_ranks = 1,
-    TensorDescription const& A = TensorDescription(),
-    TensorDescription const& B = TensorDescription(),
-    TensorDescription const& C = TensorDescription(),
-    FillMode fill_mode = FillMode::kInvalid,
-    BlasMode blas_mode = BlasMode::kInvalid,
-    NumericTypeID element_epilogue = NumericTypeID::kInvalid,
-    SplitKMode split_k_mode = SplitKMode::kNone,
-    ComplexTransform transform_A = ComplexTransform::kNone,
-    ComplexTransform transform_B = ComplexTransform::kNone
-  ):
-    rank_k_kind(rank_k_kind),
-    num_ranks(num_ranks),
-    A(A),
-    B(B),
-    C(C),
-    fill_mode(fill_mode),
-    blas_mode(blas_mode),
-    element_epilogue(element_epilogue),
-    split_k_mode(split_k_mode),
-    transform_A(transform_A),
-    transform_B(transform_B) {} 
+  RankKDescription(RankKKind rank_k_kind = RankKKind::kUniversal,
+                   int num_ranks = 1,
+                   TensorDescription const &A = TensorDescription(),
+                   TensorDescription const &B = TensorDescription(),
+                   TensorDescription const &C = TensorDescription(),
+                   FillMode fill_mode = FillMode::kInvalid,
+                   BlasMode blas_mode = BlasMode::kInvalid,
+                   NumericTypeID element_epilogue = NumericTypeID::kInvalid,
+                   SplitKMode split_k_mode = SplitKMode::kNone,
+                   ComplexTransform transform_A = ComplexTransform::kNone,
+                   ComplexTransform transform_B = ComplexTransform::kNone)
+      : rank_k_kind(rank_k_kind), num_ranks(num_ranks), A(A), B(B), C(C),
+        fill_mode(fill_mode), blas_mode(blas_mode),
+        element_epilogue(element_epilogue), split_k_mode(split_k_mode),
+        transform_A(transform_A), transform_B(transform_B) {}
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -407,7 +364,7 @@ struct TrmmDescription : public OperationDescription {
 
   /// Indicates the kind of TRMM performed
   TrmmKind trmm_kind;
-  
+
   /// Describes the A operand
   TensorDescription A;
 
@@ -439,28 +396,19 @@ struct TrmmDescription : public OperationDescription {
   // Methods
   //
 
-  TrmmDescription(
-    TrmmKind trmm_kind = TrmmKind::kUniversal,
-    TensorDescription const& A = TensorDescription(),
-    SideMode side_mode = SideMode::kInvalid,
-    FillMode fill_mode = FillMode::kInvalid,
-    DiagType diag_type = DiagType::kInvalid,
-    TensorDescription const& B = TensorDescription(),
-    TensorDescription const& D = TensorDescription(),
-    NumericTypeID element_epilogue = NumericTypeID::kInvalid,
-    SplitKMode split_k_mode = SplitKMode::kNone,
-    ComplexTransform transform_A = ComplexTransform::kNone
-  ):
-    trmm_kind(trmm_kind),
-    A(A),
-    side_mode(side_mode),
-    fill_mode(fill_mode),
-    diag_type(diag_type),
-    B(B),
-    D(D),
-    element_epilogue(element_epilogue),
-    split_k_mode(split_k_mode),
-    transform_A(transform_A) {} 
+  TrmmDescription(TrmmKind trmm_kind = TrmmKind::kUniversal,
+                  TensorDescription const &A = TensorDescription(),
+                  SideMode side_mode = SideMode::kInvalid,
+                  FillMode fill_mode = FillMode::kInvalid,
+                  DiagType diag_type = DiagType::kInvalid,
+                  TensorDescription const &B = TensorDescription(),
+                  TensorDescription const &D = TensorDescription(),
+                  NumericTypeID element_epilogue = NumericTypeID::kInvalid,
+                  SplitKMode split_k_mode = SplitKMode::kNone,
+                  ComplexTransform transform_A = ComplexTransform::kNone)
+      : trmm_kind(trmm_kind), A(A), side_mode(side_mode), fill_mode(fill_mode),
+        diag_type(diag_type), B(B), D(D), element_epilogue(element_epilogue),
+        split_k_mode(split_k_mode), transform_A(transform_A) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -470,11 +418,11 @@ struct SymmDescription : public OperationDescription {
 
   /// Indicates which device template is used (universal or regular)
   SymmKind symm_kind;
-  
+
   /// Describes the A operand
   TensorDescription A;
 
-  /// Describes the B operand 
+  /// Describes the B operand
   TensorDescription B;
 
   /// Describes the source and destination matrices
@@ -505,30 +453,21 @@ struct SymmDescription : public OperationDescription {
   // Methods
   //
 
-  SymmDescription(
-    SymmKind symm_kind = SymmKind::kUniversal,
-    TensorDescription const& A = TensorDescription(),
-    TensorDescription const& B = TensorDescription(),
-    TensorDescription const& C = TensorDescription(),
-    SideMode side_mode = SideMode::kInvalid,
-    FillMode fill_mode = FillMode::kInvalid,
-    BlasMode blas_mode = BlasMode::kInvalid,
-    NumericTypeID element_epilogue = NumericTypeID::kInvalid,
-    SplitKMode split_k_mode = SplitKMode::kNone,
-    ComplexTransform transform_A = ComplexTransform::kNone,
-    ComplexTransform transform_B = ComplexTransform::kNone
-  ):
-    symm_kind(symm_kind),
-    A(A),
-    B(B),
-    C(C),
-    side_mode(side_mode),
-    fill_mode(fill_mode),
-    blas_mode(blas_mode),
-    element_epilogue(element_epilogue),
-    split_k_mode(split_k_mode),
-    transform_A(transform_A),
-    transform_B(transform_B) {} 
+  SymmDescription(SymmKind symm_kind = SymmKind::kUniversal,
+                  TensorDescription const &A = TensorDescription(),
+                  TensorDescription const &B = TensorDescription(),
+                  TensorDescription const &C = TensorDescription(),
+                  SideMode side_mode = SideMode::kInvalid,
+                  FillMode fill_mode = FillMode::kInvalid,
+                  BlasMode blas_mode = BlasMode::kInvalid,
+                  NumericTypeID element_epilogue = NumericTypeID::kInvalid,
+                  SplitKMode split_k_mode = SplitKMode::kNone,
+                  ComplexTransform transform_A = ComplexTransform::kNone,
+                  ComplexTransform transform_B = ComplexTransform::kNone)
+      : symm_kind(symm_kind), A(A), B(B), C(C), side_mode(side_mode),
+        fill_mode(fill_mode), blas_mode(blas_mode),
+        element_epilogue(element_epilogue), split_k_mode(split_k_mode),
+        transform_A(transform_A), transform_B(transform_B) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -539,7 +478,7 @@ struct SymmDescription : public OperationDescription {
 struct ConvDescription : public OperationDescription {
   /// Describes the convolution dimension support (2D or 3D)
   int conv_dim;
-  
+
   /// Describes the kind of convolution
   ConvKind conv_kind;
 
@@ -563,34 +502,45 @@ struct ConvDescription : public OperationDescription {
   //
   // Returns Activation TensorDescription
   TensorDescription activation() const {
-    switch(conv_kind) {
-      case library::ConvKind::kFprop : return A;
-      case library::ConvKind::kDgrad : return C;
-      case library::ConvKind::kWgrad : return B;
-      default : throw std::runtime_error("Invalid Conv Operator (fprop, dgrad, wgrad)");
+    switch (conv_kind) {
+    case library::ConvKind::kFprop:
+      return A;
+    case library::ConvKind::kDgrad:
+      return C;
+    case library::ConvKind::kWgrad:
+      return B;
+    default:
+      throw std::runtime_error("Invalid Conv Operator (fprop, dgrad, wgrad)");
     }
   }
 
   // Returns Filter TensorDescription
   TensorDescription filter() const {
-    switch(conv_kind) {
-      case library::ConvKind::kFprop : return B;
-      case library::ConvKind::kDgrad : return B;
-      case library::ConvKind::kWgrad : return C;
-      default : throw std::runtime_error("Invalid Conv Operator (fprop, dgrad, wgrad)");
+    switch (conv_kind) {
+    case library::ConvKind::kFprop:
+      return B;
+    case library::ConvKind::kDgrad:
+      return B;
+    case library::ConvKind::kWgrad:
+      return C;
+    default:
+      throw std::runtime_error("Invalid Conv Operator (fprop, dgrad, wgrad)");
     }
   }
 
   // Returns Output TensorDescription
   TensorDescription output() const {
-    switch(conv_kind) {
-      case library::ConvKind::kFprop : return C;
-      case library::ConvKind::kDgrad : return A;
-      case library::ConvKind::kWgrad : return A;
-      default : throw std::runtime_error("Invalid Conv Operator (fprop, dgrad, wgrad)");
+    switch (conv_kind) {
+    case library::ConvKind::kFprop:
+      return C;
+    case library::ConvKind::kDgrad:
+      return A;
+    case library::ConvKind::kWgrad:
+      return A;
+    default:
+      throw std::runtime_error("Invalid Conv Operator (fprop, dgrad, wgrad)");
     }
   }
-
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

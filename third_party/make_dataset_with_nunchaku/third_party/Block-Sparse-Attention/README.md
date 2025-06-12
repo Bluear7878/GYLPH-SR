@@ -17,13 +17,16 @@ We have four patterns supported in Block Sparse Attention:
 1. dense attention
 
    Calculate the full attention matrix.
-2. streaming atteniton with token granularity
+
+1. streaming atteniton with token granularity
 
    Calculate the attention with a fixed number of sink tokens and local tokens. You can refer to [StreamingLLM](https://arxiv.org/abs/2309.17453) for more details.
-3. streaming attention with block granularity, block_size = 128
+
+1. streaming attention with block granularity, block_size = 128
 
    Calculate the attention with a fixed number of sink blocks and local blocks.
-4. blocksparse attention, block_size = 128
+
+1. blocksparse attention, block_size = 128
 
    Take in a block mask and calculate the attention with the block mask.
 
@@ -129,11 +132,12 @@ Block Sparse Interface: `block_sparse_attn/block_sparse_attn_interface.py`
 Block Sparse Attention currently supports:
 
 1. Datatype fp16 and bf16 (bf16 requires Ampere, Ada, or Hopper GPUs).
-2. Head dimension 32, 64, 128.
+1. Head dimension 32, 64, 128.
 
 ### Tests
 
 To run the correctness tests:
+
 ```sh
 pip install pytest
 ```
@@ -144,6 +148,7 @@ pip install pytest
   cd ./block_sparse_tests/fwd/test_correctness
   pytest full_test.py
   ```
+
 - For fwd and bwd
 
   ```sh
@@ -160,6 +165,7 @@ To run the performance tests:
   python token_streaming.py
   python blocksparse.py
   ```
+
 - For fwd and bwd
 
   ```sh
@@ -172,11 +178,9 @@ To run the performance tests:
 
 | | |
 | --- | --- |
-[Junxian Guo](https://github.com/JerryGJX): SJTU, MIT|  [Haotian Tang](http://kentang.net/): MIT
-[Shang Yang](https://ys-2020.github.io/): MIT        |  [Zhekai Zhang](https://hanlab.mit.edu/team/zhekai-zhang): MIT
-[Zhijian Liu](https://zhijianliu.com/): Nvidia, MIT  |  [Song Han](https://hanlab.mit.edu/songhan): Nvidia, MIT
-
-
+[Junxian Guo](https://github.com/JerryGJX): SJTU, MIT| [Haotian Tang](http://kentang.net/): MIT
+[Shang Yang](https://ys-2020.github.io/): MIT | [Zhekai Zhang](https://hanlab.mit.edu/team/zhekai-zhang): MIT
+[Zhijian Liu](https://zhijianliu.com/): Nvidia, MIT | [Song Han](https://hanlab.mit.edu/songhan): Nvidia, MIT
 
 ## Acknowledgement
 

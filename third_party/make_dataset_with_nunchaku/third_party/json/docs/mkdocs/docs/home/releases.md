@@ -4,10 +4,12 @@
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip) (274 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.3/json.hpp) (791 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.3/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip) (274 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.3/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.3/json.hpp) (791 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.3/json.hpp.asc) (1 KB)
+```
 
 Release date: 2019-11-17
 SHA-256: 3b5d2b8f8282b80557091514d8ab97e27f9574336c804ee666fda673a9b59926 (json.hpp), 87b5884741427220d3a33df1363ae0e8b898099fbc59f1c451113f6732891014 (include.zip)
@@ -27,15 +29,16 @@ This release does not deprecate any functions. As an overview, the following fun
 - Function [`iterator_wrapper`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_af1592a06bc63811886ade4f9d965045e.html#af1592a06bc63811886ade4f9d965045e) are deprecated. Please use the member function [`items()`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_afe3e137ace692efa08590d8df40f58dd.html#afe3e137ace692efa08590d8df40f58dd) instead.
 - Functions [`friend std::istream& operator<<(basic_json&, std::istream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_ab7285a92514fcdbe6de505ebaba92ea3.html#ab7285a92514fcdbe6de505ebaba92ea3) and [`friend std::ostream& operator>>(const basic_json&, std::ostream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a9e06deabe69262c3ffc5533d32856983.html#a9e06deabe69262c3ffc5533d32856983) are deprecated. Please use [`friend std::istream&  operator>>(std::istream&, basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_aaf363408931d76472ded14017e59c9e8.html#aaf363408931d76472ded14017e59c9e8) and [`friend operator<<(std::ostream&, const basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a5e34c5435e557d0bf666bd7311211405.html#a5e34c5435e557d0bf666bd7311211405) instead.
 
-
 ## v3.7.2
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.2/include.zip) (274 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.2/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.2/json.hpp) (791 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.2/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.2/include.zip) (274 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.2/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.2/json.hpp) (791 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.2/json.hpp.asc) (1 KB)
+```
 
 Release date: 2019-11-10
 SHA-256: 0a65fcbbe1b334d3f45c9498e5ee28c3f3b2428aea98557da4a3ff12f0f14ad6 (json.hpp), 67f69c9a93b7fa0612dc1b6273119d2c560317333581845f358aaa68bff8f087 (include.zip)
@@ -46,11 +49,11 @@ Project [bad_json_parsers](https://github.com/lovasoa/bad_json_parsers) tested h
 
 ### :bug: Bug Fixes
 
-* Fixed a bug that lead to stack overflow for deeply nested JSON values (objects, array) by changing the implementation of the destructor from a recursive to an iterative approach. #832, #1419, #1835
+- Fixed a bug that lead to stack overflow for deeply nested JSON values (objects, array) by changing the implementation of the destructor from a recursive to an iterative approach. #832, #1419, #1835
 
 ### :hammer: Further Changes
 
-* Added WhiteStone Bolt. #1830
+- Added WhiteStone Bolt. #1830
 
 ### :fire: Deprecated functions
 
@@ -63,10 +66,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.1/include.zip) (273 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.1/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.1/json.hpp) (789 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.1/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.1/include.zip) (273 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.1/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.1/json.hpp) (789 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.1/json.hpp.asc) (1 KB)
+```
 
 Release date: 2019-11-06
 SHA-256: b5ba7228f3c22a882d379e93d08eab4349458ee16fbf45291347994eac7dc7ce (json.hpp), 77b9f54b34e7989e6f402afb516f7ff2830df551c3a36973085e2c7a6b1045fe (include.zip)
@@ -90,7 +95,7 @@ This release fixes several small bugs in the library. All changes are backward-c
 
 - The [`items()`](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_afe3e137ace692efa08590d8df40f58dd.html#afe3e137ace692efa08590d8df40f58dd) function can now be used with a custom string type. #1765
 - Made [`json_pointer::back`](https://nlohmann.github.io/json/classnlohmann_1_1json__pointer_a213bc67c32a30c68ac6bf06f5195d482.html#a213bc67c32a30c68ac6bf06f5195d482) `const`. #1764 #1769
-- Meson is part of the release archive. #1672 #1694 
+- Meson is part of the release archive. #1672 #1694
 - Improved documentation on the Meson and Spack package manager. #1694 #1720
 
 ### :hammer: Further Changes
@@ -117,10 +122,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.0/include.zip) (143 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.0/json.hpp) (782 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.7.0/include.zip) (143 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.7.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.7.0/json.hpp) (782 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.7.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2019-07-28
 SHA-256: a503214947952b69f0062f572cb74c17582a495767446347ce2e452963fc2ca4 (json.hpp), 541c34438fd54182e9cdc68dd20c898d766713ad6d901fb2c6e28ff1f1e7c10d (include.zip)
@@ -174,10 +181,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip) (136 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.6.1/json.hpp) (711 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.6.1/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip) (136 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.6.1/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.6.1/json.hpp) (711 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.6.1/json.hpp.asc) (1 KB)
+```
 
 Release date: 2019-03-20
 SHA-256: d2eeb25d2e95bffeb08ebb7704cdffd2e8fca7113eba9a0b38d60a5c391ea09a (json.hpp), 69cc88207ce91347ea530b227ff0776db82dcb8de6704e1a3d74f4841bc651cf (include.zip)
@@ -206,10 +215,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.6.0/include.zip) (136 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.6.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.6.0/json.hpp) (711 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.6.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.6.0/include.zip) (136 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.6.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.6.0/json.hpp) (711 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.6.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2019-03-20
 SHA-256: ce9839370f28094c71107c405affb3b08c4a098154988014cbb0800b1c44a831 (json.hpp), 237c5e66e7f8186a02804ce9dbd5f69ce89fe7424ef84adf6142e973bd9532f4 (include.zip)
@@ -218,15 +229,12 @@ SHA-256: ce9839370f28094c71107c405affb3b08c4a098154988014cbb0800b1c44a831 (json.
 
 ### Summary
 
-This release adds some **convenience functions for JSON Pointers**, introduces a [`contains`](
-http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a0a45fc740637123fdf05fef970f8be47.html#a0a45fc740637123fdf05fef970f8be47) function to check if a key is present in an object, and improves the **performance of integer serialization**. Furthermore, a lot of small bug fixes and improvements have been made. All changes are backward-compatible.
+This release adds some **convenience functions for JSON Pointers**, introduces a [`contains`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a0a45fc740637123fdf05fef970f8be47.html#a0a45fc740637123fdf05fef970f8be47) function to check if a key is present in an object, and improves the **performance of integer serialization**. Furthermore, a lot of small bug fixes and improvements have been made. All changes are backward-compatible.
 
 ### :sparkles: New Features
 
-- Overworked the public interface for JSON Pointers. The creation of JSON Pointers is simplified with [`operator/`](
-http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a90a11fe6c7f37b1746a3ff9cb24b0d53.html#a90a11fe6c7f37b1746a3ff9cb24b0d53) and [`operator/=`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a7395bd0af29ac23fd3f21543c935cdfa.html#a7395bd0af29ac23fd3f21543c935cdfa). JSON Pointers can be inspected with [`empty`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a649252bda4a2e75a0915b11a25d8bcc3.html#a649252bda4a2e75a0915b11a25d8bcc3), [`back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a6bd5b554c10f15672135c216893eef31.html#a6bd5b554c10f15672135c216893eef31),  and [`parent_pointer`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_afdaacce1edb7145e0434e014f0e8685a.html#afdaacce1edb7145e0434e014f0e8685a), and manipulated with [`push_back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a697d12b5bd6205f8866691b166b7c7dc.html#a697d12b5bd6205f8866691b166b7c7dc) and [`pop_back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a4b1ee4d511ca195bed896a3da47e264c.html#a4b1ee4d511ca195bed896a3da47e264c). #1434
-- Added a boolean method [`contains`](
-http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a0a45fc740637123fdf05fef970f8be47.html#a0a45fc740637123fdf05fef970f8be47) to check whether an element exists in a JSON object with a given key. Returns false when called on non-object types. #1471 #1474
+- Overworked the public interface for JSON Pointers. The creation of JSON Pointers is simplified with [`operator/`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a90a11fe6c7f37b1746a3ff9cb24b0d53.html#a90a11fe6c7f37b1746a3ff9cb24b0d53) and [`operator/=`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a7395bd0af29ac23fd3f21543c935cdfa.html#a7395bd0af29ac23fd3f21543c935cdfa). JSON Pointers can be inspected with [`empty`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a649252bda4a2e75a0915b11a25d8bcc3.html#a649252bda4a2e75a0915b11a25d8bcc3), [`back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a6bd5b554c10f15672135c216893eef31.html#a6bd5b554c10f15672135c216893eef31), and [`parent_pointer`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_afdaacce1edb7145e0434e014f0e8685a.html#afdaacce1edb7145e0434e014f0e8685a), and manipulated with [`push_back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a697d12b5bd6205f8866691b166b7c7dc.html#a697d12b5bd6205f8866691b166b7c7dc) and [`pop_back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1json__pointer_a4b1ee4d511ca195bed896a3da47e264c.html#a4b1ee4d511ca195bed896a3da47e264c). #1434
+- Added a boolean method [`contains`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a0a45fc740637123fdf05fef970f8be47.html#a0a45fc740637123fdf05fef970f8be47) to check whether an element exists in a JSON object with a given key. Returns false when called on non-object types. #1471 #1474
 
 ### :bug: Bug Fixes
 
@@ -252,18 +260,18 @@ http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a0a45fc74063
 - Fixed documentation of parse function. #1473
 - Suppressed warning that cannot be fixed inside the library. #1401 #1468
 - Imroved package manager suppert:
-    - Updated Buckaroo instructions. #1495
-    - Improved Meson support. #1463
-    - Added Conda package manager documentation. #1430
-    - Added NuGet package manager documentation. #1132
+  - Updated Buckaroo instructions. #1495
+  - Improved Meson support. #1463
+  - Added Conda package manager documentation. #1430
+  - Added NuGet package manager documentation. #1132
 - Continuous Integration
-    - Removed unstable or deprecated Travis builders (Xcode 6.4 - 8.2) and added Xcode 10.1 builder.
-    - Added Clang 7 to Travis CI.
-    - Fixed AppVeyor x64 builds. #1374 #1414
+  - Removed unstable or deprecated Travis builders (Xcode 6.4 - 8.2) and added Xcode 10.1 builder.
+  - Added Clang 7 to Travis CI.
+  - Fixed AppVeyor x64 builds. #1374 #1414
 - Updated thirdparty libraries:
-    - Catch 1.12.0 -> 1.12.2
-    - Google Benchmark 1.3.0 -> 1.4.1
-    - Doxygen 1.8.15 -> 1.8.16
+  - Catch 1.12.0 -> 1.12.2
+  - Google Benchmark 1.3.0 -> 1.4.1
+  - Doxygen 1.8.15 -> 1.8.16
 
 ### :fire: Deprecated functions
 
@@ -276,10 +284,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.5.0/include.zip) (133 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.5.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.5.0/json.hpp) (693 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.5.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.5.0/include.zip) (133 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.5.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.5.0/json.hpp) (693 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.5.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-12-22
 SHA-256: 8a6dbf3bf01156f438d0ca7e78c2971bca50eec4ca6f0cf59adf3464c43bb9d5 (json.hpp), 3564da9c5b0cf2e032f97c69baedf10ddbc98030c337d0327a215ea72259ea21 (include.zip)
@@ -291,11 +301,13 @@ This release introduces the support for **structured bindings** and reading from
 ### :sparkles: New Features
 
 - **Structured bindings** are now supported for JSON objects and arrays via the [`items()`](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_afe3e137ace692efa08590d8df40f58dd.html#afe3e137ace692efa08590d8df40f58dd) member function, so finally this code is possible:
+
   ```cpp
   for (auto& [key, val] : j.items()) {
       std::cout << key << ':' << val << '\n';
   }
-  ```  
+  ```
+
   #1388 #1391
 
 - Added support for **reading from `FILE*`** to support situations in which streams are nit available or would require too much RAM. #1370 #1392
@@ -311,7 +323,7 @@ This release introduces the support for **structured bindings** and reading from
 
 ### :hammer: Further Changes
 
-- Added a warning for implicit conversions to the documentation: It is not recommended to use implicit conversions when reading **from** a JSON value. Details about this recommendation can be found [here](https://www.github.com/nlohmann/json/issues/958).  #1363
+- Added a warning for implicit conversions to the documentation: It is not recommended to use implicit conversions when reading **from** a JSON value. Details about this recommendation can be found [here](https://www.github.com/nlohmann/json/issues/958). #1363
 - Fixed typos in the documentation. #1329 #1380 #1382
 - Fixed a C4800 warning. #1364
 - Fixed a `-Wshadow` warning #1346
@@ -329,10 +341,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.4.0/include.zip) (132 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.4.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.4.0/json.hpp) (689 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.4.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.4.0/include.zip) (132 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.4.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.4.0/json.hpp) (689 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.4.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-10-30
 SHA-256: 63da6d1f22b2a7bb9e4ff7d6b255cf691a161ff49532dcc45d398a53e295835f (json.hpp), bfec46fc0cee01c509cf064d2254517e7fa80d1e7647fea37cf81d97c5682bdc (include.zip)
@@ -381,10 +395,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.3.0/include.zip) (123 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.3.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.3.0/json.hpp) (635 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.3.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.3.0/include.zip) (123 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.3.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.3.0/json.hpp) (635 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.3.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-10-05
 SHA-256: f1327bb60c58757a3dd2b0c9c45d49503d571337681d950ec621f8374bcc14d4 (json.hpp), 9588d63557333aaa485e92221ec38014a85a6134e7486fe3441e0541a5a89576 (include.zip)
@@ -434,15 +450,16 @@ This release does not deprecate any functions. As an overview, the following fun
 - Function [`iterator_wrapper`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_af1592a06bc63811886ade4f9d965045e.html#af1592a06bc63811886ade4f9d965045e) are deprecated. Please use the member function [`items()`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_afe3e137ace692efa08590d8df40f58dd.html#afe3e137ace692efa08590d8df40f58dd) instead.
 - Functions [`friend std::istream& operator<<(basic_json&, std::istream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_ab7285a92514fcdbe6de505ebaba92ea3.html#ab7285a92514fcdbe6de505ebaba92ea3) and [`friend std::ostream& operator>>(const basic_json&, std::ostream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a9e06deabe69262c3ffc5533d32856983.html#a9e06deabe69262c3ffc5533d32856983) are deprecated. Please use [`friend std::istream&  operator>>(std::istream&, basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_aaf363408931d76472ded14017e59c9e8.html#aaf363408931d76472ded14017e59c9e8) and [`friend operator<<(std::ostream&, const basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a5e34c5435e557d0bf666bd7311211405.html#a5e34c5435e557d0bf666bd7311211405) instead.
 
-
 ## v3.2.0
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.2.0/include.zip) (124 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.2.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.2.0/json.hpp) (636 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.2.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.2.0/include.zip) (124 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.2.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.2.0/json.hpp) (636 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.2.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-08-20
 SHA-256: ce6b5610a051ec6795fa11c33854abebb086f0fd67c311f5921c3c07f9531b44 (json.hpp), 35ee642558b90e2f9bc758995c4788c4b4d4dec54eef95fb8f38cb4d49c8fc7c (include.zip)
@@ -500,16 +517,16 @@ This release does not deprecate any functions. As an overview, the following fun
 - Function [`iterator_wrapper`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_af1592a06bc63811886ade4f9d965045e.html#af1592a06bc63811886ade4f9d965045e) are deprecated. Please use the member function [`items()`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_afe3e137ace692efa08590d8df40f58dd.html#afe3e137ace692efa08590d8df40f58dd) instead.
 - Functions [`friend std::istream& operator<<(basic_json&, std::istream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_ab7285a92514fcdbe6de505ebaba92ea3.html#ab7285a92514fcdbe6de505ebaba92ea3) and [`friend std::ostream& operator>>(const basic_json&, std::ostream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a9e06deabe69262c3ffc5533d32856983.html#a9e06deabe69262c3ffc5533d32856983) are deprecated. Please use [`friend std::istream&  operator>>(std::istream&, basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_aaf363408931d76472ded14017e59c9e8.html#aaf363408931d76472ded14017e59c9e8) and [`friend operator<<(std::ostream&, const basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a5e34c5435e557d0bf666bd7311211405.html#a5e34c5435e557d0bf666bd7311211405) instead.
 
-
-
 ## v3.1.2
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.1.2/include.zip) (115 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.1.2/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.1.2/json.hpp) (582 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.1.2/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.1.2/include.zip) (115 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.1.2/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.1.2/json.hpp) (582 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.1.2/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-03-14
 SHA-256: fbdfec4b4cf63b3b565d09f87e6c3c183bdd45c5be1864d3fcb338f6f02c1733 (json.hpp), 495362ee1b9d03d9526ba9ccf1b4a9c37691abe3a642ddbced13e5778c16660c (include.zip)
@@ -540,15 +557,16 @@ This release does not deprecate any functions. As an overview, the following fun
 - Function [`iterator_wrapper`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_af1592a06bc63811886ade4f9d965045e.html#af1592a06bc63811886ade4f9d965045e) are deprecated. Please use the member function [`items()`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_afe3e137ace692efa08590d8df40f58dd.html#afe3e137ace692efa08590d8df40f58dd) instead.
 - Functions [`friend std::istream& operator<<(basic_json&, std::istream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_ab7285a92514fcdbe6de505ebaba92ea3.html#ab7285a92514fcdbe6de505ebaba92ea3) and [`friend std::ostream& operator>>(const basic_json&, std::ostream&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a9e06deabe69262c3ffc5533d32856983.html#a9e06deabe69262c3ffc5533d32856983) are deprecated. Please use [`friend std::istream&  operator>>(std::istream&, basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_aaf363408931d76472ded14017e59c9e8.html#aaf363408931d76472ded14017e59c9e8) and [`friend operator<<(std::ostream&, const basic_json&)`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a5e34c5435e557d0bf666bd7311211405.html#a5e34c5435e557d0bf666bd7311211405) instead.
 
-
 ## v3.1.1
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.1.1/include.zip) (114 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.1.1/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.1.1/json.hpp) (577 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.1.1/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.1.1/include.zip) (114 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.1.1/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.1.1/json.hpp) (577 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.1.1/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-02-13
 SHA-256: e14ce5e33d6a2daf748026bd4947f3d9686ca4cfd53d10c3da46a0a9aceb7f2e (json.hpp), fde771d4b9e4f222965c00758a2bdd627d04fb7b59e09b7f3d1965abdc848505 (include.zip)
@@ -582,10 +600,12 @@ This release does not deprecate any functions. As an overview, the following fun
 
 !!! summary "Files"
 
-    - [include.zip](https://github.com/nlohmann/json/releases/download/v3.1.0/include.zip) (114 KB)
-    - [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.1.0/include.zip.asc) (1 KB)
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.1.0/json.hpp) (577 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.1.0/json.hpp.asc) (1 KB)
+```
+- [include.zip](https://github.com/nlohmann/json/releases/download/v3.1.0/include.zip) (114 KB)
+- [include.zip.asc](https://github.com/nlohmann/json/releases/download/v3.1.0/include.zip.asc) (1 KB)
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.1.0/json.hpp) (577 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.1.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2018-02-01
 SHA-256: d40f614d10a6e4e4e80dca9463da905285f20e93116c36d97d4dc1aa63d10ba4 (json.hpp), 2b7234fca394d1e27b7e017117ed80b7518fafbb4f4c13a7c069624f6f924673 (include.zip)
@@ -636,8 +656,10 @@ Please use [`friend std::istream&  operator>>(std::istream&, basic_json&)`](http
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp) (502 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp) (502 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.0.1/json.hpp.asc) (1 KB)
+```
 
 Release date: 2017-12-29
 SHA-256: c9b3591f1bb94e723a0cd7be861733a3a555b234ef132be1e9027a0364118c4c
@@ -669,8 +691,10 @@ Please use [`friend std::istream&  operator>>(std::istream&, basic_json&)`](http
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v3.0.0/json.hpp) (501 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.0.0/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v3.0.0/json.hpp) (501 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v3.0.0/json.hpp.asc) (1 KB)
+```
 
 Release date: 2017-12-17
 SHA-256: 076d4a0cb890a3c3d389c68421a11c3d77c64bd788e85d50f1b77ed252f2a462
@@ -711,7 +735,7 @@ With all this breaking and deprecation out of the way, let's talk about features
 - The [`insert`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a1b0a4e60d56f1fe80501ed941e122892.html#a1b0a4e60d56f1fe80501ed941e122892) function now also supports an iterator range to add elements to an object.
 - The binary exchange formats **CBOR and MessagePack can now be parsed from input streams and written to output streams** (#477).
 - Input streams are now only read until the end of a JSON value instead of the end of the input (#367).
-- The serialization function [`dump`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a5adea76fedba9898d404fef8598aa663.html#a5adea76fedba9898d404fef8598aa663) now has two optional parameters `ensure_ascii` to **escape all non-ASCII characters** with `\uxxxx` and an `indent_char` parameter to choose whether to **indent with spaces or tabs** (#654). 
+- The serialization function [`dump`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a5adea76fedba9898d404fef8598aa663.html#a5adea76fedba9898d404fef8598aa663) now has two optional parameters `ensure_ascii` to **escape all non-ASCII characters** with `\uxxxx` and an `indent_char` parameter to choose whether to **indent with spaces or tabs** (#654).
 - Added **built-in type support** for C arrays (#502), `std::pair` and `std::tuple` (#563, #614), `enum` and `enum class` (#545), `std::vector<bool>` (#494). Fixed support for `std::valarray` (#702), `std::array` (#553), and `std::map<std::string, std::string>` (#600, #607).
 
 ### :hammer: Further changes
@@ -833,8 +857,10 @@ ss >> j;
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.1.1/json.hpp) (437 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.1.1/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.1.1/json.hpp) (437 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.1.1/json.hpp.asc) (1 KB)
+```
 
 Release date: 2017-02-25
 SHA-256: faa2321beb1aa7416d035e7417fcfa59692ac3d8c202728f9bcc302e2d558f57
@@ -844,6 +870,7 @@ SHA-256: faa2321beb1aa7416d035e7417fcfa59692ac3d8c202728f9bcc302e2d558f57
 This release **fixes a locale-related bug in the parser**. To do so, the whole number handling (lexer, parser, and also the serialization) have been overworked. Furthermore, a lot of small changes added up that were added to this release. All changes are backward-compatible.
 
 ### Changes
+
 - :bug: Locales that have a different character than `.` as decimal separator (e.g., the Norwegian locale `nb_NO.UTF-8`) led to truncated number parsing or parse errors. The library now has been fixed to work with **any locale**. Note that `.` is still the only valid decimal separator for JSON input.
 - :bug: Numbers like `1.0` were correctly parsed as floating-point number, but serialized as integer (`1`). Now, **floating-point numbers correctly round trip**.
 - :bug: Parsing incorrect JSON numbers with leading 0 (`0123`) could yield a [buffer overflow](https://github.com/nlohmann/json/issues/452). This is fixed now by detecting such errors directly by the lexer.
@@ -865,13 +892,14 @@ This release **fixes a locale-related bug in the parser**. To do so, the whole n
 - :construction_worker: Added Codacity.
 - :arrow_up: Upgraded Catch to version 1.7.2.
 
-
 ## v2.1.0
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.1.0/json.hpp) (426 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.1.0/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.1.0/json.hpp) (426 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.1.0/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2017-01-28
 - SHA-256: a571dee92515b685784fd527e38405cf3f5e13e96edbfe3f03d6df2e363a767b
@@ -883,22 +911,24 @@ This release introduces a means to convert from/to user-defined types. The relea
 ![conversion](https://cloud.githubusercontent.com/assets/159488/22399173/aebe8f7a-e597-11e6-930f-7494ee615827.png)
 
 ### Changes
+
 - :sparkles: The library now offers an elegant way to **convert from and to arbitrary value types**. All you need to do is to implement two functions: `to_json` and `from_json`. Then, a conversion is as simple as putting a `=` between variables. See the [README](https://github.com/nlohmann/json#arbitrary-types-conversions) for more information and examples.
 - :sparkles: **Exceptions can now be switched off.** This can be done by defining the preprocessor symbol `JSON_NOEXCEPTION` or by passing `-fno-exceptions` to your compiler. In case the code would usually thrown an exception, `abort()` is now called.
-- :sparkles: **Information on the library** can be queried with the new (static) function `meta()` which returns a JSON object with information on the version, compiler, and platform. See the [documentation]() for an example.
+- :sparkles: **Information on the library** can be queried with the new (static) function `meta()` which returns a JSON object with information on the version, compiler, and platform. See the [documentation](<>) for an example.
 - :bug: A bug in the CBOR parser was fixed which led to a buffer overflow.
-- :sparkles: The function [`type_name()`]() is now public. It allows to query the type of a JSON value as string.
+- :sparkles: The function [`type_name()`](<>) is now public. It allows to query the type of a JSON value as string.
 - :white_check_mark: Added the [Big List of Naughty Strings](https://github.com/minimaxir/big-list-of-naughty-strings) as test case.
 - :arrow_up: Updated to [Catch v1.6.0](https://github.com/philsquared/Catch/releases/tag/v1.6.0).
 - :memo: Some typos in the documentation have been fixed.
-
 
 ## v2.0.10
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.10/json.hpp) (409 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.10/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.10/json.hpp) (409 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.10/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2017-01-02
 - SHA-256: ec27d4e74e9ce0f78066389a70724afd07f10761009322dc020656704ad5296d
@@ -908,6 +938,7 @@ This release introduces a means to convert from/to user-defined types. The relea
 This release fixes several security-relevant bugs in the MessagePack and CBOR parsers. The fixes are backwards compatible.
 
 ### Changes
+
 - :bug: Fixed a lot of **bugs in the CBOR and MesssagePack parsers**. These bugs occurred if invalid input was parsed and then could lead in buffer overflows. These bugs were found with Google's [OSS-Fuzz](https://github.com/google/oss-fuzz), see #405, #407, #408, #409, #411, and #412 for more information.
 - :construction_worker: We now also use the **[Doozer](https://doozer.io) continuous integration platform**.
 - :construction_worker: The complete test suite is now also run with **Clang's address sanitizer and undefined-behavior sanitizer**.
@@ -919,8 +950,10 @@ This release fixes several security-relevant bugs in the MessagePack and CBOR pa
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.9/json.hpp) (406 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.9/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.9/json.hpp) (406 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.9/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-12-16
 - SHA-256: fbf3396f13e187d6c214c297bddc742d918ea9b55e10bfb3d9f458b9bfdc22e5
@@ -932,14 +965,15 @@ This release implements with **[CBOR](http://cbor.io)** and **[MessagePack](http
 ![cbor](https://cloud.githubusercontent.com/assets/159488/22399181/d4d60d32-e597-11e6-8dcb-825abcf9ac2a.png)
 
 ### Changes
-- :sparkles: The library can now read and write the binary formats **[CBOR](http://cbor.io)** (Concise Binary Object Representation) and **[MessagePack](http://msgpack.org)**. Both formats are aimed to produce a very compact representation of JSON which can be parsed very efficiently. See the  [README file](https://github.com/nlohmann/json#binary-formats-cbor-and-messagepack) for more information and examples.
+
+- :sparkles: The library can now read and write the binary formats **[CBOR](http://cbor.io)** (Concise Binary Object Representation) and **[MessagePack](http://msgpack.org)**. Both formats are aimed to produce a very compact representation of JSON which can be parsed very efficiently. See the [README file](https://github.com/nlohmann/json#binary-formats-cbor-and-messagepack) for more information and examples.
 - :fire: simplified the iteration implementation allowing to remove dozens of lines of code
 - :bug: fixed an [integer overflow error](https://github.com/nlohmann/json/issues/389) detected by [Google's OSS-Fuzz](https://github.com/google/oss-fuzz)
 - :bug: suppressed documentation warnings inside the library to facilitate compilation with `-Wdocumentation`
 - :bug: fixed an overflow detection error in the number parser
 - :memo: updated [contribution guidelines](https://github.com/nlohmann/json/blob/develop/.github/CONTRIBUTING.md) to a list of frequentely asked features that will most likely be never added to the library
-- :memo:  added a **table of contents** to the [README file](https://github.com/nlohmann/json/blob/develop/README.md) to add some structure
-- :memo: mentioned the many [examples](https://github.com/nlohmann/json/tree/develop/doc/examples) and the [documentation](https://nlohmann.github.io/json/) in the [README file]()
+- :memo: added a **table of contents** to the [README file](https://github.com/nlohmann/json/blob/develop/README.md) to add some structure
+- :memo: mentioned the many [examples](https://github.com/nlohmann/json/tree/develop/doc/examples) and the [documentation](https://nlohmann.github.io/json/) in the [README file](<>)
 - :hammer: split [unit tests](https://github.com/nlohmann/json/tree/develop/test/src) into individual independent binaries to speed up compilation and testing
 - :white_check_mark: the test suite now contains **11201886** tests
 
@@ -947,8 +981,10 @@ This release implements with **[CBOR](http://cbor.io)** and **[MessagePack](http
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.8/json.hpp) (360 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.8/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.8/json.hpp) (360 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.8/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-12-02
 - SHA-256: b70db0ad34f8e0e61dc3f0cbab88099336c9674c193d8a3439d93d6aca2d7120
@@ -958,6 +994,7 @@ This release implements with **[CBOR](http://cbor.io)** and **[MessagePack](http
 This release combines a lot of small fixes and improvements. The fixes are backwards compatible.
 
 ### Changes
+
 - :bug: fixed a bug that froze the parser if a passed file was not found (now, `std::invalid_argument` is thrown)
 - :bug: fixed a bug that lead to an error of a file at EOF was parsed again (now, `std::invalid_argument` is thrown)
 - :sparkles: the well known functions [`emplace`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_a602f275f0359ab181221384989810604.html#a602f275f0359ab181221384989810604) and [`emplace_back`](http://nlohmann.github.io/json/doxygen/classnlohmann_1_1basic__json_af8a435033327d9237da414afc1cce513.html#af8a435033327d9237da414afc1cce513) have been added to JSON values and work as expected
@@ -974,8 +1011,10 @@ This release combines a lot of small fixes and improvements. The fixes are backw
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.7/json.hpp) (355 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.7/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.7/json.hpp) (355 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.7/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-11-02
 - SHA-256: 5545c323670f8165bae90b9dc6078825e86ec310d96cc4e5b47233ea43715bbf
@@ -985,6 +1024,7 @@ This release combines a lot of small fixes and improvements. The fixes are backw
 This release fixes a few bugs in the JSON parser found in the [Parsing JSON is a Minefield 💣](http://seriot.ch/parsing_json.html) article. The fixes are backwards compatible.
 
 ### Changes
+
 - The article [Parsing JSON is a Minefield 💣](http://seriot.ch/parsing_json.html) discusses a lot of pitfalls of the JSON specification. When investigating the published test cases, a few bugs in the library were found and fixed:
   - Files with less than 5 bytes can now be parsed without error.
   - The library now properly rejects any file encoding other than UTF-8. Furthermore, incorrect surrogate pairs are properly detected and rejected.
@@ -997,8 +1037,10 @@ This release fixes a few bugs in the JSON parser found in the [Parsing JSON is a
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.6/json.hpp) (349 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.6/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.6/json.hpp) (349 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.6/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-10-15
 - SHA256: 459cc93d5e2f503e50c6d5876eb86bfea7daf405f5a567c5a2c9abc2383756ae
@@ -1008,6 +1050,7 @@ This release fixes a few bugs in the JSON parser found in the [Parsing JSON is a
 This release fixes the semantics of `operator[]` for JSON Pointers (see below). This fix is backwards compatible.
 
 ### Changes
+
 - **`operator[]` for JSON Pointers** now behaves like the other versions of `operator[]` and transforms `null` values into objects or arrays if required. This allows to created nested structures like `j["/foo/bar/2"] = 17` (yielding `{"foo": "bar": [null, null, 17]}`) without problems.
 - overworked a helper SFINAE function
 - fixed some documentation issues
@@ -1018,8 +1061,10 @@ This release fixes the semantics of `operator[]` for JSON Pointers (see below). 
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.5/json.hpp) (347 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.5/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.5/json.hpp) (347 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.5/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-09-14
 - SHA-256: 8b7565263a44e2b7d3b89808bc73d2d639037ff0c1f379e3d56dbd77e00b98d9
@@ -1029,14 +1074,17 @@ This release fixes the semantics of `operator[]` for JSON Pointers (see below). 
 This release fixes a regression bug in the stream parser (function `parse()` and the `<<`/`>>` operators). This fix is backwards compatible.
 
 ### Changes
+
 - **Bug fix**: The end of a file stream was not detected properly which led to parse errors. This bug should have been fixed with 2.0.4, but there was still a flaw in the code.
 
 ## v2.0.4
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.4/json.hpp) (347 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.4/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.4/json.hpp) (347 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.4/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-09-11
 - SHA-256: 632ceec4c25c4e2153f71470d3a2b992c8355f6d8b4d627d05dd16095cd3aeda
@@ -1046,6 +1094,7 @@ This release fixes a regression bug in the stream parser (function `parse()` and
 This release fixes a bug in the stream parser (function `parse()` and the `<<`/`>>` operators). This fix is backwards compatible.
 
 ### Changes
+
 - **Bug fix**: The end of a file stream was not detected properly which led to parse errors.
 - Fixed a compiler warning about an unused variable.
 
@@ -1053,8 +1102,10 @@ This release fixes a bug in the stream parser (function `parse()` and the `<<`/`
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.3/json.hpp) (347 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.3/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.3/json.hpp) (347 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.3/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-08-31
 - SHA-256: 535b73efe5546fde9e763c14aeadfc7b58183c0b3cd43c29741025aba6cf6bd3
@@ -1064,6 +1115,7 @@ This release fixes a bug in the stream parser (function `parse()` and the `<<`/`
 This release combines a lot of small fixes and improvements. The release is backwards compatible.
 
 ### Changes
+
 - The **parser/deserialization functions have been generalized** to process any contiguous sequence of 1-byte elements (e.g., `char`, `unsigned char`, `uint8_t`). This includes all kind of string representations (string literals, char arrays, `std::string`, `const char*`), contiguous containers (C-style arrays, `std::vector`, `std::array`, `std::valarray`, `std::initializer_list`). User-defined containers providing random-access iterator access via `std::begin` and `std::end` can be used as well. See the documentation ([1](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_ace63ac4eb1dd7251a259d32e397461a3.html#ace63ac4eb1dd7251a259d32e397461a3), [2](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_a90f05d55d9d0702c075cd281fd0d85ae.html#a90f05d55d9d0702c075cd281fd0d85ae), [3](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_aeffd70f622f8f2a51fd3d95af64b63a7.html#aeffd70f622f8f2a51fd3d95af64b63a7), [4](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_aa8dca2e91a6301c36890f844e64f0023.html#aa8dca2e91a6301c36890f844e64f0023)) for more information. Note that contiguous storage cannot be checked at compile time; if any of the parse functions are called with a noncompliant container, the behavior is undefined and will most likely yield segmentation violation. The preconditions are enforced by an assertion unless the library is compiled with preprocessor symbol `NDEBUG`.
 - As a general remark on **assertions**: The library uses assertions to preclude undefined behavior. A [prominent example](https://github.com/nlohmann/json/issues/289) for this is the `operator[]` for const JSON objects. The behavior of this const version of the operator is undefined if the given key does not exist in the JSON object, because unlike the non-const version, it cannot add a `null` value at the given key. Assertions can be switched of by defining the preprocessor symbol `NDEBUG`. See the [documentation of `assert`](http://en.cppreference.com/w/cpp/error/assert) for more information.
 - In the course of cleaning up the parser/deserialization functions, the constructor [`basic_json(std::istream&, const parser_callback_t)`](https://nlohmann.github.io/json/classnlohmann_1_1basic__json_a32350263eb105764844c5a85e156a255.html#a32350263eb105764844c5a85e156a255) has been **deprecated** and will be deleted with the next major release 3.0.0 to unify the interface of the library. Deserialization will be done by stream operators or by calling one of the `parse` functions. That is, calls like `json j(i);` for an input stream `i` need to be replaced by `json j = json::parse(i);`. Compilers will produce a deprecation warning if client code uses this function.
@@ -1080,8 +1132,10 @@ This release combines a lot of small fixes and improvements. The release is back
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.2/json.hpp) (338 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.2/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.2/json.hpp) (338 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.2/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-07-31
 - SHA-256: 8e97b7965b4594b00998d6704465412360e1a0ed927badb51ded8b82291a8f3d
@@ -1091,6 +1145,7 @@ This release combines a lot of small fixes and improvements. The release is back
 This release combines a lot of small fixes and improvements. The release is backwards compatible.
 
 ### Changes
+
 - The **parser** has been overworked, and a lot of small issues have been fixed:
   - Improved parser performance by avoiding recursion and using move semantics for the return value.
   - Unescaped control characters `\x10`-`\x1f` are not accepted any more.
@@ -1112,8 +1167,10 @@ This release combines a lot of small fixes and improvements. The release is back
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.1/json.hpp) (321 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.1/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.1/json.hpp) (321 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.1/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-06-28
 - SHA-256: ef550fcd7df572555bf068e9ec4e9d3b9e4cdd441cecb0dcea9ea7fd313f72dd
@@ -1123,16 +1180,18 @@ This release combines a lot of small fixes and improvements. The release is back
 This release fixes a performance regression in the JSON serialization (function `dump()`). This fix is backwards compatible.
 
 ### Changes
+
 - The locale of the output stream (or the internal string stream if a JSON value is serialized to a string) is now adjusted once for the whole serialization instead of for each floating-point number.
 - The locale of an output stream is now correctly reset to the previous value by the JSON library.
-
 
 ## v2.0.0
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.0/json.hpp) (321 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.0/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v2.0.0/json.hpp) (321 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v2.0.0/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-06-24
 - SHA-256: ac9e1fb25c2ac9ca5fc501fcd2fe3281fe04f07018a1b48820e7b1b11491bb6c
@@ -1144,8 +1203,9 @@ This release adds several features such as JSON Pointers, JSON Patch, or support
 As `noexcept` and `constexpr` specifier have been added to several functions, the public API has effectively been changed in a (potential) non-backwards compatible manner. As we adhere to [Semantic Versioning](http://semver.org), this calls for a new major version, so say hello to 2️⃣.0️⃣.0️⃣.
 
 ### Changes
+
 - 🔟 A JSON value now uses `uint64_t` (default value for template parameter `NumberUnsignedType`) as data type for **unsigned integer** values. This type is used automatically when an unsigned number is parsed. Furthermore, constructors, conversion operators and an `is_number_unsigned()` test have been added.
--  👉 **JSON Pointer** ([RFC 6901](https://tools.ietf.org/html/rfc6901)) support: A JSON Pointer is a string (similar to an XPath expression) to address a value inside a structured JSON value. JSON Pointers can be used in `at()` and `operator[]` functions. Furthermore, JSON values can be “flattened” to key/value pairs using `flatten()` where each key is a JSON Pointer. The original value can be restored by “unflattening” the flattened value using `unflatten()`.
+- 👉 **JSON Pointer** ([RFC 6901](https://tools.ietf.org/html/rfc6901)) support: A JSON Pointer is a string (similar to an XPath expression) to address a value inside a structured JSON value. JSON Pointers can be used in `at()` and `operator[]` functions. Furthermore, JSON values can be “flattened” to key/value pairs using `flatten()` where each key is a JSON Pointer. The original value can be restored by “unflattening” the flattened value using `unflatten()`.
 - 🏥 **JSON Patch** ([RFC 6902](https://tools.ietf.org/html/rfc6902)) support. A JSON Patch is a JSON value that describes the required edit operations (add, change, remove, …) to transform a JSON value into another one. A JSON Patch can be created with function `diff(const basic_json&)` and applied with `patch(const basic_json&)`. Note the created patches use a rather primitive algorithm so far and leave room for improvement.
 - 🇪🇺 The code is now **locale-independent**: Floating-point numbers are always serialized with a period (`.`) as decimal separator and ignores different settings from the locale.
 - 🍺 **Homebrew** support: Install the library with `brew tap nlohmann/json && brew install nlohmann_json`.
@@ -1164,18 +1224,20 @@ As `noexcept` and `constexpr` specifier have been added to several functions, th
 - Overworked `CMakeLists.txt` to make it easier to integrate the library into other projects.
 
 ### Notes
+
 - Parser error messages are still very vague and contain no information on the error location.
 - The implemented `diff` function is rather primitive and does not create minimal diffs.
 - The name of function `iteration_wrapper` may change in the future and the function will be deprecated in the next release.
 - Roundtripping (i.e., parsing a JSON value from a string, serializing it, and comparing the strings) of floating-point numbers is not 100% accurate. Note that [RFC 8259](https://tools.ietf.org/html/rfc8259) defines no format to internally represent numbers and states not requirement for roundtripping. Nevertheless, benchmarks like [Native JSON Benchmark](https://github.com/miloyip/nativejson-benchmark) treat roundtripping deviations as conformance errors.
 
-
 ## v1.1.0
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v1.1.0/json.hpp) (257 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v1.1.0/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v1.1.0/json.hpp) (257 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v1.1.0/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2016-01-24
 - SHA-256: c0cf0e3017798ca6bb18e757ebc570d21a3bdac877845e2b9e9573d183ed2f05
@@ -1185,25 +1247,27 @@ As `noexcept` and `constexpr` specifier have been added to several functions, th
 This release fixes several small bugs and adds functionality in a backwards-compatible manner. Compared to the [last version (1.0.0)](https://github.com/nlohmann/json/releases/tag/v1.0.0), the following changes have been made:
 
 ### Changes
+
 - _Fixed_: **Floating-point numbers** are now serialized and deserialized properly such that rountripping works in more cases. [#185, #186, #190, #191, #194]
 - _Added_: The code now contains **assertions** to detect undefined behavior during development. As the standard function `assert` is used, the assertions can be switched off by defining the preprocessor symbol `NDEBUG` during compilation. [#168]
 - _Added_: It is now possible to get a **reference** to the stored values via the newly added function `get_ref()`. [#128, #184]
 - _Fixed_: Access to object values via keys (**`operator[]`**) now works with all kind of string representations. [#171, #189]
 - _Fixed_: The code now compiles again with **Microsoft Visual Studio 2015**. [#144, #167, #188]
 - _Fixed_: All required headers are now included.
-- _Fixed_: Typos and other small issues. [#162, #166,  #175, #177, #179, #180]
+- _Fixed_: Typos and other small issues. [#162, #166, #175, #177, #179, #180]
 
 ### Notes
 
 There are still known open issues (#178, #187) which will be fixed in version 2.0.0. However, these fixes will require a small API change and will not be entirely backwards-compatible.
 
-
 ## v1.0.0
 
 !!! summary "Files"
 
-    - [json.hpp](https://github.com/nlohmann/json/releases/download/v1.0.0/json.hpp) (243 KB)
-    - [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v1.0.0/json.hpp.asc) (1 KB)
+```
+- [json.hpp](https://github.com/nlohmann/json/releases/download/v1.0.0/json.hpp) (243 KB)
+- [json.hpp.asc](https://github.com/nlohmann/json/releases/download/v1.0.0/json.hpp.asc) (1 KB)
+```
 
 - Release date: 2015-12-28
 - SHA-256: 767dc2fab1819d7b9e19b6e456d61e38d21ef7182606ecf01516e3f5230446de
@@ -1213,6 +1277,7 @@ There are still known open issues (#178, #187) which will be fixed in version 2.
 This is the first official release. Compared to the [prerelease version 1.0.0-rc1](https://github.com/nlohmann/json/releases/tag/v1.0.0-rc1), only a few minor improvements have been made:
 
 ### Changes
+
 - _Changed_: A **UTF-8 byte order mark** is silently ignored.
 - _Changed_: `sprintf` is no longer used.
 - _Changed_: `iterator_wrapper` also works for const objects; note: the name may change!

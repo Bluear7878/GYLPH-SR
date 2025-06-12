@@ -36,7 +36,9 @@ LORA_PATHS = {
     },
 }
 
-SVDQ_LORA_PATH_FORMAT = "mit-han-lab/svdquant-lora-collection/svdq-int4-flux.1-dev-{name}.safetensors"
+SVDQ_LORA_PATH_FORMAT = (
+    "mit-han-lab/svdquant-lora-collection/svdq-int4-flux.1-dev-{name}.safetensors"
+)
 SVDQ_LORA_PATHS = {
     "Anime": SVDQ_LORA_PATH_FORMAT.format(name="anime"),
     "GHIBSKY Illustration": SVDQ_LORA_PATH_FORMAT.format(name="ghibsky"),
@@ -115,6 +117,13 @@ EXAMPLES = {
         ],
         ["a man in armor with a beard and a sword", 25, 3.5, "Realism", 0.9, 2333],
         ["a panda playing in the snow", 28, 3.5, "Yarn Art", 1, 23333],
-        ["A squirrel wearing glasses and reading a tiny book under an oak tree", 24, 3.5, "Children Sketch", 1, 233333],
+        [
+            "A squirrel wearing glasses and reading a tiny book under an oak tree",
+            24,
+            3.5,
+            "Children Sketch",
+            1,
+            233333,
+        ],
     ],
 }

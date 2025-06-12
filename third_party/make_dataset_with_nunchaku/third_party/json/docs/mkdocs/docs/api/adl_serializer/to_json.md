@@ -12,27 +12,29 @@ This function is usually called by the constructors of the [basic_json](../basic
 ## Parameters
 
 `j` (out)
-:   JSON value to write to
+: JSON value to write to
 
 `val` (in)
-:   value to read from
+: value to read from
 
 ## Examples
 
 ??? example
 
-    The example below shows how a `to_json` function can be implemented for a user-defined type. This function is called
-    by the `adl_serializer` when the constructor `basic_json(ns::person)` is called.
-        
-    ```cpp
-    --8<-- "examples/to_json.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/to_json.output"
-    ```
+````
+The example below shows how a `to_json` function can be implemented for a user-defined type. This function is called
+by the `adl_serializer` when the constructor `basic_json(ns::person)` is called.
+
+```cpp
+--8<-- "examples/to_json.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/to_json.output"
+```
+````
 
 ## See also
 

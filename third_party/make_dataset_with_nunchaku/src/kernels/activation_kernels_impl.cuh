@@ -1,5 +1,5 @@
-#include "utils.cuh"
 #include "reduction_utils.cuh"
+#include "utils.cuh"
 
 namespace vllm {
 
@@ -8,12 +8,11 @@ template <typename T> __device__ __forceinline__ T silu(const T &x) {
   return (T)(((float)x) / (1.0f + expf((float)-x)));
 }
 
-  
-template<typename scalar_t>
-__global__ void silu_and_mul_kernel(
-  scalar_t* __restrict__ out,               // [..., d]
-  const scalar_t* __restrict__ input,       // [..., 2 * d]
-  const int d) {
+template <typename scalar_t>
+__global__ void
+silu_and_mul_kernel(scalar_t *__restrict__ out,         // [..., d]
+                    const scalar_t *__restrict__ input, // [..., 2 * d]
+                    const int d) {
 
   const int token_idx = blockIdx.x;
   const int64_t token_idx_d = token_idx * int64_t(d);
@@ -31,7 +30,7 @@ __global__ void dequant_silu_and_mul_quant_kernel(
     int8_t *__restrict__ out,          // [..., d]
     const int32_t *__restrict__ input, // [..., 2 * d]
     const int d, const float scale_gate, const float scale_up,
-    scale_type scale_out,                  // [num_tokens]
+    scale_type scale_out,             // [num_tokens]
     float *__restrict__ tmp = nullptr // [num_tokens, d]
 ) {
   const int token_idx = blockIdx.x;
@@ -76,16 +75,14 @@ __global__ void dequant_silu_and_mul_quant_kernel(
 }
 } // namespace vllm
 
-
-
 namespace vllm {
 
 // Element-wise activation kernel template.
-template<typename scalar_t, scalar_t (*ACT_FN)(const scalar_t&)>
-__global__ void activation_kernel(
-  scalar_t* __restrict__ out,               // [..., d]
-  const scalar_t* __restrict__ input,       // [..., d]
-  const int d) {
+template <typename scalar_t, scalar_t (*ACT_FN)(const scalar_t &)>
+__global__ void
+activation_kernel(scalar_t *__restrict__ out,         // [..., d]
+                  const scalar_t *__restrict__ input, // [..., d]
+                  const int d) {
   const int token_idx = blockIdx.x;
   for (int idx = threadIdx.x; idx < d; idx += blockDim.x) {
     const scalar_t x = __ldg(&input[token_idx * d + idx]);
@@ -94,8 +91,6 @@ __global__ void activation_kernel(
 }
 
 } // namespace vllm
-
-
 
 namespace vllm {
 
@@ -114,5 +109,3 @@ __device__ __forceinline__ T gelu_fast_kernel(const T &x) {
 }
 
 } // namespace vllm
-
-

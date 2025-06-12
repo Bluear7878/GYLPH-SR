@@ -1,24 +1,25 @@
+import datetime
 import gc
+import json
 import math
 import os
 import time
-import json
-import datetime
+
+import nunchaku
 import torch
 from controlnet_aux import CannyDetector
-from diffusers import FluxControlPipeline, FluxFillPipeline, FluxPipeline, FluxPriorReduxPipeline
+from diffusers import (FluxControlPipeline, FluxFillPipeline, FluxPipeline,
+                       FluxPriorReduxPipeline)
 from diffusers.hooks import apply_group_offloading
 from diffusers.utils import load_image
 from image_gen_aux import DepthPreprocessor
-from tqdm import tqdm
-
-import nunchaku
 from nunchaku import NunchakuFluxTransformer2dModel, NunchakuT5EncoderModel
 from nunchaku.caching.diffusers_adapters import apply_cache_on_pipe
 from nunchaku.lora.flux.compose import compose_lora
+from tqdm import tqdm
+
 from ..data import get_dataset
 from ..utils import already_generate, compute_lpips, hash_str_to_int
-
 
 ORIGINAL_REPO_MAP = {
     "flux.1-schnell": "black-forest-labs/FLUX.1-schnell",
@@ -63,7 +64,9 @@ def run_pipeline(
         forward_kwargs = {}
 
     os.makedirs(save_dir, exist_ok=True)
-    pipeline.set_progress_bar_config(desc="Sampling", leave=False, dynamic_ncols=True, position=1)
+    pipeline.set_progress_bar_config(
+        desc="Sampling", leave=False, dynamic_ncols=True, position=1
+    )
 
     iteration_times = []
     start_time = time.time()
@@ -71,7 +74,9 @@ def run_pipeline(
     if task == "canny":
         processor = CannyDetector()
     elif task == "depth":
-        processor = DepthPreprocessor.from_pretrained("LiheYoung/depth-anything-large-hf")
+        processor = DepthPreprocessor.from_pretrained(
+            "LiheYoung/depth-anything-large-hf"
+        )
     elif task == "redux":
         processor = FluxPriorReduxPipeline.from_pretrained(
             "black-forest-labs/FLUX.1-Redux-dev", torch_dtype=torch.bfloat16
@@ -122,15 +127,12 @@ def run_pipeline(
 
         if task == "redux":
             out = pipeline(
-                generator=torch.Generator().manual_seed(seed),
-                **_forward_kwargs
+                generator=torch.Generator().manual_seed(seed), **_forward_kwargs
             )
             gen_image = out.images[0]
         else:
             out = pipeline(
-                prompt,
-                generator=torch.Generator().manual_seed(seed),
-                **_forward_kwargs
+                prompt, generator=torch.Generator().manual_seed(seed), **_forward_kwargs
             )
             gen_image = out.images[0]
 
@@ -146,12 +148,9 @@ def run_pipeline(
     avg_time = total_time / len(dataset) if len(dataset) > 0 else 0
 
     print(
-        f"Total inference time for {len(dataset)} samples: "
-        f"{total_time:.2f} seconds"
+        f"Total inference time for {len(dataset)} samples: " f"{total_time:.2f} seconds"
     )
-    print(
-        f"Avg. inference time per sample: {avg_time:.2f} seconds"
-    )
+    print(f"Avg. inference time per sample: {avg_time:.2f} seconds")
     return total_time, avg_time, iteration_times
 
 
@@ -161,7 +160,7 @@ def run_test(
     dataset_name: str = "MJHQ",
     batch_size: int = 1,
     task: str = "t2i",
-    dtype: str | torch.dtype = torch.bfloat16,  #the full precision dtype
+    dtype: str | torch.dtype = torch.bfloat16,  # the full precision dtype
     height: int = 1024,
     width: int = 1024,
     num_inference_steps: int = 4,
@@ -205,9 +204,7 @@ def run_test(
     os.makedirs(ref_root, exist_ok=True)
     os.makedirs(bit4_root, exist_ok=True)
 
-    folder_name = (
-        f"w{width}h{height}t{num_inference_steps}g{guidance_scale}"
-    )
+    folder_name = f"w{width}h{height}t{num_inference_steps}g{guidance_scale}"
 
     # LoRA
     if lora_names is None:
@@ -267,20 +264,24 @@ def run_test(
             pipeline_init_kwargs = {}
 
         pipeline = pipeline_cls.from_pretrained(
-            model_id_16bit,
-            torch_dtype=dtype,
-            **pipeline_init_kwargs
+            model_id_16bit, torch_dtype=dtype, **pipeline_init_kwargs
         )
         pipeline = pipeline.to("cuda")
 
         # LoRA (multi)
         if len(lora_names) > 0:
-            for i, (lora_name, lora_strength) in enumerate(zip(lora_names, lora_strengths)):
+            for i, (lora_name, lora_strength) in enumerate(
+                zip(lora_names, lora_strengths)
+            ):
                 lora_path = LORA_PATH_MAP[lora_name]
-                pipeline.load_lora_weights(os.path.dirname(lora_path), weight_name=os.path.basename(lora_path), adapter_name=f"lora_{i}",
+                pipeline.load_lora_weights(
+                    os.path.dirname(lora_path),
+                    weight_name=os.path.basename(lora_path),
+                    adapter_name=f"lora_{i}",
                 )
-            pipeline.set_adapters([f"lora_{i}" for i in range(len(lora_names))], lora_strengths)
-
+            pipeline.set_adapters(
+                [f"lora_{i}" for i in range(len(lora_names))], lora_strengths
+            )
 
         total_time_16, avg_time_16, _ = run_pipeline(
             dataset=dataset,
@@ -317,11 +318,15 @@ def run_test(
     if batch_size > 1:
         precision_str += f"-bs{batch_size}"
 
-    save_dir_4bit = os.path.join(bit4_root, dtype_str, precision_str, model_name, folder_name)
+    save_dir_4bit = os.path.join(
+        bit4_root, dtype_str, precision_str, model_name, folder_name
+    )
 
     if not already_generate(save_dir_4bit, max_dataset_size):
         pipeline_init_kwargs = {}
-        model_id_4bit = NUNCHAKU_REPO_PATTERN_MAP[model_name].format(precision=precision)
+        model_id_4bit = NUNCHAKU_REPO_PATTERN_MAP[model_name].format(
+            precision=precision
+        )
 
         if i2f_mode is not None:
             nunchaku._C.utils.set_faster_i2f_mode(i2f_mode)
@@ -331,9 +336,8 @@ def run_test(
         )
         transformer.set_attention_impl(attention_impl)
 
-
         if len(lora_names) > 0:
-            if len(lora_names) == 1: # directly load the lora
+            if len(lora_names) == 1:  # directly load the lora
                 lora_path = LORA_PATH_MAP[lora_names[0]]
                 lora_strength = lora_strengths[0]
                 transformer.update_lora_params(lora_path)
@@ -350,11 +354,15 @@ def run_test(
         if task == "redux":
             pipeline_init_kwargs.update({"text_encoder": None, "text_encoder_2": None})
         elif use_qencoder:
-            text_encoder_2 = NunchakuT5EncoderModel.from_pretrained("mit-han-lab/svdq-flux.1-t5")
+            text_encoder_2 = NunchakuT5EncoderModel.from_pretrained(
+                "mit-han-lab/svdq-flux.1-t5"
+            )
             pipeline_init_kwargs["text_encoder_2"] = text_encoder_2
 
         pipeline_init_kwargs["transformer"] = transformer
-        pipeline = pipeline_cls.from_pretrained(model_id_16bit, torch_dtype=dtype, **pipeline_init_kwargs)
+        pipeline = pipeline_cls.from_pretrained(
+            model_id_16bit, torch_dtype=dtype, **pipeline_init_kwargs
+        )
 
         apply_cache_on_pipe(
             pipeline,
@@ -369,7 +377,6 @@ def run_test(
             pipeline = pipeline.to("cuda")
 
         total_time_4, avg_time_4, _ = run_pipeline(
-
             dataset=dataset,
             task=task,
             pipeline=pipeline,

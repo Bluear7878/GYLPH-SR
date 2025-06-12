@@ -18,14 +18,16 @@ When the macro is not defined, the library will define it to its default value.
 
 ??? example
 
-    The code below forces the library to use 3-way comparison:
+````
+The code below forces the library to use 3-way comparison:
 
-    ```cpp
-    #define JSON_HAS_THREE_WAY_COMPARISON 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_HAS_THREE_WAY_COMPARISON 1
+#include <nlohmann/json.hpp>
 
-    ...
-    ```
+...
+```
+````
 
 ## Version history
 

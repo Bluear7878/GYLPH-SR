@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   53_hopper_gemm_permute
   53_hopper_gemm_permute.cu
   )
-

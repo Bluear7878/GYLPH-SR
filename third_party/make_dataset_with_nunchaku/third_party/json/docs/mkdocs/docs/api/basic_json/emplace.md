@@ -12,12 +12,12 @@ created from `args`.
 ## Template parameters
 
 `Args`
-:   compatible types to create a `basic_json` object
+: compatible types to create a `basic_json` object
 
 ## Parameters
 
 `args` (in)
-:   arguments to forward to a constructor of `basic_json`
+: arguments to forward to a constructor of `basic_json`
 
 ## Return value
 
@@ -37,19 +37,21 @@ Logarithmic in the size of the container, O(log(`size()`)).
 
 ??? example
 
-    The example shows how `emplace()` can be used to add elements to a JSON object. Note how the `#!json null` value was
-    silently converted to a JSON object. Further note how no value is added if there was already one value stored with
-    the same key.
-            
-    ```cpp
-    --8<-- "examples/emplace.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/emplace.output"
-    ```
+````
+The example shows how `emplace()` can be used to add elements to a JSON object. Note how the `#!json null` value was
+silently converted to a JSON object. Further note how no value is added if there was already one value stored with
+the same key.
+
+```cpp
+--8<-- "examples/emplace.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/emplace.output"
+```
+````
 
 ## Version history
 

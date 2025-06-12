@@ -33,7 +33,6 @@
 import ctypes
 
 from cuda import __version__, cuda
-
 from cutlass.backend.utils.device import device_cc
 
 _version_splits = [int(x) for x in __version__.split("rc")[0].split(".")]
@@ -44,7 +43,9 @@ def supports_cluster_launch():
     global _supports_cluster_launch
     if _supports_cluster_launch is None:
         major, minor = _version_splits[0], _version_splits[1]
-        _supports_cluster_launch = device_cc() >= 90 and (major > 11 or (major == 11 and minor >= 8))
+        _supports_cluster_launch = device_cc() >= 90 and (
+            major > 11 or (major == 11 and minor >= 8)
+        )
     return _supports_cluster_launch
 
 
@@ -79,19 +80,35 @@ class ExecutableOperation:
     def plan(self, arguments):
         raise NotImplementedError()
 
-    def initialize(self, host_workspace, device_workspace, launch_config, arguments, stream=cuda.CUstream(0)):
+    def initialize(
+        self,
+        host_workspace,
+        device_workspace,
+        launch_config,
+        arguments,
+        stream=cuda.CUstream(0),
+    ):
         raise NotImplementedError()
 
     def run_with_clusters(self, launch_config, kernel_params, stream=cuda.CUstream(0)):
-        if hasattr(self.operation, "tile_description") and hasattr(self.operation.tile_description, "cluster_shape"):
+        if hasattr(self.operation, "tile_description") and hasattr(
+            self.operation.tile_description, "cluster_shape"
+        ):
             attr = cuda.CUlaunchAttribute()
-            attr.value.clusterDim.x, attr.value.clusterDim.y, attr.value.clusterDim.z = self.operation.tile_description.cluster_shape
+            (
+                attr.value.clusterDim.x,
+                attr.value.clusterDim.y,
+                attr.value.clusterDim.z,
+            ) = self.operation.tile_description.cluster_shape
             attr.id = cuda.CUstreamAttrID.CU_LAUNCH_ATTRIBUTE_CLUSTER_DIMENSION
             attrs = [attr]
 
             # Allow for non-portable cluster sizes
-            err, = cuda.cuFuncSetAttribute(
-                self.kernel, cuda.CUfunction_attribute.CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED, 1)
+            (err,) = cuda.cuFuncSetAttribute(
+                self.kernel,
+                cuda.CUfunction_attribute.CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED,
+                1,
+            )
             if err != cuda.CUresult.CUDA_SUCCESS:
                 return err
         else:
@@ -106,23 +123,33 @@ class ExecutableOperation:
         config.attrs = attrs
         config.numAttrs = len(attrs)
 
-        err, = cuda.cuLaunchKernelEx(
-            config, f=self.kernel, kernelParams=kernel_params, extra=0)
+        (err,) = cuda.cuLaunchKernelEx(
+            config, f=self.kernel, kernelParams=kernel_params, extra=0
+        )
         return err
 
-    def run_without_clusters(self, launch_config, kernel_params, stream=cuda.CUstream(0)):
-        err, = cuda.cuLaunchKernel(
+    def run_without_clusters(
+        self, launch_config, kernel_params, stream=cuda.CUstream(0)
+    ):
+        (err,) = cuda.cuLaunchKernel(
             self.kernel,
-            launch_config.grid[0], launch_config.grid[1], launch_config.grid[2],
-            launch_config.block[0], launch_config.block[1], launch_config.block[2],
+            launch_config.grid[0],
+            launch_config.grid[1],
+            launch_config.grid[2],
+            launch_config.block[0],
+            launch_config.block[1],
+            launch_config.block[2],
             launch_config.shared_memory_capacity,
             stream,
             kernel_params,
-            0)
+            0,
+        )
 
         return err
 
-    def run(self, host_workspace, device_workspace, launch_config, stream=cuda.CUstream(0)):
+    def run(
+        self, host_workspace, device_workspace, launch_config, stream=cuda.CUstream(0)
+    ):
         cArg = (ctypes.c_char * len(host_workspace)).from_buffer(host_workspace)
         packed = (ctypes.c_void_p * 1)()
         packed[0] = ctypes.addressof(cArg)

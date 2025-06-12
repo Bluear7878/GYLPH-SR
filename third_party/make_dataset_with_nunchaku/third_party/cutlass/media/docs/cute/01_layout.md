@@ -39,13 +39,13 @@ An `IntTuple` is defined recursively as either a single integer, or a tuple of `
 This means that `IntTuple`s can be arbitrarily nested.
 Operations defined on `IntTuple`s include the following.
 
-* `get<I>(IntTuple)`: The `I`th element of the `IntTuple`.  For an `IntTuple` consisting of a single integer, `get<0>` is just that integer.
+- `get<I>(IntTuple)`: The `I`th element of the `IntTuple`. For an `IntTuple` consisting of a single integer, `get<0>` is just that integer.
 
-* `rank(IntTuple)`: The number of elements in an `IntTuple`. A single integer has rank 1, and a tuple has rank `tuple_size`.
+- `rank(IntTuple)`: The number of elements in an `IntTuple`. A single integer has rank 1, and a tuple has rank `tuple_size`.
 
-* `depth(IntTuple)`: The number of hierarchical `IntTuple`s. A single integer has depth 0, a tuple of integers has depth 1, a tuple that contains a tuple of integers has depth 2, etc.
+- `depth(IntTuple)`: The number of hierarchical `IntTuple`s. A single integer has depth 0, a tuple of integers has depth 1, a tuple that contains a tuple of integers has depth 2, etc.
 
-* `size(IntTuple)`: The product of all elements of the `IntTuple`.
+- `size(IntTuple)`: The product of all elements of the `IntTuple`.
 
 We write `IntTuple`s with parenthesis to denote the hierarchy. For example, `6`, `(2)`, `(4,3)`, `(3,(6,2),8)` are all `IntTuple`s.
 
@@ -55,17 +55,17 @@ A `Layout` is then a pair of `IntTuple`s. The first element defines the abstract
 
 Since a `Layout` is just a pair of `IntTuple`s, we can define operations on `Layout`s analogous to those defined on `IntTuple`.
 
-* `get<I>(Layout)`: The `I`th sub-layout of the `Layout`.
+- `get<I>(Layout)`: The `I`th sub-layout of the `Layout`.
 
-* `rank(Layout)`: The number of modes in a `Layout`.
+- `rank(Layout)`: The number of modes in a `Layout`.
 
-* `depth(Layout)`: The number of hierarchical `Layout`s. A single integer has depth 0, a tuple of integers has depth 1, a tuple that contains a tuple of integers has depth 2, etc.
+- `depth(Layout)`: The number of hierarchical `Layout`s. A single integer has depth 0, a tuple of integers has depth 1, a tuple that contains a tuple of integers has depth 2, etc.
 
-* `shape(Layout)`: The shape of the `Layout`.
+- `shape(Layout)`: The shape of the `Layout`.
 
-* `stride(Layout)`: The stride of the `Layout`.
+- `stride(Layout)`: The stride of the `Layout`.
 
-* `size(Layout)`: The logical extent of the `Layout`. Equivalent to `size(shape(Layout))`.
+- `size(Layout)`: The logical extent of the `Layout`. Equivalent to `size(shape(Layout))`.
 
 ### Hierarchical access functions
 
@@ -78,15 +78,15 @@ For example, we permit `get<I...>(x)`, where `I...` here
 and throughout this section is a "C++ parameter pack"
 that denotes zero or more (integer) template arguments.
 That is, `get<I0,I1,...,IN>(x)` is equivalent to
-`get<IN>(` $\dots$ `(get<I1>(get<I0>(x)))` $\dots$ `))`,
+`get<IN>(` $\\dots$ `(get<I1>(get<I0>(x)))` $\\dots$ `))`,
 where the ellipses are pseudocode and not actual C++ syntax.
 These hierarchical access functions include the following.
 
-* `rank<I...>(x)  := rank(get<I...>(x))`. The rank of the `I...`th element of `x`.
+- `rank<I...>(x)  := rank(get<I...>(x))`. The rank of the `I...`th element of `x`.
 
-* `depth<I...>(x) := depth(get<I...>(x))`. The depth of the `I...`th element of `x`.
+- `depth<I...>(x) := depth(get<I...>(x))`. The depth of the `I...`th element of `x`.
 
-* `size<I...>(x)  := size(get<I...>(x))`. The size of the `I...`th element of `x`.
+- `size<I...>(x)  := size(get<I...>(x))`. The size of the `I...`th element of `x`.
 
 ### Vector examples
 
@@ -101,7 +101,7 @@ Stride: (1)
 defines a contiguous 8-element vector.
 For a vector with the same Shape but a Stride of `(2)`,
 the interpretation is that the eight elements
-are stored at positions 0, 2, 4, $\dots$, 14.
+are stored at positions 0, 2, 4, $\\dots$, 14.
 
 By the above definition, we *also* interpret
 
@@ -213,7 +213,7 @@ which produces the following output for the above examples.
 
 The multi-indices within the `layout_2x4` example are handled as expected and interpreted as a rank-2 layout.
 
-Note that for `layout_2x4`, we're using a 1-D coordinate for a 2-D multi-index in the second mode. In fact, we can generalize this and treat all of the above layouts as 1-D layouts.  For instance, the following `print1D` function
+Note that for `layout_2x4`, we're using a 1-D coordinate for a 2-D multi-index in the second mode. In fact, we can generalize this and treat all of the above layouts as 1-D layouts. For instance, the following `print1D` function
 
 ```c++
 template <class Shape, class Stride>
@@ -244,23 +244,23 @@ This shows explicitly that all of the layouts are simply folded views of an 8-el
 
 ## Summary
 
-* The `Shape` of a `Layout` defines its coordinate space(s).
+- The `Shape` of a `Layout` defines its coordinate space(s).
 
-    * Every `Layout` has a 1-D coordinate space.
-      This can be used to iterate in a "generalized-column-major" order.
+  - Every `Layout` has a 1-D coordinate space.
+    This can be used to iterate in a "generalized-column-major" order.
 
-    * Every `Layout` has a R-D coordinate space,
-      where R is the rank of the layout.
-      These spaces are ordered _colexicographically_
-      (reading right to left, instead of "lexicographically,"
-      which reads left to right).
-      The enumeration of that order
-      corresponds to the 1-D coordinates above.
+  - Every `Layout` has a R-D coordinate space,
+    where R is the rank of the layout.
+    These spaces are ordered _colexicographically_
+    (reading right to left, instead of "lexicographically,"
+    which reads left to right).
+    The enumeration of that order
+    corresponds to the 1-D coordinates above.
 
-    * Every `Layout` has an h-D coordinate space where h is "hierarchical." These are ordered colexicographically and the enumeration of that order corresponds to the 1-D coordinates above. An h-D coordinate is congruent to the `Shape` so that each element of the coordinate has a corresponding element of the `Shape`.
+  - Every `Layout` has an h-D coordinate space where h is "hierarchical." These are ordered colexicographically and the enumeration of that order corresponds to the 1-D coordinates above. An h-D coordinate is congruent to the `Shape` so that each element of the coordinate has a corresponding element of the `Shape`.
 
-* The `Stride` of a `Layout` maps coordinates to indices.
+- The `Stride` of a `Layout` maps coordinates to indices.
 
-    * In general, this could be any function from 1-D coordinates (integers) to indices (integers).
+  - In general, this could be any function from 1-D coordinates (integers) to indices (integers).
 
-    * In `CuTe` we use an inner product of the h-D coordinates with the `Stride` elements.
+  - In `CuTe` we use an inner product of the h-D coordinates with the `Stride` elements.

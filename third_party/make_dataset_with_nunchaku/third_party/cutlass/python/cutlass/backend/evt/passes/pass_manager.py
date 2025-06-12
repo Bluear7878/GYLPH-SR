@@ -37,7 +37,6 @@ Pass manager for DAG IR.
 from typing import Any
 
 import networkx as nx
-
 from cutlass.backend.evt.ir import DAGIR
 
 
@@ -45,7 +44,9 @@ class EVTPassBase:
     """
     Base class for EVT Passes
     """
+
     dependencies = []
+
     def __init__(self, dag_ir: DAGIR) -> None:
         self.dag_ir = dag_ir
         self.cc = self.dag_ir.cc
@@ -61,7 +62,8 @@ class EVTPassBase:
         The pass that is run through the self.dag_ir
         """
         raise NotImplementedError(
-            f"__call__ is not overwritten in Pass {self.__class__.__name__}")
+            f"__call__ is not overwritten in Pass {self.__class__.__name__}"
+        )
 
     def ensures(self) -> None:
         """
@@ -106,7 +108,9 @@ class EVTPassBase:
         if hasattr(self, func_name):
             return getattr(self, func_name)
         else:
-            raise NotImplementedError(f"func {func.__name__} is not overwritten for Sm{self.cc}")
+            raise NotImplementedError(
+                f"func {func.__name__} is not overwritten for Sm{self.cc}"
+            )
 
 
 class EVTPassManager(nx.DiGraph):
@@ -115,6 +119,7 @@ class EVTPassManager(nx.DiGraph):
     Each registered pass has a list of dependencies. The pass manager organizes
     the passes as a DAG and launch the compiler passes under topological order.
     """
+
     def __init__(self, dag_ir: DAGIR, pass_list):
         super().__init__()
         self.dag_ir = dag_ir
@@ -147,9 +152,7 @@ class EVTPassManager(nx.DiGraph):
         for pass_name in self.nodes:
             callable = self.get_callable(pass_name)
             for dependency_cls in callable.dependencies:
-                self.add_edge(
-                    dependency_cls.__name__,
-                    type(callable).__name__)
+                self.add_edge(dependency_cls.__name__, type(callable).__name__)
 
         # Topological sort
         return list(nx.topological_sort(self))

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,80 +18,88 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
     \brief GEMM Grouped Example.
 
-    This workload computes a batch of GEMM operations with distinct problem sizes. Pointers to matrices
-    in Global Memory are passed to the kernel in array (also held in Global Memory). Similarly,
-    leading dimensions and problem sizes are stored in arrays in GMEM.
+    This workload computes a batch of GEMM operations with distinct problem
+   sizes. Pointers to matrices in Global Memory are passed to the kernel in
+   array (also held in Global Memory). Similarly, leading dimensions and problem
+   sizes are stored in arrays in GMEM.
 
-    This differs from "Batched Array" GEMM because the size of each GEMM problem in the Grouped GEMM
-    concept may be distinct.
+    This differs from "Batched Array" GEMM because the size of each GEMM problem
+   in the Grouped GEMM concept may be distinct.
 
-    This benchmark program initializes a workspace with random problem sizes for a given number of
-    groups. Command line options enable overriding M, N, and/or K dimensions with uniform values to
-    model problems more similar to the traditional batched GEMM.
+    This benchmark program initializes a workspace with random problem sizes for
+   a given number of groups. Command line options enable overriding M, N, and/or
+   K dimensions with uniform values to model problems more similar to the
+   traditional batched GEMM.
 
-    Additionally, problem sizes are collected and binned to compute the same problem as a series of
-    conventional batched GEMMs (setup for this problem is not timed). This demonstrates the performance
-    enhancement achieved by implementing a specialized grouped GEMM kernel.
+    Additionally, problem sizes are collected and binned to compute the same
+   problem as a series of conventional batched GEMMs (setup for this problem is
+   not timed). This demonstrates the performance enhancement achieved by
+   implementing a specialized grouped GEMM kernel.
 
     Examples:
 
       # Runs a grouped GEMM with 100 random problem sizes
       $ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100
 
-      # Runs a grouped GEMM with 100 random problem sizes (with GEMM-K dimension equal to 1024)
-      $ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --k=1024 --verbose=true
+      # Runs a grouped GEMM with 100 random problem sizes (with GEMM-K dimension
+   equal to 1024) $ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100
+   --k=1024 --verbose=true
 
       # Runs a grouped GEMM that is equivalent to a batched GEMM
-      $ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --m=2048 --n=1024 --k=1024 --verbose=true
+      $ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --m=2048
+   --n=1024 --k=1024 --verbose=true
 
       # Execute Grouped GEMM and profile with NSight
-      $ nv-nsight-cu-cli ./examples/24_gemm_grouped/24_gemm_grouped --m=256 --n=256 --k=256 --verbose=true \
-                                                                    --iterations=1 --reference-check=false
+      $ nv-nsight-cu-cli ./examples/24_gemm_grouped/24_gemm_grouped --m=256
+   --n=256 --k=256 --verbose=true \
+                                                                    --iterations=1
+   --reference-check=false
 
 */
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <chrono>
-#include <iostream>
 #include <fstream>
-#include <sstream>
-#include <vector>
+#include <iostream>
 #include <map>
+#include <sstream>
 #include <unordered_map>
+#include <vector>
 
 #include "cutlass/cutlass.h"
-#include "cutlass/gemm/gemm.h"
-#include "cutlass/gemm/kernel/gemm_grouped.h"
-#include "cutlass/gemm/kernel/default_gemm_grouped.h"
 #include "cutlass/gemm/device/gemm_grouped.h"
 #include "cutlass/gemm/device/gemm_universal.h"
+#include "cutlass/gemm/gemm.h"
+#include "cutlass/gemm/kernel/default_gemm_grouped.h"
+#include "cutlass/gemm/kernel/gemm_grouped.h"
 
 #include "cutlass/util/command_line.h"
-#include "cutlass/util/distribution.h"
 #include "cutlass/util/device_memory.h"
-#include "cutlass/util/tensor_view_io.h"
+#include "cutlass/util/distribution.h"
 #include "cutlass/util/host_tensor.h"
-#include "cutlass/util/reference/host/gemm_complex.h"
 #include "cutlass/util/reference/device/gemm_complex.h"
+#include "cutlass/util/reference/device/tensor_fill.h"
+#include "cutlass/util/reference/host/gemm_complex.h"
 #include "cutlass/util/reference/host/tensor_compare.h"
 #include "cutlass/util/reference/host/tensor_copy.h"
-#include "cutlass/util/reference/device/tensor_fill.h"
 #include "cutlass/util/reference/host/tensor_norm.h"
+#include "cutlass/util/tensor_view_io.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,15 +117,11 @@ struct Result {
   // Methods
   //
 
-  Result(
-    double runtime_ms = 0,
-    double initialization_time_ms = 0,
-    double gflops = 0,
-    cutlass::Status status = cutlass::Status::kSuccess,
-    cudaError_t error = cudaSuccess
-  ):
-    runtime_ms(runtime_ms), initialization_time_ms(initialization_time_ms), gflops(gflops),
-    status(status), error(error), passed(true) { }
+  Result(double runtime_ms = 0, double initialization_time_ms = 0,
+         double gflops = 0, cutlass::Status status = cutlass::Status::kSuccess,
+         cudaError_t error = cudaSuccess)
+      : runtime_ms(runtime_ms), initialization_time_ms(initialization_time_ms),
+        gflops(gflops), status(status), error(error), passed(true) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +130,8 @@ struct Result {
 struct HashGemmCoord {
   size_t operator()(cutlass::gemm::GemmCoord const &problem) const {
     std::hash<int> hasher;
-    return (hasher(problem.m() * 3)) ^ (hasher(1 + problem.n() * 5)) ^ (hasher(2 + problem.k() * 7));
+    return (hasher(problem.m() * 3)) ^ (hasher(1 + problem.n() * 5)) ^
+           (hasher(2 + problem.k() * 7));
   }
 };
 
@@ -144,10 +149,9 @@ struct Options {
   std::vector<cutlass::gemm::GemmCoord> problem_sizes;
 
   // problem size bins
-  std::unordered_map<
-    cutlass::gemm::GemmCoord,
-    std::vector<int32_t>,
-    HashGemmCoord> problem_bins;
+  std::unordered_map<cutlass::gemm::GemmCoord, std::vector<int32_t>,
+                     HashGemmCoord>
+      problem_bins;
 
   int alignment;
   int problem_count;
@@ -158,17 +162,15 @@ struct Options {
   float beta;
   std::string benchmark_path;
 
-  std::string   output_tag;
+  std::string output_tag;
   std::ofstream output_file;
 
   using GroupScheduleMode = cutlass::gemm::kernel::GroupScheduleMode;
   std::vector<GroupScheduleMode> scheduler_modes;
 
-  std::unordered_map<std::string, GroupScheduleMode>
-    str_to_scheduler_mode = {
+  std::unordered_map<std::string, GroupScheduleMode> str_to_scheduler_mode = {
       {"kDeviceOnly", GroupScheduleMode::kDeviceOnly},
-      {"kHostPrecompute", GroupScheduleMode::kHostPrecompute}
-    };
+      {"kHostPrecompute", GroupScheduleMode::kHostPrecompute}};
 
   struct GroupScheduleModeHash {
     size_t operator()(GroupScheduleMode m) const {
@@ -177,32 +179,22 @@ struct Options {
   };
 
   std::unordered_map<GroupScheduleMode, std::string, GroupScheduleModeHash>
-    scheduler_mode_to_str = {
-      {GroupScheduleMode::kDeviceOnly, "kDeviceOnly"},
-      {GroupScheduleMode::kHostPrecompute, "kHostPrecompute"}
-    };
+      scheduler_mode_to_str = {
+          {GroupScheduleMode::kDeviceOnly, "kDeviceOnly"},
+          {GroupScheduleMode::kHostPrecompute, "kHostPrecompute"}};
 
-  std::vector<GroupScheduleMode> all_scheduler_modes = {GroupScheduleMode::kDeviceOnly, GroupScheduleMode::kHostPrecompute};
+  std::vector<GroupScheduleMode> all_scheduler_modes = {
+      GroupScheduleMode::kDeviceOnly, GroupScheduleMode::kHostPrecompute};
 
   //
   // Methods
   //
 
-  Options():
-    help(false),
-    error(false),
-    alignment(8),
-    reference_check(true),
-    profile_initialization(false),
-    sort_problems(false),
-    problem_count(15),
-    iterations(20),
-    cuda_streams(0),
-    verbose(false),
-    alpha(1),
-    beta(),
-    scheduler_modes({GroupScheduleMode::kDeviceOnly})
-  { }
+  Options()
+      : help(false), error(false), alignment(8), reference_check(true),
+        profile_initialization(false), sort_problems(false), problem_count(15),
+        iterations(20), cuda_streams(0), verbose(false), alpha(1), beta(),
+        scheduler_modes({GroupScheduleMode::kDeviceOnly}) {}
 
   // Parses the command line
   void parse(int argc, char const **args) {
@@ -221,7 +213,8 @@ struct Options {
     cmd.get_cmd_line_argument("streams", cuda_streams, 0);
     cmd.get_cmd_line_argument("verbose", verbose, false);
     cmd.get_cmd_line_argument("reference-check", reference_check, true);
-    cmd.get_cmd_line_argument("profile-initialization", profile_initialization, false);
+    cmd.get_cmd_line_argument("profile-initialization", profile_initialization,
+                              false);
     cmd.get_cmd_line_argument("sort-problems", sort_problems, false);
     cmd.get_cmd_line_argument("benchmark", benchmark_path);
 
@@ -238,11 +231,14 @@ struct Options {
           if (it != str_to_scheduler_mode.end()) {
             scheduler_modes.push_back(it->second);
           } else if (precomp_str == "all") {
-            std::cerr << "Flag --scheduler-modes=all must not contain other scheduler modes in list." << std::endl;
+            std::cerr << "Flag --scheduler-modes=all must not contain other "
+                         "scheduler modes in list."
+                      << std::endl;
             error = true;
             return;
           } else {
-            std::cerr << "Unrecognized scheduler mode '" << precomp_str << "'" << std::endl;
+            std::cerr << "Unrecognized scheduler mode '" << precomp_str << "'"
+                      << std::endl;
             error = true;
             return;
           }
@@ -279,8 +275,7 @@ struct Options {
         problem_sizes.clear();
         return;
       }
-    }
-    else {
+    } else {
       randomize_problems(cmd);
     }
 
@@ -378,76 +373,108 @@ struct Options {
     problem_count = int(problem_sizes.size());
 
     //
-    // Insert the problem sizes into a sorted container class. This is *NOT* necessary
-    // to run the CUTLASS kernel, but it enables the execution of cublas's batched GEMM.
+    // Insert the problem sizes into a sorted container class. This is *NOT*
+    // necessary to run the CUTLASS kernel, but it enables the execution of
+    // cublas's batched GEMM.
     //
     for (int i = 0; i < int(problem_sizes.size()); ++i) {
       auto it = problem_bins.find(problem_sizes.at(i));
       if (it == problem_bins.end()) {
-        problem_bins.insert({problem_sizes.at(i), std::vector<int32_t>({i}) });
-      }
-      else {
+        problem_bins.insert({problem_sizes.at(i), std::vector<int32_t>({i})});
+      } else {
         it->second.push_back(i);
       }
     }
   }
 
   /// Prints the usage statement.
-  std::ostream & print_usage(std::ostream &out) const {
+  std::ostream &print_usage(std::ostream &out) const {
 
     out << "24_gemm_grouped\n\n"
-      << "  This example profiles the performance of a 'grouped' GEMM kernel. This is similar to batched GEMM\n"
-      << "  in that multiple, independent GEMMs are computed by one grid launch. It differs in that each\n"
-      << "  'group' may compute a unique problem size. Problem sizes and pointers to matrices are both stored\n"
-      << "  in device Global Memory and loaded by the kernel.\n\n"
-      << "Options:\n\n"
-      << "  --help                           If specified, displays this usage statement.\n\n"
-      << "  --benchmark=<str>                Executes a benchmark problem size.\n"
-      << "  --output_file=<str>              Path to a CSV file to output results. If it exists already, results are appended.\n"
-      << "  --tag=<str>                      String tag to prepend to the CSV file.\n"
-      << "  --groups=<int>                   Number of individual GEMM problems (default: --groups=15)\n"
-      << "  --m=<int>                        Sets the M dimension for all groups. Otherwise, it is selected randomly\n"
-      << "  --n=<int>                        Sets the N dimension for all groups. Otherwise, it is selected randomly\n"
-      << "  --k=<int>                        Sets the K dimension for all groups. Otherwise, it is selected randomly\n"
-      << "  --alpha=<f32>                    Epilogue scalar alpha (real part)\n"
-      << "  --beta=<f32>                     Epilogue scalar beta (real part)\n"
-      << "  --scheduler-modes=<str>          List of scheduler modes to be profile for grouped GEMM scheduler (default: --scheduler_modes=kDeviceOnly)\n"
-      << "  --iterations=<int>               Number of profiling iterations to perform.\n"
-      << "  --reference-check=<bool>         If true, performs reference check.\n"
-      << "  --verbose=<bool>                 If true, prints problem sizes and batching structure.\n"
-      << "  --profile-initialization=<bool>  If true, profiles the device-level kernel's initialization.\n"
-      << "  --sort-problems=<bool>           If true, sorts problem sizes in descending order of GEMM-K dimension.\n";
+        << "  This example profiles the performance of a 'grouped' GEMM "
+           "kernel. This is similar to batched GEMM\n"
+        << "  in that multiple, independent GEMMs are computed by one grid "
+           "launch. It differs in that each\n"
+        << "  'group' may compute a unique problem size. Problem sizes and "
+           "pointers to matrices are both stored\n"
+        << "  in device Global Memory and loaded by the kernel.\n\n"
+        << "Options:\n\n"
+        << "  --help                           If specified, displays this "
+           "usage statement.\n\n"
+        << "  --benchmark=<str>                Executes a benchmark problem "
+           "size.\n"
+        << "  --output_file=<str>              Path to a CSV file to output "
+           "results. If it exists already, results are appended.\n"
+        << "  --tag=<str>                      String tag to prepend to the "
+           "CSV file.\n"
+        << "  --groups=<int>                   Number of individual GEMM "
+           "problems (default: --groups=15)\n"
+        << "  --m=<int>                        Sets the M dimension for all "
+           "groups. Otherwise, it is selected randomly\n"
+        << "  --n=<int>                        Sets the N dimension for all "
+           "groups. Otherwise, it is selected randomly\n"
+        << "  --k=<int>                        Sets the K dimension for all "
+           "groups. Otherwise, it is selected randomly\n"
+        << "  --alpha=<f32>                    Epilogue scalar alpha (real "
+           "part)\n"
+        << "  --beta=<f32>                     Epilogue scalar beta (real "
+           "part)\n"
+        << "  --scheduler-modes=<str>          List of scheduler modes to be "
+           "profile for grouped GEMM scheduler (default: "
+           "--scheduler_modes=kDeviceOnly)\n"
+        << "  --iterations=<int>               Number of profiling iterations "
+           "to perform.\n"
+        << "  --reference-check=<bool>         If true, performs reference "
+           "check.\n"
+        << "  --verbose=<bool>                 If true, prints problem sizes "
+           "and batching structure.\n"
+        << "  --profile-initialization=<bool>  If true, profiles the "
+           "device-level kernel's initialization.\n"
+        << "  --sort-problems=<bool>           If true, sorts problem sizes in "
+           "descending order of GEMM-K dimension.\n";
 
     out << "\n\nExamples:\n\n"
 
-      << "# Runs a grouped GEMM with 100 random problem sizes\n"
-      << "$ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100\n\n"
+        << "# Runs a grouped GEMM with 100 random problem sizes\n"
+        << "$ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100\n\n"
 
-      << "# Runs a grouped GEMM with 100 random problem sizes (with GEMM-K dimension equal to 1024)\n"
-      << "$ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --k=1024 --verbose=true\n\n"
+        << "# Runs a grouped GEMM with 100 random problem sizes (with GEMM-K "
+           "dimension equal to 1024)\n"
+        << "$ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --k=1024 "
+           "--verbose=true\n\n"
 
-      << "# Runs a grouped GEMM that is equivalent to a batched GEMM\n"
-      << "$ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --m=2048 --n=1024 --k=1024 --verbose=true\n\n"
+        << "# Runs a grouped GEMM that is equivalent to a batched GEMM\n"
+        << "$ ./examples/24_gemm_grouped/24_gemm_grouped --groups=100 --m=2048 "
+           "--n=1024 --k=1024 --verbose=true\n\n"
 
-      << "# Runs a grouped GEMM with each different scheduler mode\n"
-      << "$ ./examples/24_gemm_grouped/24_gemm_grouped --scheduler-modes=all\n\n"
+        << "# Runs a grouped GEMM with each different scheduler mode\n"
+        << "$ ./examples/24_gemm_grouped/24_gemm_grouped "
+           "--scheduler-modes=all\n\n"
 
-      << "# Runs a grouped GEMM with each different scheduler mode and profiles host-side initialization time\n"
-      << "$ ./examples/24_gemm_grouped/24_gemm_grouped --scheduler-modes=all --profile-initialization=true\n\n"
+        << "# Runs a grouped GEMM with each different scheduler mode and "
+           "profiles host-side initialization time\n"
+        << "$ ./examples/24_gemm_grouped/24_gemm_grouped --scheduler-modes=all "
+           "--profile-initialization=true\n\n"
 
-      << "# Runs a grouped GEMM problem given an externally supplied benchmark file. This is a text file in which\n"
-      << "# Each line contains a unique group index and an MxNxK triple indicating problemsize.\n"
-      << "#\n"
-      << "# For example, assume the following are the contents of 'problems.txt'\n"
-      << "#\n"
-      << "# 0 1024x256x520\n"
-      << "# 1 520x264x1024\n"
-      << "# 2 96x48x1024\n"
-      << "#\n"
-      << "$ ./examples/24_gemm_grouped/24_gemm_grouped --benchmark=problems.txt\n\n"
+        << "# Runs a grouped GEMM problem given an externally supplied "
+           "benchmark file. This is a text file in which\n"
+        << "# Each line contains a unique group index and an MxNxK triple "
+           "indicating problemsize.\n"
+        << "#\n"
+        << "# For example, assume the following are the contents of "
+           "'problems.txt'\n"
+        << "#\n"
+        << "# 0 1024x256x520\n"
+        << "# 1 520x264x1024\n"
+        << "# 2 96x48x1024\n"
+        << "#\n"
+        << "$ ./examples/24_gemm_grouped/24_gemm_grouped "
+           "--benchmark=problems.txt\n\n"
 
-      << "# Execute Grouped GEMM and profile with NSight\n"
-      << "$ nv-nsight-cu-cli ./examples/24_gemm_grouped/24_gemm_grouped --m=256 --n=256 --k=256 --verbose=true --iterations=1 --reference-check=false\n\n";
+        << "# Execute Grouped GEMM and profile with NSight\n"
+        << "$ nv-nsight-cu-cli ./examples/24_gemm_grouped/24_gemm_grouped "
+           "--m=256 --n=256 --k=256 --verbose=true --iterations=1 "
+           "--reference-check=false\n\n";
 
     return out;
   }
@@ -458,7 +485,7 @@ struct Options {
     // Number of real-valued multiply-adds
     int64_t fmas = int64_t();
 
-    for (auto const & problem : problem_sizes) {
+    for (auto const &problem : problem_sizes) {
       fmas += problem.product();
     }
 
@@ -469,8 +496,7 @@ struct Options {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Gemm>
-class BaseTestbed {
+template <typename Gemm> class BaseTestbed {
 public:
   //
   // Type definitions
@@ -494,7 +520,7 @@ public:
   // Data members
   //
 
-  Options & options;
+  Options &options;
 
   /// Initialization
   cutlass::Distribution::Kind init_A;
@@ -530,25 +556,20 @@ public:
   cutlass::DeviceAllocation<ElementC *> ptr_D;
 
   BaseTestbed(
-    Options &options_,
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint32_t seed_ = 3080
-  ):
-    options(options_), init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_) { }
+      Options &options_,
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint32_t seed_ = 3080)
+      : options(options_), init_A(init_A_), init_B(init_B_), init_C(init_C_),
+        seed(seed_) {}
 
-  int problem_count() const {
-    return options.problem_count;
-  }
+  int problem_count() const { return options.problem_count; }
 
   /// Helper to initialize a tensor view
   template <typename Element>
-  void initialize_tensor(
-    Element *ptr,
-    size_t capacity,
-    cutlass::Distribution::Kind dist_kind,
-    uint32_t seed) {
+  void initialize_tensor(Element *ptr, size_t capacity,
+                         cutlass::Distribution::Kind dist_kind, uint32_t seed) {
 
     if (dist_kind == cutlass::Distribution::Uniform) {
 
@@ -566,8 +587,7 @@ public:
         if (cutlass::sizeof_bits<ElementAccumulator>::value <= 16) {
           scope_max = 5;
           scope_min = -5;
-        }
-        else {
+        } else {
           scope_max = 8;
           scope_min = -8;
         }
@@ -577,24 +597,21 @@ public:
       }
 
       cutlass::reference::device::BlockFillRandomUniform(
-        ptr, capacity, seed, scope_max, scope_min, 0);
-    }
-    else if (dist_kind == cutlass::Distribution::Gaussian) {
+          ptr, capacity, seed, scope_max, scope_min, 0);
+    } else if (dist_kind == cutlass::Distribution::Gaussian) {
 
       cutlass::reference::device::BlockFillRandomGaussian(
-        ptr, capacity, seed, Element(), Element(0.5f));
-    }
-    else if (dist_kind == cutlass::Distribution::Sequential) {
+          ptr, capacity, seed, Element(), Element(0.5f));
+    } else if (dist_kind == cutlass::Distribution::Sequential) {
 
       // Fill with increasing elements
-      cutlass::reference::device::BlockFillSequential(
-        ptr, capacity, Element(1), Element());
-    }
-    else {
+      cutlass::reference::device::BlockFillSequential(ptr, capacity, Element(1),
+                                                      Element());
+    } else {
 
       // Fill with all 1s
-      cutlass::reference::device::BlockFillSequential(
-        ptr, capacity, Element(), Element(1));
+      cutlass::reference::device::BlockFillSequential(ptr, capacity, Element(),
+                                                      Element(1));
     }
   }
 
@@ -693,7 +710,7 @@ public:
     initialize_tensor(block_C.get(), block_C.size(), init_C, seed * 2023);
 
     cutlass::reference::device::BlockFillSequential(
-      block_D.get(), block_D.size(), ElementC(), ElementC());
+        block_D.get(), block_D.size(), ElementC(), ElementC());
   }
 
   /// Verifies the result is a GEMM
@@ -713,77 +730,76 @@ public:
       MatrixCoord extent_B{problem.k(), problem.n()};
       MatrixCoord extent_C{problem.m(), problem.n()};
 
-      cutlass::TensorView<ElementA, LayoutA> view_A(block_A.get() + offset_A.at(i), layout_A, extent_A);
-      cutlass::TensorView<ElementB, LayoutB> view_B(block_B.get() + offset_B.at(i), layout_B, extent_B);
-      cutlass::TensorView<ElementC, LayoutC> view_C(block_C.get() + offset_C.at(i), layout_C, extent_C);
+      cutlass::TensorView<ElementA, LayoutA> view_A(
+          block_A.get() + offset_A.at(i), layout_A, extent_A);
+      cutlass::TensorView<ElementB, LayoutB> view_B(
+          block_B.get() + offset_B.at(i), layout_B, extent_B);
+      cutlass::TensorView<ElementC, LayoutC> view_C(
+          block_C.get() + offset_C.at(i), layout_C, extent_C);
 
-      cutlass::DeviceAllocation<ElementC>    block_Ref(layout_D.capacity(extent_C));
-      cutlass::TensorView<ElementC, LayoutC> view_Ref_device(block_Ref.get(), layout_D, extent_C);
+      cutlass::DeviceAllocation<ElementC> block_Ref(
+          layout_D.capacity(extent_C));
+      cutlass::TensorView<ElementC, LayoutC> view_Ref_device(
+          block_Ref.get(), layout_D, extent_C);
 
       // Reference GEMM
       cutlass::reference::device::GemmComplex<
-          ElementA, LayoutA,
-          ElementB, LayoutB,
-          ElementC, LayoutC,
-          ElementCompute, ElementAccumulator
-      >(
-        problem,
-        options.alpha,
-        view_A,
-        Gemm::kTransformA,
-        view_B,
-        Gemm::kTransformB,
-        options.beta,
-        view_C,
-        view_Ref_device,
-        ElementAccumulator(0)
-      );
+          ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+          ElementCompute, ElementAccumulator>(
+          problem, options.alpha, view_A, Gemm::kTransformA, view_B,
+          Gemm::kTransformB, options.beta, view_C, view_Ref_device,
+          ElementAccumulator(0));
 
       // Copy to host memory
       std::vector<ElementC> matrix_D(layout_D.capacity(extent_C));
       std::vector<ElementC> matrix_Ref(layout_D.capacity(extent_C));
 
-      cutlass::device_memory::copy_to_host(matrix_D.data(),   block_D.get() + offset_D.at(i), matrix_D.size());
-      cutlass::device_memory::copy_to_host(matrix_Ref.data(), block_Ref.get(),                matrix_D.size());
+      cutlass::device_memory::copy_to_host(
+          matrix_D.data(), block_D.get() + offset_D.at(i), matrix_D.size());
+      cutlass::device_memory::copy_to_host(matrix_Ref.data(), block_Ref.get(),
+                                           matrix_D.size());
 
-      cutlass::TensorView<ElementC, LayoutC> view_D(  matrix_D.data(),   layout_D, extent_C);
-      cutlass::TensorView<ElementC, LayoutC> view_Ref(matrix_Ref.data(), layout_D, extent_C);
+      cutlass::TensorView<ElementC, LayoutC> view_D(matrix_D.data(), layout_D,
+                                                    extent_C);
+      cutlass::TensorView<ElementC, LayoutC> view_Ref(matrix_Ref.data(),
+                                                      layout_D, extent_C);
 
       // Reference check
       passed = cutlass::reference::host::TensorEquals(view_D, view_Ref);
 
       if (!passed) {
-        std::cerr << "\n***\nError - problem " << i << " failed the QA check\n***\n" << std::endl;
+        std::cerr << "\n***\nError - problem " << i
+                  << " failed the QA check\n***\n"
+                  << std::endl;
         return passed;
       }
     }
 
     return passed;
   }
-
 };
 
-template <typename Gemm>
-class TestbedBatched : BaseTestbed<Gemm> {
+template <typename Gemm> class TestbedBatched : BaseTestbed<Gemm> {
 public:
   TestbedBatched(
-    Options &options_,
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint32_t seed_ = 3080
-  ): BaseTestbed<Gemm>(options_, init_A_, init_B_, init_C_, seed_) {}
+      Options &options_,
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint32_t seed_ = 3080)
+      : BaseTestbed<Gemm>(options_, init_A_, init_B_, init_C_, seed_) {}
 
   void print_problem_sizes() {
     std::cout << std::endl;
     size_t bin_idx = 0;
     size_t problem_count_check = 0;
-    std::cout << "Conventionally executed as " << this->options.problem_bins.size() << " batched GEMMs:\n";
-    for (auto const & bin : this->options.problem_bins) {
+    std::cout << "Conventionally executed as "
+              << this->options.problem_bins.size() << " batched GEMMs:\n";
+    for (auto const &bin : this->options.problem_bins) {
 
-      std::cout << "  [" << bin_idx << "]: "
-        << bin.first.m() << "-by-" << bin.first.n() << "-by-" << bin.first.k()
-        << ", batch count: " << bin.second.size() << "\n";
+      std::cout << "  [" << bin_idx << "]: " << bin.first.m() << "-by-"
+                << bin.first.n() << "-by-" << bin.first.k()
+                << ", batch count: " << bin.second.size() << "\n";
 
       ++bin_idx;
       problem_count_check += bin.second.size();
@@ -799,7 +815,8 @@ public:
   /// Executes a batched kernel and measures runtime
   Result profile() {
     std::cout << "Batched GEMM:\n"
-      << "====================================================" << std::endl;
+              << "===================================================="
+              << std::endl;
 
     Result result;
     result.passed = false;
@@ -816,21 +833,22 @@ public:
     // Prepare batched GEMM environment
     //
 
-    int32_t effective_streams = (this->options.cuda_streams ? this->options.cuda_streams : 1);
+    int32_t effective_streams =
+        (this->options.cuda_streams ? this->options.cuda_streams : 1);
 
     // Array of leading dimensions used by batched GEMM calls
     std::vector<cutlass::gemm::GemmCoord> bin_problem_sizes;
-    std::vector<int32_t>                  bin_count;
-    std::vector<int32_t>                  bin_ldm_A;
-    std::vector<int32_t>                  bin_ldm_B;
-    std::vector<int32_t>                  bin_ldm_C;
-    std::vector<int32_t>                  bin_start;
+    std::vector<int32_t> bin_count;
+    std::vector<int32_t> bin_ldm_A;
+    std::vector<int32_t> bin_ldm_B;
+    std::vector<int32_t> bin_ldm_C;
+    std::vector<int32_t> bin_start;
 
     std::vector<void const *> ptr_A_batched_host;
     std::vector<void const *> ptr_B_batched_host;
-    std::vector<void       *> ptr_C_batched_host;
+    std::vector<void *> ptr_C_batched_host;
 
-    for (auto const & bin : this->options.problem_bins) {
+    for (auto const &bin : this->options.problem_bins) {
       int first_idx = bin.second.front();
 
       bin_problem_sizes.push_back(this->options.problem_sizes.at(first_idx));
@@ -870,16 +888,19 @@ public:
           return result;
         }
 
-        ptr_A_batched_host.push_back(this->block_A.get() + this->offset_A.at(idx));
-        ptr_B_batched_host.push_back(this->block_B.get() + this->offset_B.at(idx));
-        ptr_C_batched_host.push_back(this->block_D.get() + this->offset_C.at(idx));
+        ptr_A_batched_host.push_back(this->block_A.get() +
+                                     this->offset_A.at(idx));
+        ptr_B_batched_host.push_back(this->block_B.get() +
+                                     this->offset_B.at(idx));
+        ptr_C_batched_host.push_back(this->block_D.get() +
+                                     this->offset_C.at(idx));
       }
     }
 
     // Array of GMEM pointers used by batched array GEMM calls
     cutlass::DeviceAllocation<void const *> ptr_A_batched;
     cutlass::DeviceAllocation<void const *> ptr_B_batched;
-    cutlass::DeviceAllocation<void       *> ptr_C_batched;
+    cutlass::DeviceAllocation<void *> ptr_C_batched;
 
     ptr_A_batched.reset(ptr_A_batched_host.size());
     ptr_B_batched.reset(ptr_A_batched_host.size());
@@ -892,12 +913,11 @@ public:
     //
     // Create CUDA streams to maximize concurrency of batched-array GEMM kernels
     //
-    std::vector<cudaStream_t>   cuda_streams;
+    std::vector<cudaStream_t> cuda_streams;
 
     //
     // Warmup run
     //
-
 
     if (this->options.cuda_streams) {
       for (int i = 0; i < this->options.cuda_streams; ++i) {
@@ -905,59 +925,57 @@ public:
 
         result.error = cudaStreamCreate(&stream);
         if (result.error != cudaSuccess) {
-        std::cerr << "Failed to create CUDA stream." << std::endl;
+          std::cerr << "Failed to create CUDA stream." << std::endl;
           return result;
         }
         cuda_streams.push_back(stream);
-
       }
-    }
-    else {
+    } else {
       cuda_streams.push_back(nullptr);
-
     }
 
     // Use 'D' for the in/out workspace
     this->block_D.copy_from_device(this->block_C.get());
 
-    for (int bin_idx = 0; bin_idx < int32_t(bin_problem_sizes.size()); ++bin_idx) {
+    for (int bin_idx = 0; bin_idx < int32_t(bin_problem_sizes.size());
+         ++bin_idx) {
 
-      cutlass::gemm::GemmCoord const & problem = bin_problem_sizes[bin_idx];
+      cutlass::gemm::GemmCoord const &problem = bin_problem_sizes[bin_idx];
       int32_t batch_count = bin_count[bin_idx];
       int32_t bin_start_idx = bin_start[bin_idx];
       int32_t lda = bin_ldm_A[bin_idx];
       int32_t ldb = bin_ldm_B[bin_idx];
       int32_t ldc = bin_ldm_C[bin_idx];
 
-      void const ** ptr_A_array = ptr_A_batched.get() + bin_start[bin_idx];
-      void const ** ptr_B_array = ptr_B_batched.get() + bin_start[bin_idx];
-      void       ** ptr_C_array = ptr_C_batched.get() + bin_start[bin_idx];
+      void const **ptr_A_array = ptr_A_batched.get() + bin_start[bin_idx];
+      void const **ptr_B_array = ptr_B_batched.get() + bin_start[bin_idx];
+      void **ptr_C_array = ptr_C_batched.get() + bin_start[bin_idx];
 
       //
       // Initialize the CUTLASS GEMM operator
       //
 
       // Configure the GEMM arguments
-      typename Gemm::EpilogueOutputOp::Params epilogue_op(this->options.alpha, this->options.beta);
+      typename Gemm::EpilogueOutputOp::Params epilogue_op(this->options.alpha,
+                                                          this->options.beta);
 
       typename Gemm::Arguments arguments{
-        cutlass::gemm::GemmUniversalMode::kArray,
-        problem,
-        batch_count,
-        epilogue_op,
-        (void const *)ptr_A_array,
-        (void const *)ptr_B_array,
-        (void const *)ptr_C_array,
-        (void       *)ptr_C_array,
-        int64_t(),
-        int64_t(),
-        int64_t(),
-        int64_t(),
-        int64_t(lda),
-        int64_t(ldb),
-        int64_t(ldc),
-        int64_t(ldc)
-      };
+          cutlass::gemm::GemmUniversalMode::kArray,
+          problem,
+          batch_count,
+          epilogue_op,
+          (void const *)ptr_A_array,
+          (void const *)ptr_B_array,
+          (void const *)ptr_C_array,
+          (void *)ptr_C_array,
+          int64_t(),
+          int64_t(),
+          int64_t(),
+          int64_t(),
+          int64_t(lda),
+          int64_t(ldb),
+          int64_t(ldc),
+          int64_t(ldc)};
 
       Gemm gemm_op;
 
@@ -974,7 +992,6 @@ public:
         std::cerr << "CUTLASS error on line " << __LINE__ << std::endl;
         return result;
       }
-
     }
 
     //
@@ -983,8 +1000,9 @@ public:
 
     result.error = cudaDeviceSynchronize();
 
-    if (result.error != cudaSuccess)  {
-      std::cerr << "Kernel execution error: " << cudaGetErrorString(result.error);
+    if (result.error != cudaSuccess) {
+      std::cerr << "Kernel execution error: "
+                << cudaGetErrorString(result.error);
       return result;
     }
 
@@ -994,10 +1012,11 @@ public:
 
     cudaEvent_t events[2];
 
-    for (auto & event : events) {
+    for (auto &event : events) {
       result.error = cudaEventCreate(&event);
       if (result.error != cudaSuccess) {
-        std::cerr << "cudaEventCreate() failed: " << cudaGetErrorString(result.error) << std::endl;
+        std::cerr << "cudaEventCreate() failed: "
+                  << cudaGetErrorString(result.error) << std::endl;
         return -1;
       }
     }
@@ -1008,15 +1027,17 @@ public:
 
     result.error = cudaDeviceSynchronize();
 
-    if (result.error != cudaSuccess)  {
-      std::cerr << "Kernel execution error: " << cudaGetErrorString(result.error);
+    if (result.error != cudaSuccess) {
+      std::cerr << "Kernel execution error: "
+                << cudaGetErrorString(result.error);
       return result;
     }
 
     // Record an event at the start of a series of GEMM operations
     result.error = cudaEventRecord(events[0]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventRecord() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventRecord() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
@@ -1028,18 +1049,19 @@ public:
 
     for (int iter = 0; iter < this->options.iterations; ++iter) {
 
-      for (int bin_idx = 0; bin_idx < int32_t(bin_problem_sizes.size()); ++bin_idx) {
+      for (int bin_idx = 0; bin_idx < int32_t(bin_problem_sizes.size());
+           ++bin_idx) {
 
-        cutlass::gemm::GemmCoord const & problem = bin_problem_sizes[bin_idx];
+        cutlass::gemm::GemmCoord const &problem = bin_problem_sizes[bin_idx];
         int32_t batch_count = bin_count[bin_idx];
         int32_t bin_start_idx = bin_start[bin_idx];
         int32_t lda = bin_ldm_A[bin_idx];
         int32_t ldb = bin_ldm_B[bin_idx];
         int32_t ldc = bin_ldm_C[bin_idx];
 
-        void const ** ptr_A_array = ptr_A_batched.get() + bin_start[bin_idx];
-        void const ** ptr_B_array = ptr_B_batched.get() + bin_start[bin_idx];
-        void       ** ptr_C_array = ptr_C_batched.get() + bin_start[bin_idx];
+        void const **ptr_A_array = ptr_A_batched.get() + bin_start[bin_idx];
+        void const **ptr_B_array = ptr_B_batched.get() + bin_start[bin_idx];
+        void **ptr_C_array = ptr_C_batched.get() + bin_start[bin_idx];
 
         last_stream_idx = (bin_idx % effective_streams);
 
@@ -1048,26 +1070,26 @@ public:
         //
 
         // Configure the GEMM arguments
-        typename Gemm::EpilogueOutputOp::Params epilogue_op(this->options.alpha, this->options.beta);
+        typename Gemm::EpilogueOutputOp::Params epilogue_op(this->options.alpha,
+                                                            this->options.beta);
 
         typename Gemm::Arguments arguments{
-          cutlass::gemm::GemmUniversalMode::kArray,
-          problem,
-          batch_count,
-          epilogue_op,
-          (void const *)ptr_A_array,
-          (void const *)ptr_B_array,
-          (void const *)ptr_C_array,
-          (void       *)ptr_C_array,
-          int64_t(),
-          int64_t(),
-          int64_t(),
-          int64_t(),
-          int64_t(lda),
-          int64_t(ldb),
-          int64_t(ldc),
-          int64_t(ldc)
-        };
+            cutlass::gemm::GemmUniversalMode::kArray,
+            problem,
+            batch_count,
+            epilogue_op,
+            (void const *)ptr_A_array,
+            (void const *)ptr_B_array,
+            (void const *)ptr_C_array,
+            (void *)ptr_C_array,
+            int64_t(),
+            int64_t(),
+            int64_t(),
+            int64_t(),
+            int64_t(lda),
+            int64_t(ldb),
+            int64_t(ldc),
+            int64_t(ldc)};
 
         Gemm gemm_op;
 
@@ -1084,7 +1106,6 @@ public:
           std::cerr << "CUTLASS error on line " << __LINE__ << std::endl;
           return result;
         }
-
       }
     }
 
@@ -1095,7 +1116,8 @@ public:
     // Record an event when the GEMM operations have been launched.
     result.error = cudaEventRecord(events[1]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventRecord() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventRecord() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
@@ -1105,8 +1127,9 @@ public:
 
     result.error = cudaDeviceSynchronize();
 
-    if (result.error != cudaSuccess)  {
-      std::cerr << "Kernel execution error: " << cudaGetErrorString(result.error);
+    if (result.error != cudaSuccess) {
+      std::cerr << "Kernel execution error: "
+                << cudaGetErrorString(result.error);
       return result;
     }
 
@@ -1114,7 +1137,8 @@ public:
     float runtime_ms = 0;
     result.error = cudaEventElapsedTime(&runtime_ms, events[0], events[1]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventElapsed() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventElapsed() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
@@ -1136,16 +1160,20 @@ public:
       }
     }
 
-    std::cout << "    " << this->options.problem_bins.size() << " batched GEMMs launched" << std::endl;
+    std::cout << "    " << this->options.problem_bins.size()
+              << " batched GEMMs launched" << std::endl;
     std::cout << std::endl;
-    std::cout << "    " << "Batched Runtime: " << result.runtime_ms << " ms" << std::endl;
+    std::cout << "    " << "Batched Runtime: " << result.runtime_ms << " ms"
+              << std::endl;
     std::cout << "    " << "Batched  GFLOPs: " << result.gflops << std::endl;
 
     std::string provider = "CUTLASS";
 
     if (this->options.output_file.good()) {
-      this->options.output_file << this->options.output_tag << "," << provider << ",batched,"
-        << this->options.problem_count << "," << result.runtime_ms << "," << result.gflops << std::endl;
+      this->options.output_file << this->options.output_tag << "," << provider
+                                << ",batched," << this->options.problem_count
+                                << "," << result.runtime_ms << ","
+                                << result.gflops << std::endl;
     }
 
     result.passed = true;
@@ -1153,39 +1181,29 @@ public:
   }
 };
 
-template <typename Gemm_, cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode_>
+template <typename Gemm_,
+          cutlass::gemm::kernel::GroupScheduleMode GroupScheduleMode_>
 class TestbedGrouped : BaseTestbed<Gemm_> {
 public:
   TestbedGrouped(
-    Options &options_,
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint32_t seed_ = 3080
-  ): BaseTestbed<Gemm_>(options_, init_A_, init_B_, init_C_, seed_) {}
+      Options &options_,
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint32_t seed_ = 3080)
+      : BaseTestbed<Gemm_>(options_, init_A_, init_B_, init_C_, seed_) {}
 
   // Redefine GEMM with different GroupScheduleMode_
   using GemmKernel = typename cutlass::gemm::kernel::DefaultGemmGrouped<
-    typename Gemm_::ElementA,
-    typename Gemm_::LayoutA,
-    Gemm_::kTransformA,
-    Gemm_::kAlignmentA,
-    typename Gemm_::ElementB,
-    typename Gemm_::LayoutB,
-    Gemm_::kTransformB,
-    Gemm_::kAlignmentB,
-    typename Gemm_::ElementC,
-    typename Gemm_::LayoutC,
-    typename Gemm_::ElementAccumulator,
-    typename Gemm_::OperatorClass,
-    typename Gemm_::ArchTag,
-    typename Gemm_::ThreadblockShape,
-    typename Gemm_::WarpShape,
-    typename Gemm_::InstructionShape,
-    typename Gemm_::EpilogueOutputOp,
-    typename Gemm_::ThreadblockSwizzle,
-    Gemm_::kStages,
-    GroupScheduleMode_>::GemmKernel;
+      typename Gemm_::ElementA, typename Gemm_::LayoutA, Gemm_::kTransformA,
+      Gemm_::kAlignmentA, typename Gemm_::ElementB, typename Gemm_::LayoutB,
+      Gemm_::kTransformB, Gemm_::kAlignmentB, typename Gemm_::ElementC,
+      typename Gemm_::LayoutC, typename Gemm_::ElementAccumulator,
+      typename Gemm_::OperatorClass, typename Gemm_::ArchTag,
+      typename Gemm_::ThreadblockShape, typename Gemm_::WarpShape,
+      typename Gemm_::InstructionShape, typename Gemm_::EpilogueOutputOp,
+      typename Gemm_::ThreadblockSwizzle, Gemm_::kStages,
+      GroupScheduleMode_>::GemmKernel;
 
   using Gemm = cutlass::gemm::device::GemmGrouped<GemmKernel>;
 
@@ -1199,13 +1217,13 @@ public:
     int32_t idx = 0;
     int64_t total_tiles = 0;
 
-    for (auto const & problem : this->options.problem_sizes) {
+    for (auto const &problem : this->options.problem_sizes) {
       int tiles = Gemm::problem_tile_count(problem);
       total_tiles += tiles;
 
-      std::cout << "  [" << idx << "]: "
-        << problem.m() << "-by-" << problem.n() << "-by-" << problem.k()
-        << " (" << tiles << " threadblock tiles)" << "\n";
+      std::cout << "  [" << idx << "]: " << problem.m() << "-by-" << problem.n()
+                << "-by-" << problem.k() << " (" << tiles
+                << " threadblock tiles)" << "\n";
 
       ++idx;
     }
@@ -1214,33 +1232,33 @@ public:
 
   /// Sort problems in descending order of problem-K dimension
   void sort_problems() {
-    Gemm::sort_problems(this->options.problem_count,
-                        this->options.problem_sizes.data(),
-                        this->lda_host.data(),
-                        this->ldb_host.data(),
-                        this->ldc_host.data(),
-                        this->ldd_host.data(),
-                        this->offset_A.data(),
-                        this->offset_B.data(),
-                        this->offset_C.data(),
-                        this->offset_D.data());
+    Gemm::sort_problems(
+        this->options.problem_count, this->options.problem_sizes.data(),
+        this->lda_host.data(), this->ldb_host.data(), this->ldc_host.data(),
+        this->ldd_host.data(), this->offset_A.data(), this->offset_B.data(),
+        this->offset_C.data(), this->offset_D.data());
   }
 
   /// Executes a grouped kernel and measures runtime
   Result profile() {
-    std::string sched_mode = this->options.scheduler_mode_to_str.find(GroupScheduleMode_)->second;
+    std::string sched_mode =
+        this->options.scheduler_mode_to_str.find(GroupScheduleMode_)->second;
 
     std::cout << std::endl;
     std::cout << "Grouped GEMM (CUTLASS) with mode " << sched_mode << ":\n"
-      << "====================================================" << std::endl;
+              << "===================================================="
+              << std::endl;
 
     Result result;
 
-    int threadblock_count = Gemm::sufficient(this->options.problem_sizes.data(), this->options.problem_count);
+    int threadblock_count = Gemm::sufficient(this->options.problem_sizes.data(),
+                                             this->options.problem_count);
 
     // Early exit
     if (!threadblock_count) {
-      std::cout << "Active CUDA device lacks hardware resources to run CUTLASS Grouped GEMM kernel." << std::endl;
+      std::cout << "Active CUDA device lacks hardware resources to run CUTLASS "
+                   "Grouped GEMM kernel."
+                << std::endl;
       return result;
     }
 
@@ -1258,24 +1276,15 @@ public:
     }
 
     // Configure the GEMM arguments
-    typename Gemm::EpilogueOutputOp::Params epilogue_op(this->options.alpha, this->options.beta);
+    typename Gemm::EpilogueOutputOp::Params epilogue_op(this->options.alpha,
+                                                        this->options.beta);
 
     // Configure GEMM arguments
     typename Gemm::Arguments args(
-      this->problem_sizes_device.get(),
-      this->problem_count(),
-      threadblock_count,
-      epilogue_op,
-      this->ptr_A.get(),
-      this->ptr_B.get(),
-      this->ptr_C.get(),
-      this->ptr_D.get(),
-      this->lda.get(),
-      this->ldb.get(),
-      this->ldc.get(),
-      this->ldd.get(),
-      this->options.problem_sizes.data()
-    );
+        this->problem_sizes_device.get(), this->problem_count(),
+        threadblock_count, epilogue_op, this->ptr_A.get(), this->ptr_B.get(),
+        this->ptr_C.get(), this->ptr_D.get(), this->lda.get(), this->ldb.get(),
+        this->ldc.get(), this->ldd.get(), this->options.problem_sizes.data());
 
     // Initialize the GEMM object
     Gemm gemm;
@@ -1286,7 +1295,8 @@ public:
     result.status = gemm.initialize(args, workspace.get());
 
     if (result.status != cutlass::Status::kSuccess) {
-      std::cerr << "Failed to initialize CUTLASS Grouped GEMM kernel." << std::endl;
+      std::cerr << "Failed to initialize CUTLASS Grouped GEMM kernel."
+                << std::endl;
       return result;
     }
 
@@ -1301,8 +1311,9 @@ public:
     // Wait for completion
     result.error = cudaDeviceSynchronize();
 
-    if (result.error != cudaSuccess)  {
-      std::cerr << "Kernel execution error: " << cudaGetErrorString(result.error);
+    if (result.error != cudaSuccess) {
+      std::cerr << "Kernel execution error: "
+                << cudaGetErrorString(result.error);
       return result;
     }
 
@@ -1331,10 +1342,11 @@ public:
 
     cudaEvent_t events[2];
 
-    for (auto & event : events) {
+    for (auto &event : events) {
       result.error = cudaEventCreate(&event);
       if (result.error != cudaSuccess) {
-        std::cerr << "cudaEventCreate() failed: " << cudaGetErrorString(result.error) << std::endl;
+        std::cerr << "cudaEventCreate() failed: "
+                  << cudaGetErrorString(result.error) << std::endl;
         return -1;
       }
     }
@@ -1342,7 +1354,8 @@ public:
     // Record an event at the start of a series of GEMM operations
     result.error = cudaEventRecord(events[0]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventRecord() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventRecord() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
@@ -1361,14 +1374,16 @@ public:
     // Record an event when the GEMM operations have been launched.
     result.error = cudaEventRecord(events[1]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventRecord() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventRecord() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
     // Wait for work on the device to complete.
     result.error = cudaEventSynchronize(events[1]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventSynchronize() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventSynchronize() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
@@ -1376,7 +1391,8 @@ public:
     float runtime_ms = 0;
     result.error = cudaEventElapsedTime(&runtime_ms, events[0], events[1]);
     if (result.error != cudaSuccess) {
-      std::cerr << "cudaEventElapsed() failed: " << cudaGetErrorString(result.error) << std::endl;
+      std::cerr << "cudaEventElapsed() failed: "
+                << cudaGetErrorString(result.error) << std::endl;
       return result;
     }
 
@@ -1403,24 +1419,31 @@ public:
       }
       auto end_time = std::chrono::high_resolution_clock::now();
 
-      std::chrono::duration<double, std::milli> duration = end_time - start_time;
+      std::chrono::duration<double, std::milli> duration =
+          end_time - start_time;
       duration /= double(this->options.iterations);
       result.initialization_time_ms = duration.count();
     }
 
     int64_t total_tiles = Gemm::group_tile_count(args);
-    std::cout << "    " << total_tiles << " total threadblock tiles." << std::endl;
+    std::cout << "    " << total_tiles << " total threadblock tiles."
+              << std::endl;
 
     std::cout << std::endl;
-    std::cout << "    " << "Grouped Runtime: " << result.runtime_ms << " ms" << std::endl;
+    std::cout << "    " << "Grouped Runtime: " << result.runtime_ms << " ms"
+              << std::endl;
     std::cout << "    " << "Grouped  GFLOPs: " << result.gflops << std::endl;
     if (this->options.profile_initialization) {
-      std::cout << "    " << "Init    Runtime: " << result.initialization_time_ms << " ms" << std::endl;
+      std::cout << "    "
+                << "Init    Runtime: " << result.initialization_time_ms << " ms"
+                << std::endl;
     }
 
     if (this->options.output_file.good()) {
-      this->options.output_file << this->options.output_tag << ",CUTLASS,grouped-" << sched_mode << ","
-        << this->options.problem_count << "," << result.runtime_ms << "," << result.gflops << std::endl;
+      this->options.output_file
+          << this->options.output_tag << ",CUTLASS,grouped-" << sched_mode
+          << "," << this->options.problem_count << "," << result.runtime_ms
+          << "," << result.gflops << std::endl;
     }
 
     std::cout << "\nPassed\n";
@@ -1437,7 +1460,8 @@ int main(int argc, char const **args) {
 
   cudaError_t error = cudaGetDeviceProperties(&props, 0);
   if (error != cudaSuccess) {
-    std::cerr << "cudaGetDeviceProperties() returned an error: " << cudaGetErrorString(error) << std::endl;
+    std::cerr << "cudaGetDeviceProperties() returned an error: "
+              << cudaGetErrorString(error) << std::endl;
     return -1;
   }
 
@@ -1447,9 +1471,9 @@ int main(int argc, char const **args) {
     // This example requires an NVIDIA Ampere-architecture GPU.
     //
 
-    std::cout
-      << "CUTLASS's Grouped GEMM example requires a GPU of NVIDIA's Ampere Architecture or "
-      << "later (compute capability 80 or greater).\n";
+    std::cout << "CUTLASS's Grouped GEMM example requires a GPU of NVIDIA's "
+                 "Ampere Architecture or "
+              << "later (compute capability 80 or greater).\n";
 
     return 0;
   }
@@ -1487,52 +1511,32 @@ int main(int argc, char const **args) {
 
   // Gemm operator cutlass_tensorop_f16_s16816gemm_f16_128x128_32x4_nt_align8
   using GemmBatched = cutlass::gemm::device::GemmUniversal<
-    ElementA, LayoutA,
-    ElementB, LayoutB,
-    ElementOutput,   LayoutC,
-    ElementAccumulator,
-    cutlass::arch::OpClassTensorOp,
-    cutlass::arch::Sm80,
-    cutlass::gemm::GemmShape<128, 128, 32>,
-    cutlass::gemm::GemmShape<64, 64, 32>,
-    cutlass::gemm::GemmShape<16, 8, 16>,
-    cutlass::epilogue::thread::LinearCombination<
-      ElementOutput,
-      128 / cutlass::sizeof_bits<ElementOutput>::value,
-      ElementAccumulator,
-      ElementAccumulator
-    >,
-    cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<8>,
-    4
-  >;
+      ElementA, LayoutA, ElementB, LayoutB, ElementOutput, LayoutC,
+      ElementAccumulator, cutlass::arch::OpClassTensorOp, cutlass::arch::Sm80,
+      cutlass::gemm::GemmShape<128, 128, 32>,
+      cutlass::gemm::GemmShape<64, 64, 32>, cutlass::gemm::GemmShape<16, 8, 16>,
+      cutlass::epilogue::thread::LinearCombination<
+          ElementOutput, 128 / cutlass::sizeof_bits<ElementOutput>::value,
+          ElementAccumulator, ElementAccumulator>,
+      cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<8>, 4>;
 
   // Define a grouped GEMM kernel with all template parameters set except
   // for scheduling mode. This will be used as the template for all scheduling
   // modes executed.
   using GemmKernel = typename cutlass::gemm::kernel::DefaultGemmGrouped<
-    ElementA,
-    LayoutA,
-    cutlass::ComplexTransform::kNone,
-    8,
-    ElementB,
-    LayoutB,
-    cutlass::ComplexTransform::kNone,
-    8,
-    ElementOutput, LayoutC,
-    ElementAccumulator,
-    cutlass::arch::OpClassTensorOp,
-    cutlass::arch::Sm80,
-    cutlass::gemm::GemmShape<128, 128, 32>,
-    cutlass::gemm::GemmShape<64, 64, 32>,
-    cutlass::gemm::GemmShape<16, 8, 16>,
-    cutlass::epilogue::thread::LinearCombination<
-        ElementOutput, 128 / cutlass::sizeof_bits<ElementOutput>::value,
-        ElementAccumulator, ElementAccumulator>,
-    // NOTE: Threadblock swizzling is currently not supported by CUTLASS's grouped kernels.
-    // This parameter is passed in at present to match the APIs of other kernels. The parameter
-    // is unused within the kernel.
-    cutlass::gemm::threadblock::GemmBatchedIdentityThreadblockSwizzle,
-    4>::GemmKernel;
+      ElementA, LayoutA, cutlass::ComplexTransform::kNone, 8, ElementB, LayoutB,
+      cutlass::ComplexTransform::kNone, 8, ElementOutput, LayoutC,
+      ElementAccumulator, cutlass::arch::OpClassTensorOp, cutlass::arch::Sm80,
+      cutlass::gemm::GemmShape<128, 128, 32>,
+      cutlass::gemm::GemmShape<64, 64, 32>, cutlass::gemm::GemmShape<16, 8, 16>,
+      cutlass::epilogue::thread::LinearCombination<
+          ElementOutput, 128 / cutlass::sizeof_bits<ElementOutput>::value,
+          ElementAccumulator, ElementAccumulator>,
+      // NOTE: Threadblock swizzling is currently not supported by CUTLASS's
+      // grouped kernels. This parameter is passed in at present to match the
+      // APIs of other kernels. The parameter is unused within the kernel.
+      cutlass::gemm::threadblock::GemmBatchedIdentityThreadblockSwizzle,
+      4>::GemmKernel;
 
   using GemmGrouped = cutlass::gemm::device::GemmGrouped<GemmKernel>;
 
@@ -1550,25 +1554,26 @@ int main(int argc, char const **args) {
   for (GroupScheduleMode mode : options.scheduler_modes) {
     Result result;
     switch (mode) {
-      case GroupScheduleMode::kDeviceOnly:
-        {
-          TestbedGrouped<GemmGrouped, GroupScheduleMode::kDeviceOnly> runner(options);
-          result = runner.profile();
-          break;
-        }
-      case GroupScheduleMode::kHostPrecompute:
-        {
-          TestbedGrouped<GemmGrouped, GroupScheduleMode::kHostPrecompute> runner(options);
-          result = runner.profile();
-          break;
-        }
+    case GroupScheduleMode::kDeviceOnly: {
+      TestbedGrouped<GemmGrouped, GroupScheduleMode::kDeviceOnly> runner(
+          options);
+      result = runner.profile();
+      break;
+    }
+    case GroupScheduleMode::kHostPrecompute: {
+      TestbedGrouped<GemmGrouped, GroupScheduleMode::kHostPrecompute> runner(
+          options);
+      result = runner.profile();
+      break;
+    }
     }
 
     if (result.error != cudaSuccess) {
       return 1;
     }
 
-    // Override verbose flag to avoid printing duplicate information for each scheduling mode
+    // Override verbose flag to avoid printing duplicate information for each
+    // scheduling mode
     options.verbose = false;
   }
 

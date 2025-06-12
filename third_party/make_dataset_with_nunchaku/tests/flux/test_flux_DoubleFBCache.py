@@ -1,20 +1,42 @@
-import os
-import json
 import glob
+import itertools
+import json
+import os
+
 import pandas as pd
 import pytest
-import itertools
-
 from nunchaku.utils import get_precision, is_turing
+
 from .utils import run_test
 
 residual_diff_threshold_multi_list = [0.08, 0.09, 0.10, 0.11, 0.12]
 residual_diff_threshold_single_list = [
-    0.05, 0.06, 0.07, 0.08, 0.09,
-    0.10, 0.11, 0.12, 0.13, 0.14,
-    0.15, 0.16, 0.17, 0.18, 0.19,
-    0.20, 0.21, 0.22, 0.23, 0.24,
-    0.25, 0.26, 0.27, 0.28, 0.29, 0.30
+    0.05,
+    0.06,
+    0.07,
+    0.08,
+    0.09,
+    0.10,
+    0.11,
+    0.12,
+    0.13,
+    0.14,
+    0.15,
+    0.16,
+    0.17,
+    0.18,
+    0.19,
+    0.20,
+    0.21,
+    0.22,
+    0.23,
+    0.24,
+    0.25,
+    0.26,
+    0.27,
+    0.28,
+    0.29,
+    0.30,
 ]
 Double_FBCache = [True]
 
@@ -31,28 +53,32 @@ for doubleFB, single_thr, multi_thr in itertools.product(
     residual_diff_threshold_single_list,
     residual_diff_threshold_multi_list,
 ):
-    params.append((
-        doubleFB,
-        single_thr,
-        multi_thr,
-        height,
-        width,
-        num_inference_steps,
-        lora_name,
-        lora_strength,
-        expected_lpips,
-    ))
-    params.append((
-        doubleFB,
-        single_thr,
-        multi_thr,
-        height,
-        width,
-        num_inference_steps,
-        lora_name,
-        lora_strength,
-        expected_lpips,
-    ))
+    params.append(
+        (
+            doubleFB,
+            single_thr,
+            multi_thr,
+            height,
+            width,
+            num_inference_steps,
+            lora_name,
+            lora_strength,
+            expected_lpips,
+        )
+    )
+    params.append(
+        (
+            doubleFB,
+            single_thr,
+            multi_thr,
+            height,
+            width,
+            num_inference_steps,
+            lora_name,
+            lora_strength,
+            expected_lpips,
+        )
+    )
 
 
 @pytest.mark.skipif(is_turing(), reason="Skip tests for Turing GPUs")

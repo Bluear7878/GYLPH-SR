@@ -42,7 +42,7 @@ public:
     // try to connect or throw on failure
     void connect(const std::string &host, int port) {
         close();
-        struct addrinfo hints {};
+        struct addrinfo hints{};
         memset(&hints, 0, sizeof(struct addrinfo));
         hints.ai_family = AF_UNSPEC;      // To work with IPv4, IPv6, and so on
         hints.ai_socktype = SOCK_STREAM;  // TCP

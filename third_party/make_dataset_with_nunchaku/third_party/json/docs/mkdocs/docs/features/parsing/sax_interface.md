@@ -62,8 +62,8 @@ The return value of each function determines whether parsing should proceed.
 To implement your own SAX handler, proceed as follows:
 
 1. Implement the SAX interface in a class. You can use class `nlohmann::json_sax<json>` as base class, but you can also use any class where the functions described above are implemented and public.
-2. Create an object of your SAX interface class, e.g. `my_sax`.
-3. Call `#!cpp bool json::sax_parse(input, &my_sax);` where the first parameter can be any input like a string or an input stream and the second parameter is a pointer to your SAX interface.
+1. Create an object of your SAX interface class, e.g. `my_sax`.
+1. Call `#!cpp bool json::sax_parse(input, &my_sax);` where the first parameter can be any input like a string or an input stream and the second parameter is a pointer to your SAX interface.
 
 Note the `sax_parse` function only returns a `#!cpp bool` indicating the result of the last executed SAX event. It does not return `json` value - it is up to you to decide what to do with the SAX events. Furthermore, no exceptions are thrown in case of a parse error - it is up to you what to do with the exception object passed to your `parse_error` implementation. Internally, the SAX interface is used for the DOM parser (class `json_sax_dom_parser`) as well as the acceptor (`json_sax_acceptor`), see file `json_sax.hpp`.
 

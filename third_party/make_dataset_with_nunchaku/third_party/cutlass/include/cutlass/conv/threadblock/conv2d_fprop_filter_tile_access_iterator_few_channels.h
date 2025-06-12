@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,40 +18,43 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing loading of convolution tiles mapped to GEMM B (filter tile)
-    matrix from memory.
+    \brief Templates implementing loading of convolution tiles mapped to GEMM B
+   (filter tile) matrix from memory.
 
-    This iterator assumes TensorNHWC or TensorCxRSKx<Interleave> layout of tensors in Global Memory.
+    This iterator assumes TensorNHWC or TensorCxRSKx<Interleave> layout of
+   tensors in Global Memory.
 
-    The iterator is specialized for each of the three convolution operators: forward propagation (Fprop),
-    backward data gradient (Dgrad), and backward weight gradient (Wgrad).
+    The iterator is specialized for each of the three convolution operators:
+   forward propagation (Fprop), backward data gradient (Dgrad), and backward
+   weight gradient (Wgrad).
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/conv/conv2d_problem_size.h"
+#include "cutlass/conv/convolution.h"
+#include "cutlass/conv/threadblock/conv2d_params.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/layout/tensor.h"
 #include "cutlass/predicate_vector.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
-#include "cutlass/layout/pitch_linear.h"
-#include "cutlass/layout/tensor.h"
-#include "cutlass/layout/matrix.h"
-#include "cutlass/conv/convolution.h"
-#include "cutlass/conv/conv2d_problem_size.h"
-#include "cutlass/conv/threadblock/conv2d_params.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,16 +64,12 @@ namespace threadblock {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Shape_,
-  typename Element_,
-  typename Layout_,
-  typename ThreadMap_,
-  typename AccessType_ = cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>
->
+template <typename Shape_, typename Element_, typename Layout_,
+          typename ThreadMap_,
+          typename AccessType_ =
+              cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>>
 class Conv2dFpropFilterTileAccessIteratorFewChannels {
 public:
-
   //
   // Types
   //
@@ -84,7 +83,8 @@ public:
   using TensorCoord = typename Layout::TensorCoord;
   using Index = typename Layout::Index;
   using LongIndex = typename Layout::LongIndex;
-  static IteratorAlgorithm const kIteratorAlgorithm = conv::IteratorAlgorithm::kFewChannels;
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      conv::IteratorAlgorithm::kFewChannels;
   static StrideSupport const kStrideSupport = conv::StrideSupport::kStrided;
   static int const kConvDim = 2;
   using ConvProblemSize = typename conv::Conv2dProblemSize;
@@ -92,19 +92,21 @@ public:
   static int const kElementsPerAccess = ThreadMap::kElementsPerAccess;
   static int const kPositionsPerTile = Shape::kRow;
 
-  static int const kAccessesPerVector = ThreadMap::kElementsPerAccess / AccessType::kElements;
+  static int const kAccessesPerVector =
+      ThreadMap::kElementsPerAccess / AccessType::kElements;
 
   static bool const kUseFastDivmodPrologue = true;
   static bool const kUseFastDivmodMainloop = true;
 
   static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements),
-    "Vectors implied by the thread map must be divisible by the access type.");
+                "Vectors implied by the thread map must be divisible by the "
+                "access type.");
 
   //
   // Simplifying assertions
   //
   static_assert(ThreadMap::Iterations::kContiguous == 1,
-    "Require Iterations::kContiguous == 1");
+                "Require Iterations::kContiguous == 1");
 
   //
   // Parameters structure
@@ -113,7 +115,6 @@ public:
   using Params = Conv2dFewChannelsParams<Layout>;
 
 private:
-
   Params const &params_;
   Conv2dProblemSize const &problem_size_;
   LongIndex iteration_contiguous_;
@@ -126,27 +127,23 @@ private:
   int offset_k_[ThreadMap::Iterations::kStrided];
 
 public:
-
   CUTLASS_HOST_DEVICE
   Conv2dFpropFilterTileAccessIteratorFewChannels(
-    Params const &params,
-    Conv2dProblemSize const &problem_size,
-    Element const *ptr,
-    int thread_idx,
-    MatrixCoord const &threadblock_offset = MatrixCoord()
-  ):
-    params_(params),
-    problem_size_(problem_size),
-    pointer_(reinterpret_cast<char const *>(ptr)),
-    rsc_index_(0) {
+      Params const &params, Conv2dProblemSize const &problem_size,
+      Element const *ptr, int thread_idx,
+      MatrixCoord const &threadblock_offset = MatrixCoord())
+      : params_(params), problem_size_(problem_size),
+        pointer_(reinterpret_cast<char const *>(ptr)), rsc_index_(0) {
 
-    layout::PitchLinearCoord thread_coord = ThreadMap::initial_offset(thread_idx);
+    layout::PitchLinearCoord thread_coord =
+        ThreadMap::initial_offset(thread_idx);
 
     rsc_index_ = (threadblock_offset.row() + thread_coord.contiguous());
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
-      offset_k_[s] = threadblock_offset.column() + thread_coord.strided() + s * ThreadMap::Delta::kStrided;
+      offset_k_[s] = threadblock_offset.column() + thread_coord.strided() +
+                     s * ThreadMap::Delta::kStrided;
     }
 
     set_iteration_index(0);
@@ -157,7 +154,8 @@ public:
   void set_iteration_index(Index index) {
     iteration_vector_ = index % kAccessesPerVector;
     int residual_access = index / kAccessesPerVector;
-    iteration_contiguous_ = residual_access % ThreadMap::Iterations::kContiguous;
+    iteration_contiguous_ =
+        residual_access % ThreadMap::Iterations::kContiguous;
     iteration_strided_ = residual_access / ThreadMap::Iterations::kContiguous;
   }
 
@@ -187,8 +185,7 @@ public:
     if (kUseFastDivmodMainloop) {
       int rs_index = params_.divmod_C.divmod(c, rsc_index);
       r = params_.divmod_S.divmod(s, rs_index);
-    }
-    else {
+    } else {
       c = (rsc_index % problem_size_.C);
       int rs_index = (rsc_index / problem_size_.C);
 
@@ -207,11 +204,8 @@ public:
 
     TensorCoord coord = at();
 
-    bool in_bounds =
-      coord.n() < problem_size_.K &&
-      coord.h() >= 0 &&
-      coord.h() < problem_size_.R &&
-      coord.c() < problem_size_.C;
+    bool in_bounds = coord.n() < problem_size_.K && coord.h() >= 0 &&
+                     coord.h() < problem_size_.R && coord.c() < problem_size_.C;
 
     return in_bounds;
   }
@@ -222,13 +216,12 @@ public:
 
     TensorCoord coord = at();
 
-    int32_t offset =
-      coord.n() * params_.stride_n +
-      coord.h() * params_.stride_h +
-      coord.w() * params_.stride_w +
-      coord.c();
+    int32_t offset = coord.n() * params_.stride_n +
+                     coord.h() * params_.stride_h +
+                     coord.w() * params_.stride_w + coord.c();
 
-    return reinterpret_cast<AccessType const *>(pointer_ + offset * sizeof_bits<Element>::value / 8);
+    return reinterpret_cast<AccessType const *>(
+        pointer_ + offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Increments to the next memory access

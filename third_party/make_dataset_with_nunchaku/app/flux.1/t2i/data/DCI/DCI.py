@@ -26,9 +26,13 @@ _HOMEPAGE = "https://github.com/facebookresearch/DCI"
 
 _LICENSE = "Attribution-NonCommercial 4.0 International (https://github.com/facebookresearch/DCI/blob/main/LICENSE)"
 
-IMAGE_URL = "https://huggingface.co/datasets/mit-han-lab/svdquant-datasets/resolve/main/sDCI.gz"
+IMAGE_URL = (
+    "https://huggingface.co/datasets/mit-han-lab/svdquant-datasets/resolve/main/sDCI.gz"
+)
 
-PROMPT_URLS = {"sDCI": "https://huggingface.co/datasets/mit-han-lab/svdquant-datasets/resolve/main/sDCI.yaml"}
+PROMPT_URLS = {
+    "sDCI": "https://huggingface.co/datasets/mit-han-lab/svdquant-datasets/resolve/main/sDCI.yaml"
+}
 
 
 class DCIConfig(datasets.BuilderConfig):
@@ -48,7 +52,9 @@ class DCI(datasets.GeneratorBasedBuilder):
     VERSION = datasets.Version("0.0.0")
 
     BUILDER_CONFIG_CLASS = DCIConfig
-    BUILDER_CONFIGS = [DCIConfig(name="sDCI", version=VERSION, description="sDCI full prompt set")]
+    BUILDER_CONFIGS = [
+        DCIConfig(name="sDCI", version=VERSION, description="sDCI full prompt set")
+    ]
     DEFAULT_CONFIG_NAME = "sDCI"
 
     def _info(self):
@@ -64,7 +70,11 @@ class DCI(datasets.GeneratorBasedBuilder):
             }
         )
         return datasets.DatasetInfo(
-            description=_DESCRIPTION, features=features, homepage=_HOMEPAGE, license=_LICENSE, citation=_CITATION
+            description=_DESCRIPTION,
+            features=features,
+            homepage=_HOMEPAGE,
+            license=_LICENSE,
+            citation=_CITATION,
         )
 
     def _split_generators(self, dl_manager: datasets.download.DownloadManager):
@@ -76,7 +86,8 @@ class DCI(datasets.GeneratorBasedBuilder):
 
         return [
             datasets.SplitGenerator(
-                name=datasets.Split.TRAIN, gen_kwargs={"meta_path": meta_path, "image_root": image_root}
+                name=datasets.Split.TRAIN,
+                gen_kwargs={"meta_path": meta_path, "image_root": image_root},
             )
         ]
 

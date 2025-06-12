@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,22 +18,23 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-**************************************************************************************************/
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
+ *
+ **************************************************************************************************/
 #pragma once
 
+#include "cutlass/complex.h"
 #include "cutlass/core_io.h"
 #include "cutlass/tensor_view.h"
 #include "cutlass/tensor_view_planar_complex.h"
-#include "cutlass/complex.h"
 
 namespace cutlass {
 
@@ -42,16 +43,10 @@ namespace cutlass {
 namespace detail {
 
 /// Helper to write the least significant rank of a TensorView
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream & TensorView_WriteLeastSignificantRank(
-  std::ostream& out, 
-  TensorView<Element, Layout> const& view,
-  Coord<Layout::kRank> const &start_coord,
-  int rank,
-  std::streamsize width) {
+template <typename Element, typename Layout>
+inline std::ostream &TensorView_WriteLeastSignificantRank(
+    std::ostream &out, TensorView<Element, Layout> const &view,
+    Coord<Layout::kRank> const &start_coord, int rank, std::streamsize width) {
 
   for (int idx = 0; idx < view.extent(rank); ++idx) {
 
@@ -72,20 +67,16 @@ inline std::ostream & TensorView_WriteLeastSignificantRank(
 }
 
 /// Helper to write a rank of a TensorView
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream & TensorView_WriteRank(
-  std::ostream& out, 
-  TensorView<Element, Layout> const& view,
-  Coord<Layout::kRank> const &start_coord,
-  int rank,
-  std::streamsize width) {
+template <typename Element, typename Layout>
+inline std::ostream &
+TensorView_WriteRank(std::ostream &out, TensorView<Element, Layout> const &view,
+                     Coord<Layout::kRank> const &start_coord, int rank,
+                     std::streamsize width) {
 
   // If called on the least significant rank, write the result as a row
   if (rank + 1 == Layout::kRank) {
-    return TensorView_WriteLeastSignificantRank(out, view, start_coord, rank, width);
+    return TensorView_WriteLeastSignificantRank(out, view, start_coord, rank,
+                                                width);
   }
 
   // Otherwise, write a sequence of rows and newlines
@@ -100,8 +91,7 @@ inline std::ostream & TensorView_WriteRank(
         out << ",\n";
       }
       TensorView_WriteLeastSignificantRank(out, view, coord, rank + 1, width);
-    }
-    else {
+    } else {
       // Higher ranks are separated by newlines
       if (idx) {
         out << ",\n\n";
@@ -114,16 +104,10 @@ inline std::ostream & TensorView_WriteRank(
 }
 
 /// Helper to write the least significant rank of a TensorView
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream & TensorViewPlanarComplex_WriteLeastSignificantRank(
-  std::ostream& out, 
-  TensorViewPlanarComplex<Element, Layout> const& view,
-  Coord<Layout::kRank> const &start_coord,
-  int rank,
-  std::streamsize width) {
+template <typename Element, typename Layout>
+inline std::ostream &TensorViewPlanarComplex_WriteLeastSignificantRank(
+    std::ostream &out, TensorViewPlanarComplex<Element, Layout> const &view,
+    Coord<Layout::kRank> const &start_coord, int rank, std::streamsize width) {
 
   for (int idx = 0; idx < view.extent(rank); ++idx) {
 
@@ -146,20 +130,15 @@ inline std::ostream & TensorViewPlanarComplex_WriteLeastSignificantRank(
 }
 
 /// Helper to write a rank of a TensorView
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream & TensorViewPlanarComplex_WriteRank(
-  std::ostream& out, 
-  TensorViewPlanarComplex<Element, Layout> const& view,
-  Coord<Layout::kRank> const &start_coord,
-  int rank,
-  std::streamsize width) {
+template <typename Element, typename Layout>
+inline std::ostream &TensorViewPlanarComplex_WriteRank(
+    std::ostream &out, TensorViewPlanarComplex<Element, Layout> const &view,
+    Coord<Layout::kRank> const &start_coord, int rank, std::streamsize width) {
 
   // If called on the least significant rank, write the result as a row
   if (rank + 1 == Layout::kRank) {
-    return TensorViewPlanarComplex_WriteLeastSignificantRank(out, view, start_coord, rank, width);
+    return TensorViewPlanarComplex_WriteLeastSignificantRank(
+        out, view, start_coord, rank, width);
   }
 
   // Otherwise, write a sequence of rows and newlines
@@ -173,9 +152,9 @@ inline std::ostream & TensorViewPlanarComplex_WriteRank(
       if (idx) {
         out << ";\n";
       }
-      TensorViewPlanarComplex_WriteLeastSignificantRank(out, view, coord, rank + 1, width);
-    }
-    else {
+      TensorViewPlanarComplex_WriteLeastSignificantRank(out, view, coord,
+                                                        rank + 1, width);
+    } else {
       // Higher ranks are separated by newlines
       if (idx) {
         out << "\n";
@@ -192,13 +171,9 @@ inline std::ostream & TensorViewPlanarComplex_WriteRank(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Prints human-readable representation of a TensorView to an ostream
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream& TensorViewWrite(
-  std::ostream& out, 
-  TensorView<Element, Layout> const& view) {
+template <typename Element, typename Layout>
+inline std::ostream &TensorViewWrite(std::ostream &out,
+                                     TensorView<Element, Layout> const &view) {
 
   // Prints a TensorView according to the following conventions:
   //   - least significant rank is printed as rows separated by ";\n"
@@ -206,17 +181,14 @@ inline std::ostream& TensorViewWrite(
   //
   // The result is effectively a whitespace-delimited series of 2D matrices.
 
-  return detail::TensorView_WriteRank(out, view, Coord<Layout::kRank>(), 0, out.width());
+  return detail::TensorView_WriteRank(out, view, Coord<Layout::kRank>(), 0,
+                                      out.width());
 }
 
 /// Prints human-readable representation of a TensorView to an ostream
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream& operator<<(
-  std::ostream& out, 
-  TensorView<Element, Layout> const& view) {
+template <typename Element, typename Layout>
+inline std::ostream &operator<<(std::ostream &out,
+                                TensorView<Element, Layout> const &view) {
 
   // Prints a TensorView according to the following conventions:
   //   - least significant rank is printed as rows separated by ";\n"
@@ -230,13 +202,10 @@ inline std::ostream& operator<<(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Prints human-readable representation of a TensorView to an ostream
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream& TensorViewWrite(
-  std::ostream& out, 
-  TensorViewPlanarComplex<Element, Layout> const& view) {
+template <typename Element, typename Layout>
+inline std::ostream &
+TensorViewWrite(std::ostream &out,
+                TensorViewPlanarComplex<Element, Layout> const &view) {
 
   // Prints a TensorView according to the following conventions:
   //   - least significant rank is printed as rows separated by ";\n"
@@ -244,17 +213,15 @@ inline std::ostream& TensorViewWrite(
   //
   // The result is effectively a whitespace-delimited series of 2D matrices.
 
-  return detail::TensorViewPlanarComplex_WriteRank(out, view, Coord<Layout::kRank>(), 0, out.width());
+  return detail::TensorViewPlanarComplex_WriteRank(
+      out, view, Coord<Layout::kRank>(), 0, out.width());
 }
 
 /// Prints human-readable representation of a TensorView to an ostream
-template <
-  typename Element,
-  typename Layout
->
-inline std::ostream& operator<<(
-  std::ostream& out, 
-  TensorViewPlanarComplex<Element, Layout> const& view) {
+template <typename Element, typename Layout>
+inline std::ostream &
+operator<<(std::ostream &out,
+           TensorViewPlanarComplex<Element, Layout> const &view) {
 
   // Prints a TensorView according to the following conventions:
   //   - least significant rank is printed as rows separated by ";\n"

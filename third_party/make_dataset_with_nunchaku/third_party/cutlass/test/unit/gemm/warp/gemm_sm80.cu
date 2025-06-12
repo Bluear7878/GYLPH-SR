@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,17 +18,18 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
-/*! \file 
+/*! \file
 
     \brief Unit tests for thread-level GEMM
 */
@@ -44,9 +45,9 @@
 #include "cutlass/util/host_tensor.h"
 #include "cutlass/util/tensor_view_io.h"
 
-#include "cutlass/util/reference/host/tensor_fill.h"
-#include "cutlass/util/reference/host/tensor_compare.h"
 #include "cutlass/util/reference/host/gemm.h"
+#include "cutlass/util/reference/host/tensor_compare.h"
+#include "cutlass/util/reference/host/tensor_fill.h"
 
 #include "testbed.h"
 
@@ -69,7 +70,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x32_64x64x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -90,7 +91,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x32_64x32x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -111,7 +112,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x32_32x32x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -132,7 +133,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x32_32x16x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -153,7 +154,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x32_16x16x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -174,7 +175,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x64_64x64x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -195,7 +196,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x64_64x32x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -216,7 +217,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x64_32x32x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -237,7 +238,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x64_32x16x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -258,7 +259,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f16, 128x128x64_16x16x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -279,7 +280,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x16_64x64x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -300,7 +301,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x16_64x32x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -321,7 +322,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x16_32x32x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -342,7 +343,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x16_32x16x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -363,7 +364,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x16_16x16x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -384,7 +385,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x32_64x64x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -405,7 +406,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x32_64x32x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -426,7 +427,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x32_32x32x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -447,7 +448,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x32_32x16x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -468,7 +469,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_tf32, 128x128x32_16x16x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -489,7 +490,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f16, 128x128x32_64x64x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -510,7 +511,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f16, 128x128x32_32x32x32_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -531,7 +532,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f16, 128x128x64_64x64x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -552,7 +553,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f16, 128x128x64_32x32x64_16x8x16) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -573,7 +574,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_tf32, 128x128x16_64x64x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -594,7 +595,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_tf32, 128x128x16_32x32x16_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 16> >()
+                            cutlass::gemm::GemmShape<128, 128, 16>>()
       .run();
 }
 
@@ -615,7 +616,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_tf32, 128x128x32_64x64x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -636,7 +637,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_tf32, 128x128x32_32x32x32_16x8x8) {
       cutlass::layout::RowMajor>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 32> >()
+                            cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -659,7 +660,7 @@ TEST(SM80_warp_gemm_tensor_op_tn, tf32_round_128x128x32_64x64x32_16x8x8) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::TransformTestbed<MmaTensorOp,
-                                     cutlass::gemm::GemmShape<128, 128, 32> >()
+                                     cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -672,7 +673,7 @@ TEST(SM80_warp_gemm_tensor_op_nt, tf32_round_128x128x32_64x64x32_16x8x8) {
 
   using LayoutA = cutlass::layout::ColumnMajorTensorOpMultiplicandCongruous<
       cutlass::sizeof_bits<Element>::value, 32>;
-      
+
   using LayoutB = cutlass::layout::RowMajorTensorOpMultiplicandCongruous<
       cutlass::sizeof_bits<Element>::value, 32>;
 
@@ -681,7 +682,7 @@ TEST(SM80_warp_gemm_tensor_op_nt, tf32_round_128x128x32_64x64x32_16x8x8) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::TransformTestbed<MmaTensorOp,
-                                     cutlass::gemm::GemmShape<128, 128, 32> >()
+                                     cutlass::gemm::GemmShape<128, 128, 32>>()
       .run();
 }
 
@@ -702,7 +703,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_16x16x64_16x8x16) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -723,7 +724,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_32x16x64_16x8x16) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -744,7 +745,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_32x32x64_16x8x16) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -765,7 +766,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_64x32x64_16x8x16) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -786,7 +787,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_64x64x64_16x8x16) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -807,7 +808,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_16x16x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -828,7 +829,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_32x16x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -849,7 +850,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_32x32x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -870,7 +871,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_64x32x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -891,7 +892,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x64_64x64x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -912,7 +913,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x64_64x64x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -933,7 +934,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x64_64x32x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -954,7 +955,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x64_32x32x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -975,7 +976,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x64_32x16x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -996,7 +997,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x64_16x16x64_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 64> >()
+                            cutlass::gemm::GemmShape<128, 128, 64>>()
       .run();
 }
 
@@ -1017,7 +1018,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x128_64x64x128_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1038,7 +1039,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x128_64x32x128_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1059,7 +1060,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x128_32x32x128_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1080,7 +1081,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x128_32x16x128_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1101,7 +1102,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i8, 128x128x128_16x16x128_16x8x32) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1122,7 +1123,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x128_64x64x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1143,7 +1144,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x128_64x32x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1164,7 +1165,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x128_32x32x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1185,7 +1186,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x128_32x16x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1206,7 +1207,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x128_16x16x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1227,7 +1228,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x256_64x64x256_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 256> >()
+                            cutlass::gemm::GemmShape<128, 128, 256>>()
       .run();
 }
 
@@ -1248,7 +1249,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x256_64x32x256_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 256> >()
+                            cutlass::gemm::GemmShape<128, 128, 256>>()
       .run();
 }
 
@@ -1269,7 +1270,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x256_32x32x256_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 256> >()
+                            cutlass::gemm::GemmShape<128, 128, 256>>()
       .run();
 }
 
@@ -1290,7 +1291,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x256_32x16x256_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 256> >()
+                            cutlass::gemm::GemmShape<128, 128, 256>>()
       .run();
 }
 
@@ -1311,7 +1312,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_i4, 128x128x256_16x16x256_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 256> >()
+                            cutlass::gemm::GemmShape<128, 128, 256>>()
       .run();
 }
 
@@ -1331,7 +1332,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x512_64x64x512_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 512> >()
+                            cutlass::gemm::GemmShape<128, 128, 512>>()
       .run();
 }
 
@@ -1352,7 +1353,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x512_64x32x512_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 512> >()
+                            cutlass::gemm::GemmShape<128, 128, 512>>()
       .run();
 }
 
@@ -1373,7 +1374,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x512_32x32x512_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 512> >()
+                            cutlass::gemm::GemmShape<128, 128, 512>>()
       .run();
 }
 
@@ -1394,7 +1395,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x512_32x16x512_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 512> >()
+                            cutlass::gemm::GemmShape<128, 128, 512>>()
       .run();
 }
 
@@ -1415,7 +1416,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x512_16x16x512_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 512> >()
+                            cutlass::gemm::GemmShape<128, 128, 512>>()
       .run();
 }
 
@@ -1436,7 +1437,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x1024_64x64x1024_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 1024> >()
+                            cutlass::gemm::GemmShape<128, 128, 1024>>()
       .run();
 }
 
@@ -1457,7 +1458,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x1024_64x32x1024_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 1024> >()
+                            cutlass::gemm::GemmShape<128, 128, 1024>>()
       .run();
 }
 
@@ -1478,7 +1479,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x1024_32x32x1024_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 1024> >()
+                            cutlass::gemm::GemmShape<128, 128, 1024>>()
       .run();
 }
 
@@ -1499,7 +1500,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x1024_32x16x1024_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 1024> >()
+                            cutlass::gemm::GemmShape<128, 128, 1024>>()
       .run();
 }
 
@@ -1520,7 +1521,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_b1, 128x128x1024_16x16x1024_16x8x256) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 1024> >()
+                            cutlass::gemm::GemmShape<128, 128, 1024>>()
       .run();
 }
 
@@ -1537,8 +1538,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f64, 16x16x4_16x16x4_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<16, 16, 4> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<16, 16, 4>>()
       .run();
 }
 
@@ -1556,8 +1556,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f64, 32x16x4_32x16x4_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 16, 4> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 16, 4>>()
       .run();
 }
 
@@ -1575,8 +1574,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f64, 32x32x4_32x32x4_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 32, 4> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 32, 4>>()
       .run();
 }
 
@@ -1594,8 +1592,7 @@ TEST(SM80_warp_gemm_tensor_op_congruous_f64, 32x64x4_32x64x4_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 64, 4> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 64, 4>>()
       .run();
 }
 
@@ -1613,8 +1610,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f64, 16x16x16_16x16x16_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<16, 16, 16> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<16, 16, 16>>()
       .run();
 }
 
@@ -1632,8 +1628,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f64, 32x32x16_32x32x16_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 32, 16> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 32, 16>>()
       .run();
 }
 
@@ -1651,8 +1646,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f64, 64x32x16_64x32x16_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<64, 32, 16> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<64, 32, 16>>()
       .run();
 }
 
@@ -1670,8 +1664,7 @@ TEST(SM80_warp_gemm_tensor_op_crosswise_f64, 32x64x16_32x64x16_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAdd>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 64, 16> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 64, 16>>()
       .run();
 }
 
@@ -1692,7 +1685,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x128_16x16x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1713,7 +1706,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x128_32x16x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1734,7 +1727,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x128_32x32x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1755,7 +1748,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x128_64x32x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1776,7 +1769,7 @@ TEST(SM80_warp_gemm_tensor_op_interleaved, 128x128x128_64x64x128_16x8x64) {
       cutlass::layout::RowMajor, cutlass::arch::OpMultiplyAddSaturate>::Type;
 
   test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<128, 128, 128> >()
+                            cutlass::gemm::GemmShape<128, 128, 128>>()
       .run();
 }
 
@@ -1794,8 +1787,7 @@ TEST(SM80_warp_gemm_tensor_op_canonical_f64_row_col, 32x32x8_64x32x8_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 32, 8> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 32, 8>>()
       .run();
 }
 
@@ -1813,8 +1805,7 @@ TEST(SM80_warp_gemm_tensor_op_canonical_f64_col_row, 32x32x8_64x32x8_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 32, 8> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 32, 8>>()
       .run();
 }
 
@@ -1832,8 +1823,7 @@ TEST(SM80_warp_gemm_tensor_op_canonical_tf32_row_col, 32x32x8_64x32x8_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 32, 16> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 32, 16>>()
       .run();
 }
 
@@ -1851,13 +1841,10 @@ TEST(SM80_warp_gemm_tensor_op_canonical_tf32_col_row, 32x32x8_64x32x8_8x8x4) {
       Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
       cutlass::layout::RowMajor>::Type;
 
-  test::gemm::warp::Testbed<MmaTensorOp,
-                            cutlass::gemm::GemmShape<32, 32, 16> >()
+  test::gemm::warp::Testbed<MmaTensorOp, cutlass::gemm::GemmShape<32, 32, 16>>()
       .run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif // if defined(CUTLASS_ARCH_MMA_SM80_SUPPORTED)
-
-

@@ -18,17 +18,19 @@ Linear in the length of the JSON pointer.
 
 ??? example
 
-    The example shows the result of `parent_pointer` for different JSON Pointers.
-     
-    ```cpp
-    --8<-- "examples/json_pointer__parent_pointer.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/json_pointer__parent_pointer.output"
-    ```
+````
+The example shows the result of `parent_pointer` for different JSON Pointers.
+
+```cpp
+--8<-- "examples/json_pointer__parent_pointer.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/json_pointer__parent_pointer.output"
+```
+````
 
 ## Version history
 

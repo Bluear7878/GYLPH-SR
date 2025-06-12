@@ -1,6 +1,6 @@
 import pytest
-
 from nunchaku.utils import get_precision, is_turing
+
 from .utils import run_test
 
 
@@ -16,7 +16,9 @@ from .utils import run_test
         # (25, "haunted_linework", 1, True, 0.317),
     ],
 )
-def test_flux_dev_loras(num_inference_steps, lora_name, lora_strength, cpu_offload, expected_lpips):
+def test_flux_dev_loras(
+    num_inference_steps, lora_name, lora_strength, cpu_offload, expected_lpips
+):
     run_test(
         precision=get_precision(),
         model_name="flux.1-dev",
@@ -48,7 +50,15 @@ def test_flux_dev_turbo8_ghibsky_1024x1024():
         guidance_scale=3.5,
         use_qencoder=False,
         cpu_offload=True,
-        lora_names=["realism", "ghibsky", "anime", "sketch", "yarn", "haunted_linework", "turbo8"],
+        lora_names=[
+            "realism",
+            "ghibsky",
+            "anime",
+            "sketch",
+            "yarn",
+            "haunted_linework",
+            "turbo8",
+        ],
         lora_strengths=[0, 1, 0, 0, 0, 0, 1],
         cache_threshold=0,
         expected_lpips=0.310 if get_precision() == "int4" else 0.168,

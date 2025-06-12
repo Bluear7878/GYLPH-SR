@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /* \file
@@ -34,15 +35,15 @@
 
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include <cuda_runtime.h>
 
+#include "cutlass/library/library.h"
 #include "cutlass/util/command_line.h"
 #include "cutlass/util/distribution.h"
-#include "cutlass/library/library.h"
 
 #include "enumerated_types.h"
 
@@ -54,7 +55,6 @@ namespace profiler {
 /// Global options
 class Options {
 public:
-
   /// Cublas and cuDNN options
   struct Library {
 
@@ -100,19 +100,21 @@ public:
     void print_options(std::ostream &out, int indent = 0) const;
     void print_device_info(std::ostream &out) const;
 
-    /// Returns the compute capability of the listed device (e.g. 61, 60, 70, 75)
+    /// Returns the compute capability of the listed device (e.g. 61, 60, 70,
+    /// 75)
     int compute_capability() const;
   };
 
   /// Options related to initializing input tensors
   struct Initialization {
 
-    /// If true, data is initialized randomly. If false, no initialization is performed after
-    /// allocating tensors.
+    /// If true, data is initialized randomly. If false, no initialization is
+    /// performed after allocating tensors.
     bool enabled;
 
-    /// If true, data distribution is set by the user and is not allowed to change
-    /// If false, data distribution is allowed to change based on element_type (library::NumericTypeID)
+    /// If true, data distribution is set by the user and is not allowed to
+    /// change If false, data distribution is allowed to change based on
+    /// element_type (library::NumericTypeID)
     bool fix_data_distribution;
 
     /// Data distribution for input tensors
@@ -129,15 +131,14 @@ public:
     //
 
     Initialization(CommandLine const &cmdline);
-    
+
     void print_usage(std::ostream &out) const;
     void print_options(std::ostream &out, int indent = 0) const;
 
     /// Helper to parse a Distribution object from the command line parser
-    static void get_distribution(
-      cutlass::CommandLine const &args,
-      std::string const &arg,
-      cutlass::Distribution &dist);
+    static void get_distribution(cutlass::CommandLine const &args,
+                                 std::string const &arg,
+                                 cutlass::Distribution &dist);
   };
 
   /// Options related to verification of the result
@@ -150,8 +151,8 @@ public:
     /// If true, kernels are verified before they are profiled
     bool enabled;
 
-    /// If true, causes profiler to return an error code if no reference check is run.
-    /// Only valid when verification is enabled.
+    /// If true, causes profiler to return an error code if no reference check
+    /// is run. Only valid when verification is enabled.
     bool required;
 
     /// Relative error threshold - zero to require bit-level consistency
@@ -171,13 +172,13 @@ public:
     //
 
     Verification(CommandLine const &cmdline);
-  
+
     void print_usage(std::ostream &out) const;
     void print_options(std::ostream &out, int indent = 0) const;
 
     /// Returns true if a provider is enabled
     bool provider_enabled(library::Provider provider) const;
-    
+
     /// Returns the index of a provider if its enabled
     size_t index(library::Provider provider) const;
   };
@@ -185,13 +186,15 @@ public:
   /// Options related to profiling
   struct Profiling {
 
-    /// Number of workspaces to rotate through to avoid cache-resident working sets
+    /// Number of workspaces to rotate through to avoid cache-resident working
+    /// sets
     int workspace_count;
 
     /// Number of iterations to warmup each kernel prior to profiling
     int warmup_iterations;
 
-    /// Number of iterations to profile each kernel - if 0, kernels are launched up to the profiling duration
+    /// Number of iterations to profile each kernel - if 0, kernels are launched
+    /// up to the profiling duration
     int iterations;
 
     /// Number of ms to sleep between profiling periods (ms)
@@ -200,7 +203,8 @@ public:
     /// If true, profiling is actually conducted.
     bool enabled;
 
-    /// If true, profiling returns an error code if no kernels are found to match the filters.
+    /// If true, profiling returns an error code if no kernels are found to
+    /// match the filters.
     bool error_on_no_match = false;
 
     /// List of providers of each functionality to be profiled
@@ -221,7 +225,7 @@ public:
     /// Returns the index of a provider if its enabled
     size_t index(library::Provider provider) const;
   };
-  
+
   /// Options related to reporting
   struct Report {
 
@@ -241,14 +245,16 @@ public:
     /// not run for the given arguments
     bool report_not_run;
 
-    /// Prints human-readable text to stdout. If false, nothing is written to stdout
+    /// Prints human-readable text to stdout. If false, nothing is written to
+    /// stdout
     bool verbose;
 
     /// Sort results by (currently by flops-per-byte)
     bool sort_results;
 
     /// Prints the name of the kernel being profiled before running the kernel.
-    /// This is useful for determining which kernel is causing a run of the profiler to hang
+    /// This is useful for determining which kernel is causing a run of the
+    /// profiler to hang
     bool print_kernel_before_running;
 
     //
@@ -256,7 +262,7 @@ public:
     //
 
     Report(CommandLine const &cmdline);
-    
+
     void print_usage(std::ostream &out) const;
     void print_options(std::ostream &out, int indent = 0) const;
   };
@@ -278,7 +284,7 @@ public:
     //
 
     About(CommandLine const &cmdline);
-    
+
     void print_usage(std::ostream &out) const;
     void print_options(std::ostream &out, int indent = 0) const;
 
@@ -286,7 +292,6 @@ public:
   };
 
 public:
-
   //
   // Data members
   //
@@ -299,10 +304,9 @@ public:
 
   /// Vector of operation name substrings
   std::vector<std::string> operation_names;
-  
+
   /// Vector of operation name substrings
   std::vector<std::string> excluded_operation_names;
-
 
   //
   // Detailed configuration options
@@ -319,7 +323,6 @@ public:
   About about;
 
 public:
-
   Options(CommandLine const &cmdline);
 
   void print_usage(std::ostream &out) const;

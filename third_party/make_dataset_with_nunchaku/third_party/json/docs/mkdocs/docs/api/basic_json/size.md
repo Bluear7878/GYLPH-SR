@@ -5,20 +5,20 @@ size_type size() const noexcept;
 ```
 
 Returns the number of elements in a JSON value.
-    
+
 ## Return value
 
 The return value depends on the different types and is defined as follows:
 
-| Value type | return value                        |
+| Value type | return value |
 |------------|-------------------------------------|
-| null       | `0`                                 |
-| boolean    | `1`                                 |
-| string     | `1`                                 |
-| number     | `1`                                 |
-| binary     | `1`                                 |
-| object     | result of function object_t::size() |
-| array      | result of function array_t::size()  |
+| null | `0` |
+| boolean | `1` |
+| string | `1` |
+| number | `1` |
+| binary | `1` |
+| object | result of function object_t::size() |
+| array | result of function array_t::size() |
 
 ## Exception safety
 
@@ -39,17 +39,19 @@ JSON value which is `1` in the case of a string.
 
 ??? example
 
-    The following code calls `size()` on the different value types.
-    
-    ```cpp
-    --8<-- "examples/size.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/size.output"
-    ```
+````
+The following code calls `size()` on the different value types.
+
+```cpp
+--8<-- "examples/size.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/size.output"
+```
+````
 
 ## Version history
 

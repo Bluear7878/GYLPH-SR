@@ -14,6 +14,3 @@ echo
 echo -n "Running cmake-format "
 find . -type f -name "CMakeLists.txt" -o -name "*\.cmake"|grep -v bundled|grep -v build|xargs -I {} sh -c "cmake-format --line-width 120 --tab-size 4 --max-subgroups-hwrap 4 -i {}; echo -n '.'"
 echo
-
-
-

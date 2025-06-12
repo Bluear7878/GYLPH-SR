@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,25 +18,27 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief 
-      Default kernel-level GEMM definitions combine threadblock-scoped matrix multiply-add with
-      the appropriate threadblock-scoped epilogue.
-  
-      Note, CUTLASS epilogues universally target row-major outputs. Column-major outputs are
-      accommodated by exchanging A and B operands and assuming transposed layouts. Partial
-      specializations here choose 'device::GemmTransposed' to implement this functionality.
+    \brief
+      Default kernel-level GEMM definitions combine threadblock-scoped matrix
+   multiply-add with the appropriate threadblock-scoped epilogue.
+
+      Note, CUTLASS epilogues universally target row-major outputs. Column-major
+   outputs are accommodated by exchanging A and B operands and assuming
+   transposed layouts. Partial specializations here choose
+   'device::GemmTransposed' to implement this functionality.
 
 */
 
@@ -48,11 +50,11 @@
 #include "cutlass/layout/matrix.h"
 #include "cutlass/numeric_types.h"
 
-#include "cutlass/gemm/kernel/gemm_grouped.h"
-#include "cutlass/gemm/kernel/gemm_transpose_operands.h"
+#include "cutlass/gemm/device/default_gemm_configuration.h"
 #include "cutlass/gemm/kernel/default_gemm.h"
 #include "cutlass/gemm/kernel/default_gemm_complex.h"
-#include "cutlass/gemm/device/default_gemm_configuration.h"
+#include "cutlass/gemm/kernel/gemm_grouped.h"
+#include "cutlass/gemm/kernel/gemm_transpose_operands.h"
 
 #include "cutlass/layout/permute.h"
 
@@ -114,8 +116,7 @@ template <
     /// Permute result D
     typename PermuteDLayout = layout::NoPermute,
     ///
-    typename Enable = void
-    >
+    typename Enable = void>
 struct DefaultGemmGrouped;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,87 +166,46 @@ template <
     /// Use zfill or predicate for out-of-bound cp.async
     SharedMemoryClearOption SharedMemoryClear,
     /// Permute result D
-    typename PermuteDLayout
->
+    typename PermuteDLayout>
 struct DefaultGemmGrouped<
-  ElementA,
-  LayoutA,
-  ComplexTransform::kNone,   // transform A
-  kAlignmentA,
-  ElementB,
-  LayoutB,
-  ComplexTransform::kNone,   // transform B
-  kAlignmentB,
-  ElementC,
-  LayoutC,
-  ElementAccumulator,
-  OperatorClass,
-  ArchTag,
-  ThreadblockShape,
-  WarpShape,
-  InstructionShape,
-  EpilogueOutputOp,
-  ThreadblockSwizzle,
-  Stages,
-  GroupScheduleMode_,
-  Operator,
-  SharedMemoryClear,
-  PermuteDLayout,
-  typename platform::enable_if< ! cutlass::is_complex<ElementAccumulator>::value>::type
-> {
+    ElementA, LayoutA,
+    ComplexTransform::kNone, // transform A
+    kAlignmentA, ElementB, LayoutB,
+    ComplexTransform::kNone, // transform B
+    kAlignmentB, ElementC, LayoutC, ElementAccumulator, OperatorClass, ArchTag,
+    ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+    ThreadblockSwizzle, Stages, GroupScheduleMode_, Operator, SharedMemoryClear,
+    PermuteDLayout,
+    typename platform::enable_if<
+        !cutlass::is_complex<ElementAccumulator>::value>::type> {
 
   // If true, we must construct a 'transposed-and-exchanged' Mma operator.
-  static bool const kInternalTranspose = platform::is_same<LayoutC, layout::ColumnMajor>::value;
+  static bool const kInternalTranspose =
+      platform::is_same<LayoutC, layout::ColumnMajor>::value;
 
-  using MapArguments = kernel::detail::MapArguments<
-    ElementA,
-    LayoutA,
-    ComplexTransform::kNone,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    ComplexTransform::kNone,
-    kAlignmentB,
-    LayoutC,
-    kInternalTranspose
-  >;
+  using MapArguments =
+      kernel::detail::MapArguments<ElementA, LayoutA, ComplexTransform::kNone,
+                                   kAlignmentA, ElementB, LayoutB,
+                                   ComplexTransform::kNone, kAlignmentB,
+                                   LayoutC, kInternalTranspose>;
 
   // Define the default GEMM kernel
   using DefaultGemmKernel = typename kernel::DefaultGemm<
-    typename MapArguments::ElementA,
-    typename MapArguments::LayoutA,
-    MapArguments::kAlignmentA,
-    typename MapArguments::ElementB,
-    typename MapArguments::LayoutB,
-    MapArguments::kAlignmentB,
-    ElementC,
-    typename MapArguments::LayoutC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    true,
-    Operator,
-    SharedMemoryClear,
-    false, /*GatherA*/
-    false, /*GatherB*/
-    false, /*ScatterD*/
-    PermuteDLayout
-  >::GemmKernel;
+      typename MapArguments::ElementA, typename MapArguments::LayoutA,
+      MapArguments::kAlignmentA, typename MapArguments::ElementB,
+      typename MapArguments::LayoutB, MapArguments::kAlignmentB, ElementC,
+      typename MapArguments::LayoutC, ElementAccumulator, OperatorClass,
+      ArchTag, ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+      ThreadblockSwizzle, Stages, true, Operator, SharedMemoryClear,
+      false, /*GatherA*/
+      false, /*GatherB*/
+      false, /*ScatterD*/
+      PermuteDLayout>::GemmKernel;
 
-    /// Define the kernel in terms of the default kernel
+  /// Define the kernel in terms of the default kernel
   using GemmKernel = kernel::GemmGrouped<
-    typename DefaultGemmKernel::Mma,
-    typename DefaultGemmKernel::Epilogue,
-    ThreadblockSwizzle,
-    GroupScheduleMode_,
-    kInternalTranspose
-  >;
+      typename DefaultGemmKernel::Mma, typename DefaultGemmKernel::Epilogue,
+      ThreadblockSwizzle, GroupScheduleMode_, kInternalTranspose>;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,87 +258,43 @@ template <
     /// Operation performed by GEMM
     typename Operator,
     /// Use zfill or predicate for out-of-bound cp.async
-    SharedMemoryClearOption SharedMemoryClear
-  >
+    SharedMemoryClearOption SharedMemoryClear>
 struct DefaultGemmGrouped<
-  ElementA,
-  LayoutA,
-  TransformA,
-  kAlignmentA,
-  ElementB,
-  LayoutB,
-  TransformB,
-  kAlignmentB,
-  ElementC,
-  LayoutC,
-  ElementAccumulator,
-  OperatorClass,
-  ArchTag,
-  ThreadblockShape,
-  WarpShape,
-  InstructionShape,
-  EpilogueOutputOp,
-  ThreadblockSwizzle,
-  Stages,
-  GroupScheduleMode_,
-  Operator,
-  SharedMemoryClear,
-  layout::NoPermute, /*PermuteDLayout*/
-  typename platform::enable_if<cutlass::is_complex<ElementAccumulator>::value>::type
-> {
+    ElementA, LayoutA, TransformA, kAlignmentA, ElementB, LayoutB, TransformB,
+    kAlignmentB, ElementC, LayoutC, ElementAccumulator, OperatorClass, ArchTag,
+    ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+    ThreadblockSwizzle, Stages, GroupScheduleMode_, Operator, SharedMemoryClear,
+    layout::NoPermute, /*PermuteDLayout*/
+    typename platform::enable_if<
+        cutlass::is_complex<ElementAccumulator>::value>::type> {
 
   // If true, we must construct a 'transposed-and-exchanged' Mma operator.
-  static bool const kInternalTranspose = platform::is_same<LayoutC, layout::ColumnMajor>::value;
+  static bool const kInternalTranspose =
+      platform::is_same<LayoutC, layout::ColumnMajor>::value;
 
-  using MapArguments = kernel::detail::MapArguments<
-    ElementA,
-    LayoutA,
-    TransformA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    TransformB,
-    kAlignmentB,
-    LayoutC,
-    kInternalTranspose
-  >;
+  using MapArguments =
+      kernel::detail::MapArguments<ElementA, LayoutA, TransformA, kAlignmentA,
+                                   ElementB, LayoutB, TransformB, kAlignmentB,
+                                   LayoutC, kInternalTranspose>;
 
   using DefaultGemmKernel = typename kernel::DefaultGemmComplex<
-    typename MapArguments::ElementA,
-    typename MapArguments::LayoutA,
-    typename MapArguments::ElementB,
-    typename MapArguments::LayoutB,
-    ElementC,
-    typename MapArguments::LayoutC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    MapArguments::kTransformA,
-    MapArguments::kTransformB,
-    Operator,
-    false
-  >::GemmKernel;
+      typename MapArguments::ElementA, typename MapArguments::LayoutA,
+      typename MapArguments::ElementB, typename MapArguments::LayoutB, ElementC,
+      typename MapArguments::LayoutC, ElementAccumulator, OperatorClass,
+      ArchTag, ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+      ThreadblockSwizzle, Stages, MapArguments::kTransformA,
+      MapArguments::kTransformB, Operator, false>::GemmKernel;
 
   /// Define the kernel in terms of the default kernel
   using GemmKernel = kernel::GemmGrouped<
-    typename DefaultGemmKernel::Mma,
-    typename DefaultGemmKernel::Epilogue, 
-    ThreadblockSwizzle,
-    GroupScheduleMode_,
-    kInternalTranspose
-  >;
+      typename DefaultGemmKernel::Mma, typename DefaultGemmKernel::Epilogue,
+      ThreadblockSwizzle, GroupScheduleMode_, kInternalTranspose>;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

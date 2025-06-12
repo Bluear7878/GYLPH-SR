@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,24 +18,25 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief 
+    \brief
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/pitch_linear.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,9 +62,9 @@ namespace layout {
 // struct RowMajorVoltaTensorOpMultiplicandCongruous;
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Template based on element size (in bits) - defined in terms of pitch-linear memory.
-template <int ElementSize>
-struct VoltaTensorOpMultiplicandCongruous {
+/// Template based on element size (in bits) - defined in terms of pitch-linear
+/// memory.
+template <int ElementSize> struct VoltaTensorOpMultiplicandCongruous {
 
   /// Logical rank of tensor
   static int const kRank = 2;
@@ -102,19 +103,15 @@ struct VoltaTensorOpMultiplicandCongruous {
 
   static int const kElementSize = ElementSize;
   static int const kElementsPerAccess = kAccessSize / kElementSize;
-  
-  using PartitionCount = PitchLinearShape<
-    TileShape::kContiguous / PartitionShape::kContiguous,
-    TileShape::kStrided / PartitionShape::kStrided
-  >;
 
-  using AccessCount = PitchLinearShape<
-    PartitionShape::kContiguous,
-    PartitionShape::kStrided
-  >;
+  using PartitionCount =
+      PitchLinearShape<TileShape::kContiguous / PartitionShape::kContiguous,
+                       TileShape::kStrided / PartitionShape::kStrided>;
+
+  using AccessCount =
+      PitchLinearShape<PartitionShape::kContiguous, PartitionShape::kStrided>;
 
 private:
-
   //
   // Data members
   //
@@ -129,11 +126,11 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  VoltaTensorOpMultiplicandCongruous(Index ldm = 0): stride_(ldm) { }
+  VoltaTensorOpMultiplicandCongruous(Index ldm = 0) : stride_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  VoltaTensorOpMultiplicandCongruous(Stride stride): stride_(stride) { }
+  VoltaTensorOpMultiplicandCongruous(Stride stride) : stride_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
@@ -141,12 +138,13 @@ public:
     return VoltaTensorOpMultiplicandCongruous(extent[0]);
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
-    
-    // First, compute c and s of vector within source (in units of vector accesses)
+
+    // First, compute c and s of vector within source (in units of vector
+    // accesses)
     int vec_contiguous_idx = coord.contiguous() / kElementsPerAccess;
     int vec_strided_idx = coord.strided();
 
@@ -160,30 +158,31 @@ public:
     // Then swizzle in a tile
     // Swizzle pattern is (tid[2:0] << 2)|(tid[4:3] ^ tid[2:1])
     int permuted_strided_within_tile = (tile_contiguous_residual >> 1);
-    int permuted_contiguous_within_tile = (tile_strided_residual ^ permuted_strided_within_tile) |
-                                       ((tile_contiguous_residual & 1) << 2);
+    int permuted_contiguous_within_tile =
+        (tile_strided_residual ^ permuted_strided_within_tile) |
+        ((tile_contiguous_residual & 1) << 2);
     // Compute final element location
     int element_contiguous = (tile_contiguous_idx * TileShape::kContiguous +
-        permuted_contiguous_within_tile) * kElementsPerAccess + (coord.contiguous() % kElementsPerAccess);
+                              permuted_contiguous_within_tile) *
+                                 kElementsPerAccess +
+                             (coord.contiguous() % kElementsPerAccess);
 
-    int element_strided = tile_strided_idx * TileShape::kStrided + permuted_strided_within_tile;
+    int element_strided =
+        tile_strided_idx * TileShape::kStrided + permuted_strided_within_tile;
 
     return element_contiguous + element_strided * stride_[0];
   }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return stride_;
-  }
+  Stride stride() const { return stride_; }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return stride_;
-  }
+  Stride &stride() { return stride_; }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return extent[1] * stride_[0];
@@ -192,7 +191,8 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Template mapping a column-major view of pitch-linear memory to VoltaTensorOpMultiplicandCongruous
+/// Template mapping a column-major view of pitch-linear memory to
+/// VoltaTensorOpMultiplicandCongruous
 template <int ElementSize>
 struct ColumnMajorVoltaTensorOpMultiplicandCongruous {
 
@@ -231,11 +231,10 @@ struct ColumnMajorVoltaTensorOpMultiplicandCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
 private:
-
   //
   // Data members
   //
@@ -249,19 +248,21 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorVoltaTensorOpMultiplicandCongruous(Index ldm = 0): layout_(ldm) { }
+  ColumnMajorVoltaTensorOpMultiplicandCongruous(Index ldm = 0) : layout_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorVoltaTensorOpMultiplicandCongruous(Stride stride): layout_(stride) { }
+  ColumnMajorVoltaTensorOpMultiplicandCongruous(Stride stride)
+      : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static ColumnMajorVoltaTensorOpMultiplicandCongruous packed(TensorCoord const &extent) {
+  static ColumnMajorVoltaTensorOpMultiplicandCongruous
+  packed(TensorCoord const &extent) {
     return ColumnMajorVoltaTensorOpMultiplicandCongruous(extent.row());
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
@@ -277,26 +278,23 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return layout_.stride();
-  }
+  Stride stride() const { return layout_.stride(); }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return layout_.stride();
-  }
+  Stride &stride() { return layout_.stride(); }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return layout_.capacity(PitchLinearCoord(extent.row(), extent.column()));
   }
 };
 
-/// Template mapping a row-major view of pitch-linear memory to VoltaTensorOpMultiplicandCongruous
-template <int ElementSize>
-struct RowMajorVoltaTensorOpMultiplicandCongruous {
+/// Template mapping a row-major view of pitch-linear memory to
+/// VoltaTensorOpMultiplicandCongruous
+template <int ElementSize> struct RowMajorVoltaTensorOpMultiplicandCongruous {
 
   /// Logical rank of tensor
   static int const kRank = 2;
@@ -333,11 +331,10 @@ struct RowMajorVoltaTensorOpMultiplicandCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
 private:
-
   //
   // Data members
   //
@@ -351,19 +348,20 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  RowMajorVoltaTensorOpMultiplicandCongruous(Index ldm = 0): layout_(ldm) { }
+  RowMajorVoltaTensorOpMultiplicandCongruous(Index ldm = 0) : layout_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  RowMajorVoltaTensorOpMultiplicandCongruous(Stride stride): layout_(stride) { }
+  RowMajorVoltaTensorOpMultiplicandCongruous(Stride stride) : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static RowMajorVoltaTensorOpMultiplicandCongruous packed(TensorCoord const &extent) {
+  static RowMajorVoltaTensorOpMultiplicandCongruous
+  packed(TensorCoord const &extent) {
     return RowMajorVoltaTensorOpMultiplicandCongruous(extent.column());
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
@@ -379,28 +377,24 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return layout_.stride();
-  }
+  Stride stride() const { return layout_.stride(); }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return layout_.stride();
-  }
+  Stride &stride() { return layout_.stride(); }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return layout_.capacity(PitchLinearCoord(extent.column(), extent.row()));
   }
 };
 
-
-/// Template based on element size (in bits) - defined in terms of pitch-linear memory.
+/// Template based on element size (in bits) - defined in terms of pitch-linear
+/// memory.
 // template <int ElementSize, Operand Operand>
-template <int ElementSize>
-struct VoltaTensorOpMultiplicandBCongruous {
+template <int ElementSize> struct VoltaTensorOpMultiplicandBCongruous {
   /// Logical rank of tensor
   static int const kRank = 2;
 
@@ -438,19 +432,15 @@ struct VoltaTensorOpMultiplicandBCongruous {
 
   static int const kElementSize = ElementSize;
   static int const kElementsPerAccess = kAccessSize / kElementSize;
-  
-  using PartitionCount = PitchLinearShape<
-    TileShape::kContiguous / PartitionShape::kContiguous,
-    TileShape::kStrided / PartitionShape::kStrided
-  >;
 
-  using AccessCount = PitchLinearShape<
-    PartitionShape::kContiguous,
-    PartitionShape::kStrided
-  >;
+  using PartitionCount =
+      PitchLinearShape<TileShape::kContiguous / PartitionShape::kContiguous,
+                       TileShape::kStrided / PartitionShape::kStrided>;
+
+  using AccessCount =
+      PitchLinearShape<PartitionShape::kContiguous, PartitionShape::kStrided>;
 
 private:
-
   //
   // Data members
   //
@@ -465,11 +455,11 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  VoltaTensorOpMultiplicandBCongruous(Index ldm = 0): stride_(ldm) { }
+  VoltaTensorOpMultiplicandBCongruous(Index ldm = 0) : stride_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  VoltaTensorOpMultiplicandBCongruous(Stride stride): stride_(stride) { }
+  VoltaTensorOpMultiplicandBCongruous(Stride stride) : stride_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
@@ -477,12 +467,13 @@ public:
     return VoltaTensorOpMultiplicandBCongruous(extent[0]);
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
-    
-    // First, compute c and s of vector within source (in units of vector accesses)
+
+    // First, compute c and s of vector within source (in units of vector
+    // accesses)
     int vec_contiguous_idx = coord.contiguous() / kElementsPerAccess;
     int vec_strided_idx = coord.strided();
 
@@ -496,31 +487,32 @@ public:
     // Then swizzle in a tile
     // Swizzle pattern is (tid[1:0] << 3)|(tid & 0x4)|(tid[1:0])
     int permuted_strided_within_tile = (tile_contiguous_residual & 0x3);
-    int permuted_contiguous_within_tile = (tile_strided_residual ^ permuted_strided_within_tile) |
-                                       (tile_contiguous_residual & 0x4);
-  
+    int permuted_contiguous_within_tile =
+        (tile_strided_residual ^ permuted_strided_within_tile) |
+        (tile_contiguous_residual & 0x4);
+
     // Compute final element location
     int element_contiguous = (tile_contiguous_idx * TileShape::kContiguous +
-        permuted_contiguous_within_tile) * kElementsPerAccess + (coord.contiguous() % kElementsPerAccess);
+                              permuted_contiguous_within_tile) *
+                                 kElementsPerAccess +
+                             (coord.contiguous() % kElementsPerAccess);
 
-    int element_strided = tile_strided_idx * TileShape::kStrided + permuted_strided_within_tile;
+    int element_strided =
+        tile_strided_idx * TileShape::kStrided + permuted_strided_within_tile;
 
     return element_contiguous + element_strided * stride_[0];
   }
 
   /// Returns the stride of the layout
-  CUTLASS_HOST_DEVICE 
-  Stride stride() const {
-    return stride_;
-  }
+  CUTLASS_HOST_DEVICE
+  Stride stride() const { return stride_; }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return stride_;
-  }
+  Stride &stride() { return stride_; }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return extent[1] * stride_[0];
@@ -529,7 +521,8 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Template mapping a column-major view of pitch-linear memory to VoltaTensorOpMultiplicandCongruous
+/// Template mapping a column-major view of pitch-linear memory to
+/// VoltaTensorOpMultiplicandCongruous
 template <int ElementSize>
 struct ColumnMajorVoltaTensorOpMultiplicandBCongruous {
 
@@ -568,11 +561,10 @@ struct ColumnMajorVoltaTensorOpMultiplicandBCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
 private:
-
   //
   // Data members
   //
@@ -586,19 +578,22 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorVoltaTensorOpMultiplicandBCongruous(Index ldm = 0): layout_(ldm) { }
+  ColumnMajorVoltaTensorOpMultiplicandBCongruous(Index ldm = 0)
+      : layout_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorVoltaTensorOpMultiplicandBCongruous(Stride stride): layout_(stride) { }
+  ColumnMajorVoltaTensorOpMultiplicandBCongruous(Stride stride)
+      : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static ColumnMajorVoltaTensorOpMultiplicandBCongruous packed(TensorCoord const &extent) {
+  static ColumnMajorVoltaTensorOpMultiplicandBCongruous
+  packed(TensorCoord const &extent) {
     return ColumnMajorVoltaTensorOpMultiplicandBCongruous(extent.row());
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
@@ -614,26 +609,23 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return layout_.stride();
-  }
+  Stride stride() const { return layout_.stride(); }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return layout_.stride();
-  }
+  Stride &stride() { return layout_.stride(); }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return layout_.capacity(PitchLinearCoord(extent.row(), extent.column()));
   }
 };
 
-/// Template mapping a row-major view of pitch-linear memory to VoltaTensorOpMultiplicandCongruous
-template <int ElementSize>
-struct RowMajorVoltaTensorOpMultiplicandBCongruous {
+/// Template mapping a row-major view of pitch-linear memory to
+/// VoltaTensorOpMultiplicandCongruous
+template <int ElementSize> struct RowMajorVoltaTensorOpMultiplicandBCongruous {
 
   /// Logical rank of tensor
   static int const kRank = 2;
@@ -670,11 +662,10 @@ struct RowMajorVoltaTensorOpMultiplicandBCongruous {
 
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
-  using PartitionCount =  typename Base::PartitionCount;
+  using PartitionCount = typename Base::PartitionCount;
   using AccessCount = typename Base::AccessCount;
 
 private:
-
   //
   // Data members
   //
@@ -688,19 +679,21 @@ public:
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  RowMajorVoltaTensorOpMultiplicandBCongruous(Index ldm = 0): layout_(ldm) { }
+  RowMajorVoltaTensorOpMultiplicandBCongruous(Index ldm = 0) : layout_(ldm) {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  RowMajorVoltaTensorOpMultiplicandBCongruous(Stride stride): layout_(stride) { }
+  RowMajorVoltaTensorOpMultiplicandBCongruous(Stride stride)
+      : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static RowMajorVoltaTensorOpMultiplicandBCongruous packed(TensorCoord const &extent) {
+  static RowMajorVoltaTensorOpMultiplicandBCongruous
+  packed(TensorCoord const &extent) {
     return RowMajorVoltaTensorOpMultiplicandBCongruous(extent.column());
   }
 
-  /// Returns the offset of a coordinate in linear memory. 
+  /// Returns the offset of a coordinate in linear memory.
   /// Assumes coordinate has convention (contiguous, strided)
   CUTLASS_HOST_DEVICE
   LongIndex operator()(TensorCoord const &coord) const {
@@ -716,17 +709,14 @@ public:
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride stride() const {
-    return layout_.stride();
-  }
+  Stride stride() const { return layout_.stride(); }
 
   /// Returns the stride of the layout
   CUTLASS_HOST_DEVICE
-  Stride & stride() {
-    return layout_.stride();
-  }
+  Stride &stride() { return layout_.stride(); }
 
-  /// Compute the number of contiguous elements needed to store a tensor with the given size
+  /// Compute the number of contiguous elements needed to store a tensor with
+  /// the given size
   CUTLASS_HOST_DEVICE
   LongIndex capacity(TensorCoord const &extent) const {
     return layout_.capacity(PitchLinearCoord(extent.column(), extent.row()));
@@ -770,14 +760,15 @@ struct VoltaTensorOpMultiplicandCrosswise {
   static int const kElementsPerAccess = kAccessSize / kElementSize;
   static int const kKBlock = KBlock;
 
- private:
+private:
   //
   // Data members
   //
 
   /// Stride data member. For GEMM, it equals to KBlock x stage.
   Stride stride_;
- public:
+
+public:
   //
   // Methods
   //
@@ -826,10 +817,11 @@ struct VoltaTensorOpMultiplicandCrosswise {
     // Compute final element location
     //
 
-    int element_contiguous = permuted_vec_contiguous *  kElementsPerAccess + 
+    int element_contiguous = permuted_vec_contiguous * kElementsPerAccess +
                              (coord.contiguous() % kElementsPerAccess);
-    
-    return element_contiguous + permuted_vec_strided * (stride_[0] * kElementsPerAccess);
+
+    return element_contiguous +
+           permuted_vec_strided * (stride_[0] * kElementsPerAccess);
   }
 
   /// Returns the stride of the layout
@@ -886,14 +878,14 @@ struct ColumnMajorVoltaTensorOpMultiplicandCrosswise {
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
 
- private:
+private:
   //
   // Data members
   //
 
   Base layout_;
 
- public:
+public:
   //
   // Methods
   //
@@ -904,12 +896,13 @@ struct ColumnMajorVoltaTensorOpMultiplicandCrosswise {
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  ColumnMajorVoltaTensorOpMultiplicandCrosswise(Stride stride) : layout_(stride) {}
+  ColumnMajorVoltaTensorOpMultiplicandCrosswise(Stride stride)
+      : layout_(stride) {}
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static ColumnMajorVoltaTensorOpMultiplicandCrosswise packed(
-      TensorCoord const &extent) {
+  static ColumnMajorVoltaTensorOpMultiplicandCrosswise
+  packed(TensorCoord const &extent) {
     return ColumnMajorVoltaTensorOpMultiplicandCrosswise(extent.column());
   }
 
@@ -981,14 +974,14 @@ struct RowMajorVoltaTensorOpMultiplicandCrosswise {
   static int const kElementSize = Base::kElementSize;
   static int const kElementsPerAccess = Base::kElementsPerAccess;
 
- private:
+private:
   //
   // Data members
   //
 
   Base layout_;
 
- public:
+public:
   //
   // Methods
   //
@@ -1003,8 +996,8 @@ struct RowMajorVoltaTensorOpMultiplicandCrosswise {
 
   /// Helper returns a layout to a tightly packed tensor
   CUTLASS_HOST_DEVICE
-  static RowMajorVoltaTensorOpMultiplicandCrosswise packed(
-      TensorCoord const &extent) {
+  static RowMajorVoltaTensorOpMultiplicandCrosswise
+  packed(TensorCoord const &extent) {
     return RowMajorVoltaTensorOpMultiplicandCrosswise(extent.row());
   }
 

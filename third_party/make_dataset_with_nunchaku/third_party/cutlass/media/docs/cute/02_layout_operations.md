@@ -30,7 +30,7 @@ The following code examples assume that you have a
 
 ### Printing human-readable text
 
-The `cute::print` function has overloads for almost all CuTe types, including Pointers, Layout, Shape, Stride, and Tensors.  When in doubt, try calling `print` on it.  You might also only want to print on thread 0 of each thread block, or block 0 of the grid.  The `thread0()` function returns true only for global thread 0 of the kernel.  A typical idiom for printing CuTe objects to print only on thread 0 of block 0.
+The `cute::print` function has overloads for almost all CuTe types, including Pointers, Layout, Shape, Stride, and Tensors. When in doubt, try calling `print` on it. You might also only want to print on thread 0 of each thread block, or block 0 of the grid. The `thread0()` function returns true only for global thread 0 of the kernel. A typical idiom for printing CuTe objects to print only on thread 0 of block 0.
 
 ```c++
 if (thread0()) {
@@ -73,7 +73,6 @@ In C++, we identify a Tuple with the
 `cute::tuple` behaves like `std::tuple`, but it works on device or host,
 and it imposes restrictions on its template arguments for performance and simplicity.
 
-
 #### IntTuple
 
 CuTe then defines an IntTuple as either an integer, or a Tuple of IntTuple.
@@ -83,18 +82,18 @@ which is just an alias of `cute::tuple`.
 Any of the following are thus valid template arguments of IntTuple.
 
 1. "Run-time integers" (or "static integers")
-    are just ordinary integral types like `int` or `size_t`.
+   are just ordinary integral types like `int` or `size_t`.
 
-2. "Compile-time integers" include `std::integral_constant`
-    or subclasses of it that CuTe defines,
-    such as `Int<Value>` (see below).
-    These types all have in common
-    that the value is encoded in the type itself
-    (as a public `static constexpr value` member).
-    CuTe defines aliases `_1`, `_2`, `_3` etc.
-    to the types `Int<1>`, `Int<2>`, `Int<3>` etc.
+1. "Compile-time integers" include `std::integral_constant`
+   or subclasses of it that CuTe defines,
+   such as `Int<Value>` (see below).
+   These types all have in common
+   that the value is encoded in the type itself
+   (as a public `static constexpr value` member).
+   CuTe defines aliases `_1`, `_2`, `_3` etc.
+   to the types `Int<1>`, `Int<2>`, `Int<3>` etc.
 
-3. `IntTuple` with any valid template arguments.
+1. `IntTuple` with any valid template arguments.
 
 CuTe reuses IntTuple for many different things,
 including Shape, Stride, Step, and Coord
@@ -144,7 +143,7 @@ and the right logical index as the "column."
 
 ### Underscore (`_`)
 
-An Underscore is a special type used for array slices.  The underscore punctuation `_` is a constant instance of Underscore.  It acts like `:` (the colon punctuation) in Python or Fortran array slices.  See [`include/cute/underscore.hpp`](../../../include/cute/underscore.hpp).
+An Underscore is a special type used for array slices. The underscore punctuation `_` is a constant instance of Underscore. It acts like `:` (the colon punctuation) in Python or Fortran array slices. See [`include/cute/underscore.hpp`](../../../include/cute/underscore.hpp).
 
 ### Tile
 
@@ -159,7 +158,7 @@ See the section on "Logical Divide" to see an example of using `Tile` to extract
 
 ### Layouts are functions from integers (logical 1-D coordinate) to integers (1-D index)
 
-The `for` loop in the above print example shows how CuTe identifies 1-D coordinates with a column-major layout of logical 2-D coordinates.  Iterating from `i = 0` to `size(layout)` (which is 6), and indexing into our layout with the single integer coordinate `i`, traverses the layout in column-major fashion, even though this is a row-major layout.  You can see this from the output of the `for` loop (0, 3, 1, 4, 2, 5).  CuTe calls this index `i` a "1-D coordinate," versus the "natural coordinate," which would be the logical 2-D coordinate.
+The `for` loop in the above print example shows how CuTe identifies 1-D coordinates with a column-major layout of logical 2-D coordinates. Iterating from `i = 0` to `size(layout)` (which is 6), and indexing into our layout with the single integer coordinate `i`, traverses the layout in column-major fashion, even though this is a row-major layout. You can see this from the output of the `for` loop (0, 3, 1, 4, 2, 5). CuTe calls this index `i` a "1-D coordinate," versus the "natural coordinate," which would be the logical 2-D coordinate.
 
 If you're familiar with the C++23 feature `mdspan`,
 this is an important difference between
@@ -179,19 +178,19 @@ by using the 1-D logical coordinate.
 
 *Rank*: the tuple size of the layout's shape.
 
-*Depth*: the depth of the layout's shape.  A single integer has depth 0.  A tuple has depth 1 + the max depth of its components.
+*Depth*: the depth of the layout's shape. A single integer has depth 0. A tuple has depth 1 + the max depth of its components.
 
 *Size*: Size of the shape; size of the domain of the function. This is the product of all extents in the layout's shape.
 
-*Cosize*: Size of the function's codomain (not necessarily the range); for a layout A, A(size(A) - 1) + 1.  (Here, we use size(A) - 1 as a 1-D logical coordinate input.)
+*Cosize*: Size of the function's codomain (not necessarily the range); for a layout A, A(size(A) - 1) + 1. (Here, we use size(A) - 1 as a 1-D logical coordinate input.)
 
 ### Layout compatibility
 
-We say that layouts A and B are *compatible* if their shapes are compatible.  Shape A is compatible with shape B if any natural coordinate of A is also a valid coordinate for B.
+We say that layouts A and B are *compatible* if their shapes are compatible. Shape A is compatible with shape B if any natural coordinate of A is also a valid coordinate for B.
 
 ### Flatten
 
-The `flatten` operation "un-nests" a potentially nested Layout.  For example,
+The `flatten` operation "un-nests" a potentially nested Layout. For example,
 
 ```c++
 Layout layout = Layout<Shape <Shape <_4, _3>, _1>,
@@ -219,11 +218,11 @@ results in `flat_layout` having the following type
 Layout<Shape<_4, _4, _2>, Stride<_4, _1, _16>>
 ```
 
-Hierarchical Layouts and flattening let us reinterpret tensors in place as matrices, matrices as vectors, vectors as matrices, etc.  This lets us implement arbitrary tensor contractions as batched matrix multiply, by combining the contraction modes into a single mode, and combining the A, B, C, and "batch" modes as needed to reach the desired form.
+Hierarchical Layouts and flattening let us reinterpret tensors in place as matrices, matrices as vectors, vectors as matrices, etc. This lets us implement arbitrary tensor contractions as batched matrix multiply, by combining the contraction modes into a single mode, and combining the A, B, C, and "batch" modes as needed to reach the desired form.
 
 ### Coalesce
 
-The `coalesce` operation first flattens the layout, then combines all the modes that are possible to combine, starting with mode 0 (the leftmost mode) and moving right.  If all the modes can be combined, then this results in a 1-D layout expressing what array elements the original layout accesses.
+The `coalesce` operation first flattens the layout, then combines all the modes that are possible to combine, starting with mode 0 (the leftmost mode) and moving right. If all the modes can be combined, then this results in a 1-D layout expressing what array elements the original layout accesses.
 
 For example,
 
@@ -232,21 +231,21 @@ layout: (_2,(_1,_6)):(_1,(_6,_2))
 coalesce(layout): _12:_1
 ```
 
-What does it mean to "combine" modes?  In the above example, the flattened layout is (2, 1, 6) : (1, 6, 2).
+What does it mean to "combine" modes? In the above example, the flattened layout is (2, 1, 6) : (1, 6, 2).
 
-1. If we look at the leftmost two modes, this is just a vector of length 2 and stride 1.  The middle mode has extent 1, so the corresponding stride 6 would not be observed anyway.  This leaves us with (2, 6) : (1, 2).
+1. If we look at the leftmost two modes, this is just a vector of length 2 and stride 1. The middle mode has extent 1, so the corresponding stride 6 would not be observed anyway. This leaves us with (2, 6) : (1, 2).
 
-2. The intermediate result (2, 6) : (1, 2) is just a 2 x 6 column-major matrix, which can be coalesced into a vector of length 12 and stride 1.
+1. The intermediate result (2, 6) : (1, 2) is just a 2 x 6 column-major matrix, which can be coalesced into a vector of length 12 and stride 1.
 
 More formally, "combining all the modes" means a left fold, where the binary operation that combines two modes has three cases.
 
-1. If the leftmost layout is s1:d1, and the next layout is 1:d0, then combine into s1:d1.  This generalizes Step 1 above.  If a mode has extent 1, we can't observe its stride, so we can skip the mode.
+1. If the leftmost layout is s1:d1, and the next layout is 1:d0, then combine into s1:d1. This generalizes Step 1 above. If a mode has extent 1, we can't observe its stride, so we can skip the mode.
 
-2. If the leftmost layout is 1:d1, and the next layout is s0:d0, then combine into s0:d0.  Again, if a mode has extent 1, we can't observe its stride, so we can skip the mode.
+1. If the leftmost layout is 1:d1, and the next layout is s0:d0, then combine into s0:d0. Again, if a mode has extent 1, we can't observe its stride, so we can skip the mode.
 
-3. If the leftmost layout is s1:d1, and the next layout is s0 : s1*d1, then combine into s0 * s1 : d1.  This generalizes Step 2 above.  One can call this "noticing a column-major layout sequence."
+1. If the leftmost layout is s1:d1, and the next layout is s0 : s1\*d1, then combine into s0 * s1 : d1. This generalizes Step 2 above. One can call this "noticing a column-major layout sequence."
 
-That's it!  For example, the result of coalescing the row-major layout (2, 2) : (2, 1) is (2, 2) : (2, 1), the same layout, because none of the above three cases applies.
+That's it! For example, the result of coalescing the row-major layout (2, 2) : (2, 1) is (2, 2) : (2, 1), the same layout, because none of the above three cases applies.
 
 ### Complement
 
@@ -254,13 +253,13 @@ That's it!  For example, the result of coalescing the row-major layout (2, 2) : 
 
 The complement B of a layout A with respect to an integer M satisfies the following properties.
 
-1. $A$ and $B$ are *disjoint*: $A(x) \neq B(x)$ for all $x \neq 0$ in the domain of $A$.
+1. $A$ and $B$ are *disjoint*: $A(x) \\neq B(x)$ for all $x \\neq 0$ in the domain of $A$.
 
-2. B is *ordered*: $B(x-1) \lt B(x)$ for all $x$ in $\{0, 1, \dots, size(B) - 1\}$.
+1. B is *ordered*: $B(x-1) \\lt B(x)$ for all $x$ in ${0, 1, \\dots, size(B) - 1}$.
 
-3. B is *bounded* by M: $size(B) \geq M / size(A)$, and $cosize(B) \leq floor(M / cosize(A)) * cosize(A)$.
+1. B is *bounded* by M: $size(B) \\geq M / size(A)$, and $cosize(B) \\leq floor(M / cosize(A)) * cosize(A)$.
 
-Regarding disjointness: we need to specify $x \neq 0$ because CuTe layouts are linear.  That is, if the domain is nonempty, the range always contains zero.
+Regarding disjointness: we need to specify $x \\neq 0$ because CuTe layouts are linear. That is, if the domain is nonempty, the range always contains zero.
 
 Regarding the ordered property: CuTe layouts are hierarchically strided, so this implies that if size(B) is nonzero, then the strides of B are all positive.
 
@@ -270,55 +269,55 @@ complement(4:1, 24) is 6:4.
 
 1. The result is disjoint of 4:1, so it must have a stride of at least 4 (since it includes 0, but must skip over 1, 2, 3).
 
-2. The size of the result is $\geq 24 / 4 = 6$.  (This plus Step (1) means that the cosize is at least 24.)
+1. The size of the result is $\\geq 24 / 4 = 6$. (This plus Step (1) means that the cosize is at least 24.)
 
-3. The cosize of the result is $\leq (24 / 4) * 4 = 24$.  (This plus Step (2) means that the cosize is exactly 24.)
+1. The cosize of the result is $\\leq (24 / 4) * 4 = 24$. (This plus Step (2) means that the cosize is exactly 24.)
 
-4. The only (1-D) layout with size 6 and cosize 24 is 6:4.
+1. The only (1-D) layout with size 6 and cosize 24 is 6:4.
 
 complement(6:4, 24) is 4:1.
 
 1. 4:1 is disjoint of 6:4, but so is s:d
    for any s > 0 and d > 20.
 
-2. The size of the result is $\geq 24 / 6 = 4$.
+1. The size of the result is $\\geq 24 / 6 = 4$.
 
-3. The cosize of the result is $\leq (24 / 21) * 21 = 21$.
+1. The cosize of the result is $\\leq (24 / 21) * 21 = 21$.
 
-4. The stride cannot be greater than 20
+1. The stride cannot be greater than 20
    (else (2) would contradict (3)),
    so it must be less than 4.
 
-5. This leaves 4:1 by elimination.
+1. This leaves 4:1 by elimination.
 
 ### Composition
 
-Layouts are functions, so composition of layouts is just composition of functions.  The composition $A \circ B$ means "apply the layout B first, then treat the result as a 1-D logical coordinate input to the layout A, and apply A to it."  Very often, this composition can be represented as another Layout.
+Layouts are functions, so composition of layouts is just composition of functions. The composition $A \\circ B$ means "apply the layout B first, then treat the result as a 1-D logical coordinate input to the layout A, and apply A to it." Very often, this composition can be represented as another Layout.
 
 #### Rules for computing composition
 
 Both humans and CuTe compute composition using the following rules.
 
-1. $A \circ B$ has a shape that is compatible with B. In function composition, the rightmost function defines the domain. For `Layout`s this means that any valid coordinate for $B$ can also be used as a coordinate for $A \circ B$.
+1. $A \\circ B$ has a shape that is compatible with B. In function composition, the rightmost function defines the domain. For `Layout`s this means that any valid coordinate for $B$ can also be used as a coordinate for $A \\circ B$.
 
-2. Concatenation: A layout can be expressed as the concatenation of its sublayouts.  We denote concatenation with parentheses: $B = (B_0,B_1,...)$.  The CuTe function `make_layout`, when given zero or more `Layout`s, concatenates them.
+1. Concatenation: A layout can be expressed as the concatenation of its sublayouts. We denote concatenation with parentheses: $B = (B_0,B_1,...)$. The CuTe function `make_layout`, when given zero or more `Layout`s, concatenates them.
 
-3. Composition is (left-)distributive with concatenation: $A \circ B = A \circ (B_0, B_1, ...) = (A \circ B_0, A \circ B_1, ...)$.
+1. Composition is (left-)distributive with concatenation: $A \\circ B = A \\circ (B_0, B_1, ...) = (A \\circ B_0, A \\circ B_1, ...)$.
 
-4. "Base case": For layouts $A = a : b$ and $B = c : d$ with integral shape and stride, $A \circ B = R = c : (b * d)$.
+1. "Base case": For layouts $A = a : b$ and $B = c : d$ with integral shape and stride, $A \\circ B = R = c : (b * d)$.
 
-5. By-mode composition: Let $\langle B, C \rangle$ (angle brackets, not parentheses)
-   denote a tuple of two layouts B and C, not their concatenation.  Let $A = (A_0, A_1)$.
-   Then, $A \circ \langle B, C \rangle = (A_0, A_1) \circ \langle B, C \rangle = (A_0 \circ B, A_1 \circ C)$.
+1. By-mode composition: Let $\\langle B, C \\rangle$ (angle brackets, not parentheses)
+   denote a tuple of two layouts B and C, not their concatenation. Let $A = (A_0, A_1)$.
+   Then, $A \\circ \\langle B, C \\rangle = (A_0, A_1) \\circ \\langle B, C \\rangle = (A_0 \\circ B, A_1 \\circ C)$.
    This allows the application of composition independently to sublayouts of $A$.
 
 #### Examples: Reshape a vector into a matrix
 
-This section gives two composition examples.  Both start with a vector with layout $20:2$ (that is, the vector has 20 elements, and the stride between each is 2).  They compose this vector with a 4 x 5 matrix layout.  This effectively "reshapes" the vector in place into a matrix.
+This section gives two composition examples. Both start with a vector with layout $20:2$ (that is, the vector has 20 elements, and the stride between each is 2). They compose this vector with a 4 x 5 matrix layout. This effectively "reshapes" the vector in place into a matrix.
 
 ##### Example 1
 
-$20:2 \circ (4,5) : (1,4)$.
+$20:2 \\circ (4,5) : (1,4)$.
 
 This describes interpreting the vector $20:2$
 as a 4 x 5 column-major matrix.
@@ -331,50 +330,50 @@ What are the strides?
 1. A layout can be expressed as the concatenation of its sublayouts,
    so $(4,5) : (1,4)$ is $(4:1, 5:4)$.
 
-2. Composition is distributive, so
-   $20:2 \circ (4:1, 5:4)$ is $(20:2 \circ 4:1, 20:2 \circ 5:4)$.
+1. Composition is distributive, so
+   $20:2 \\circ (4:1, 5:4)$ is $(20:2 \\circ 4:1, 20:2 \\circ 5:4)$.
 
-3. $20:2 \circ 4:1$ has shape 4 (rightmost function defines the domain)
-   and stride $2 = 2 \cdot 1$.
+1. $20:2 \\circ 4:1$ has shape 4 (rightmost function defines the domain)
+   and stride $2 = 2 \\cdot 1$.
 
-4. $20:2 \circ 5:4$ has shape 5 and stride $8 = 2 \cdot 4$.
+1. $20:2 \\circ 5:4$ has shape 5 and stride $8 = 2 \\cdot 4$.
 
-5. Result: (4:2, 5:8), which by concatenation is (4,5) : (2,8).
+1. Result: (4:2, 5:8), which by concatenation is (4,5) : (2,8).
 
 #### Example 2
 
-$20:2 \circ (4,5) : (5,1)$.
+$20:2 \\circ (4,5) : (5,1)$.
 
 This describes interpreting the vector 20:2
 as a 4 x 5 row-major matrix.
 
-The resulting layout has shape $(4,5)$, just as before.  What are the strides?
+The resulting layout has shape $(4,5)$, just as before. What are the strides?
 
 1. By deconcatenation, $(4,5) : (5,1)$ is $(4:5, 5:1)$.
 
-2. Composition is distributive, so $20:2 \circ (4:5, 5:1)$ is $(20:2 \circ 4:5, 20:2 \circ 5:1)$.
+1. Composition is distributive, so $20:2 \\circ (4:5, 5:1)$ is $(20:2 \\circ 4:5, 20:2 \\circ 5:1)$.
 
-3. $20:2 \circ 4:5$ has shape $4$ and stride $10 = 2 \cdot 5$.
+1. $20:2 \\circ 4:5$ has shape $4$ and stride $10 = 2 \\cdot 5$.
 
-4. $20:2 \circ 5:1$ has shape $5$ and stride $2 = 2 \cdot 1$.
+1. $20:2 \\circ 5:1$ has shape $5$ and stride $2 = 2 \\cdot 1$.
 
-5. Result: (4:10, 5:2), which by concatenation is (4,5) : (10,2).
+1. Result: (4:10, 5:2), which by concatenation is (4,5) : (10,2).
 
 #### Example: Reshape a matrix into another matrix
 
-The composition $((20,2):(16,4) \circ (4,5):(1,4))$
+The composition $((20,2):(16,4) \\circ (4,5):(1,4))$
 expresses reshaping the matrix with layout (20,2):(16:4),
 into a 4 x 5 matrix in a column-major way.
 
 1. By deconcatenation, $(4,5) : (1,4)$ is $(4:1, 5:4)$.
 
-2. Composition is distributive, so $(20,2):(16,4) \circ (4:1, 5:4)$ is $((20,2):(16,4) \circ 4:1, (20,2):(16,4) \circ 5:4)$.
+1. Composition is distributive, so $(20,2):(16,4) \\circ (4:1, 5:4)$ is $((20,2):(16,4) \\circ 4:1, (20,2):(16,4) \\circ 5:4)$.
 
-3. $(20,2):(16,4) \circ 4:1$ has shape $4$ and stride $16$.  (4:1 expresses picking the first 4 consecutive elements of (20,2):(16,4).  These elements run down the 0th column (leftmost mode) of the layout, whose stride is 16.)
+1. $(20,2):(16,4) \\circ 4:1$ has shape $4$ and stride $16$. (4:1 expresses picking the first 4 consecutive elements of (20,2):(16,4). These elements run down the 0th column (leftmost mode) of the layout, whose stride is 16.)
 
-4. $(20,2):(16,4) \circ 5:4$ has shape $5$ and stride $64 = 4 \cdot 16$.
+1. $(20,2):(16,4) \\circ 5:4$ has shape $5$ and stride $64 = 4 \\cdot 16$.
 
-5. Result: $(4:16, 5:64)$, which by concatenation is $(4,5) : (16,64)$.
+1. Result: $(4:16, 5:64)$, which by concatenation is $(4,5) : (16,64)$.
 
 We get exactly this result with CuTe
 if we use compile-time shapes and strides.
@@ -415,11 +414,11 @@ CuTe includes four different kinds of layout products.
 
 1. `logical_product`
 
-2. `blocked_product`
+1. `blocked_product`
 
-3. `raked_product`
+1. `raked_product`
 
-4. `tiled_product`
+1. `tiled_product`
 
 `logical_product(A, B)` results in a layout where each element of layout B
 has been replaced by a "copy" of layout A.
@@ -441,16 +440,16 @@ has Shape (3,4) and Stride (4,1).
 If I were to deduce by hand what the layout of the tiled matrix should be,
 it would look like this.
 
-|       | (0,0) | (1,0) | (0,1) | (1,1) | (0,2) | (1,2) | (0,3) | (1,3) |
-| ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   |
-| (0,0) |  0    |  2    |  4    |  6    |  8    | 10    | 12    | 14    |
-| (1,0) |  1    |  3    |  5    |  7    |  9    | 11    | 13    | 15    |
-| (0,1) | 16    | 18    | 20    | 22    | 24    | 26    | 28    | 30    |
-| (1,1) | 17    | 19    | 21    | 23    | 25    | 27    | 29    | 31    |
-| (0,2) | 32    | 34    | 36    | 38    | 40    | 42    | 44    | 46    |
-| (1,2) | 33    | 35    | 37    | 39    | 41    | 43    | 45    | 47    |
+| | (0,0) | (1,0) | (0,1) | (1,1) | (0,2) | (1,2) | (0,3) | (1,3) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (0,0) | 0 | 2 | 4 | 6 | 8 | 10 | 12 | 14 |
+| (1,0) | 1 | 3 | 5 | 7 | 9 | 11 | 13 | 15 |
+| (0,1) | 16 | 18 | 20 | 22 | 24 | 26 | 28 | 30 |
+| (1,1) | 17 | 19 | 21 | 23 | 25 | 27 | 29 | 31 |
+| (0,2) | 32 | 34 | 36 | 38 | 40 | 42 | 44 | 46 |
+| (1,2) | 33 | 35 | 37 | 39 | 41 | 43 | 45 | 47 |
 
-The row and column labels use the equivalence of 1-D logical coordinates and 2-D column-major coordinates.  The left index in each pair is the row resp. column coordinate of the tile, while the right index in each pair is the row resp. column coordinate of the matrix-of-tiles.  The resulting layout has Shape ((2, 3), (2, 4)), and Stride ((1, 16), (2, 4)), and the second mode can be coalesced.  The Shape ((2, 3), (2, 4)) is hierarchical, but it is still rank-2 and can be drawn in 2D as above.  Note how the row mode of the tile remains part of the row mode of the product, and the column mode of the tile remains a column mode of the product.
+The row and column labels use the equivalence of 1-D logical coordinates and 2-D column-major coordinates. The left index in each pair is the row resp. column coordinate of the tile, while the right index in each pair is the row resp. column coordinate of the matrix-of-tiles. The resulting layout has Shape ((2, 3), (2, 4)), and Stride ((1, 16), (2, 4)), and the second mode can be coalesced. The Shape ((2, 3), (2, 4)) is hierarchical, but it is still rank-2 and can be drawn in 2D as above. Note how the row mode of the tile remains part of the row mode of the product, and the column mode of the tile remains a column mode of the product.
 
 The above layout is what `blocked_product(tile, matrix_of_tiles)` produces.
 A critical use case for blocked product is "tiling" an "atom"
@@ -470,12 +469,12 @@ print_layout(blocked_product(tile, matrix_of_tiles));
 The logical product `logical_product(tile, matrix_of_tiles)`
 results in Shape ((2, 2), (3, 4)) and Stride ((1, 2), (16, 4)).
 
-|       | (0,0) | (1,0) | (2,0) | (0,1) | (1,1) | (2,1) | (0,2) | (1,2) | (2,2) | (0,3) | (1,3) | (2,3) |
-| ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   |
-| (0,0) |  0    | 16    | 32    |  4    | 20    | 36    |  8    | 24    | 40    | 12    | 28    | 44    |
-| (1,0) |  1    | 17    | 33    |  5    | 21    | 37    |  9    | 25    | 41    | 13    | 29    | 45    |
-| (0,1) |  2    | 18    | 34    |  6    | 22    | 38    | 10    | 26    | 42    | 14    | 30    | 46    |
-| (1,1) |  3    | 19    | 35    |  7    | 23    | 39    | 11    | 27    | 43    | 15    | 31    | 47    |
+| | (0,0) | (1,0) | (2,0) | (0,1) | (1,1) | (2,1) | (0,2) | (1,2) | (2,2) | (0,3) | (1,3) | (2,3) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (0,0) | 0 | 16 | 32 | 4 | 20 | 36 | 8 | 24 | 40 | 12 | 28 | 44 |
+| (1,0) | 1 | 17 | 33 | 5 | 21 | 37 | 9 | 25 | 41 | 13 | 29 | 45 |
+| (0,1) | 2 | 18 | 34 | 6 | 22 | 38 | 10 | 26 | 42 | 14 | 30 | 46 |
+| (1,1) | 3 | 19 | 35 | 7 | 23 | 39 | 11 | 27 | 43 | 15 | 31 | 47 |
 
 Note how the tile appears in the leftmost column and is reproduced
 in each column in the same order as the matrix-of-tiles. That is,
@@ -496,14 +495,14 @@ print_layout(logical_product(tile, matrix_of_tiles));
 The raked product `raked_product(tile, matrix_of_tiles)` results in
 Shape ((3, 2), (4, 2)) and Stride ((16, 1), (4, 2)).
 
-|       | (0,0) | (1,0) | (2,0) | (3,0) | (0,1) | (1,1) | (2,1) | (3,1) |
-| ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   |
-| (0,0) |  0    |  4    |  8    | 12    |  2    |  6    | 10    | 14    |
-| (1,0) | 16    | 20    | 24    | 28    | 18    | 22    | 26    | 30    |
-| (2,0) | 32    | 36    | 40    | 44    | 34    | 38    | 42    | 46    |
-| (0,1) |  1    |  5    |  9    | 13    |  3    |  7    | 11    | 15    |
-| (1,1) | 17    | 21    | 25    | 29    | 19    | 23    | 27    | 31    |
-| (2,1) | 33    | 37    | 41    | 45    | 35    | 39    | 43    | 47    |
+| | (0,0) | (1,0) | (2,0) | (3,0) | (0,1) | (1,1) | (2,1) | (3,1) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (0,0) | 0 | 4 | 8 | 12 | 2 | 6 | 10 | 14 |
+| (1,0) | 16 | 20 | 24 | 28 | 18 | 22 | 26 | 30 |
+| (2,0) | 32 | 36 | 40 | 44 | 34 | 38 | 42 | 46 |
+| (0,1) | 1 | 5 | 9 | 13 | 3 | 7 | 11 | 15 |
+| (1,1) | 17 | 21 | 25 | 29 | 19 | 23 | 27 | 31 |
+| (2,1) | 33 | 37 | 41 | 45 | 35 | 39 | 43 | 47 |
 
 The tile is now interleaved or "raked" with the other 3x4 matrix-of-tiles
 instead of appearing as blocks. Other references call this a "cyclic
@@ -511,7 +510,7 @@ distribution."
 
 This might look familiar if you have ever used ScaLAPACK.
 It expresses a 2-D block cyclic distribution of a 6 x 8 matrix
-over 4 processes in a 2 x 2 "process grid."  See
+over 4 processes in a 2 x 2 "process grid." See
 ["The Two-dimensional Block-Cyclic Distribution"](https://netlib.org/scalapack/slug/node75.html#sec2dbcd)
 and
 ["Local Storage Scheme and Block-Cyclic Mapping"](https://netlib.org/scalapack/slug/node76.html#seclocalstorage)
@@ -586,9 +585,9 @@ CuTe includes 3 different kinds of layout division operations.
 
 1. `logical_divide`
 
-2. `zipped_divide`
+1. `zipped_divide`
 
-3. `tiled_divide`
+1. `tiled_divide`
 
 We will summarize these in the sections that follow.
 
@@ -616,26 +615,26 @@ CuTe defines `logical_divide(a, b)` as
 Here, `size(a)` is 24.
 What is `complement(b, 24)`?
 Intuitively, it means "the remainder,"
-what's left over after applying `b` to 0, 1, 2, $\dots$, 23.
+what's left over after applying `b` to 0, 1, 2, $\\dots$, 23.
 
 The layout 4:2 means "take 4 elements at even-numbered indices."
 The following table overlays the range of 4:2
-atop the complement's codomain 0, 1, $\dots$, 23.
+atop the complement's codomain 0, 1, $\\dots$, 23.
 
-| Range of 4:2  | 0     |       | 2     |       | 4     |       | 6     |     |     |     |         |     |
-| ---           | ---   | ---   | ---   | ---   | ---   | ---   | ---   | --- | --- | --- | ---     | --- |
-| Codomain      | 0     | 1     | 2     | 3     | 4     | 5     | 6     | 7   | 8   | 9   | $\dots$ | 23  |
+| Range of 4:2 | 0 | | 2 | | 4 | | 6 | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Codomain | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | $\\dots$ | 23 |
 
 Layouts are linear, so their range must include zero.
 The complement of 4:2 with respect to 24 is thus a layout whose range
 
-* includes zero;
+- includes zero;
 
-* does not include any other elements of the range of 4:2
-    (i.e., satisfies the disjoint property; see above); and
+- does not include any other elements of the range of 4:2
+  (i.e., satisfies the disjoint property; see above); and
 
-* includes as much of 0, 1, $\dots$, 23 as possible
-    (so that it forms the "remainder" of 4:2 with respect to 24).
+- includes as much of 0, 1, $\\dots$, 23 as possible
+  (so that it forms the "remainder" of 4:2 with respect to 24).
 
 Intuitively, the range of the complement must look like this:
 0, 1, 8, 9, 16, 17.
@@ -649,11 +648,11 @@ is out of scope for this part of the tutorial.)
 
 The following table shows 4:2 with its complement (2, 3) : (1, 8).
 
-| Range of 4:2        | 0     |       | 2     |       | 4     |       | 6     |     |     |     |     |     |     |     |     |     |     |     |         |     |
-| ---                 | ---   | ---   | ---   | ---   | ---   | ---   | ---   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---     | --- |
-| Codomain            | 0     | 1     | 2     | 3     | 4     | 5     | 6     | 7   | 8   | 9   | 10  | 11  | 12  | 13  | 14  | 15  | 16  | 17  | $\dots$ | 23  |
-| ---                 | ---   | ---   | ---   | ---   | ---   | ---   | ---   | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---     | --- |
-| Range of complement | 0     | 1     |       |       |       |       |       |     | 8   | 9   |     |     |     |     |     |     | 16  | 17  |         |     |
+| Range of 4:2 | 0 | | 2 | | 4 | | 6 | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Codomain | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | $\\dots$ | 23 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Range of complement | 0 | 1 | | | | | | | 8 | 9 | | | | | | | 16 | 17 | | |
 
 Now we know that `logical_divide`(24:2, 4:2) is
 `composition`(24:2, `make_layout`(4:2, (2,3):(1,8))).
@@ -697,14 +696,14 @@ print_layout(logical_divide(raked_prod, subtile));
 
 Indeed, this does produce the result from the Blocked Product section.
 
-|       | (0,0) | (1,0) | (0,1) | (1,1) | (0,2) | (1,2) | (0,3) | (1,3) |
-| ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   |
-| (0,0) |  0    |  2    |  4    |  6    |  8    | 10    | 12    | 14    |
-| (1,0) |  1    |  3    |  5    |  7    |  9    | 11    | 13    | 15    |
-| (0,1) | 16    | 18    | 20    | 22    | 24    | 26    | 28    | 30    |
-| (1,1) | 17    | 19    | 21    | 23    | 25    | 27    | 29    | 31    |
-| (0,2) | 32    | 34    | 36    | 38    | 40    | 42    | 44    | 46    |
-| (1,2) | 33    | 35    | 37    | 39    | 41    | 43    | 45    | 47    |
+| | (0,0) | (1,0) | (0,1) | (1,1) | (0,2) | (1,2) | (0,3) | (1,3) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (0,0) | 0 | 2 | 4 | 6 | 8 | 10 | 12 | 14 |
+| (1,0) | 1 | 3 | 5 | 7 | 9 | 11 | 13 | 15 |
+| (0,1) | 16 | 18 | 20 | 22 | 24 | 26 | 28 | 30 |
+| (1,1) | 17 | 19 | 21 | 23 | 25 | 27 | 29 | 31 |
+| (0,2) | 32 | 34 | 36 | 38 | 40 | 42 | 44 | 46 |
+| (1,2) | 33 | 35 | 37 | 39 | 41 | 43 | 45 | 47 |
 
 Of course, any other rearrangement of the rows and cols is also valid.
 
@@ -726,12 +725,12 @@ print_layout(zipped_divide(raked_prod, subtile));
 
 then we get the result
 
-|       | (0,0) | (1,0) | (2,0) | (0,1) | (1,1) | (2,1) | (0,2) | (1,2) | (2,2) | (0,3) | (1,3) | (2,3) |
-| ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   | ---   |
-| (0,0) |  0    | 16    | 32    |  4    | 20    | 36    |  8    | 24    | 40    | 12    | 28    | 44    |
-| (1,0) |  1    | 17    | 33    |  5    | 21    | 37    |  9    | 25    | 41    | 13    | 29    | 45    |
-| (0,1) |  2    | 18    | 34    |  6    | 22    | 38    | 10    | 26    | 42    | 14    | 30    | 46    |
-| (1,1) |  3    | 19    | 35    |  7    | 23    | 39    | 11    | 27    | 43    | 15    | 31    | 47    |
+| | (0,0) | (1,0) | (2,0) | (0,1) | (1,1) | (2,1) | (0,2) | (1,2) | (2,2) | (0,3) | (1,3) | (2,3) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (0,0) | 0 | 16 | 32 | 4 | 20 | 36 | 8 | 24 | 40 | 12 | 28 | 44 |
+| (1,0) | 1 | 17 | 33 | 5 | 21 | 37 | 9 | 25 | 41 | 13 | 29 | 45 |
+| (0,1) | 2 | 18 | 34 | 6 | 22 | 38 | 10 | 26 | 42 | 14 | 30 | 46 |
+| (1,1) | 3 | 19 | 35 | 7 | 23 | 39 | 11 | 27 | 43 | 15 | 31 | 47 |
 
 Note that this is the same layout as the result in the Logical Product section.
 That is, the first mode is our original tile (and can be interpreted as a 2x2 matrix itself)

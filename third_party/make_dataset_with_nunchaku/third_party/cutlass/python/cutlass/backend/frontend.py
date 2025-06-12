@@ -30,11 +30,11 @@
 #
 ################################################################################
 
-from cuda import cuda
 import numpy as np
-
+from cuda import cuda
 from cutlass.backend.memory_manager import device_mem_alloc, todevice
-from cutlass.utils.datatypes import is_cupy_tensor, is_numpy_tensor, is_torch_tensor
+from cutlass.utils.datatypes import (is_cupy_tensor, is_numpy_tensor,
+                                     is_torch_tensor)
 
 
 class NumpyFrontend:

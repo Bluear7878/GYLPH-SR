@@ -5,32 +5,37 @@
 # CUTLASS Profiler
 
 The CUTLASS Profiler is a command-line driven test and profiling environment for CUTLASS computations
-defined in the CUTLASS Instance Library. The CUTLASS Profiler is capable of executing each GEMM, Sparse Gemm, 
+defined in the CUTLASS Instance Library. The CUTLASS Profiler is capable of executing each GEMM, Sparse Gemm,
 Conv2d, and Conv3d kernel.
 
 The CUTLASS Profiler may be compiled with:
+
 ```bash
 $ make cutlass_profiler -j
 ```
 
-To limit compilation time, only one tile size (typically 128x128) and threadblock cluster size (typically 2x1x1) is instantiated for each data type, 
-math instruction, and layout. To instantiate all sizes, set the following environment variable when running CMake from an 
+To limit compilation time, only one tile size (typically 128x128) and threadblock cluster size (typically 2x1x1) is instantiated for each data type,
+math instruction, and layout. To instantiate all sizes, set the following environment variable when running CMake from an
 empty `build/` directory.
+
 ```bash
 $ cmake .. -DCUTLASS_NVCC_ARCHS="70;75;80" -DCUTLASS_LIBRARY_KERNELS=all  -DCUTLASS_UNITY_BUILD_ENABLED=ON
 ...
 $ make cutlass_profiler -j
 ```
+
 Enabling the unity build places multiple kernel instances in one compilation unit, thereby reducing size of the compiled
 binary and avoiding linker limitations on some platforms.
 
-The CUTLASS Profiler sources are stored in 
+The CUTLASS Profiler sources are stored in
+
 ```bash
 tools/
   profiler/
 ```
 
 The CUTLASS Profiler usage statement may be obtained by executing `cutlass_profiler --help` and appears as follows.
+
 ```bash
 CUTLASS Performance Tool
 usage:
@@ -90,8 +95,8 @@ Library:
 
 
 Profiling:
-  --workspace-count=<workspace count>              Number of discrete workspaces maintained to avoid cache-resident 
-                                                 If zero (default), the amount is chosen for each workload based on 
+  --workspace-count=<workspace count>              Number of discrete workspaces maintained to avoid cache-resident
+                                                 If zero (default), the amount is chosen for each workload based on
                                                  capacity of the last-level cache.
 
   --profiling-iterations=<iterations>              Number of iterations to profile each kernel. If zero, kernels
@@ -123,7 +128,7 @@ Verification:
 
 
 Report:
-  --append=<bool>                                  If true, result is appended to possibly existing file. Otherwise, 
+  --append=<bool>                                  If true, result is appended to possibly existing file. Otherwise,
                                                    any existing file is overwritten.
 
   --output=<path>                                  Path to output file for machine readable results. Operation kind and '.csv' is appended.
@@ -247,6 +252,7 @@ The format of tensor argument is followed by `<type>:<layout>`. The type could b
 ## Example CUDA Core GEMM Operation
 
 Example command line for profiling SGEMM kernels is as follows:
+
 ```bash
 $ ./tools/profiler/cutlass_profiler --kernels=sgemm --m=3456 --n=4096 --k=4096
 
@@ -280,10 +286,10 @@ $ ./tools/profiler/cutlass_profiler --kernels=sgemm --m=3456 --n=4096 --k=4096
 
 Note, the arguments which appear in the output may be used as command line parameters for subsequent invocations.
 
-
 ## Example Tensor Core GEMM Operations
 
 To execute kernels targeting Tensor Core operations, supply the flag `--op_class=tensorop` in the command line.
+
 ```bash
 $ ./tools/profiler/cutlass_profiler --op_class=tensorop --m=3456 --n=4096 --k=8192
 
@@ -318,7 +324,7 @@ $ ./tools/profiler/cutlass_profiler --op_class=tensorop --m=3456 --n=4096 --k=81
 ## Covering the problem space
 
 All arguments may have single values or comma-delimited set of values. Integers may also be specified
-as an inclusive range with the following syntax `start:end:increment` or simply `start:end`. 
+as an inclusive range with the following syntax `start:end:increment` or simply `start:end`.
 
 For example, the following sweeps over the range of the GEMM K dimension from 8 to 4096 in increments
 of 8 elements.
@@ -362,23 +368,23 @@ cutlass3x_sm90_tensorop_s64x128x16gemm_f16_f16_f32_f16_f32_128x128x64_2x1x1_0_nt
 
 The components within this name are as follows:
 
-* `cutlass3x`: indicates that the kernel was generated through the CUTLASS 3.0 API
-* `sm90`: indicates that the kernel targets NVIDIA GPUs with compute capability 90
-* `tensorop`: indicates that the kernel makes use of NVIDIA Tensor Cores
-(as opposed to `simt`, which indicates the use of "CUDA cores")
-* `s`: indicates that the Tensor Core instruction being used accumulates in single precision
-(as opposed to `h`, which indicates half precision)
-* `64x128x16gemm`: indicates that the shape of the Tensor Core instruction being used (MxNxK) is 64x128x16
-* `f16_f16_f32_f16_f16`: indicates that the data types for operands A, B, Accumulator, C and D (in that order).
-* `128x128x64`: indicates that the thread block shape used in the GEMM (MxNxK) is 128x128x64
-* `2x1x1`: indicates that the cluster shape being used is 2x1x1
-* `0`: indicates that the kernel uses the CollectiveBuilder's automatic stage calculation to determine the
-number of pipeline stages in the kernel. Note that `0` does not mean that no stages are used. A nonzero value indicates that automatic stage calculation is not performed and indicates the number of pipeline stages to be used.
-This 0 is only added to the kernel's procedural name, the profiler will still report the actual stage count
-when printing the kernel argument details (`--stages=N`) and kernel discovery will still support filtering through the `--stages` argument.
-* `ntn`: indicates that the layouts for operands A, B, and C are column major ("n"; non-transposed),
-row major ("t"; transposed), and column major, respectively.
-* `align8`: indicates that the maximum alignment between operands A and B is 8.
+- `cutlass3x`: indicates that the kernel was generated through the CUTLASS 3.0 API
+- `sm90`: indicates that the kernel targets NVIDIA GPUs with compute capability 90
+- `tensorop`: indicates that the kernel makes use of NVIDIA Tensor Cores
+  (as opposed to `simt`, which indicates the use of "CUDA cores")
+- `s`: indicates that the Tensor Core instruction being used accumulates in single precision
+  (as opposed to `h`, which indicates half precision)
+- `64x128x16gemm`: indicates that the shape of the Tensor Core instruction being used (MxNxK) is 64x128x16
+- `f16_f16_f32_f16_f16`: indicates that the data types for operands A, B, Accumulator, C and D (in that order).
+- `128x128x64`: indicates that the thread block shape used in the GEMM (MxNxK) is 128x128x64
+- `2x1x1`: indicates that the cluster shape being used is 2x1x1
+- `0`: indicates that the kernel uses the CollectiveBuilder's automatic stage calculation to determine the
+  number of pipeline stages in the kernel. Note that `0` does not mean that no stages are used. A nonzero value indicates that automatic stage calculation is not performed and indicates the number of pipeline stages to be used.
+  This 0 is only added to the kernel's procedural name, the profiler will still report the actual stage count
+  when printing the kernel argument details (`--stages=N`) and kernel discovery will still support filtering through the `--stages` argument.
+- `ntn`: indicates that the layouts for operands A, B, and C are column major ("n"; non-transposed),
+  row major ("t"; transposed), and column major, respectively.
+- `align8`: indicates that the maximum alignment between operands A and B is 8.
 
 Note that in some special cases where the input A/B types do not match that of the MMA
 instruction's, the MMA facing input type is added to the instruction string as well.
@@ -387,8 +393,8 @@ instruction's, the MMA facing input type is added to the instruction string as w
 cutlass3x_sm90_tensorop_s64x128x8tf32gemm_f32_f32_f32_f32_f32_128x128x32_2x1x1_0_tnn_align4
 ```
 
-* `s64x128x8tf32gemm`: indicates that the MMA consumes inputs in `tf32` format, and therefore
-the kernel performs rounding of the `f32` values in global memory while loading them into shared memory.
+- `s64x128x8tf32gemm`: indicates that the MMA consumes inputs in `tf32` format, and therefore
+  the kernel performs rounding of the `f32` values in global memory while loading them into shared memory.
 
 For custom mainloop or epilogue schedules, details of the opted-in schedule are appended to the end of the
 kernel name. For example,
@@ -397,10 +403,10 @@ kernel name. For example,
 cutlass3x_sm90_tensorop_h64x128x16gemm_f16_f16_f16_void_f16_128x128x64_1x1x1_0_nnn_align8_warpspecialized_cooperative_epi_tma
 ```
 
-* `warpspecialized_cooperative`: Mainloop employs a persistent warp-specialized mainloop and kernel schedule.
-* `epi_tma`: Kernel epilogue employs TMA based vectorization. 
-* `f16_f16_f16_void_f16`: In this case, C type is set to `void`, indicating that residual matrix support
-is disabled.
+- `warpspecialized_cooperative`: Mainloop employs a persistent warp-specialized mainloop and kernel schedule.
+- `epi_tma`: Kernel epilogue employs TMA based vectorization.
+- `f16_f16_f16_void_f16`: In this case, C type is set to `void`, indicating that residual matrix support
+  is disabled.
 
 # Convolution
 
@@ -409,14 +415,13 @@ operator variants.
 
 The CUTLASS Profiler can be built with cuDNN enabled to use as a reference implementation. If CMake detects
 the cuDNN library available in the system, it is included as a dependency. This may be explicitly overridden
-with CMake flag `CUTLASS_ENABLE_CUDNN`. 
+with CMake flag `CUTLASS_ENABLE_CUDNN`.
 
 ```bash
 $ cmake .. -DCUTLASS_LIBRARY_OPERATIONS=conv2d -DCUTLASS_ENABLE_CUDNN=OFF
 ...
 $ make -j16 cutlass_profiler
 ```
-
 
 ## Convolution Arguments
 
@@ -480,6 +485,7 @@ Profile a particular convolution (specify all the convolution parameters):
 ## Example CUDA Core Convolution Operation
 
 Example command line for profiling forward propagation convolution kernels on CUDA cores is as follows:
+
 ```bash
 $ ./tools/profiler/cutlass_profiler --kernels=simt_sfprop  --verification-providers=device --n=8 --h=224 --w=224 --c=128 --k=128 --r=3 --s=3
 
@@ -516,8 +522,9 @@ reference_device: Passed
 ## Example Tensor Core Convolution Operation
 
 Example command line for profiling forward propagation convolution kernels runing on Tensor Cores is as follows:
+
 ```bash
-$ ./tools/profiler/cutlass_profiler --kernels=tensorop*fprop  --verification-providers=device --n=8 --h=224 --w=224 --c=128 --k=128 --r=3 --s=3 
+$ ./tools/profiler/cutlass_profiler --kernels=tensorop*fprop  --verification-providers=device --n=8 --h=224 --w=224 --c=128 --k=128 --r=3 --s=3
 
 
 

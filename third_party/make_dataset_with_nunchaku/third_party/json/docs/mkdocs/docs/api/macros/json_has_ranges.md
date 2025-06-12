@@ -17,14 +17,16 @@ When the macro is not defined, the library will define it to its default value.
 
 ??? example
 
-    The code below forces the library to enable support for ranges:
+````
+The code below forces the library to enable support for ranges:
 
-    ```cpp
-    #define JSON_HAS_RANGES 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_HAS_RANGES 1
+#include <nlohmann/json.hpp>
 
-    ...
-    ```
+...
+```
+````
 
 ## Version history
 

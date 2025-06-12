@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,30 +35,30 @@
 
 #pragma once
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "../../common/cutlass_unit_test.h"
 
-#include "cutlass/util/host_tensor.h"
-#include "cutlass/util/tensor_view_io.h"
 #include "cutlass/util/distribution.h"
+#include "cutlass/util/host_tensor.h"
 #include "cutlass/util/packed_stride.hpp"
-#include "cutlass/util/reference/host/tensor_fill.h"
-#include "cutlass/util/reference/host/tensor_copy.h"
-#include "cutlass/util/reference/host/tensor_compare.h"
-#include "cutlass/util/reference/host/tensor_norm.h"
 #include "cutlass/util/reference/host/gett.hpp"
+#include "cutlass/util/reference/host/tensor_compare.h"
+#include "cutlass/util/reference/host/tensor_copy.h"
+#include "cutlass/util/reference/host/tensor_fill.h"
+#include "cutlass/util/reference/host/tensor_norm.h"
+#include "cutlass/util/tensor_view_io.h"
 #include "testbed_utils.h"
 
+#include "cutlass/epilogue/fusion/operations.hpp"
+#include "cutlass/fast_math.h"
+#include "cutlass/gemm/gemm.h"
 #include "cutlass/kernel_hardware_info.hpp"
 #include "cutlass/layout/matrix.h"
 #include "cutlass/matrix_coord.h"
-#include "cutlass/gemm/gemm.h"
-#include "cutlass/fast_math.h"
 #include "cutlass/platform/platform.h"
-#include "cutlass/epilogue/fusion/operations.hpp"
 
 #include "cute/int_tuple.hpp"
 #include "cute/layout.hpp"
@@ -68,7 +69,7 @@ namespace device {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace detail{
+namespace detail {
 
 // Helper classes that take default data type when
 // the Gemm::EpilogueOutputOp does not have ElementCompute
@@ -80,7 +81,9 @@ struct ElementComputeType {
 };
 
 template <typename Gemm, typename Default>
-struct ElementComputeType<Gemm, Default, std::void_t<typename Gemm::EpilogueOutputOp::ElementCompute>> {
+struct ElementComputeType<
+    Gemm, Default,
+    std::void_t<typename Gemm::EpilogueOutputOp::ElementCompute>> {
   using Type = typename Gemm::EpilogueOutputOp::ElementCompute;
 };
 
@@ -90,11 +93,11 @@ struct ElementScalarType {
 };
 
 template <typename Gemm, typename Default>
-struct ElementScalarType<Gemm, Default, std::void_t<typename Gemm::EpilogueOutputOp::ElementScalar>> {
+struct ElementScalarType<
+    Gemm, Default,
+    std::void_t<typename Gemm::EpilogueOutputOp::ElementScalar>> {
   using Type = typename Gemm::EpilogueOutputOp::ElementScalar;
 };
-
-
 
 // The number of splits to test.
 //
@@ -113,11 +116,12 @@ class Splits {
 public:
   Splits() = default;
 
-  template<class IntegralNotBool,
-    __CUTE_REQUIRES((std::is_integral_v<IntegralNotBool> &&
-      !std::is_same_v<IntegralNotBool, bool>)) >
+  template <class IntegralNotBool,
+            __CUTE_REQUIRES((std::is_integral_v<IntegralNotBool> &&
+                             !std::is_same_v<IntegralNotBool, bool>))>
   explicit Splits(IntegralNotBool splits) : splits_(splits) {}
   explicit operator int() const { return splits_; }
+
 private:
   int splits_ = 1;
 };
@@ -131,11 +135,12 @@ class Iterations {
 public:
   Iterations() = default;
 
-  template<class IntegralNotBool,
-    __CUTE_REQUIRES((std::is_integral_v<IntegralNotBool> &&
-      !std::is_same_v<IntegralNotBool, bool>)) >
+  template <class IntegralNotBool,
+            __CUTE_REQUIRES((std::is_integral_v<IntegralNotBool> &&
+                             !std::is_same_v<IntegralNotBool, bool>))>
   explicit Iterations(IntegralNotBool iterations) : iterations_(iterations) {}
   explicit operator int() const { return iterations_; }
+
 private:
   int iterations_ = 20;
 };
@@ -148,50 +153,52 @@ class MaxSwizzleSize {
 public:
   MaxSwizzleSize() = default;
 
-  template<class IntegralNotBool,
-    __CUTE_REQUIRES((std::is_integral_v<IntegralNotBool> &&
-      !std::is_same_v<IntegralNotBool, bool>)) >
-  explicit MaxSwizzleSize(IntegralNotBool max_swizzle_size) : max_swizzle_size_(max_swizzle_size) {}
+  template <class IntegralNotBool,
+            __CUTE_REQUIRES((std::is_integral_v<IntegralNotBool> &&
+                             !std::is_same_v<IntegralNotBool, bool>))>
+  explicit MaxSwizzleSize(IntegralNotBool max_swizzle_size)
+      : max_swizzle_size_(max_swizzle_size) {}
   explicit operator int() const { return max_swizzle_size_; }
+
 private:
   int max_swizzle_size_ = 1;
 };
 
-template <typename T>
-auto make_iterator(T* ptr) {
+template <typename T> auto make_iterator(T *ptr) {
   using namespace cute;
   if constexpr (is_subbyte_v<T>) {
     return subbyte_iterator<T>(ptr);
-  }
-  else {
+  } else {
     return ptr;
   }
 }
 
-template <
-  typename Gemm,
-  template <class T> class ActivationFunctor_ = cutlass::epilogue::thread::Identity
->
+template <typename Gemm, template <class T> class ActivationFunctor_ =
+                             cutlass::epilogue::thread::Identity>
 struct TestbedImpl {
   // Kernel data types
   using ElementA = typename Gemm::GemmKernel::ElementA;
-  using StrideA  = typename Gemm::GemmKernel::StrideA;
+  using StrideA = typename Gemm::GemmKernel::StrideA;
   using ElementB = typename Gemm::GemmKernel::ElementB;
-  using StrideB  = typename Gemm::GemmKernel::StrideB;
-  using ElementC = std::conditional_t<std::is_void_v<typename Gemm::GemmKernel::ElementC>,
-                    typename Gemm::GemmKernel::ElementD,typename Gemm::GemmKernel::ElementC>;
-  using StrideC  = typename Gemm::GemmKernel::StrideC;
+  using StrideB = typename Gemm::GemmKernel::StrideB;
+  using ElementC =
+      std::conditional_t<std::is_void_v<typename Gemm::GemmKernel::ElementC>,
+                         typename Gemm::GemmKernel::ElementD,
+                         typename Gemm::GemmKernel::ElementC>;
+  using StrideC = typename Gemm::GemmKernel::StrideC;
   using ElementD = typename Gemm::GemmKernel::ElementD;
-  using StrideD  = typename Gemm::GemmKernel::StrideD;
+  using StrideD = typename Gemm::GemmKernel::StrideD;
   using ElementAccumulator = typename Gemm::GemmKernel::ElementAccumulator;
   using ProblemShapeType = typename Gemm::GemmKernel::ProblemShape;
   using EpilogueOutputOp = typename Gemm::EpilogueOutputOp;
   /// For custom EVTs
-  using ElementCompute = typename ElementComputeType<Gemm, ElementAccumulator>::Type;
+  using ElementCompute =
+      typename ElementComputeType<Gemm, ElementAccumulator>::Type;
   using ElementScalar = typename ElementScalarType<Gemm, ElementCompute>::Type;
   using ActivationFunctor = ActivationFunctor_<ElementCompute>;
 
-  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::PersistentTileSchedulerSm90::RasterOrderOptions;
+  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::
+      PersistentTileSchedulerSm90::RasterOrderOptions;
 
   static_assert(rank(StrideC{}) == 3, "StrideCD must be rank-3: [M, N, L]");
   static_assert(rank(StrideD{}) == 3, "StrideCD must be rank-3: [M, N, L]");
@@ -199,8 +206,7 @@ struct TestbedImpl {
   static constexpr uint32_t mma_promotion_interval = 4;
 
   // Looks at Cute Stride to check Row / Column Major
-  template<typename Stride>
-  static constexpr bool is_row_or_col_major(){
+  template <typename Stride> static constexpr bool is_row_or_col_major() {
     int stride_0 = int(cute::size<0>(Stride{}));
     int stride_1 = int(cute::size<1>(Stride{}));
     int depth = cute::depth(Stride{});
@@ -209,13 +215,13 @@ struct TestbedImpl {
 
   // Note: this limitation comes from testbed / not the library
   static_assert(is_row_or_col_major<StrideA>(),
-    "ERROR : A Layout is neither Row / Column Major)");
+                "ERROR : A Layout is neither Row / Column Major)");
   static_assert(is_row_or_col_major<StrideB>(),
-    "ERROR : B Layout is neither Row / Column Major)");
+                "ERROR : B Layout is neither Row / Column Major)");
   static_assert(is_row_or_col_major<StrideC>(),
-    "ERROR : C Layout is neither Row / Column Major)");
+                "ERROR : C Layout is neither Row / Column Major)");
   static_assert(is_row_or_col_major<StrideD>(),
-    "ERROR : D Layout is neither Row / Column Major)");
+                "ERROR : D Layout is neither Row / Column Major)");
 
   // Deduce Cutlass Layouts (RowMajor & ColumnMajor)
   using LayoutTagA = cutlass::detail::StrideToLayoutTagA_t<StrideA>;
@@ -253,39 +259,33 @@ struct TestbedImpl {
   //
 
   TestbedImpl(
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint64_t seed_ = kDefaultSeed
-  ):
-    stride_factor_A(typename LayoutTagA::Stride()),
-    stride_factor_B(typename LayoutTagB::Stride()),
-    stride_factor_C(typename LayoutTagC::Stride()),
-    stride_factor_D(typename LayoutTagD::Stride()),
-    init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_) { }
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint64_t seed_ = kDefaultSeed)
+      : stride_factor_A(typename LayoutTagA::Stride()),
+        stride_factor_B(typename LayoutTagB::Stride()),
+        stride_factor_C(typename LayoutTagC::Stride()),
+        stride_factor_D(typename LayoutTagD::Stride()), init_A(init_A_),
+        init_B(init_B_), init_C(init_C_), seed(seed_) {}
 
   TestbedImpl(
-    typename LayoutTagA::Stride stride_factor_A_,
-    typename LayoutTagB::Stride stride_factor_B_,
-    typename LayoutTagC::Stride stride_factor_C_,
-    typename LayoutTagD::Stride stride_factor_D_,
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint64_t seed_ = kDefaultSeed
-  ):
-    stride_factor_A(stride_factor_A_),
-    stride_factor_B(stride_factor_B_),
-    stride_factor_C(stride_factor_C_),
-    stride_factor_D(stride_factor_D_),
-    init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_) { }
+      typename LayoutTagA::Stride stride_factor_A_,
+      typename LayoutTagB::Stride stride_factor_B_,
+      typename LayoutTagC::Stride stride_factor_C_,
+      typename LayoutTagD::Stride stride_factor_D_,
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint64_t seed_ = kDefaultSeed)
+      : stride_factor_A(stride_factor_A_), stride_factor_B(stride_factor_B_),
+        stride_factor_C(stride_factor_C_), stride_factor_D(stride_factor_D_),
+        init_A(init_A_), init_B(init_B_), init_C(init_C_), seed(seed_) {}
 
   /// Helper to initialize a tensor view
   template <typename Element, typename Layout>
-  bool initialize_tensor(
-    cutlass::TensorView<Element, Layout> view,
-    cutlass::Distribution::Kind dist_kind,
-    uint64_t seed) {
+  bool initialize_tensor(cutlass::TensorView<Element, Layout> view,
+                         cutlass::Distribution::Kind dist_kind, uint64_t seed) {
 
     if (dist_kind == cutlass::Distribution::Uniform) {
       double scope_max, scope_min;
@@ -295,21 +295,18 @@ struct TestbedImpl {
       if (bits_input == 1) {
         scope_max = 2;
         scope_min = 0;
-      }
-      else if (bits_input <= 8) {
+      } else if (bits_input <= 8) {
         scope_max = 2;
         scope_min = -2;
-      }
-      else if (bits_output == 16) {
+      } else if (bits_output == 16) {
         scope_max = 5;
         scope_min = -5;
-      }
-      else {
+      } else {
         scope_max = 8;
         scope_min = -8;
       }
-      cutlass::reference::host::TensorFillRandomUniform(
-        view, seed, scope_max, scope_min, 0);
+      cutlass::reference::host::TensorFillRandomUniform(view, seed, scope_max,
+                                                        scope_min, 0);
     }
 
     else if (dist_kind == cutlass::Distribution::Identity) {
@@ -321,8 +318,8 @@ struct TestbedImpl {
     }
 
     else if (dist_kind == cutlass::Distribution::Sequential) {
-      cutlass::reference::host::BlockFillSequential(
-        view.data(), view.capacity());
+      cutlass::reference::host::BlockFillSequential(view.data(),
+                                                    view.capacity());
     }
 
     else if (dist_kind == cutlass::Distribution::AllOnes) {
@@ -348,36 +345,57 @@ struct TestbedImpl {
     auto K = cute::size<2>(problem_shape_MNKL);
     auto L = cute::size<3>(problem_shape_MNKL);
 
-    stride_a = cutlass::make_cute_packed_stride(StrideA{}, cute::make_shape(M, K, L));
-    stride_b = cutlass::make_cute_packed_stride(StrideB{}, cute::make_shape(N, K, L));
-    stride_c = cutlass::make_cute_packed_stride(StrideC{}, cute::make_shape(M, N, L));
-    stride_d = cutlass::make_cute_packed_stride(StrideD{}, cute::make_shape(M, N, L));
+    stride_a =
+        cutlass::make_cute_packed_stride(StrideA{}, cute::make_shape(M, K, L));
+    stride_b =
+        cutlass::make_cute_packed_stride(StrideB{}, cute::make_shape(N, K, L));
+    stride_c =
+        cutlass::make_cute_packed_stride(StrideC{}, cute::make_shape(M, N, L));
+    stride_d =
+        cutlass::make_cute_packed_stride(StrideD{}, cute::make_shape(M, N, L));
 
-    // 2.x host tensor does not natively contain a batch stride or coord, so we spoof if by folding it into the outer mode
+    // 2.x host tensor does not natively contain a batch stride or coord, so we
+    // spoof if by folding it into the outer mode
     auto a_coord = cutlass::make_Coord(M * L, K);
     auto c_coord = cutlass::make_Coord(M * L, N);
     // Cutlass has Row/Col major refers to MxK times KxN matrix product,
     // so the HostTensorB should be treated as KxN in "coord"'s view
     auto b_coord = cutlass::make_Coord(K, N * L);
 
-
-    tensor_A.resize(a_coord, cutlass::layout::Affine2Layout_Factory<LayoutTagA>::layout_factory(a_coord, stride_factor_A));
-    tensor_B.resize(b_coord, cutlass::layout::Affine2Layout_Factory<LayoutTagB>::layout_factory(b_coord, stride_factor_B));
-    tensor_C.resize(c_coord, cutlass::layout::Affine2Layout_Factory<LayoutTagC>::layout_factory(c_coord, stride_factor_C));
-    tensor_D.resize(c_coord, cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(c_coord, stride_factor_D));
-    reference_D.resize(c_coord, cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(c_coord, stride_factor_D), false);
+    tensor_A.resize(
+        a_coord,
+        cutlass::layout::Affine2Layout_Factory<LayoutTagA>::layout_factory(
+            a_coord, stride_factor_A));
+    tensor_B.resize(
+        b_coord,
+        cutlass::layout::Affine2Layout_Factory<LayoutTagB>::layout_factory(
+            b_coord, stride_factor_B));
+    tensor_C.resize(
+        c_coord,
+        cutlass::layout::Affine2Layout_Factory<LayoutTagC>::layout_factory(
+            c_coord, stride_factor_C));
+    tensor_D.resize(
+        c_coord,
+        cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(
+            c_coord, stride_factor_D));
+    reference_D.resize(
+        c_coord,
+        cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(
+            c_coord, stride_factor_D),
+        false);
 
     EXPECT_TRUE(initialize_tensor(tensor_A.host_view(), init_A, seed + 2022));
     EXPECT_TRUE(initialize_tensor(tensor_B.host_view(), init_B, seed + 2021));
     EXPECT_TRUE(initialize_tensor(tensor_C.host_view(), init_C, seed + 2020));
 
-    // It is possible to randomly initialize to all zeros, so override this with non-zeros
-    // in the upper left corner of each operand.
+    // It is possible to randomly initialize to all zeros, so override this with
+    // non-zeros in the upper left corner of each operand.
     tensor_A.host_view().at({0, 0}) = ElementA(1);
     tensor_B.host_view().at({0, 0}) = ElementB(1);
     tensor_C.host_view().at({0, 0}) = ElementC(1);
 
-    cutlass::reference::host::TensorCopy(reference_D.host_view(), tensor_C.host_view());
+    cutlass::reference::host::TensorCopy(reference_D.host_view(),
+                                         tensor_C.host_view());
 
     tensor_A.sync_device();
     tensor_B.sync_device();
@@ -385,12 +403,10 @@ struct TestbedImpl {
     tensor_D.sync_device();
   }
 
-  /// Compares computed reference with device reference and outputs to a file if incorrect
-  bool compare_reference(
-      cute::Shape<int,int,int,int> problem_shape_MNKL,
-      ElementScalar alpha,
-      ElementScalar beta)
-  {
+  /// Compares computed reference with device reference and outputs to a file if
+  /// incorrect
+  bool compare_reference(cute::Shape<int, int, int, int> problem_shape_MNKL,
+                         ElementScalar alpha, ElementScalar beta) {
     auto [M, N, K, L] = problem_shape_MNKL;
 
     tensor_D.sync_host();
@@ -403,91 +419,87 @@ struct TestbedImpl {
     }
 
     if (reference_D.size() > 1) {
-      EXPECT_GT(cutlass::reference::host::TensorNorm(reference_D.host_view()), 0);
+      EXPECT_GT(cutlass::reference::host::TensorNorm(reference_D.host_view()),
+                0);
     }
 
-    bool passed = cutlass::reference::host::TensorEquals(reference_D.host_view(), tensor_D.host_view());
+    bool passed = cutlass::reference::host::TensorEquals(
+        reference_D.host_view(), tensor_D.host_view());
 
     EXPECT_TRUE(passed);
     if (!passed) {
       std::stringstream fname;
-      fname << "error_Gemm_device_"
-        << M << "x" << N << "x" << K << "x" << L << "_"
-        << cute::get<0>(typename Gemm::GemmKernel::TileShape{}) << "_"
-        << cute::get<1>(typename Gemm::GemmKernel::TileShape{}) << "_"
-        << cute::get<2>(typename Gemm::GemmKernel::TileShape{}) << ".txt";
+      fname << "error_Gemm_device_" << M << "x" << N << "x" << K << "x" << L
+            << "_" << cute::get<0>(typename Gemm::GemmKernel::TileShape{})
+            << "_" << cute::get<1>(typename Gemm::GemmKernel::TileShape{})
+            << "_" << cute::get<2>(typename Gemm::GemmKernel::TileShape{})
+            << ".txt";
 
       std::ofstream file(fname.str());
-      file
-        << "problem: " << ' ' << M << "x" << N << "x" << K << ", Batch count = " << L
-        << ", alpha: " << alpha << ", beta: " << beta << "\n\n";
+      file << "problem: " << ' ' << M << "x" << N << "x" << K
+           << ", Batch count = " << L << ", alpha: " << alpha
+           << ", beta: " << beta << "\n\n";
 
-      file
-        << "A =\n" << tensor_A.host_view()
-        << "\nB =\n" << tensor_B.host_view()
-        << "\nC =\n" << tensor_C.host_view()
-        << "\n\nReference =\n" << reference_D.host_view()
-        << "\n\nComputed =\n" << tensor_D.host_view();
+      file << "A =\n"
+           << tensor_A.host_view() << "\nB =\n"
+           << tensor_B.host_view() << "\nC =\n"
+           << tensor_C.host_view() << "\n\nReference =\n"
+           << reference_D.host_view() << "\n\nComputed =\n"
+           << tensor_D.host_view();
     }
 
     return passed;
   }
 
   /// Verifies the result is a GEMM
-  bool verify(
-      ProblemShapeType problem_size,
-      ElementScalar alpha,
-      ElementScalar beta)
-  {
+  bool verify(ProblemShapeType problem_size, ElementScalar alpha,
+              ElementScalar beta) {
     auto problem_shape_MNKL = cute::append<4>(problem_size, 1);
     auto M = cute::size<0>(problem_shape_MNKL);
     auto N = cute::size<1>(problem_shape_MNKL);
     auto K = cute::size<2>(problem_shape_MNKL);
     auto L = cute::size<3>(problem_shape_MNKL);
 
-    auto A = cute::make_tensor(detail::make_iterator(tensor_A.host_data()),
+    auto A = cute::make_tensor(
+        detail::make_iterator(tensor_A.host_data()),
         cute::make_layout(cute::make_shape(M, K, L), stride_a));
-    auto B = cute::make_tensor(detail::make_iterator(tensor_B.host_data()),
+    auto B = cute::make_tensor(
+        detail::make_iterator(tensor_B.host_data()),
         cute::make_layout(cute::make_shape(N, K, L), stride_b));
-    auto C = cute::make_tensor(detail::make_iterator(tensor_C.host_data()),
+    auto C = cute::make_tensor(
+        detail::make_iterator(tensor_C.host_data()),
         cute::make_layout(cute::make_shape(M, N, L), stride_c));
-    auto D = cute::make_tensor(detail::make_iterator(reference_D.host_data()),
+    auto D = cute::make_tensor(
+        detail::make_iterator(reference_D.host_data()),
         cute::make_layout(cute::make_shape(M, N, L), stride_d));
-    auto Bias = cute::make_tensor(static_cast<ElementCompute*>(nullptr),
-        cute::make_layout(cute::make_shape(M, cute::_1{})));
-    auto Aux = cute::make_tensor(static_cast<ElementD*>(nullptr),
+    auto Bias =
+        cute::make_tensor(static_cast<ElementCompute *>(nullptr),
+                          cute::make_layout(cute::make_shape(M, cute::_1{})));
+    auto Aux = cute::make_tensor(
+        static_cast<ElementD *>(nullptr),
         cute::make_layout(cute::make_shape(M, N, L), stride_d));
-    auto Valpha = cute::make_tensor(static_cast<ElementCompute*>(nullptr),
-        cute::make_layout(cute::make_shape(M, cute::_1{})));
-    auto Vbeta = cute::make_tensor(static_cast<ElementCompute*>(nullptr),
-        cute::make_layout(cute::make_shape(M, cute::_1{})));
+    auto Valpha =
+        cute::make_tensor(static_cast<ElementCompute *>(nullptr),
+                          cute::make_layout(cute::make_shape(M, cute::_1{})));
+    auto Vbeta =
+        cute::make_tensor(static_cast<ElementCompute *>(nullptr),
+                          cute::make_layout(cute::make_shape(M, cute::_1{})));
 
-    cutlass::reference::host::GettMainloopParams<ElementAccumulator, decltype(A), decltype(B)> mainloop_params{A, B};
+    cutlass::reference::host::GettMainloopParams<ElementAccumulator,
+                                                 decltype(A), decltype(B)>
+        mainloop_params{A, B};
 
     cutlass::reference::host::GettEpilogueParams<
-        ElementScalar,
-        ElementScalar,
-        ElementAccumulator,
-        ElementCompute,
-        decltype(C),
-        decltype(D),
-        decltype(Bias),
-        decltype(Aux),
-        decltype(Valpha),
-        decltype(Vbeta),
-        ActivationFunctor
-        >
-        epilogue_params{
-          alpha, beta,
-          C, D, Bias, Aux
-          , Valpha, Vbeta
-        };
+        ElementScalar, ElementScalar, ElementAccumulator, ElementCompute,
+        decltype(C), decltype(D), decltype(Bias), decltype(Aux),
+        decltype(Valpha), decltype(Vbeta), ActivationFunctor>
+        epilogue_params{alpha, beta, C, D, Bias, Aux, Valpha, Vbeta};
 
     cutlass::reference::host::Gemm3x(mainloop_params, epilogue_params);
     return compare_reference(problem_shape_MNKL, alpha, beta);
   }
 
-	/// Determine if the CUDA device is sufficient to run the kernel
+  /// Determine if the CUDA device is sufficient to run the kernel
   bool sufficient() {
     //
     // Determine SMEM requirements and waive if not satisfied
@@ -517,20 +529,16 @@ struct TestbedImpl {
     return true;
   }
 
-  bool profile(
-    ProblemShapeType problem_size,
-    int iterations,
-    Gemm& gemm_op,
-    typename Gemm::Arguments& arguments,
-    cutlass::device_memory::allocation<uint8_t>& workspace) {
+  bool profile(ProblemShapeType problem_size, int iterations, Gemm &gemm_op,
+               typename Gemm::Arguments &arguments,
+               cutlass::device_memory::allocation<uint8_t> &workspace) {
     int M = cute::size<0>(problem_size);
     int N = cute::size<1>(problem_size);
     int K = cute::size<2>(problem_size);
     int L = 1;
-    if constexpr(cute::rank(ProblemShapeType{}) == 4) {
+    if constexpr (cute::rank(ProblemShapeType{}) == 4) {
       L = cute::size<3>(problem_size);
     }
-
 
     cutlass::Status status;
     //
@@ -556,16 +564,13 @@ struct TestbedImpl {
   }
 
   /// Executes one test
-  bool run(
-    ProblemShapeType problem_size,
-    ElementScalar alpha = ElementScalar(1),
-    ElementScalar beta = ElementScalar(0),
-    bool profiling = false,
-    detail::Iterations iterations = detail::Iterations{},
-    RasterOrderOptions raster_order = RasterOrderOptions::Heuristic,
-    detail::MaxSwizzleSize max_swizzle = detail::MaxSwizzleSize{},
-    detail::Splits splits = detail::Splits{})
-  {
+  bool run(ProblemShapeType problem_size,
+           ElementScalar alpha = ElementScalar(1),
+           ElementScalar beta = ElementScalar(0), bool profiling = false,
+           detail::Iterations iterations = detail::Iterations{},
+           RasterOrderOptions raster_order = RasterOrderOptions::Heuristic,
+           detail::MaxSwizzleSize max_swizzle = detail::MaxSwizzleSize{},
+           detail::Splits splits = detail::Splits{}) {
     // Fail test if insufficient CUDA device
     if (!sufficient()) {
       std::cout << "Test failed due to insufficient CUDA device." << std::endl;
@@ -581,37 +586,39 @@ struct TestbedImpl {
     cutlass::KernelHardwareInfo hw_info;
     hw_info.device_id = 0;
     if (not profiling) {
-      this->sm_count = min(MaxSmCount, cutlass::KernelHardwareInfo::query_device_multiprocessor_count(hw_info.device_id));
+      this->sm_count =
+          min(MaxSmCount,
+              cutlass::KernelHardwareInfo::query_device_multiprocessor_count(
+                  hw_info.device_id));
       hw_info.sm_count = this->sm_count;
-    }
-    else {
-      this->sm_count = cutlass::KernelHardwareInfo::query_device_multiprocessor_count(hw_info.device_id);
+    } else {
+      this->sm_count =
+          cutlass::KernelHardwareInfo::query_device_multiprocessor_count(
+              hw_info.device_id);
       hw_info.sm_count = this->sm_count;
     }
 
     typename Gemm::GemmKernel::TileScheduler::Arguments scheduler_args;
-    if constexpr (std::is_same_v<typename Gemm::GemmKernel::TileSchedulerTag, cutlass::gemm::StreamKScheduler>) {
-      scheduler_args = { static_cast<int>(splits), static_cast<int>(max_swizzle), raster_order };
-    }
-    else {
-      scheduler_args = { static_cast<int>(max_swizzle), raster_order };
+    if constexpr (std::is_same_v<typename Gemm::GemmKernel::TileSchedulerTag,
+                                 cutlass::gemm::StreamKScheduler>) {
+      scheduler_args = {static_cast<int>(splits), static_cast<int>(max_swizzle),
+                        raster_order};
+    } else {
+      scheduler_args = {static_cast<int>(max_swizzle), raster_order};
     }
 
     // DefaultEpilogue
-    auto arguments = typename Gemm::Arguments {
-      cutlass::gemm::GemmUniversalMode::kGemm,
-      problem_size,
-      {
-        tensor_A.device_data(), stride_a,
-        tensor_B.device_data(), stride_b
-      },
-      {
-        {alpha, beta},
-        tensor_C.device_data(), stride_c, tensor_D.device_data(), stride_d
-      },
-      hw_info,
-      scheduler_args
-    };
+    auto arguments = typename Gemm::Arguments{
+        cutlass::gemm::GemmUniversalMode::kGemm,
+        problem_size,
+        {tensor_A.device_data(), stride_a, tensor_B.device_data(), stride_b},
+        {{alpha, beta},
+         tensor_C.device_data(),
+         stride_c,
+         tensor_D.device_data(),
+         stride_d},
+        hw_info,
+        scheduler_args};
 
     Gemm gemm_op;
 
@@ -622,7 +629,8 @@ struct TestbedImpl {
 
     if (status != cutlass::Status::kSuccess) {
       cudaError_t error = cudaGetLastError();
-      std::cerr << "This test is not supported: " << cudaGetErrorString(error) << "\n";
+      std::cerr << "This test is not supported: " << cudaGetErrorString(error)
+                << "\n";
       return true;
     }
 
@@ -631,9 +639,9 @@ struct TestbedImpl {
     //
 
     if (profiling) {
-      return profile(problem_size, static_cast<int>(iterations), gemm_op, arguments, workspace);
-    }
-    else {
+      return profile(problem_size, static_cast<int>(iterations), gemm_op,
+                     arguments, workspace);
+    } else {
       cudaError_t result;
       status = gemm_op.initialize(arguments, workspace.get());
       status = gemm_op.run();
@@ -650,8 +658,8 @@ struct TestbedImpl {
       //
       bool passed = this->verify(problem_size, alpha, beta);
       if (!passed) {
-        std::cout << "Error : Failed : with alpha: " << alpha << ", beta: " << beta
-                  << "\n";
+        std::cout << "Error : Failed : with alpha: " << alpha
+                  << ", beta: " << beta << "\n";
       }
 
       return passed;
@@ -663,29 +671,26 @@ struct TestbedImpl {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Gemm,
-  template <class T> class ActivationFunctor
->
+template <typename Gemm, template <class T> class ActivationFunctor>
 struct Testbed3x {
 
   using TestBedImpl = typename detail::TestbedImpl<Gemm, ActivationFunctor>;
-  using Kernel      = typename Gemm::GemmKernel;
-  using Epilogue    = typename Gemm::GemmKernel::CollectiveEpilogue;
+  using Kernel = typename Gemm::GemmKernel;
+  using Epilogue = typename Gemm::GemmKernel::CollectiveEpilogue;
 
-  using ElementAccumulator   = typename TestBedImpl::ElementAccumulator;
-  using ElementCompute       = typename TestBedImpl::ElementCompute;
-  using ElementScalar        = typename TestBedImpl::ElementScalar;
+  using ElementAccumulator = typename TestBedImpl::ElementAccumulator;
+  using ElementCompute = typename TestBedImpl::ElementCompute;
+  using ElementScalar = typename TestBedImpl::ElementScalar;
 
   using LayoutTagA = typename TestBedImpl::LayoutTagA;
   using LayoutTagB = typename TestBedImpl::LayoutTagB;
   using LayoutTagC = typename TestBedImpl::LayoutTagC;
   using LayoutTagD = typename TestBedImpl::LayoutTagD;
 
-  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::PersistentTileSchedulerSm90::RasterOrderOptions;
+  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::
+      PersistentTileSchedulerSm90::RasterOrderOptions;
 
   // Detail Implementation
   TestBedImpl impl_;
@@ -708,30 +713,20 @@ struct Testbed3x {
       cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
       cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
       cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-          uint64_t seed_ = TestBedImpl::kDefaultSeed)
-      : impl_(stride_factor_A_,
-              stride_factor_B_,
-              stride_factor_C_,
-              stride_factor_D_,
-              init_A_,
-              init_B_,
-              init_C_,
-              seed_) {}
+      uint64_t seed_ = TestBedImpl::kDefaultSeed)
+      : impl_(stride_factor_A_, stride_factor_B_, stride_factor_C_,
+              stride_factor_D_, init_A_, init_B_, init_C_, seed_) {}
 
   /// Executes one test
-  bool run(
-    typename TestBedImpl::ProblemShapeType problem_size,
-    ElementScalar alpha = ElementScalar(1),
-    ElementScalar beta = ElementScalar(0),
-    RasterOrderOptions raster_order = RasterOrderOptions::Heuristic,
-    detail::MaxSwizzleSize max_swizzle = detail::MaxSwizzleSize{},
-    detail::Splits splits = detail::Splits{},
-    bool profiling = false,
-    detail::Iterations iterations = detail::Iterations{})
-  {
-    return impl_.run(
-        problem_size, alpha, beta, profiling, iterations, raster_order, max_swizzle, splits
-        );
+  bool run(typename TestBedImpl::ProblemShapeType problem_size,
+           ElementScalar alpha = ElementScalar(1),
+           ElementScalar beta = ElementScalar(0),
+           RasterOrderOptions raster_order = RasterOrderOptions::Heuristic,
+           detail::MaxSwizzleSize max_swizzle = detail::MaxSwizzleSize{},
+           detail::Splits splits = detail::Splits{}, bool profiling = false,
+           detail::Iterations iterations = detail::Iterations{}) {
+    return impl_.run(problem_size, alpha, beta, profiling, iterations,
+                     raster_order, max_swizzle, splits);
   }
 };
 
@@ -739,73 +734,79 @@ struct Testbed3x {
 
 // Testbed for GEMMs with fused epilogues using the fusion::FusionOperation API
 // Does not support testing of custom EVTs
-template <typename Gemm>
-struct Testbed3xFusionOperation {
+template <typename Gemm> struct Testbed3xFusionOperation {
 
   using TestBedImpl = typename detail::TestbedImpl<Gemm>;
-  using Kernel      = typename Gemm::GemmKernel;
-  using Epilogue    = typename Gemm::GemmKernel::CollectiveEpilogue;
+  using Kernel = typename Gemm::GemmKernel;
+  using Epilogue = typename Gemm::GemmKernel::CollectiveEpilogue;
 
   using LayoutTagA = typename TestBedImpl::LayoutTagA;
   using LayoutTagB = typename TestBedImpl::LayoutTagB;
   using LayoutTagC = typename TestBedImpl::LayoutTagC;
   using LayoutTagD = typename TestBedImpl::LayoutTagD;
-  using LayoutTagScalar = cutlass::layout::PackedVectorLayout; // scalars are size-1 vectors
+  using LayoutTagScalar =
+      cutlass::layout::PackedVectorLayout; // scalars are size-1 vectors
   using LayoutTagVector = cutlass::layout::PackedVectorLayout;
 
   using ElementA = typename Kernel::ElementA;
-  using StrideA  = typename Kernel::StrideA;
+  using StrideA = typename Kernel::StrideA;
   using ElementB = typename Kernel::ElementB;
-  using StrideB  = typename Kernel::StrideB;
+  using StrideB = typename Kernel::StrideB;
   using ElementC = typename Kernel::ElementC;
-  using StrideC  = typename Kernel::StrideC;
+  using StrideC = typename Kernel::StrideC;
   using ElementD = typename Kernel::ElementD;
-  using StrideD  = typename Kernel::StrideD;
-  using ProblemShapeType   = typename Kernel::ProblemShape;
+  using StrideD = typename Kernel::StrideD;
+  using ProblemShapeType = typename Kernel::ProblemShape;
   using ElementAccumulator = typename Kernel::ElementAccumulator;
 
   //
   // FusionOperation derived types/queries
   //
   using FusionOp = typename Gemm::EpilogueOutputOp;
-  static_assert(cute::is_base_of_v<cutlass::epilogue::fusion::FusionOperation, FusionOp>);
+  static_assert(
+      cute::is_base_of_v<cutlass::epilogue::fusion::FusionOperation, FusionOp>);
 
-  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::PersistentTileSchedulerSm90::RasterOrderOptions;
+  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::
+      PersistentTileSchedulerSm90::RasterOrderOptions;
 
   // fusion types are potentially void if the fusion is not supported
   // helper so we don't try to construct HostTensor with void type
   template <typename T, typename U = uint8_t>
   using non_void_t = cute::conditional_t<cute::is_void_v<T>, U, T>;
 
-  using ElementCompute    = typename FusionOp::ElementCompute;
-  using ElementScalar     = typename FusionOp::ElementScalar;
-  using ElementBias       = non_void_t<typename FusionOp::ElementBias>;
-  using ElementAux        = non_void_t<typename FusionOp::ElementAux>;
-  using ElementAmax       = non_void_t<typename FusionOp::ElementAmax>;
-  using LayoutTagAux      = non_void_t<typename FusionOp::GmemLayoutTagAux, LayoutTagD>;
-  using ActivationFunctor = non_void_t<typename FusionOp::ActivationFn,
-                              cutlass::epilogue::thread::Identity<ElementCompute>>;
+  using ElementCompute = typename FusionOp::ElementCompute;
+  using ElementScalar = typename FusionOp::ElementScalar;
+  using ElementBias = non_void_t<typename FusionOp::ElementBias>;
+  using ElementAux = non_void_t<typename FusionOp::ElementAux>;
+  using ElementAmax = non_void_t<typename FusionOp::ElementAmax>;
+  using LayoutTagAux =
+      non_void_t<typename FusionOp::GmemLayoutTagAux, LayoutTagD>;
+  using ActivationFunctor =
+      non_void_t<typename FusionOp::ActivationFn,
+                 cutlass::epilogue::thread::Identity<ElementCompute>>;
 
-  static constexpr bool IsBiasEnabled        = FusionOp::IsPerRowBiasSupported;
-  static constexpr bool IsDeBiasEnabled      = FusionOp::IsDePerRowBiasSupported;
+  static constexpr bool IsBiasEnabled = FusionOp::IsPerRowBiasSupported;
+  static constexpr bool IsDeBiasEnabled = FusionOp::IsDePerRowBiasSupported;
   static constexpr bool IsPerRowScaleEnabled = FusionOp::IsPerRowScaleSupported;
   static constexpr bool IsScaleFactorEnabled = FusionOp::IsScaleFactorSupported;
-  static constexpr bool IsAuxInEnabled       = FusionOp::IsAuxInSupported;
-  static constexpr bool IsAuxOutEnabled      = FusionOp::IsAuxOutSupported;
-  static constexpr bool IsAbsMaxEnabledD     = FusionOp::IsAbsMaxSupported &&
-                                                (cute::is_same_v<ElementD, cutlass::float_e4m3_t> ||
-                                                 cute::is_same_v<ElementD, cutlass::float_e5m2_t>);
-  static constexpr bool IsAbsMaxEnabledAux   = IsAuxOutEnabled && FusionOp::IsAbsMaxSupported &&
-                                                (cute::is_same_v<ElementAux, cutlass::float_e4m3_t> ||
-                                                 cute::is_same_v<ElementAux, cutlass::float_e5m2_t>);
-  // Legacy support for deprecated bias-elementwise collective, will be removed next release
+  static constexpr bool IsAuxInEnabled = FusionOp::IsAuxInSupported;
+  static constexpr bool IsAuxOutEnabled = FusionOp::IsAuxOutSupported;
+  static constexpr bool IsAbsMaxEnabledD =
+      FusionOp::IsAbsMaxSupported &&
+      (cute::is_same_v<ElementD, cutlass::float_e4m3_t> ||
+       cute::is_same_v<ElementD, cutlass::float_e5m2_t>);
+  static constexpr bool IsAbsMaxEnabledAux =
+      IsAuxOutEnabled && FusionOp::IsAbsMaxSupported &&
+      (cute::is_same_v<ElementAux, cutlass::float_e4m3_t> ||
+       cute::is_same_v<ElementAux, cutlass::float_e5m2_t>);
+  // Legacy support for deprecated bias-elementwise collective, will be removed
+  // next release
   using EpiloguePolicy = typename Epilogue::DispatchPolicy;
   static constexpr bool IsLegacy =
-    cute::is_same_v<
-      EpiloguePolicy,
-      cutlass::epilogue::Sm90TmaWarpSpecializedBiasElementwise<
-        EpiloguePolicy::StagesC, EpiloguePolicy::StagesD, EpiloguePolicy::FragmentSize>
-    >;
+      cute::is_same_v<EpiloguePolicy,
+                      cutlass::epilogue::Sm90TmaWarpSpecializedBiasElementwise<
+                          EpiloguePolicy::StagesC, EpiloguePolicy::StagesD,
+                          EpiloguePolicy::FragmentSize>>;
 
   // Inputs
   cutlass::HostTensor<ElementScalar, LayoutTagScalar> alpha;
@@ -815,15 +816,15 @@ struct Testbed3xFusionOperation {
   cutlass::HostTensor<ElementScalar, LayoutTagScalar> scale_C;
   cutlass::HostTensor<ElementScalar, LayoutTagScalar> scale_D;
   cutlass::HostTensor<ElementScalar, LayoutTagScalar> scale_Aux;
-  cutlass::HostTensor<ElementBias  , LayoutTagVector> bias;
+  cutlass::HostTensor<ElementBias, LayoutTagVector> bias;
   // Outputs
   cutlass::HostTensor<ElementAmax, LayoutTagScalar> abs_max_Aux;
   cutlass::HostTensor<ElementAmax, LayoutTagScalar> abs_max_D;
-  cutlass::HostTensor<ElementAux , LayoutTagAux   > tensor_Aux;
-  cutlass::gemm::TagToStrideC_t<   LayoutTagAux   > stride_Aux;
+  cutlass::HostTensor<ElementAux, LayoutTagAux> tensor_Aux;
+  cutlass::gemm::TagToStrideC_t<LayoutTagAux> stride_Aux;
   // References
   cutlass::HostTensor<ElementBias, LayoutTagVector> reference_dbias;
-  cutlass::HostTensor<ElementAux , LayoutTagAux   > reference_Aux;
+  cutlass::HostTensor<ElementAux, LayoutTagAux> reference_Aux;
   cutlass::HostTensor<ElementAmax, LayoutTagScalar> reference_abs_max_Aux;
   cutlass::HostTensor<ElementAmax, LayoutTagScalar> reference_abs_max_D;
 
@@ -834,9 +835,11 @@ struct Testbed3xFusionOperation {
   bool check_relative_equality = false;
   // Are scalars copied to device memory before kernel launch
   bool use_device_scalars = false;
-  // If per-row scale is enabled and this is true, beta is passed as a host scalar instead of device vector
+  // If per-row scale is enabled and this is true, beta is passed as a host
+  // scalar instead of device vector
   bool disable_vector_beta = false;
-  // Random distribution with which to initialize the A/B/C/D/Aux scaling factors
+  // Random distribution with which to initialize the A/B/C/D/Aux scaling
+  // factors
   cutlass::Distribution::Kind init_scale = cutlass::Distribution::Uniform;
   // Random distribution with which to initialize the bias vector
   cutlass::Distribution::Kind init_bias = cutlass::Distribution::Uniform;
@@ -845,40 +848,34 @@ struct Testbed3xFusionOperation {
   // Methods
   //
   Testbed3xFusionOperation(
-    bool check_relative_equality_ = false,
-    bool use_device_scalars_ = false,
-    bool disable_vector_beta_ = false,
-    cutlass::Distribution::Kind init_scale_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_bias_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint64_t seed_ = TestBedImpl::kDefaultSeed
-  ) : impl_(init_A_, init_B_, init_C_, seed_),
-      check_relative_equality(check_relative_equality_),
-      use_device_scalars(use_device_scalars_),
-      init_scale(init_scale_), init_bias(init_bias_) { }
+      bool check_relative_equality_ = false, bool use_device_scalars_ = false,
+      bool disable_vector_beta_ = false,
+      cutlass::Distribution::Kind init_scale_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_bias_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint64_t seed_ = TestBedImpl::kDefaultSeed)
+      : impl_(init_A_, init_B_, init_C_, seed_),
+        check_relative_equality(check_relative_equality_),
+        use_device_scalars(use_device_scalars_), init_scale(init_scale_),
+        init_bias(init_bias_) {}
 
   Testbed3xFusionOperation(
-    typename LayoutTagA::Stride stride_factor_A_,
-    typename LayoutTagB::Stride stride_factor_B_,
-    typename LayoutTagC::Stride stride_factor_C_,
-    typename LayoutTagD::Stride stride_factor_D_,
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint64_t seed_ = TestBedImpl::kDefaultSeed
-  ) : impl_(stride_factor_A_,
-            stride_factor_B_,
-            stride_factor_C_,
-            stride_factor_D_,
-            init_A_,
-            init_B_,
-            init_C_,
-            seed_) { }
+      typename LayoutTagA::Stride stride_factor_A_,
+      typename LayoutTagB::Stride stride_factor_B_,
+      typename LayoutTagC::Stride stride_factor_C_,
+      typename LayoutTagD::Stride stride_factor_D_,
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint64_t seed_ = TestBedImpl::kDefaultSeed)
+      : impl_(stride_factor_A_, stride_factor_B_, stride_factor_C_,
+              stride_factor_D_, init_A_, init_B_, init_C_, seed_) {}
 
   /// Initializes data structures
-  void initialize(ProblemShapeType problem_size, ElementScalar alpha_=1.f, ElementScalar beta_=0.f) {
+  void initialize(ProblemShapeType problem_size, ElementScalar alpha_ = 1.f,
+                  ElementScalar beta_ = 0.f) {
     auto problem_shape_MNKL = cute::append<4>(problem_size, 1);
     auto [M, N, K, L] = problem_shape_MNKL;
     auto scalar_coord = cutlass::make_Coord(1);
@@ -889,17 +886,17 @@ struct Testbed3xFusionOperation {
 
     if constexpr (IsPerRowScaleEnabled) {
       alpha.resize(col_vector_coord);
-      EXPECT_TRUE(impl_.initialize_tensor(alpha.host_view(), init_scale, impl_.seed + 2023));
+      EXPECT_TRUE(impl_.initialize_tensor(alpha.host_view(), init_scale,
+                                          impl_.seed + 2023));
       if (disable_vector_beta) {
         beta.resize(scalar_coord, false);
         cutlass::reference::host::TensorFill(beta.host_view(), beta_);
-      }
-      else {
+      } else {
         beta.resize(col_vector_coord);
-        EXPECT_TRUE(impl_.initialize_tensor(beta.host_view(), init_scale, impl_.seed + 2024));
+        EXPECT_TRUE(impl_.initialize_tensor(beta.host_view(), init_scale,
+                                            impl_.seed + 2024));
       }
-    }
-    else {
+    } else {
       alpha.resize(scalar_coord, use_device_scalars);
       beta.resize(scalar_coord, use_device_scalars);
       cutlass::reference::host::TensorFill(alpha.host_view(), alpha_);
@@ -913,10 +910,14 @@ struct Testbed3xFusionOperation {
       scale_B.resize(scalar_coord, use_device_scalars);
       scale_C.resize(scalar_coord, use_device_scalars);
       scale_D.resize(scalar_coord, use_device_scalars);
-      EXPECT_TRUE(impl_.initialize_tensor(scale_A.host_view(), init_scale, impl_.seed + 2023));
-      EXPECT_TRUE(impl_.initialize_tensor(scale_B.host_view(), init_scale, impl_.seed + 2024));
-      EXPECT_TRUE(impl_.initialize_tensor(scale_C.host_view(), init_scale, impl_.seed + 2025));
-      EXPECT_TRUE(impl_.initialize_tensor(scale_D.host_view(), init_scale, impl_.seed + 2026));
+      EXPECT_TRUE(impl_.initialize_tensor(scale_A.host_view(), init_scale,
+                                          impl_.seed + 2023));
+      EXPECT_TRUE(impl_.initialize_tensor(scale_B.host_view(), init_scale,
+                                          impl_.seed + 2024));
+      EXPECT_TRUE(impl_.initialize_tensor(scale_C.host_view(), init_scale,
+                                          impl_.seed + 2025));
+      EXPECT_TRUE(impl_.initialize_tensor(scale_D.host_view(), init_scale,
+                                          impl_.seed + 2026));
       scale_A.sync_device();
       scale_B.sync_device();
       scale_C.sync_device();
@@ -925,7 +926,8 @@ struct Testbed3xFusionOperation {
 
     if constexpr (IsBiasEnabled) {
       bias.resize(col_vector_coord);
-      EXPECT_TRUE(impl_.initialize_tensor(bias.host_view(), init_bias, impl_.seed + 2023));
+      EXPECT_TRUE(impl_.initialize_tensor(bias.host_view(), init_bias,
+                                          impl_.seed + 2023));
       bias.sync_device();
     }
 
@@ -933,144 +935,167 @@ struct Testbed3xFusionOperation {
       bias.resize(col_vector_coord);
       reference_dbias.resize(col_vector_coord);
       cutlass::reference::host::TensorFill(bias.host_view(), ElementBias(0));
-      cutlass::reference::host::TensorFill(reference_dbias.host_view(), ElementBias(0));
+      cutlass::reference::host::TensorFill(reference_dbias.host_view(),
+                                           ElementBias(0));
       bias.sync_device();
     }
 
     if constexpr (IsAbsMaxEnabledD) {
       abs_max_D.resize(scalar_coord);
       // ensure in-place device reductions perform their own initialization
-      cutlass::reference::host::TensorFill(abs_max_D.host_view(),
-                                           CUTLASS_STL_NAMESPACE::numeric_limits<ElementAmax>::max());
+      cutlass::reference::host::TensorFill(
+          abs_max_D.host_view(),
+          CUTLASS_STL_NAMESPACE::numeric_limits<ElementAmax>::max());
       abs_max_D.sync_device();
       reference_abs_max_D.resize(scalar_coord);
-      cutlass::reference::host::TensorFill(reference_abs_max_D.host_view(), ElementAmax(0));
+      cutlass::reference::host::TensorFill(reference_abs_max_D.host_view(),
+                                           ElementAmax(0));
     }
 
     if constexpr (IsAuxInEnabled) {
       auto aux_coord = cutlass::make_Coord(M * L, N);
-      auto aux_layout = cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(aux_coord, typename LayoutTagAux::Stride{});
+      auto aux_layout =
+          cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(
+              aux_coord, typename LayoutTagAux::Stride{});
       tensor_Aux.resize(aux_coord, aux_layout);
-      EXPECT_TRUE(impl_.initialize_tensor(tensor_Aux.host_view(), impl_.init_C, impl_.seed + 2023));
+      EXPECT_TRUE(impl_.initialize_tensor(tensor_Aux.host_view(), impl_.init_C,
+                                          impl_.seed + 2023));
       tensor_Aux.sync_device();
-      stride_Aux = cutlass::make_cute_packed_stride(cutlass::gemm::TagToStrideC_t<LayoutTagAux>{}, cute::make_shape(M, N, L));
+      stride_Aux = cutlass::make_cute_packed_stride(
+          cutlass::gemm::TagToStrideC_t<LayoutTagAux>{},
+          cute::make_shape(M, N, L));
     }
 
     if constexpr (IsAuxOutEnabled) {
       auto aux_coord = cutlass::make_Coord(M * L, N);
-      auto aux_layout = cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(aux_coord, typename LayoutTagAux::Stride{});
+      auto aux_layout =
+          cutlass::layout::Affine2Layout_Factory<LayoutTagD>::layout_factory(
+              aux_coord, typename LayoutTagAux::Stride{});
       tensor_Aux.resize(aux_coord, aux_layout);
       reference_Aux.resize(aux_coord, aux_layout, false);
       tensor_Aux.sync_device();
-      stride_Aux = cutlass::make_cute_packed_stride(cutlass::gemm::TagToStrideC_t<LayoutTagAux>{}, cute::make_shape(M, N, L));
+      stride_Aux = cutlass::make_cute_packed_stride(
+          cutlass::gemm::TagToStrideC_t<LayoutTagAux>{},
+          cute::make_shape(M, N, L));
 
       if constexpr (IsScaleFactorEnabled) {
         scale_Aux.resize(scalar_coord, use_device_scalars);
-        EXPECT_TRUE(impl_.initialize_tensor(scale_Aux.host_view(), init_scale, impl_.seed + 2027));
+        EXPECT_TRUE(impl_.initialize_tensor(scale_Aux.host_view(), init_scale,
+                                            impl_.seed + 2027));
         scale_Aux.sync_device();
       }
 
       if constexpr (IsAbsMaxEnabledAux) {
         abs_max_Aux.resize(scalar_coord);
         // ensure in-place device reductions perform their own initialization
-        cutlass::reference::host::TensorFill(abs_max_Aux.host_view(),
-                                             CUTLASS_STL_NAMESPACE::numeric_limits<ElementAmax>::max());
+        cutlass::reference::host::TensorFill(
+            abs_max_Aux.host_view(),
+            CUTLASS_STL_NAMESPACE::numeric_limits<ElementAmax>::max());
         abs_max_Aux.sync_device();
         reference_abs_max_Aux.resize(scalar_coord);
-        cutlass::reference::host::TensorFill(reference_abs_max_Aux.host_view(), ElementAmax(0));
+        cutlass::reference::host::TensorFill(reference_abs_max_Aux.host_view(),
+                                             ElementAmax(0));
       }
     }
-
   }
 
-  template <
-    class Element,
-    class Layout
-  >
-  bool equality_check(
-    cutlass::TensorView<Element, Layout> const& lhs,
-    cutlass::TensorView<Element, Layout> const& rhs) const {
+  template <class Element, class Layout>
+  bool equality_check(cutlass::TensorView<Element, Layout> const &lhs,
+                      cutlass::TensorView<Element, Layout> const &rhs) const {
 
-    // Factors used for calculating relative equality. CUTLASS's relative-equality
-    // checks in include/cutlass/relatively_equal.h  are inspired by
-    // https://floating-point-gui.de/errors/comparison/. This reference suggests using
-    // the minimum normal value of a given type as the nonzero_floor.
+    // Factors used for calculating relative equality. CUTLASS's
+    // relative-equality checks in include/cutlass/relatively_equal.h  are
+    // inspired by https://floating-point-gui.de/errors/comparison/. This
+    // reference suggests using the minimum normal value of a given type as the
+    // nonzero_floor.
     Element epsilon(0.1f);
     Element nonzero_floor(std::numeric_limits<Element>::min());
 
     if (check_relative_equality) {
-      return cutlass::reference::host::TensorRelativelyEquals(
-        lhs, rhs, epsilon, nonzero_floor);
-    }
-    else {
+      return cutlass::reference::host::TensorRelativelyEquals(lhs, rhs, epsilon,
+                                                              nonzero_floor);
+    } else {
       return cutlass::reference::host::TensorEquals(lhs, rhs);
     }
   }
 
-  /// Compares computed reference with device reference and outputs to a file if incorrect
-  bool compare_reference(cute::Shape<int,int,int,int> problem_shape_MNKL) {
+  /// Compares computed reference with device reference and outputs to a file if
+  /// incorrect
+  bool compare_reference(cute::Shape<int, int, int, int> problem_shape_MNKL) {
 
     auto [M, N, K, L] = problem_shape_MNKL;
     auto coord_0 = cutlass::make_Coord(0);
 
-    EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_A.host_view()), 0);
-    EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_B.host_view()), 0);
-    EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_C.host_view()), 0);
+    EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_A.host_view()),
+              0);
+    EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_B.host_view()),
+              0);
+    EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_C.host_view()),
+              0);
 
     impl_.tensor_D.sync_host();
     if (impl_.tensor_D.size() > 1) {
-      EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.tensor_D.host_view()), 0);
-      EXPECT_GT(cutlass::reference::host::TensorNorm(impl_.reference_D.host_view()), 0);
+      EXPECT_GT(
+          cutlass::reference::host::TensorNorm(impl_.tensor_D.host_view()), 0);
+      EXPECT_GT(
+          cutlass::reference::host::TensorNorm(impl_.reference_D.host_view()),
+          0);
     }
-    bool passed = equality_check(impl_.reference_D.host_view(), impl_.tensor_D.host_view());
+    bool passed = equality_check(impl_.reference_D.host_view(),
+                                 impl_.tensor_D.host_view());
 
     if constexpr (IsAbsMaxEnabledD) {
       abs_max_D.sync_host();
-      passed &= equality_check(reference_abs_max_D.host_view(), abs_max_D.host_view());
+      passed &= equality_check(reference_abs_max_D.host_view(),
+                               abs_max_D.host_view());
     }
 
     if constexpr (IsDeBiasEnabled) {
       bias.sync_host();
       EXPECT_GT(cutlass::reference::host::TensorNorm(bias.host_view()), 0);
-      EXPECT_GT(cutlass::reference::host::TensorNorm(reference_dbias.host_view()), 0);
+      EXPECT_GT(
+          cutlass::reference::host::TensorNorm(reference_dbias.host_view()), 0);
       passed &= equality_check(reference_dbias.host_view(), bias.host_view());
     }
 
     if constexpr (IsAuxOutEnabled) {
       tensor_Aux.sync_host();
-      EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_Aux.host_view()), 0);
-      EXPECT_GT(cutlass::reference::host::TensorNorm(reference_Aux.host_view()), 0);
-      passed &= equality_check(reference_Aux.host_view(), tensor_Aux.host_view());
+      EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_Aux.host_view()),
+                0);
+      EXPECT_GT(cutlass::reference::host::TensorNorm(reference_Aux.host_view()),
+                0);
+      passed &=
+          equality_check(reference_Aux.host_view(), tensor_Aux.host_view());
       if constexpr (IsAbsMaxEnabledAux) {
         abs_max_Aux.sync_host();
-        passed &= equality_check(reference_abs_max_Aux.host_view(), abs_max_Aux.host_view());
+        passed &= equality_check(reference_abs_max_Aux.host_view(),
+                                 abs_max_Aux.host_view());
       }
     }
 
     EXPECT_TRUE(passed);
     if (!passed) {
       std::stringstream fname;
-      fname << "error_Gemm_device_"
-        << M << "x" << N << "x" << K << "x" << L << "_"
-        << cute::get<0>(typename Gemm::GemmKernel::TileShape{}) << "_"
-        << cute::get<1>(typename Gemm::GemmKernel::TileShape{}) << "_"
-        << cute::get<2>(typename Gemm::GemmKernel::TileShape{}) << ".txt";
+      fname << "error_Gemm_device_" << M << "x" << N << "x" << K << "x" << L
+            << "_" << cute::get<0>(typename Gemm::GemmKernel::TileShape{})
+            << "_" << cute::get<1>(typename Gemm::GemmKernel::TileShape{})
+            << "_" << cute::get<2>(typename Gemm::GemmKernel::TileShape{})
+            << ".txt";
 
       std::ofstream file(fname.str());
-      file
-        << "problem: " << ' ' << M << "x" << N << "x" << K << ", Batch count = " << L;
+      file << "problem: " << ' ' << M << "x" << N << "x" << K
+           << ", Batch count = " << L;
       if constexpr (IsScaleFactorEnabled) {
-        file
-          << ", scale_a: " << scale_A.at(coord_0)
-          << ", scale_b: " << scale_B.at(coord_0)
-          << ", scale_c: " << scale_C.at(coord_0);
+        file << ", scale_a: " << scale_A.at(coord_0)
+             << ", scale_b: " << scale_B.at(coord_0)
+             << ", scale_c: " << scale_C.at(coord_0);
       }
       if constexpr (IsPerRowScaleEnabled) {
         file << "\n\nvalpha = \n" << alpha.host_view();
         file << "\n\nvbeta = \n" << beta.host_view();
       } else {
-        file
-          << ", alpha: " << alpha.at(coord_0) << ", beta: " << beta.at(coord_0);
+        file << ", alpha: " << alpha.at(coord_0)
+             << ", beta: " << beta.at(coord_0);
       }
       file << "\n\n";
 
@@ -1094,10 +1119,10 @@ struct Testbed3xFusionOperation {
         file << "\n\n";
       }
 
-      file
-        << "A =\n" << impl_.tensor_A.host_view()
-        << "\nB =\n" << impl_.tensor_B.host_view()
-        << "\nC =\n" << impl_.tensor_C.host_view();
+      file << "A =\n"
+           << impl_.tensor_A.host_view() << "\nB =\n"
+           << impl_.tensor_B.host_view() << "\nC =\n"
+           << impl_.tensor_C.host_view();
 
       if constexpr (IsBiasEnabled) {
         file << "\n\nBias = \n" << bias.host_view();
@@ -1113,21 +1138,20 @@ struct Testbed3xFusionOperation {
       }
 
       if constexpr (IsAuxOutEnabled) {
-        file
-          << "\n\nReference Aux =\n" << reference_Aux.host_view()
-          << "\n\nComputed Aux =\n" << tensor_Aux.host_view();
+        file << "\n\nReference Aux =\n"
+             << reference_Aux.host_view() << "\n\nComputed Aux =\n"
+             << tensor_Aux.host_view();
       }
-      file
-        << "\n\nReference D =\n" << impl_.reference_D.host_view()
-        << "\n\nComputed D =\n" << impl_.tensor_D.host_view();
+      file << "\n\nReference D =\n"
+           << impl_.reference_D.host_view() << "\n\nComputed D =\n"
+           << impl_.tensor_D.host_view();
     }
 
     return passed;
   }
 
   /// Verifies the result against a reference implementation
-  bool verify(ProblemShapeType problem_size)
-  {
+  bool verify(ProblemShapeType problem_size) {
     auto problem_shape_MNKL = cute::append<4>(problem_size, 1);
     auto M = cute::get<0>(problem_shape_MNKL);
     auto N = cute::get<1>(problem_shape_MNKL);
@@ -1135,37 +1159,41 @@ struct Testbed3xFusionOperation {
     auto L = cute::get<3>(problem_shape_MNKL);
     auto coord_0 = cutlass::make_Coord(0);
 
-    auto A = cute::make_tensor(detail::make_iterator(impl_.tensor_A.host_data()),
+    auto A = cute::make_tensor(
+        detail::make_iterator(impl_.tensor_A.host_data()),
         cute::make_layout(cute::make_shape(M, K, L), impl_.stride_a));
-    auto B = cute::make_tensor(detail::make_iterator(impl_.tensor_B.host_data()),
+    auto B = cute::make_tensor(
+        detail::make_iterator(impl_.tensor_B.host_data()),
         cute::make_layout(cute::make_shape(N, K, L), impl_.stride_b));
-    auto C = cute::make_tensor(detail::make_iterator(impl_.tensor_C.host_data()),
+    auto C = cute::make_tensor(
+        detail::make_iterator(impl_.tensor_C.host_data()),
         cute::make_layout(cute::make_shape(M, N, L), impl_.stride_c));
-    auto D = cute::make_tensor(detail::make_iterator(impl_.reference_D.host_data()),
+    auto D = cute::make_tensor(
+        detail::make_iterator(impl_.reference_D.host_data()),
         cute::make_layout(cute::make_shape(M, N, L), impl_.stride_d));
-    auto Bias = cute::make_tensor(detail::make_iterator(IsDeBiasEnabled ? reference_dbias.host_data() : bias.host_data()),
+    auto Bias = cute::make_tensor(
+        detail::make_iterator(IsDeBiasEnabled ? reference_dbias.host_data()
+                                              : bias.host_data()),
         cute::make_layout(cute::make_shape(M, cute::_1{})));
-    auto Aux = cute::make_tensor(detail::make_iterator(IsAuxInEnabled ? tensor_Aux.host_data() : reference_Aux.host_data()),
+    auto Aux = cute::make_tensor(
+        detail::make_iterator(IsAuxInEnabled ? tensor_Aux.host_data()
+                                             : reference_Aux.host_data()),
         cute::make_layout(cute::make_shape(M, N, L), stride_Aux));
-    auto Valpha = cute::make_tensor(detail::make_iterator(alpha.host_data()),
-        cute::make_layout(cute::make_shape(M, cute::_1{})));
-    auto Vbeta = cute::make_tensor(detail::make_iterator(beta.host_data()),
-        cute::make_layout(cute::make_shape(M, cute::_1{})));
+    auto Valpha =
+        cute::make_tensor(detail::make_iterator(alpha.host_data()),
+                          cute::make_layout(cute::make_shape(M, cute::_1{})));
+    auto Vbeta =
+        cute::make_tensor(detail::make_iterator(beta.host_data()),
+                          cute::make_layout(cute::make_shape(M, cute::_1{})));
 
-    cutlass::reference::host::GettMainloopParams<ElementAccumulator, decltype(A), decltype(B)> mainloop_params{A, B};
+    cutlass::reference::host::GettMainloopParams<ElementAccumulator,
+                                                 decltype(A), decltype(B)>
+        mainloop_params{A, B};
 
     cutlass::reference::host::GettEpilogueParams<
-      ElementScalar,
-      ElementScalar,
-      ElementAccumulator,
-      ElementCompute,
-      decltype(C),
-      decltype(D),
-      decltype(Bias),
-      decltype(Aux),
-      decltype(Valpha),
-      decltype(Vbeta),
-      ActivationFunctor>
+        ElementScalar, ElementScalar, ElementAccumulator, ElementCompute,
+        decltype(C), decltype(D), decltype(Bias), decltype(Aux),
+        decltype(Valpha), decltype(Vbeta), ActivationFunctor>
         epilogue_params{};
 
     epilogue_params.C = C;
@@ -1215,16 +1243,13 @@ struct Testbed3xFusionOperation {
   }
 
   /// Executes one test
-  bool run(
-    ProblemShapeType problem_size,
-    ElementScalar alpha_ = ElementScalar(1),
-    ElementScalar beta_ = ElementScalar(0),
-    RasterOrderOptions raster_order = RasterOrderOptions::Heuristic,
-    detail::MaxSwizzleSize max_swizzle = detail::MaxSwizzleSize{},
-    detail::Splits splits = detail::Splits{},
-    bool profiling = false,
-    detail::Iterations iterations = detail::Iterations{})
-  {
+  bool run(ProblemShapeType problem_size,
+           ElementScalar alpha_ = ElementScalar(1),
+           ElementScalar beta_ = ElementScalar(0),
+           RasterOrderOptions raster_order = RasterOrderOptions::Heuristic,
+           detail::MaxSwizzleSize max_swizzle = detail::MaxSwizzleSize{},
+           detail::Splits splits = detail::Splits{}, bool profiling = false,
+           detail::Iterations iterations = detail::Iterations{}) {
     // Fail test if insufficient CUDA device
     if (!impl_.sufficient()) {
       std::cout << "Test failed due to insufficient CUDA device." << std::endl;
@@ -1237,14 +1262,18 @@ struct Testbed3xFusionOperation {
     typename Gemm::Arguments arguments;
     cutlass::KernelHardwareInfo hw_info;
     cudaDeviceProp prop;
-    
+
     hw_info.device_id = 0;
     if (not profiling) {
-      impl_.sm_count = min(impl_.MaxSmCount, cutlass::KernelHardwareInfo::query_device_multiprocessor_count(hw_info.device_id));
+      impl_.sm_count =
+          min(impl_.MaxSmCount,
+              cutlass::KernelHardwareInfo::query_device_multiprocessor_count(
+                  hw_info.device_id));
       hw_info.sm_count = impl_.sm_count;
-    }
-    else {
-      impl_.sm_count = cutlass::KernelHardwareInfo::query_device_multiprocessor_count(hw_info.device_id);
+    } else {
+      impl_.sm_count =
+          cutlass::KernelHardwareInfo::query_device_multiprocessor_count(
+              hw_info.device_id);
       hw_info.sm_count = impl_.sm_count;
     }
 
@@ -1255,46 +1284,39 @@ struct Testbed3xFusionOperation {
     initialize(problem_size, alpha_, beta_);
 
     typename Gemm::GemmKernel::TileScheduler::Arguments scheduler_args;
-    if constexpr (std::is_same_v<typename Gemm::GemmKernel::TileSchedulerTag, cutlass::gemm::StreamKScheduler>) {
-      scheduler_args = { static_cast<int>(splits) };
+    if constexpr (std::is_same_v<typename Gemm::GemmKernel::TileSchedulerTag,
+                                 cutlass::gemm::StreamKScheduler>) {
+      scheduler_args = {static_cast<int>(splits)};
     }
 
-    arguments = typename Gemm::Arguments{
-      cutlass::gemm::GemmUniversalMode::kGemm,
-      problem_size,
-      {
-        impl_.tensor_A.device_data(), impl_.stride_a,
-        impl_.tensor_B.device_data(), impl_.stride_b
-      },
-      { // Epilogue arguments
-        {}, // thread
-        impl_.tensor_C.device_data(),
-        impl_.stride_c,
-        impl_.tensor_D.device_data(),
-        impl_.stride_d
-      }, // Epilogue arguments end
-      hw_info,
-      scheduler_args
-    };
-    
+    arguments =
+        typename Gemm::Arguments{cutlass::gemm::GemmUniversalMode::kGemm,
+                                 problem_size,
+                                 {impl_.tensor_A.device_data(), impl_.stride_a,
+                                  impl_.tensor_B.device_data(), impl_.stride_b},
+                                 {    // Epilogue arguments
+                                  {}, // thread
+                                  impl_.tensor_C.device_data(),
+                                  impl_.stride_c,
+                                  impl_.tensor_D.device_data(),
+                                  impl_.stride_d}, // Epilogue arguments end
+                                 hw_info,
+                                 scheduler_args};
+
     auto coord_0 = cutlass::make_Coord(0);
     if constexpr (IsLegacy) {
-      arguments.epilogue.thread = {
-        alpha.at(coord_0),
-        beta.at(coord_0),
-        alpha.device_data(),
-        beta.device_data()
-      };
+      arguments.epilogue.thread = {alpha.at(coord_0), beta.at(coord_0),
+                                   alpha.device_data(), beta.device_data()};
       arguments.epilogue.ptr_Bias = bias.device_data();
       arguments.epilogue.ptr_T = tensor_Aux.device_data();
-    }
-    else {
+    } else {
       auto &fusion_args = arguments.epilogue.thread;
 
       fusion_args.alpha = alpha.at(coord_0);
       fusion_args.beta = beta.at(coord_0);
       fusion_args.alpha_ptr = alpha.device_data();
-      fusion_args.beta_ptr = beta.device_data(); // if disable_vector_beta is true this is nullptr
+      fusion_args.beta_ptr =
+          beta.device_data(); // if disable_vector_beta is true this is nullptr
 
       if constexpr (IsScaleFactorEnabled) {
         fusion_args.scale_a = scale_A.at(coord_0);
@@ -1316,7 +1338,9 @@ struct Testbed3xFusionOperation {
       }
 
       // example of how to set kernel activation arguments
-      if constexpr (cute::is_same_v<ActivationFunctor, cutlass::epilogue::thread::ScaledGELU_taylor<ElementCompute>>) {
+      if constexpr (cute::is_same_v<ActivationFunctor,
+                                    cutlass::epilogue::thread::
+                                        ScaledGELU_taylor<ElementCompute>>) {
         // see ActivationFunctor::Arguments in activation.h for definition
         // if Arguments doesn't exist then fusion_args.activation is empty
         fusion_args.activation.scale = ElementCompute(1);
@@ -1353,7 +1377,8 @@ struct Testbed3xFusionOperation {
 
     if (status != cutlass::Status::kSuccess) {
       cudaError_t error = cudaGetLastError();
-      std::cerr << "This test is not supported: " << cudaGetErrorString(error) << "\n";
+      std::cerr << "This test is not supported: " << cudaGetErrorString(error)
+                << "\n";
       return true;
     }
 
@@ -1362,9 +1387,9 @@ struct Testbed3xFusionOperation {
     //
 
     if (profiling) {
-      return impl_.profile(problem_size, static_cast<int>(iterations), gemm_op, arguments, workspace);
-    }
-    else {
+      return impl_.profile(problem_size, static_cast<int>(iterations), gemm_op,
+                           arguments, workspace);
+    } else {
       cudaError_t result;
       status = gemm_op.initialize(arguments, workspace.get());
       status = gemm_op.run();
@@ -1381,8 +1406,8 @@ struct Testbed3xFusionOperation {
       //
       bool passed = this->verify(problem_size);
       if (!passed) {
-        std::cout << "Error : Failed : with alpha: " << float(alpha_) << ", beta: " << float(beta_)
-                  << "\n";
+        std::cout << "Error : Failed : with alpha: " << float(alpha_)
+                  << ", beta: " << float(beta_) << "\n";
       }
 
       return passed;
@@ -1390,13 +1415,10 @@ struct Testbed3xFusionOperation {
   }
 };
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Gemm,
-  typename Testbed = Testbed3x<Gemm, cutlass::epilogue::thread::Identity>
->
+template <typename Gemm, typename Testbed = Testbed3x<
+                             Gemm, cutlass::epilogue::thread::Identity>>
 bool TestAll(double alpha = 1.0, double beta = 0.0, Testbed testbed = {}) {
   using ElementScalar = typename Gemm::EpilogueOutputOp::ElementScalar;
   using ProblemShapeType = typename Gemm::GemmKernel::ProblemShape;
@@ -1405,19 +1427,23 @@ bool TestAll(double alpha = 1.0, double beta = 0.0, Testbed testbed = {}) {
   std::vector<int> problem_size_m = {max_alignment, 512 - 3 * max_alignment};
   std::vector<int> problem_size_n = {max_alignment, 512 - 2 * max_alignment};
 
-  if constexpr (std::is_same_v<typename Gemm::GemmKernel::DispatchPolicy::Schedule,
-                cutlass::gemm::KernelTmaWarpSpecializedPingpong>) {
+  if constexpr (std::is_same_v<
+                    typename Gemm::GemmKernel::DispatchPolicy::Schedule,
+                    cutlass::gemm::KernelTmaWarpSpecializedPingpong>) {
     problem_size_m.push_back(768);
     problem_size_n.push_back(768);
   }
 
   constexpr int Stages = Gemm::GemmKernel::DispatchPolicy::Stages;
-  constexpr int TileShapeK = cute::size<2>(typename Gemm::GemmKernel::TileShape{});
+  constexpr int TileShapeK =
+      cute::size<2>(typename Gemm::GemmKernel::TileShape{});
 
-  std::vector<int> problem_size_k = {max_alignment, TileShapeK * (Stages + 1) - max_alignment};
+  std::vector<int> problem_size_k = {max_alignment,
+                                     TileShapeK * (Stages + 1) - max_alignment};
 
   std::vector<int> problem_splits = {1};
-  if constexpr (std::is_same_v<typename Gemm::GemmKernel::TileSchedulerTag, cutlass::gemm::StreamKScheduler>) {
+  if constexpr (std::is_same_v<typename Gemm::GemmKernel::TileSchedulerTag,
+                               cutlass::gemm::StreamKScheduler>) {
     problem_splits.push_back(2);
     problem_splits.push_back(3);
 
@@ -1425,8 +1451,10 @@ bool TestAll(double alpha = 1.0, double beta = 0.0, Testbed testbed = {}) {
     problem_splits.push_back(Stages + 1);
   }
 
-  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::PersistentTileSchedulerSm90::RasterOrderOptions;
-  std::vector<RasterOrderOptions> raster_orders = {RasterOrderOptions::AlongM, RasterOrderOptions::AlongN};
+  using RasterOrderOptions = typename cutlass::gemm::kernel::detail::
+      PersistentTileSchedulerSm90::RasterOrderOptions;
+  std::vector<RasterOrderOptions> raster_orders = {RasterOrderOptions::AlongM,
+                                                   RasterOrderOptions::AlongN};
   std::vector<int> max_swizzle_sizes = {1, 4};
 
   bool passed = true;
@@ -1440,19 +1468,15 @@ bool TestAll(double alpha = 1.0, double beta = 0.0, Testbed testbed = {}) {
               ProblemShapeType problem_size;
               if constexpr (cute::rank(ProblemShapeType{}) == 4) {
                 problem_size = ProblemShapeType{m, n, k, /* l */ 1};
-              }
-              else {
+              } else {
                 problem_size = ProblemShapeType{m, n, k};
               }
 
               passed = testbed.run(
-                problem_size,
-                cutlass::from_real<ElementScalar>(alpha),
-                cutlass::from_real<ElementScalar>(beta),
-                raster_order,
-                detail::MaxSwizzleSize(max_swizzle_size),
-                detail::Splits(splits)
-              );
+                  problem_size, cutlass::from_real<ElementScalar>(alpha),
+                  cutlass::from_real<ElementScalar>(beta), raster_order,
+                  detail::MaxSwizzleSize(max_swizzle_size),
+                  detail::Splits(splits));
 
               if (!passed) {
                 return false;
@@ -1466,12 +1490,11 @@ bool TestAll(double alpha = 1.0, double beta = 0.0, Testbed testbed = {}) {
 
   // if we do support batched GEMM, just run one test on it to save on test time
   if constexpr (cute::rank(ProblemShapeType{}) == 4) {
-    auto problem_size = ProblemShapeType{256 + max_alignment, 256 + max_alignment, 160 + max_alignment, /* l */ 3};
-    passed = testbed.run(
-      problem_size,
-      cutlass::from_real<ElementScalar>(alpha),
-      cutlass::from_real<ElementScalar>(beta)
-    );
+    auto problem_size =
+        ProblemShapeType{256 + max_alignment, 256 + max_alignment,
+                         160 + max_alignment, /* l */ 3};
+    passed = testbed.run(problem_size, cutlass::from_real<ElementScalar>(alpha),
+                         cutlass::from_real<ElementScalar>(beta));
 
     if (!passed) {
       return false;
@@ -1484,7 +1507,8 @@ bool TestAll(double alpha = 1.0, double beta = 0.0, Testbed testbed = {}) {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename Gemm>
-bool TestAllBiasElementwise(double alpha = 1.0, double beta = 0.0, bool check_relative_equality=false) {
+bool TestAllBiasElementwise(double alpha = 1.0, double beta = 0.0,
+                            bool check_relative_equality = false) {
   Testbed3xFusionOperation<Gemm> testbed(check_relative_equality);
 
   return TestAll<Gemm>(alpha, beta, testbed);
@@ -1492,16 +1516,15 @@ bool TestAllBiasElementwise(double alpha = 1.0, double beta = 0.0, bool check_re
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Gemm>
-bool TestGemmPerf3x(int iterations = 20) {
+template <typename Gemm> bool TestGemmPerf3x(int iterations = 20) {
   using ProblemShapeType = typename Gemm::GemmKernel::ProblemShape;
   using ElementAccumulator = typename Gemm::GemmKernel::ElementAccumulator;
   using ElementScalar = ElementAccumulator;
   bool passed = true;
 
-  std::vector<int> problem_size_m = { 4608 };
-  std::vector<int> problem_size_n = { 4608 };
-  std::vector<int> problem_size_k = { 8192 };
+  std::vector<int> problem_size_m = {4608};
+  std::vector<int> problem_size_n = {4608};
+  std::vector<int> problem_size_k = {8192};
 
   Testbed3x<Gemm, cutlass::epilogue::thread::Identity> testbed;
 
@@ -1511,18 +1534,13 @@ bool TestGemmPerf3x(int iterations = 20) {
         ProblemShapeType problem_size;
         if constexpr (cute::rank(ProblemShapeType{}) == 4) {
           problem_size = ProblemShapeType{m, n, k, /* l */ 1};
-        }
-        else {
+        } else {
           problem_size = ProblemShapeType{m, n, k};
         }
 
-        passed = testbed.run(
-          problem_size,
-          cutlass::from_real<ElementScalar>(1),
-          cutlass::from_real<ElementScalar>(0),
-          true,
-          detail::Iterations(iterations)
-        );
+        passed = testbed.run(problem_size, cutlass::from_real<ElementScalar>(1),
+                             cutlass::from_real<ElementScalar>(0), true,
+                             detail::Iterations(iterations));
 
         if (!passed) {
           return false;
@@ -1531,17 +1549,13 @@ bool TestGemmPerf3x(int iterations = 20) {
     }
   }
 
-
   // if we do support batched GEMM, just run it once
   if constexpr (cute::rank(ProblemShapeType{}) == 4) {
-    auto problem_size = ProblemShapeType{problem_size_m[0], problem_size_n[0], problem_size_k[0], /* l */ 4};
-    passed = testbed.run(
-      problem_size,
-      cutlass::from_real<ElementScalar>(1),
-      cutlass::from_real<ElementScalar>(0),
-      true,
-      detail::Iterations(iterations)
-    );
+    auto problem_size = ProblemShapeType{problem_size_m[0], problem_size_n[0],
+                                         problem_size_k[0], /* l */ 4};
+    passed = testbed.run(problem_size, cutlass::from_real<ElementScalar>(1),
+                         cutlass::from_real<ElementScalar>(0), true,
+                         detail::Iterations(iterations));
 
     if (!passed) {
       return false;
@@ -1550,7 +1564,6 @@ bool TestGemmPerf3x(int iterations = 20) {
 
   return passed;
 }
-
 
 } // namespace device
 } // namespace gemm

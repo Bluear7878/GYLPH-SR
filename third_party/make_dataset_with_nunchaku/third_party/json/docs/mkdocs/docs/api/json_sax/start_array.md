@@ -9,7 +9,7 @@ The beginning of an array was read.
 ## Parameters
 
 `elements` (in)
-:   number of object elements or `#!cpp -1` if unknown
+: number of object elements or `#!cpp -1` if unknown
 
 ## Return value
 
@@ -23,17 +23,19 @@ Binary formats may report the number of elements.
 
 ??? example
 
-    The example below shows how the SAX interface is used.
+````
+The example below shows how the SAX interface is used.
 
-    ```cpp
-    --8<-- "examples/sax_parse.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/sax_parse.output"
-    ```
+```cpp
+--8<-- "examples/sax_parse.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/sax_parse.output"
+```
+````
 
 ## Version history
 

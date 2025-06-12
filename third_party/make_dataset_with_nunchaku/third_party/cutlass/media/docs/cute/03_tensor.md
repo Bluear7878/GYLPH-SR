@@ -10,12 +10,12 @@ including global memory, shared memory, and register memory.
 
 Users access a `Tensor`'s elements in one of three ways:
 
-* `operator()`, taking as many integral arguments as the number of modes,
+- `operator()`, taking as many integral arguments as the number of modes,
   corresponding to the element's (possibly) multidimensional logical index;
 
-* `operator()`, taking a `Coord` (an `IntTuple` of the logical indices); or
+- `operator()`, taking a `Coord` (an `IntTuple` of the logical indices); or
 
-* `operator[]`, taking a `Coord` (an `IntTuple` of the logical indices).
+- `operator[]`, taking a `Coord` (an `IntTuple` of the logical indices).
 
 ### Slices: Get a Tensor accessing a subset of elements
 
@@ -55,11 +55,11 @@ decltype(auto) operator[](Coord const& coord) {
 
 One could summarize almost all CuTe use cases as follows:
 
-* create `Layout`s,
+- create `Layout`s,
 
-* create `Tensor`s with those `Layout`s, and
+- create `Tensor`s with those `Layout`s, and
 
-* invoke (either CuTe's, or custom) algorithms on those `Tensor`s.
+- invoke (either CuTe's, or custom) algorithms on those `Tensor`s.
 
 ### Ownership of the elements
 
@@ -130,14 +130,14 @@ This results in
 CuTe comes with a few `Engine` types.
 Here are the three that new users are most likely to encounter first.
 
-* `ArrayEngine<class T, int N>`: an owning `Engine`,
-   representing an array of `N` elements of type `T`
+- `ArrayEngine<class T, int N>`: an owning `Engine`,
+  representing an array of `N` elements of type `T`
 
-* `ViewEngine<Iterator>`: a nonowning `Engine`,
+- `ViewEngine<Iterator>`: a nonowning `Engine`,
   where `Iterator` is a random access iterator
   (either a pointer to an array, or something that acts like one)
 
-* `ConstViewEngine<Iterator>`: a nonowning `Engine`,
+- `ConstViewEngine<Iterator>`: a nonowning `Engine`,
   which is the view-of-const-elements version of `ViewEngine`
 
 ### "Tags" for different kinds of memory
@@ -260,4 +260,3 @@ For more details on the algorithms that CuTe provides,
 please refer to [the algorithms section](./04_algorithms.md)
 of the tutorial, or the
 [CuTe overview in the GEMM tutorial](./0x_gemm_tutorial.md).
-

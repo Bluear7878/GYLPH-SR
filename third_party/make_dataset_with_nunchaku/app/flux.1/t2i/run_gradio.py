@@ -6,22 +6,27 @@ import time
 from datetime import datetime
 
 import GPUtil
-import spaces
-import torch
-from peft.tuners import lora
-
-from nunchaku.models.safety_checker import SafetyChecker
-from utils import get_pipeline
-from vars import DEFAULT_HEIGHT, DEFAULT_WIDTH, EXAMPLES, MAX_SEED, PROMPT_TEMPLATES, SVDQ_LORA_PATHS
-
 # import gradio last to avoid conflicts with other imports
 import gradio as gr
+import spaces
+import torch
+from nunchaku.models.safety_checker import SafetyChecker
+from peft.tuners import lora
+from vars import (DEFAULT_HEIGHT, DEFAULT_WIDTH, EXAMPLES, MAX_SEED,
+                  PROMPT_TEMPLATES, SVDQ_LORA_PATHS)
+
+from utils import get_pipeline
 
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-m", "--model", type=str, default="schnell", choices=["schnell", "dev"], help="Which FLUX.1 model to use"
+        "-m",
+        "--model",
+        type=str,
+        default="schnell",
+        choices=["schnell", "dev"],
+        help="Which FLUX.1 model to use",
     )
     parser.add_argument(
         "-p",
@@ -32,9 +37,15 @@ def get_args() -> argparse.Namespace:
         choices=["int4", "fp4", "bf16"],
         help="Which precisions to use",
     )
-    parser.add_argument("--use-qencoder", action="store_true", help="Whether to use 4-bit text encoder")
-    parser.add_argument("--no-safety-checker", action="store_true", help="Disable safety checker")
-    parser.add_argument("--count-use", action="store_true", help="Whether to count the number of uses")
+    parser.add_argument(
+        "--use-qencoder", action="store_true", help="Whether to use 4-bit text encoder"
+    )
+    parser.add_argument(
+        "--no-safety-checker", action="store_true", help="Disable safety checker"
+    )
+    parser.add_argument(
+        "--count-use", action="store_true", help="Whether to count the number of uses"
+    )
     parser.add_argument("--gradio-root-path", type=str, default="")
     return parser.parse_args()
 
@@ -186,7 +197,12 @@ with gr.Blocks(
             )
         else:
             count_info = ""
-        header_str = DESCRIPTION.format(model=args.model, device_info=device_info, notice=notice, count_info=count_info)
+        header_str = DESCRIPTION.format(
+            model=args.model,
+            device_info=device_info,
+            notice=notice,
+            count_info=count_info,
+        )
         return header_str
 
     header = gr.HTML(get_header_str())
@@ -210,52 +226,109 @@ with gr.Blocks(
                     latency_results.append(latency_result)
     with gr.Row():
         prompt = gr.Text(
-            label="Prompt", show_label=False, max_lines=1, placeholder="Enter your prompt", container=False, scale=4
+            label="Prompt",
+            show_label=False,
+            max_lines=1,
+            placeholder="Enter your prompt",
+            container=False,
+            scale=4,
         )
         run_button = gr.Button("Run", scale=1)
     if args.model == "dev":
         with gr.Row():
-            lora_name = gr.Dropdown(label="LoRA Name", choices=PROMPT_TEMPLATES.keys(), value="None", scale=1)
+            lora_name = gr.Dropdown(
+                label="LoRA Name",
+                choices=PROMPT_TEMPLATES.keys(),
+                value="None",
+                scale=1,
+            )
             prompt_template = gr.Textbox(
-                label="LoRA Prompt Template", value=PROMPT_TEMPLATES["None"], scale=1, max_lines=1
+                label="LoRA Prompt Template",
+                value=PROMPT_TEMPLATES["None"],
+                scale=1,
+                max_lines=1,
             )
     else:
         lora_name = "None"
 
     with gr.Row():
-        seed = gr.Slider(label="Seed", show_label=True, minimum=0, maximum=MAX_SEED, value=233, step=1, scale=4)
-        randomize_seed = gr.Button("Random Seed", scale=1, min_width=50, elem_id="random_seed")
+        seed = gr.Slider(
+            label="Seed",
+            show_label=True,
+            minimum=0,
+            maximum=MAX_SEED,
+            value=233,
+            step=1,
+            scale=4,
+        )
+        randomize_seed = gr.Button(
+            "Random Seed", scale=1, min_width=50, elem_id="random_seed"
+        )
     with gr.Accordion("Advanced options", open=False):
         with gr.Group():
             if args.model == "schnell":
-                num_inference_steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=8, step=1, value=4)
+                num_inference_steps = gr.Slider(
+                    label="Sampling Steps", minimum=1, maximum=8, step=1, value=4
+                )
                 guidance_scale = 0
                 lora_weight = 0
             elif args.model == "dev":
-                num_inference_steps = gr.Slider(label="Sampling Steps", minimum=10, maximum=50, step=1, value=25)
-                guidance_scale = gr.Slider(label="Guidance Scale", minimum=1, maximum=10, step=0.1, value=3.5)
-                lora_weight = gr.Slider(label="LoRA Weight", minimum=0, maximum=2, step=0.1, value=1)
+                num_inference_steps = gr.Slider(
+                    label="Sampling Steps", minimum=10, maximum=50, step=1, value=25
+                )
+                guidance_scale = gr.Slider(
+                    label="Guidance Scale", minimum=1, maximum=10, step=0.1, value=3.5
+                )
+                lora_weight = gr.Slider(
+                    label="LoRA Weight", minimum=0, maximum=2, step=0.1, value=1
+                )
             else:
                 raise NotImplementedError(f"Model {args.model} not implemented")
     if args.model == "schnell":
 
         def generate_func(prompt, num_inference_steps, seed):
             return generate(
-                prompt, DEFAULT_HEIGHT, DEFAULT_WIDTH, num_inference_steps, guidance_scale, lora_name, lora_weight, seed
+                prompt,
+                DEFAULT_HEIGHT,
+                DEFAULT_WIDTH,
+                num_inference_steps,
+                guidance_scale,
+                lora_name,
+                lora_weight,
+                seed,
             )
 
         input_args = [prompt, num_inference_steps, seed]
     elif args.model == "dev":
 
-        def generate_func(prompt, num_inference_steps, guidance_scale, lora_name, lora_weight, seed):
+        def generate_func(
+            prompt, num_inference_steps, guidance_scale, lora_name, lora_weight, seed
+        ):
             return generate(
-                prompt, DEFAULT_HEIGHT, DEFAULT_WIDTH, num_inference_steps, guidance_scale, lora_name, lora_weight, seed
+                prompt,
+                DEFAULT_HEIGHT,
+                DEFAULT_WIDTH,
+                num_inference_steps,
+                guidance_scale,
+                lora_name,
+                lora_weight,
+                seed,
             )
 
-        input_args = [prompt, num_inference_steps, guidance_scale, lora_name, lora_weight, seed]
+        input_args = [
+            prompt,
+            num_inference_steps,
+            guidance_scale,
+            lora_name,
+            lora_weight,
+            seed,
+        ]
 
     gr.Examples(
-        examples=EXAMPLES[args.model], inputs=input_args, outputs=[*image_results, *latency_results], fn=generate_func
+        examples=EXAMPLES[args.model],
+        inputs=input_args,
+        outputs=[*image_results, *latency_results],
+        fn=generate_func,
     )
 
     gr.on(
@@ -266,8 +339,18 @@ with gr.Blocks(
         api_name=False,
     )
     randomize_seed.click(
-        lambda: random.randint(0, MAX_SEED), inputs=[], outputs=seed, api_name=False, queue=False
-    ).then(fn=generate_func, inputs=input_args, outputs=[*image_results, *latency_results], api_name=False, queue=False)
+        lambda: random.randint(0, MAX_SEED),
+        inputs=[],
+        outputs=seed,
+        api_name=False,
+        queue=False,
+    ).then(
+        fn=generate_func,
+        inputs=input_args,
+        outputs=[*image_results, *latency_results],
+        api_name=False,
+        queue=False,
+    )
 
     if args.model == "dev":
         lora_name.change(
@@ -277,8 +360,12 @@ with gr.Blocks(
             api_name=False,
             queue=False,
         )
-    gr.Markdown("MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility")
+    gr.Markdown(
+        "MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility"
+    )
 
 
 if __name__ == "__main__":
-    demo.queue(max_size=20).launch(server_name="0.0.0.0", debug=True, share=True, root_path=args.gradio_root_path)
+    demo.queue(max_size=20).launch(
+        server_name="0.0.0.0", debug=True, share=True, root_path=args.gradio_root_path
+    )

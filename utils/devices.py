@@ -1,9 +1,10 @@
-import sys
 import contextlib
+import sys
 from functools import lru_cache
 
 import torch
-#from modules import errors
+
+# from modules import errors
 
 if sys.platform == "darwin":
     from modules import mac_specific
@@ -54,7 +55,10 @@ def enable_tf32():
 
         # enabling benchmark option seems to enable a range of cards to do fp16 when they otherwise can't
         # see https://github.com/AUTOMATIC1111/stable-diffusion-webui/pull/4407
-        if any(torch.cuda.get_device_capability(devid) == (7, 5) for devid in range(0, torch.cuda.device_count())):
+        if any(
+            torch.cuda.get_device_capability(devid) == (7, 5)
+            for devid in range(0, torch.cuda.device_count())
+        ):
             torch.backends.cudnn.benchmark = True
 
         torch.backends.cuda.matmul.allow_tf32 = True
@@ -62,10 +66,12 @@ def enable_tf32():
 
 
 enable_tf32()
-#errors.run(enable_tf32, "Enabling TF32")
+# errors.run(enable_tf32, "Enabling TF32")
 
 cpu = torch.device("cpu")
-device = device_interrogate = device_gfpgan = device_esrgan = device_codeformer = torch.device("cuda")
+device = device_interrogate = device_gfpgan = device_esrgan = device_codeformer = (
+    torch.device("cuda")
+)
 dtype = torch.float16
 dtype_vae = torch.float16
 dtype_unet = torch.float16
@@ -97,7 +103,11 @@ def autocast(disable=False):
 
 
 def without_autocast(disable=False):
-    return torch.autocast("cuda", enabled=False) if torch.is_autocast_enabled() and not disable else contextlib.nullcontext()
+    return (
+        torch.autocast("cuda", enabled=False)
+        if torch.is_autocast_enabled() and not disable
+        else contextlib.nullcontext()
+    )
 
 
 class NansException(Exception):

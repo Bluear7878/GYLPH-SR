@@ -24,124 +24,132 @@ The default value is `0`.
 
 !!! hint "CMake option"
 
-    Enum serialization can also be controlled with the CMake option
-    [`JSON_DisableEnumSerialization`](../../integration/cmake.md#json_disableenumserialization)
-    (`OFF` by default) which defines `JSON_DISABLE_ENUM_SERIALIZATION` accordingly.
+```
+Enum serialization can also be controlled with the CMake option
+[`JSON_DisableEnumSerialization`](../../integration/cmake.md#json_disableenumserialization)
+(`OFF` by default) which defines `JSON_DISABLE_ENUM_SERIALIZATION` accordingly.
+```
 
 ## Examples
 
 ??? example "Example 1: Disabled behavior"
 
-    The code below forces the library **not** to create default serialization/deserialization functions `from_json` and `to_json`, meaning the code below
-    **does not** compile.
+````
+The code below forces the library **not** to create default serialization/deserialization functions `from_json` and `to_json`, meaning the code below
+**does not** compile.
 
-    ```cpp
-    #define JSON_DISABLE_ENUM_SERIALIZATION 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_DISABLE_ENUM_SERIALIZATION 1
+#include <nlohmann/json.hpp>
 
-    using json = nlohmann::json;
+using json = nlohmann::json;
 
-    enum class Choice
-    {
-        first,
-        second,
-    };
-    
-    int main()
-    {
-        // normally invokes to_json serialization function but with JSON_DISABLE_ENUM_SERIALIZATION defined, it does not
-        const json j = Choice::first; 
+enum class Choice
+{
+    first,
+    second,
+};
 
-        // normally invokes from_json parse function but with JSON_DISABLE_ENUM_SERIALIZATION defined, it does not
-        Choice ch = j.template get<Choice>();
-    }
-    ```
+int main()
+{
+    // normally invokes to_json serialization function but with JSON_DISABLE_ENUM_SERIALIZATION defined, it does not
+    const json j = Choice::first;
+
+    // normally invokes from_json parse function but with JSON_DISABLE_ENUM_SERIALIZATION defined, it does not
+    Choice ch = j.template get<Choice>();
+}
+```
+````
 
 ??? example "Example 2: Serialize enum macro"
 
-    The code below forces the library **not** to create default serialization/deserialization functions `from_json` and `to_json`, but uses
-    [`NLOHMANN_JSON_SERIALIZE_ENUM`](nlohmann_json_serialize_enum.md) to parse and serialize the enum.
+````
+The code below forces the library **not** to create default serialization/deserialization functions `from_json` and `to_json`, but uses
+[`NLOHMANN_JSON_SERIALIZE_ENUM`](nlohmann_json_serialize_enum.md) to parse and serialize the enum.
 
-    ```cpp
-    #define JSON_DISABLE_ENUM_SERIALIZATION 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_DISABLE_ENUM_SERIALIZATION 1
+#include <nlohmann/json.hpp>
 
-    using json = nlohmann::json;
+using json = nlohmann::json;
 
-    enum class Choice
-    {
-        first,
-        second,
-    };
+enum class Choice
+{
+    first,
+    second,
+};
 
-    NLOHMANN_JSON_SERIALIZE_ENUM(Choice,
-    {
-        { Choice::first, "first" },
-        { Choice::second, "second" },
-    })
-    
-    int main()
-    {
-        // uses user-defined to_json function defined by macro
-        const json j = Choice::first; 
+NLOHMANN_JSON_SERIALIZE_ENUM(Choice,
+{
+    { Choice::first, "first" },
+    { Choice::second, "second" },
+})
 
-        // uses user-defined from_json function defined by macro
-        Choice ch = j.template get<Choice>();
-    }
-    ```
+int main()
+{
+    // uses user-defined to_json function defined by macro
+    const json j = Choice::first;
+
+    // uses user-defined from_json function defined by macro
+    Choice ch = j.template get<Choice>();
+}
+```
+````
 
 ??? example "Example 3: User-defined serialization/deserialization functions"
 
-    The code below forces the library **not** to create default serialization/deserialization functions `from_json` and `to_json`, but uses user-defined
-    functions to parse and serialize the enum.
+````
+The code below forces the library **not** to create default serialization/deserialization functions `from_json` and `to_json`, but uses user-defined
+functions to parse and serialize the enum.
 
-    ```cpp
-    #define JSON_DISABLE_ENUM_SERIALIZATION 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_DISABLE_ENUM_SERIALIZATION 1
+#include <nlohmann/json.hpp>
 
-    using json = nlohmann::json;
+using json = nlohmann::json;
 
-    enum class Choice
+enum class Choice
+{
+    first,
+    second,
+};
+
+void from_json(const json& j, Choice& ch)
+{
+    auto value = j.template get<std::string>();
+    if (value == "first")
     {
-        first,
-        second,
-    };
-
-    void from_json(const json& j, Choice& ch)
-    {
-        auto value = j.template get<std::string>();
-        if (value == "first")
-        {
-            ch = Choice::first;
-        }
-        else if (value == "second")
-        {
-            ch = Choice::second;
-        }
+        ch = Choice::first;
     }
-
-    void to_json(json& j, const Choice& ch)
+    else if (value == "second")
     {
-        auto value = j.template get<std::string>();
-        if (value == "first")
-        {
-            ch = Choice::first;
-        }
-        else if (value == "second")
-        {
-            ch = Choice::second;
-        }
+        ch = Choice::second;
     }
-    
-    int main()
-    {
-        // uses user-defined to_json function
-        const json j = Choice::first; 
+}
 
-        // uses user-defined from_json function
-        Choice ch = j.template get<Choice>();
+void to_json(json& j, const Choice& ch)
+{
+    auto value = j.template get<std::string>();
+    if (value == "first")
+    {
+        ch = Choice::first;
     }
-    ```
+    else if (value == "second")
+    {
+        ch = Choice::second;
+    }
+}
+
+int main()
+{
+    // uses user-defined to_json function
+    const json j = Choice::first;
+
+    // uses user-defined from_json function
+    Choice ch = j.template get<Choice>();
+}
+```
+````
 
 ## See also
 

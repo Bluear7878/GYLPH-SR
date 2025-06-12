@@ -34,13 +34,13 @@
 Test the EVT interface
 """
 
-import numpy as np
 import unittest
 
 import cutlass
+import numpy as np
 from cutlass import LayoutType, Tensor
 from cutlass.backend.utils.device import device_cc
-from cutlass.epilogue import reshape, permute
+from cutlass.epilogue import permute, reshape
 
 from utils import ExpectException
 
@@ -50,49 +50,58 @@ class EVTErrorTests(unittest.TestCase):
     """
     Tests various error scenarios that arise with the EVT interface
     """
+
     @unittest.skipIf(device_cc() != 90, "Only Sm90 EVT requires root node be 'D'")
     def test_root_not_d(self):
         """
         Test when "D" does not exist in Sm90 EVT
         """
+
         def evt_root_not_d(accum, alpha):
             F = accum * alpha
             return F
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 512)),
             "alpha": 1.2,
-            "F": self.fake_tensor(np.float16, (6, 512, 512))
+            "F": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(device_cc() == 90, 
+
+        with ExpectException(
+            device_cc() == 90,
             "SyntaxError: Sm90 EVT requires the epilogue to have a returned tensor D, "
-            "but the variable 'D' is not found in the return values.", True):
-            
+            "but the variable 'D' is not found in the return values.",
+            True,
+        ):
+
             cutlass.epilogue.trace(evt_root_not_d, example_tensors)
 
     def test_no_accum(self):
         """
         Test when "accum" is not in input arguments
         """
+
         def evt_no_accum(alpha, C):
             D = alpha * C
             return D
-        
+
         example_tensors = {
             "C": self.fake_tensor(np.float16, (6, 512, 512)),
             "alpha": 1.2,
-            "D": self.fake_tensor(np.float16, (6, 512, 512))
+            "D": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(True, "SyntaxError: Cannot find 'accum' in the argument list.", True):
+
+        with ExpectException(
+            True, "SyntaxError: Cannot find 'accum' in the argument list.", True
+        ):
             cutlass.epilogue.trace(evt_no_accum, example_tensors)
-    
+
     @unittest.skipIf(device_cc() != 90, "Only Sm90 EVT has concern on smem size")
     def test_too_much_shared_memory(self):
         """
         Test when the epilogue consumes too much shared memory
         """
+
         def evt_too_much_shared_memory(accum, C1, C2, C3, C4, C5, C6, C7, C8):
             D1 = accum + C1
             D2 = D1 + C2
@@ -103,7 +112,7 @@ class EVTErrorTests(unittest.TestCase):
             D7 = D6 + C7
             D = D7 + C8
             return D, D1, D2, D3, D4, D5, D6, D7
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 512)),
             "C1": self.fake_tensor(np.float16, (6, 512, 512)),
@@ -121,25 +130,32 @@ class EVTErrorTests(unittest.TestCase):
             "D5": self.fake_tensor(np.float16, (6, 512, 512)),
             "D6": self.fake_tensor(np.float16, (6, 512, 512)),
             "D7": self.fake_tensor(np.float16, (6, 512, 512)),
-            "D": self.fake_tensor(np.float16, (6, 512, 512))
+            "D": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        epilogue_visitor = cutlass.epilogue.trace(evt_too_much_shared_memory, example_tensors)
-        
-        plan = cutlass.op.Gemm(
-            element=np.float16, layout=cutlass.LayoutType.RowMajor,
-            element_accumulator=np.float32
+
+        epilogue_visitor = cutlass.epilogue.trace(
+            evt_too_much_shared_memory, example_tensors
         )
-        
-        with ExpectException(True, 
-            "RuntimeError: The epilogue consumes too much shared memory. " 
-            "No valid tile description is found in the generator.", True):
+
+        plan = cutlass.op.Gemm(
+            element=np.float16,
+            layout=cutlass.LayoutType.RowMajor,
+            element_accumulator=np.float32,
+        )
+
+        with ExpectException(
+            True,
+            "RuntimeError: The epilogue consumes too much shared memory. "
+            "No valid tile description is found in the generator.",
+            True,
+        ):
             plan.epilogue_visitor = epilogue_visitor
-    
+
     def test_not_ssa(self):
         """
         Test when the epilogue is not in SSA
         """
+
         def evt_redefine(accum, C, alpha):
             F = accum + C
             F = F * alpha
@@ -151,84 +167,98 @@ class EVTErrorTests(unittest.TestCase):
             "C": self.fake_tensor(np.float16, (6, 512, 512)),
             "alpha": 1.5,
             "D": self.fake_tensor(np.float16, (6, 512, 512)),
-            "F": self.fake_tensor(np.float16, (6, 512, 512))
+            "F": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(True, "SyntaxError: Variable 'F' cannot be defined twice.", True):
+
+        with ExpectException(
+            True, "SyntaxError: Variable 'F' cannot be defined twice.", True
+        ):
             cutlass.epilogue.trace(evt_redefine, example_tensors)
 
         def evt_undefine(accum, alpha):
             F = accum + C
             D = F * alpha
             return D, F
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 512)),
             "alpha": 1.5,
             "D": self.fake_tensor(np.float16, (6, 512, 512)),
-            "F": self.fake_tensor(np.float16, (6, 512, 512))
+            "F": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
+
         with ExpectException(True, "SyntaxError: Variable 'C' is undefined.", True):
             cutlass.epilogue.trace(evt_undefine, example_tensors)
-    
+
     def test_missing_example_tensor(self):
         """
         Test when the example tensor of an input/output variable is not provided
         """
+
         def evt_missing_example_tensor(accum, C):
             D = accum + C
             return D
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 512)),
             "C": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(True, "RuntimeError: Example input for D is not provided.", True):
+
+        with ExpectException(
+            True, "RuntimeError: Example input for D is not provided.", True
+        ):
             cutlass.epilogue.trace(evt_missing_example_tensor, example_tensors)
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 512)),
             "D": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(True, "RuntimeError: Example input for C is not provided.", True):
+
+        with ExpectException(
+            True, "RuntimeError: Example input for C is not provided.", True
+        ):
             cutlass.epilogue.trace(evt_missing_example_tensor, example_tensors)
-        
+
     def test_return_expression(self):
         """
         Test when the return value is an expression
         """
+
         def evt_return_expr(accum, C):
             return accum + C
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 512)),
             "C": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(True, "SyntaxError: Return value cannot be an expression", True):
+
+        with ExpectException(
+            True, "SyntaxError: Return value cannot be an expression", True
+        ):
             cutlass.epilogue.trace(evt_return_expr, example_tensors)
-    
+
     def test_incompatible_shape(self):
         """
         Test when the shape of example tensors are incompatible
         """
+
         def evt_incompatible_shape(accum, C):
             D = accum + C
             return D
-        
+
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 256, 512)),
             "C": self.fake_tensor(np.float16, (6, 512, 512)),
-            "D": self.fake_tensor(np.float16, (6, 512, 512))
+            "D": self.fake_tensor(np.float16, (6, 512, 512)),
         }
-        
-        with ExpectException(True, 
-            "RuntimeError: Dimension mismatch between accum(6, 256, 512), C(6, 512, 512).", True):
+
+        with ExpectException(
+            True,
+            "RuntimeError: Dimension mismatch between accum(6, 256, 512), C(6, 512, 512).",
+            True,
+        ):
             cutlass.epilogue.trace(evt_incompatible_shape, example_tensors)
-    
+
     def test_no_matching_impl(self):
         def evt_no_matching_impl(accum, bias):
             D = accum + reshape(permute(bias, indices=(1, 0)), new_shape=(512, 1))
@@ -237,18 +267,23 @@ class EVTErrorTests(unittest.TestCase):
         example_tensors = {
             "accum": self.fake_tensor(np.float16, (6, 512, 256)),
             "bias": self.fake_tensor(np.float16, (16, 32)),
-            "D": self.fake_tensor(np.float16, (6, 512, 256))
+            "D": self.fake_tensor(np.float16, (6, 512, 256)),
         }
-        
-        with ExpectException(True, "NotImplementedError: No matching op for node bias with stride (0, (1, 32), 0).", True):
+
+        with ExpectException(
+            True,
+            "NotImplementedError: No matching op for node bias with stride (0, (1, 32), 0).",
+            True,
+        ):
             cutlass.epilogue.trace(evt_no_matching_impl, example_tensors)
+
     #
     # Helper functions
     #
-    
+
     def fake_tensor(self, element, shape):
         return Tensor(element=element, shape=shape, layout_tag=LayoutType.RowMajor)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

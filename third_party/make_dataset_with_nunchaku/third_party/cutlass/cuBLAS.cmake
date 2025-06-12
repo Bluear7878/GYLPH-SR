@@ -30,14 +30,14 @@ message(STATUS "Configuring cublas ...")
 
 if((DEFINED CUTLASS_ENABLE_CUBLAS AND NOT CUTLASS_ENABLE_CUBLAS) OR
    (DEFINED CUBLAS_ENABLED AND NOT CUBLAS_ENABLED))
-  
+
   # Don't add cuBLAS if it's defined and false, assume it's not found.
 
   set(CUBLAS_FOUND OFF)
   message(STATUS "cuBLAS Disabled.")
 
 elseif(NOT TARGET cublas)
- 
+
   find_path(
     _CUBLAS_INCLUDE_DIR
     NAMES cublas_v2.h
@@ -71,7 +71,7 @@ elseif(NOT TARGET cublas)
 
     message(STATUS "cuBLAS: ${_CUBLAS_LIBRARY}")
     message(STATUS "cuBLAS: ${_CUBLAS_INCLUDE_DIR}")
-    
+
     set(CUBLAS_FOUND ON CACHE INTERNAL "cublas Library Found")
     set(CUBLAS_LIBRARY ${_CUBLAS_LIBRARY})
     set(CUBLAS_INCLUDE_DIR ${_CUBLAS_INCLUDE_DIR})
@@ -105,7 +105,7 @@ if(CUTLASS_ENABLE_CUBLAS AND NOT TARGET cublas)
     TARGET cublas
     PROPERTY IMPORTED_LOCATION
     ${CUBLAS_LIBRARY})
-    
+
   target_include_directories(
     cublas
     INTERFACE
@@ -135,12 +135,12 @@ if(CUTLASS_ENABLE_CUBLAS AND NOT TARGET cublas)
     else()
       add_library(cublasLt SHARED IMPORTED GLOBAL)
     endif()
-    
+
     set_property(
       TARGET cublasLt
       PROPERTY IMPORTED_LOCATION
       ${_CUBLASLT_LIBRARY})
-  
+
     add_library(nvidia::cublasLt ALIAS cublasLt)
 
     target_link_libraries(cublas INTERFACE cublasLt)

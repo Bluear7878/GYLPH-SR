@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /* \file
@@ -55,9 +56,8 @@ namespace host {
 
 namespace detail {
 
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
 struct TensorEqualsFunc {
 
   //
@@ -69,14 +69,12 @@ struct TensorEqualsFunc {
   bool result;
 
   /// Ctor
-  TensorEqualsFunc(): result(true) { }
+  TensorEqualsFunc() : result(true) {}
 
   /// Ctor
-  TensorEqualsFunc(
-    TensorView<Element, Layout> const &lhs_,
-    TensorView<Element, Layout> const &rhs_
-  ) :
-    lhs(lhs_), rhs(rhs_), result(true) { }
+  TensorEqualsFunc(TensorView<Element, Layout> const &lhs_,
+                   TensorView<Element, Layout> const &rhs_)
+      : lhs(lhs_), rhs(rhs_), result(true) {}
 
   /// Visits a coordinate
   void operator()(Coord<Layout::kRank> const &coord) {
@@ -90,14 +88,11 @@ struct TensorEqualsFunc {
   }
 
   /// Returns true if equal
-  operator bool() const {
-    return result;
-  }
+  operator bool() const { return result; }
 };
 
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
 struct TensorRelativelyEqualsFunc {
 
   //
@@ -111,17 +106,11 @@ struct TensorRelativelyEqualsFunc {
   bool result;
 
   /// Ctor
-  TensorRelativelyEqualsFunc(
-    TensorView<Element, Layout> const &lhs_,
-    TensorView<Element, Layout> const &rhs_,
-    Element epsilon_,
-    Element nonzero_floor_
-  ) :
-    lhs(lhs_),
-    rhs(rhs_),
-    epsilon(epsilon_),
-    nonzero_floor(nonzero_floor_),
-    result(true) { }
+  TensorRelativelyEqualsFunc(TensorView<Element, Layout> const &lhs_,
+                             TensorView<Element, Layout> const &rhs_,
+                             Element epsilon_, Element nonzero_floor_)
+      : lhs(lhs_), rhs(rhs_), epsilon(epsilon_), nonzero_floor(nonzero_floor_),
+        result(true) {}
 
   /// Visits a coordinate
   void operator()(Coord<Layout::kRank> const &coord) {
@@ -135,9 +124,7 @@ struct TensorRelativelyEqualsFunc {
   }
 
   /// Returns true if equal
-  operator bool() const {
-    return result;
-  }
+  operator bool() const { return result; }
 };
 
 } // namespace detail
@@ -145,12 +132,10 @@ struct TensorRelativelyEqualsFunc {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Returns true if two tensor views are equal.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorEquals(
-  TensorView<Element, Layout> const &lhs,
-  TensorView<Element, Layout> const &rhs) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorEquals(TensorView<Element, Layout> const &lhs,
+                  TensorView<Element, Layout> const &rhs) {
 
   // Extents must be identical
   if (lhs.extent() != rhs.extent()) {
@@ -158,21 +143,16 @@ bool TensorEquals(
   }
 
   detail::TensorEqualsFunc<Element, Layout> func(lhs, rhs);
-  TensorForEach(
-    lhs.extent(),
-    func
-  );
+  TensorForEach(lhs.extent(), func);
 
   return bool(func);
 }
 
 /// Returns true if two tensor views are equal.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorEquals(
-  TensorViewPlanarComplex<Element, Layout> const &lhs,
-  TensorViewPlanarComplex<Element, Layout> const &rhs) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorEquals(TensorViewPlanarComplex<Element, Layout> const &lhs,
+                  TensorViewPlanarComplex<Element, Layout> const &rhs) {
 
   // Extents must be identical
   if (lhs.extent() != rhs.extent()) {
@@ -180,28 +160,20 @@ bool TensorEquals(
   }
 
   detail::TensorEqualsFunc<Element, Layout> real_func(
-    {lhs.data(), lhs.layout(), lhs.extent()},
-    {rhs.data(), rhs.layout(), rhs.extent()}
-  );
+      {lhs.data(), lhs.layout(), lhs.extent()},
+      {rhs.data(), rhs.layout(), rhs.extent()});
 
-  TensorForEach(
-    lhs.extent(),
-    real_func
-  );
+  TensorForEach(lhs.extent(), real_func);
 
   if (!bool(real_func)) {
     return false;
   }
 
   detail::TensorEqualsFunc<Element, Layout> imag_func(
-    {lhs.data() + lhs.imaginary_stride(), lhs.layout(), lhs.extent()}, 
-    {rhs.data() + rhs.imaginary_stride(), rhs.layout(), rhs.extent()}
-    );
+      {lhs.data() + lhs.imaginary_stride(), lhs.layout(), lhs.extent()},
+      {rhs.data() + rhs.imaginary_stride(), rhs.layout(), rhs.extent()});
 
-  TensorForEach(
-    lhs.extent(),
-    imag_func
-  );
+  TensorForEach(lhs.extent(), imag_func);
 
   return bool(imag_func);
 }
@@ -210,38 +182,30 @@ bool TensorEquals(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Returns true if two tensor views are relatively equal.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorRelativelyEquals(
-  TensorView<Element, Layout> const &lhs,
-  TensorView<Element, Layout> const &rhs,
-  Element epsilon,
-  Element nonzero_floor) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorRelativelyEquals(TensorView<Element, Layout> const &lhs,
+                            TensorView<Element, Layout> const &rhs,
+                            Element epsilon, Element nonzero_floor) {
 
   // Extents must be identical
   if (lhs.extent() != rhs.extent()) {
     return false;
   }
 
-  detail::TensorRelativelyEqualsFunc<Element, Layout> func(lhs, rhs, epsilon, nonzero_floor);
-  TensorForEach(
-    lhs.extent(),
-    func
-  );
+  detail::TensorRelativelyEqualsFunc<Element, Layout> func(lhs, rhs, epsilon,
+                                                           nonzero_floor);
+  TensorForEach(lhs.extent(), func);
 
   return bool(func);
 }
 
 /// Returns true if two tensor views are relatively equal.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorRelativelyEquals(
-  TensorViewPlanarComplex<Element, Layout> const &lhs,
-  TensorViewPlanarComplex<Element, Layout> const &rhs,
-  Element epsilon,
-  Element nonzero_floor) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorRelativelyEquals(TensorViewPlanarComplex<Element, Layout> const &lhs,
+                            TensorViewPlanarComplex<Element, Layout> const &rhs,
+                            Element epsilon, Element nonzero_floor) {
 
   // Extents must be identical
   if (lhs.extent() != rhs.extent()) {
@@ -249,32 +213,21 @@ bool TensorRelativelyEquals(
   }
 
   detail::TensorRelativelyEqualsFunc<Element, Layout> real_func(
-    {lhs.data(), lhs.layout(), lhs.extent()},
-    {rhs.data(), rhs.layout(), rhs.extent()},
-    epsilon,
-    nonzero_floor
-  );
+      {lhs.data(), lhs.layout(), lhs.extent()},
+      {rhs.data(), rhs.layout(), rhs.extent()}, epsilon, nonzero_floor);
 
-  TensorForEach(
-    lhs.extent(),
-    real_func
-  );
+  TensorForEach(lhs.extent(), real_func);
 
   if (!bool(real_func)) {
     return false;
   }
 
   detail::TensorEqualsFunc<Element, Layout> imag_func(
-    {lhs.data() + lhs.imaginary_stride(), lhs.layout(), lhs.extent()},
-    {rhs.data() + rhs.imaginary_stride(), rhs.layout(), rhs.extent()},
-    epsilon,
-    nonzero_floor
-  );
+      {lhs.data() + lhs.imaginary_stride(), lhs.layout(), lhs.extent()},
+      {rhs.data() + rhs.imaginary_stride(), rhs.layout(), rhs.extent()},
+      epsilon, nonzero_floor);
 
-  TensorForEach(
-    lhs.extent(),
-    imag_func
-  );
+  TensorForEach(lhs.extent(), imag_func);
 
   return bool(imag_func);
 }
@@ -283,12 +236,10 @@ bool TensorRelativelyEquals(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Returns true if two tensor views are NOT equal.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorNotEquals(
-  TensorView<Element, Layout> const &lhs,
-  TensorView<Element, Layout> const &rhs) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorNotEquals(TensorView<Element, Layout> const &lhs,
+                     TensorView<Element, Layout> const &rhs) {
 
   // Extents must be identical
   if (lhs.extent() != rhs.extent()) {
@@ -296,21 +247,16 @@ bool TensorNotEquals(
   }
 
   detail::TensorEqualsFunc<Element, Layout> func(lhs, rhs);
-  TensorForEach(
-    lhs.extent(),
-    func
-  );
+  TensorForEach(lhs.extent(), func);
 
   return !bool(func);
 }
 
 /// Returns true if two tensor views are equal.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorNotEquals(
-  TensorViewPlanarComplex<Element, Layout> const &lhs,
-  TensorViewPlanarComplex<Element, Layout> const &rhs) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorNotEquals(TensorViewPlanarComplex<Element, Layout> const &lhs,
+                     TensorViewPlanarComplex<Element, Layout> const &rhs) {
 
   return !TensorEquals(lhs, rhs);
 }
@@ -320,9 +266,8 @@ bool TensorNotEquals(
 
 namespace detail {
 
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
 struct TensorContainsFunc {
 
   //
@@ -339,14 +284,11 @@ struct TensorContainsFunc {
   //
 
   /// Ctor
-  TensorContainsFunc(): contains(false) { }
+  TensorContainsFunc() : contains(false) {}
 
   /// Ctor
-  TensorContainsFunc(
-    TensorView<Element, Layout> const &view_,
-    Element value_
-  ) :
-    view(view_), value(value_), contains(false) { }
+  TensorContainsFunc(TensorView<Element, Layout> const &view_, Element value_)
+      : view(view_), value(value_), contains(false) {}
 
   /// Visits a coordinate
   void operator()(Coord<Layout::kRank> const &coord) {
@@ -360,9 +302,7 @@ struct TensorContainsFunc {
   }
 
   /// Returns true if equal
-  operator bool() const {
-    return contains;
-  }
+  operator bool() const { return contains; }
 };
 
 } // namespace detail
@@ -370,47 +310,30 @@ struct TensorContainsFunc {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Returns true if a value is present in a tensor
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-bool TensorContains(
-  TensorView<Element, Layout> const & view,
-  Element value) {
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+bool TensorContains(TensorView<Element, Layout> const &view, Element value) {
 
-  detail::TensorContainsFunc<Element, Layout> func(
-    view,
-    value
-  );
+  detail::TensorContainsFunc<Element, Layout> func(view, value);
 
-  TensorForEach(
-    view.extent(),
-    func
-  );
+  TensorForEach(view.extent(), func);
 
   return bool(func);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Returns a pair containing a boolean of whether a value exists in a tensor and the location of
-/// of the first occurrence. If the value is not contained in the tensor, the second element of the
-/// pair is undefined.
-template <
-  typename Element,               ///< Element type
-  typename Layout>                ///< Layout function
-std::pair<bool, Coord<Layout::kRank> > TensorFind(
-  TensorView<Element, Layout> const & view,
-  Element value) {
+/// Returns a pair containing a boolean of whether a value exists in a tensor
+/// and the location of of the first occurrence. If the value is not contained
+/// in the tensor, the second element of the pair is undefined.
+template <typename Element, ///< Element type
+          typename Layout>  ///< Layout function
+std::pair<bool, Coord<Layout::kRank>>
+TensorFind(TensorView<Element, Layout> const &view, Element value) {
 
-  detail::TensorContainsFunc<Element, Layout> func(
-    view,
-    value
-  );
+  detail::TensorContainsFunc<Element, Layout> func(view, value);
 
-  TensorForEach(
-    view.extent(),
-    func
-  );
+  TensorForEach(view.extent(), func);
 
   return std::make_pair(bool(func), func.location);
 }

@@ -14,28 +14,30 @@ When iterating over objects, values are ordered with respect to the `object_comp
 
 ??? example
 
-    ```cpp
-    // create JSON object {"one": 1, "two": 2, "three": 3}
-    json j;
-    j["one"] = 1;
-    j["two"] = 2;
-    j["three"] = 3;
-    
-    for (auto it = j.begin(); it != j.end(); ++it)
-    {
-        std::cout << *it << std::endl;
-    }
-    ```
-    
-    Output:
-    
-    ```json
-    1
-    3
-    2
-    ```
-    
-    The reason for the order is the lexicographic ordering of the object keys "one", "three", "two".
+````
+```cpp
+// create JSON object {"one": 1, "two": 2, "three": 3}
+json j;
+j["one"] = 1;
+j["two"] = 2;
+j["three"] = 3;
+
+for (auto it = j.begin(); it != j.end(); ++it)
+{
+    std::cout << *it << std::endl;
+}
+```
+
+Output:
+
+```json
+1
+3
+2
+```
+
+The reason for the order is the lexicographic ordering of the object keys "one", "three", "two".
+````
 
 ### Access object key during iteration
 
@@ -43,26 +45,28 @@ The JSON iterators have two member functions, `key()` and `value()` to access th
 
 ??? example
 
-    ```cpp
-    // create JSON object {"one": 1, "two": 2, "three": 3}
-    json j;
-    j["one"] = 1;
-    j["two"] = 2;
-    j["three"] = 3;
-    
-    for (auto it = j.begin(); it != j.end(); ++it)
-    {
-        std::cout << it.key() << " : " << it.value() << std::endl;
-    }
-    ```
-    
-    Output:
-    
-    ```json
-    one : 1
-    three : 3
-    two : 2
-    ```
+````
+```cpp
+// create JSON object {"one": 1, "two": 2, "three": 3}
+json j;
+j["one"] = 1;
+j["two"] = 2;
+j["three"] = 3;
+
+for (auto it = j.begin(); it != j.end(); ++it)
+{
+    std::cout << it.key() << " : " << it.value() << std::endl;
+}
+```
+
+Output:
+
+```json
+one : 1
+three : 3
+two : 2
+```
+````
 
 ### Range-based for loops
 
@@ -96,37 +100,43 @@ for (auto& [key, val] : j_object.items())
 
 !!! note
 
-    When iterating over an array, `key()` will return the index of the element as string. For primitive types (e.g., numbers), `key()` returns an empty string.
-    
+```
+When iterating over an array, `key()` will return the index of the element as string. For primitive types (e.g., numbers), `key()` returns an empty string.
+```
+
 !!! warning
 
-    Using `items()` on temporary objects is dangerous. Make sure the object's lifetime exceeds the iteration. See <https://github.com/nlohmann/json/issues/2040> for more information.
+```
+Using `items()` on temporary objects is dangerous. Make sure the object's lifetime exceeds the iteration. See <https://github.com/nlohmann/json/issues/2040> for more information.
+```
 
 ### Reverse iteration order
 
 `rbegin()` and `rend()` return iterators in the reverse sequence.
-    
+
 ![Illustration from cppreference.com](../images/range-rbegin-rend.svg)
 
 ??? example
 
-    ```cpp
-    json j = {1, 2, 3, 4};
+````
+```cpp
+json j = {1, 2, 3, 4};
 
-    for (auto it = j.rbegin(); it != j.rend(); ++it)
-    {
-        std::cout << *it << std::endl;
-    }
-    ```
-    
-    Output:
-    
-    ```json
-    4
-    3
-    2
-    1
-    ```
+for (auto it = j.rbegin(); it != j.rend(); ++it)
+{
+    std::cout << *it << std::endl;
+}
+```
+
+Output:
+
+```json
+4
+3
+2
+1
+```
+````
 
 ### Iterating strings and binary values
 
@@ -134,22 +144,24 @@ Note that "value" means a JSON value in this setting, not values stored in the u
 
 ??? example
 
-    ```cpp
-    json j = "Hello, world";
-    for (auto it = j.begin(); it != j.end(); ++it)
-    {
-        std::cout << *it << std::endl;
-    }
-    ```
-    
-    Output:
-    
-    ```json
-    "Hello, world"
-    ```
+````
+```cpp
+json j = "Hello, world";
+for (auto it = j.begin(); it != j.end(); ++it)
+{
+    std::cout << *it << std::endl;
+}
+```
+
+Output:
+
+```json
+"Hello, world"
+```
+````
 
 ## Iterator invalidation
 
 | Operations | invalidated iterators |
 |------------|-----------------------|
-| `clear`    | all                   |
+| `clear` | all |

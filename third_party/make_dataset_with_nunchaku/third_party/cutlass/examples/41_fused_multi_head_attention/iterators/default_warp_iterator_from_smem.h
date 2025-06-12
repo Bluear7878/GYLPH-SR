@@ -47,21 +47,15 @@ namespace cutlass {
 namespace gemm {
 namespace threadblock {
 
-template <
-    typename WarpShape,
-    typename InstructionShape,
-    typename RegularWarpIterator,
-    typename Policy,
-    typename Enable = void>
+template <typename WarpShape, typename InstructionShape,
+          typename RegularWarpIterator, typename Policy, typename Enable = void>
 struct DefaultWarpIteratorAFromSharedMemory {};
 
 // TensorOp - Ampere half
 template <typename RegularWarpIterator, typename Policy, int kInstrK>
 struct DefaultWarpIteratorAFromSharedMemory<
     cutlass::gemm::GemmShape<32, 32, 32>,
-    cutlass::gemm::GemmShape<16, 8, kInstrK>,
-    RegularWarpIterator,
-    Policy,
+    cutlass::gemm::GemmShape<16, 8, kInstrK>, RegularWarpIterator, Policy,
     typename platform::enable_if<(
         sizeof_bits<typename RegularWarpIterator::Element>::value == 16 &&
         Policy::Operator::Policy::OpDelta::kRow == 1)>::type> {
@@ -70,18 +64,14 @@ struct DefaultWarpIteratorAFromSharedMemory<
   using InstructionShape = cutlass::gemm::GemmShape<16, 8, kInstrK>;
 
   using WarpIterator = cutlass::gemm::warp::WarpIteratorFromSmem<
-      cutlass::gemm::Operand::kA,
-      typename RegularWarpIterator::Element,
+      cutlass::gemm::Operand::kA, typename RegularWarpIterator::Element,
       cutlass::MatrixShape<InstructionShape::kM, InstructionShape::kK>>;
 };
 
 // TensorOp - Ampere f32
 template <typename WarpShape, typename RegularWarpIterator, typename Policy>
 struct DefaultWarpIteratorAFromSharedMemory<
-    WarpShape,
-    cutlass::gemm::GemmShape<16, 8, 8>,
-    RegularWarpIterator,
-    Policy,
+    WarpShape, cutlass::gemm::GemmShape<16, 8, 8>, RegularWarpIterator, Policy,
     typename platform::enable_if<(
         sizeof_bits<typename RegularWarpIterator::Element>::value != 16 ||
         Policy::Operator::Policy::OpDelta::kRow != 1)>::type> {
@@ -92,21 +82,17 @@ struct DefaultWarpIteratorAFromSharedMemory<
   using WarpIterator =
       cutlass::gemm::warp::MmaTensorOpMultiplicandTileAccessIterator<
           cutlass::MatrixShape<WarpShape::kM, WarpShape::kK>,
-          cutlass::gemm::Operand::kA,
-          typename RegularWarpIterator::Element,
+          cutlass::gemm::Operand::kA, typename RegularWarpIterator::Element,
           cutlass::layout::RowMajor,
           cutlass::MatrixShape<InstructionShape::kM, InstructionShape::kK>,
-          OpDelta::kRow,
-          kWarpSize>;
+          OpDelta::kRow, kWarpSize>;
 };
 
 // TensorOp - Volta
 template <typename WarpShape, typename RegularWarpIterator, typename Policy>
-struct DefaultWarpIteratorAFromSharedMemory<
-    WarpShape,
-    cutlass::gemm::GemmShape<16, 16, 4>,
-    RegularWarpIterator,
-    Policy> {
+struct DefaultWarpIteratorAFromSharedMemory<WarpShape,
+                                            cutlass::gemm::GemmShape<16, 16, 4>,
+                                            RegularWarpIterator, Policy> {
   using InstructionShape = cutlass::gemm::GemmShape<16, 16, 4>;
   static constexpr auto kWarpSize = 32;
   using OpDelta = typename Policy::Operator::Policy::OpDelta;
@@ -115,21 +101,15 @@ struct DefaultWarpIteratorAFromSharedMemory<
       cutlass::gemm::warp::MmaVoltaTensorOpMultiplicandTileIterator<
           cutlass::MatrixShape<32, 32>, // MatrixShape<WarpShape::kM,
                                         // WarpShape::kK>,
-          cutlass::gemm::Operand::kA,
-          typename RegularWarpIterator::Element,
+          cutlass::gemm::Operand::kA, typename RegularWarpIterator::Element,
           cutlass::layout::RowMajorVoltaTensorOpMultiplicandCrosswise<16, 32>,
-          cutlass::MatrixShape<16, 4>,
-          OpDelta::kRow,
-          kWarpSize>;
+          cutlass::MatrixShape<16, 4>, OpDelta::kRow, kWarpSize>;
 };
 
 // Simt
 template <typename WarpShape, typename RegularWarpIterator, typename Policy>
 struct DefaultWarpIteratorAFromSharedMemory<
-    WarpShape,
-    cutlass::gemm::GemmShape<1, 1, 1>,
-    RegularWarpIterator,
-    Policy> {
+    WarpShape, cutlass::gemm::GemmShape<1, 1, 1>, RegularWarpIterator, Policy> {
   using InstructionShape = cutlass::gemm::GemmShape<1, 1, 1>;
   static constexpr auto kWarpSize = 32;
 

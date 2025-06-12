@@ -16,7 +16,7 @@ cd /home/delta1/Texture/GYLPH-SR
 # CUDA_VISIBLE_DEVICES=2 python kkw_Gsr.py \
 #     --json_path /home/delta1/Texture/Prompt/prompt_v0/CUTE80_image_x8_prompts.jsonl \
 #     --save_dir /home/delta1/KKW/SR_sample/output/image_ratio_results/CUTE80/imagex8 \
-#     --img_path /home/delta1/KKW/datasets/CUTE80 
+#     --img_path /home/delta1/KKW/datasets/CUTE80
 # wait
 
 
@@ -33,7 +33,7 @@ CUDA_VISIBLE_DEVICES=1 python kkw_Gsr.py \
 CUDA_VISIBLE_DEVICES=2 python kkw_Gsr.py \
     --json_path /home/delta1/Texture/Prompt/prompt_v0/SVT_x8_prompts.jsonl \
     --save_dir /home/delta1/KKW/SR_sample/output/image_ratio_results/SVT/imagex8 \
-    --img_path /home/delta1/KKW/datasets/SVT 
+    --img_path /home/delta1/KKW/datasets/SVT
 wait
 
 
@@ -50,7 +50,5 @@ wait
 # CUDA_VISIBLE_DEVICES=2 python kkw_Gsr.py \
 #     --json_path /home/delta1/Texture/Prompt/prompt_v0/SCUT_CTW1500_x8_prompts.jsonl \
 #     --save_dir /home/delta1/KKW/SR_sample/output/image_ratio_results/SCUT_CTW1500/imagex8 \
-#     --img_path /home/delta1/KKW/datasets/SCUT_CTW1500 
+#     --img_path /home/delta1/KKW/datasets/SCUT_CTW1500
 # wait
-
-

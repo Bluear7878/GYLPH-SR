@@ -4,8 +4,9 @@
 import torch
 import torch.nn as nn
 
-from .tinychat_utils import ceil_num_groups, convert_to_tinychat_w4x16y16_linear_weight
 from ..._C.ops import gemm_awq, gemv_awq
+from .tinychat_utils import (ceil_num_groups,
+                             convert_to_tinychat_w4x16y16_linear_weight)
 
 __all__ = ["W4Linear"]
 
@@ -48,14 +49,20 @@ class W4Linear(nn.Module):
         )
         self.register_buffer(
             "scales",
-            torch.zeros((self.ceil_num_groups, self.out_features), dtype=dtype, device=device),
+            torch.zeros(
+                (self.ceil_num_groups, self.out_features), dtype=dtype, device=device
+            ),
         )
         self.register_buffer(
             "scaled_zeros",
-            torch.zeros((self.ceil_num_groups, self.out_features), dtype=dtype, device=device),
+            torch.zeros(
+                (self.ceil_num_groups, self.out_features), dtype=dtype, device=device
+            ),
         )
         if bias:
-            self.register_buffer("bias", torch.zeros((out_features), dtype=dtype, device=device))
+            self.register_buffer(
+                "bias", torch.zeros((out_features), dtype=dtype, device=device)
+            )
         else:
             self.bias = None
 
@@ -134,21 +141,43 @@ class W4Linear(nn.Module):
         if linear.bias is not None:
             _linear.bias.data.copy_(linear.bias.data)
         if scale is None:
-            assert zero is None, "scale and zero point tensors should be provided together."
+            assert (
+                zero is None
+            ), "scale and zero point tensors should be provided together."
             group_size = ic if group_size <= 0 else group_size
-            assert group_size <= ic, "group size should be less than or equal to input channel size."
-            assert ic % group_size == 0, "input channel size should be divisible by group size."
+            assert (
+                group_size <= ic
+            ), "group size should be less than or equal to input channel size."
+            assert (
+                ic % group_size == 0
+            ), "input channel size should be divisible by group size."
             ng, gs = ic // group_size, group_size
             weight = weight.to(dtype=torch.float32).view(oc, 1, ng, gs)
-            vmin, vmax = weight.amin(dim=-1, keepdim=True), weight.amax(dim=-1, keepdim=True)
+            vmin, vmax = weight.amin(dim=-1, keepdim=True), weight.amax(
+                dim=-1, keepdim=True
+            )
             scale = (vmax - vmin).div_(15)
             scale[scale == 0] = 1.0
             if zero_pre_scaled:
                 zero = vmin.neg_().div_(scale).round_().clamp_(0, 15)
-                weight = weight.div_(scale).add_(zero).round_().clamp_(0, 15).sub_(zero).mul_(scale)
+                weight = (
+                    weight.div_(scale)
+                    .add_(zero)
+                    .round_()
+                    .clamp_(0, 15)
+                    .sub_(zero)
+                    .mul_(scale)
+                )
             else:
                 zero = vmin.neg_().clamp_min(0)
-                weight = weight.add_(zero).div_(scale).round_().clamp_(0, 15).mul_(scale).sub_(zero)
+                weight = (
+                    weight.add_(zero)
+                    .div_(scale)
+                    .round_()
+                    .clamp_(0, 15)
+                    .mul_(scale)
+                    .sub_(zero)
+                )
             weight = weight.to(dtype=dtype).view(oc, ic)
             scale = scale.to(dtype=dtype)
             zero = zero.to(dtype=dtype)

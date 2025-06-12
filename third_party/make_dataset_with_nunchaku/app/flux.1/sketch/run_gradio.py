@@ -6,43 +6,55 @@ import time
 from datetime import datetime
 
 import GPUtil
-import numpy as np
-import torch
-from PIL import Image
-
-from flux_pix2pix_pipeline import FluxPix2pixTurboPipeline
-from nunchaku.models.safety_checker import SafetyChecker
-from nunchaku.models.transformers.transformer_flux import NunchakuFluxTransformer2dModel
-from utils import get_args
-from vars import DEFAULT_SKETCH_GUIDANCE, DEFAULT_STYLE_NAME, MAX_SEED, STYLE_NAMES, STYLES
-
 # import gradio last to avoid conflicts with other imports
 import gradio as gr
+import numpy as np
+import torch
+from flux_pix2pix_pipeline import FluxPix2pixTurboPipeline
+from nunchaku.models.safety_checker import SafetyChecker
+from nunchaku.models.transformers.transformer_flux import \
+    NunchakuFluxTransformer2dModel
+from PIL import Image
+from vars import (DEFAULT_SKETCH_GUIDANCE, DEFAULT_STYLE_NAME, MAX_SEED,
+                  STYLE_NAMES, STYLES)
+
+from utils import get_args
 
 blank_image = Image.new("RGB", (1024, 1024), (255, 255, 255))
 
 args = get_args()
 
 if args.precision == "bf16":
-    pipeline = FluxPix2pixTurboPipeline.from_pretrained("black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16)
+    pipeline = FluxPix2pixTurboPipeline.from_pretrained(
+        "black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16
+    )
     pipeline = pipeline.to("cuda")
     pipeline.precision = "bf16"
     pipeline.load_control_module(
-        "mit-han-lab/svdq-flux.1-schnell-pix2pix-turbo", "sketch.safetensors", alpha=DEFAULT_SKETCH_GUIDANCE
+        "mit-han-lab/svdq-flux.1-schnell-pix2pix-turbo",
+        "sketch.safetensors",
+        alpha=DEFAULT_SKETCH_GUIDANCE,
     )
 else:
     assert args.precision == "int4"
     pipeline_init_kwargs = {}
-    transformer = NunchakuFluxTransformer2dModel.from_pretrained("mit-han-lab/svdq-int4-flux.1-schnell")
+    transformer = NunchakuFluxTransformer2dModel.from_pretrained(
+        "mit-han-lab/svdq-int4-flux.1-schnell"
+    )
     pipeline_init_kwargs["transformer"] = transformer
     if args.use_qencoder:
-        from nunchaku.models.text_encoders.t5_encoder import NunchakuT5EncoderModel
+        from nunchaku.models.text_encoders.t5_encoder import \
+            NunchakuT5EncoderModel
 
-        text_encoder_2 = NunchakuT5EncoderModel.from_pretrained("mit-han-lab/svdq-flux.1-t5")
+        text_encoder_2 = NunchakuT5EncoderModel.from_pretrained(
+            "mit-han-lab/svdq-flux.1-t5"
+        )
         pipeline_init_kwargs["text_encoder_2"] = text_encoder_2
 
     pipeline = FluxPix2pixTurboPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16, **pipeline_init_kwargs
+        "black-forest-labs/FLUX.1-schnell",
+        torch_dtype=torch.bfloat16,
+        **pipeline_init_kwargs,
     )
     pipeline = pipeline.to("cuda")
     pipeline.precision = "int4"
@@ -63,11 +75,15 @@ def save_image(img):
     return temp_file.name
 
 
-def run(image, prompt: str, prompt_template: str, sketch_guidance: float, seed: int) -> tuple[Image, str]:
+def run(
+    image, prompt: str, prompt_template: str, sketch_guidance: float, seed: int
+) -> tuple[Image, str]:
     print(f"Prompt: {prompt}")
     image_numpy = np.array(image["composite"].convert("RGB"))
 
-    if prompt.strip() == "" and (np.sum(image_numpy == 255) >= 3145628 or np.sum(image_numpy == 0) >= 3145628):
+    if prompt.strip() == "" and (
+        np.sum(image_numpy == 255) >= 3145628 or np.sum(image_numpy == 0) >= 3145628
+    ):
         return blank_image, "Please input the prompt or draw something."
 
     is_unsafe_prompt = False
@@ -109,7 +125,9 @@ def run(image, prompt: str, prompt_template: str, sketch_guidance: float, seed: 
     return result_image, latency_str
 
 
-with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image Demo") as demo:
+with gr.Blocks(
+    css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image Demo"
+) as demo:
     with open("assets/description.html", "r") as f:
         DESCRIPTION = f.read()
     gpus = GPUtil.getGPUs()
@@ -136,7 +154,9 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image De
             )
         else:
             count_info = ""
-        header_str = DESCRIPTION.format(device_info=device_info, notice=notice, count_info=count_info)
+        header_str = DESCRIPTION.format(
+            device_info=device_info, notice=notice, count_info=count_info
+        )
         return header_str
 
     header = gr.HTML(get_header_str())
@@ -159,18 +179,32 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image De
                     transforms=[],
                     canvas_size=(1024, 1024),
                     scale=1,
-                    brush=gr.Brush(default_size=3, colors=["#000000"], color_mode="fixed"),
+                    brush=gr.Brush(
+                        default_size=3, colors=["#000000"], color_mode="fixed"
+                    ),
                     format="png",
                     layers=False,
                 )
                 with gr.Row():
-                    prompt = gr.Text(label="Prompt", placeholder="Enter your prompt", scale=6)
+                    prompt = gr.Text(
+                        label="Prompt", placeholder="Enter your prompt", scale=6
+                    )
                     run_button = gr.Button("Run", scale=1, elem_id="run_button")
-            download_sketch = gr.DownloadButton("Download Sketch", scale=1, elem_id="download_sketch")
+            download_sketch = gr.DownloadButton(
+                "Download Sketch", scale=1, elem_id="download_sketch"
+            )
             with gr.Row():
-                style = gr.Dropdown(label="Style", choices=STYLE_NAMES, value=DEFAULT_STYLE_NAME, scale=1)
+                style = gr.Dropdown(
+                    label="Style",
+                    choices=STYLE_NAMES,
+                    value=DEFAULT_STYLE_NAME,
+                    scale=1,
+                )
                 prompt_template = gr.Textbox(
-                    label="Prompt Style Template", value=STYLES[DEFAULT_STYLE_NAME], scale=2, max_lines=1
+                    label="Prompt Style Template",
+                    value=STYLES[DEFAULT_STYLE_NAME],
+                    scale=2,
+                    max_lines=1,
                 )
 
             with gr.Row():
@@ -184,8 +218,18 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image De
                     scale=5,
                 )
             with gr.Row():
-                seed = gr.Slider(label="Seed", show_label=True, minimum=0, maximum=MAX_SEED, value=233, step=1, scale=4)
-                randomize_seed = gr.Button("Random Seed", scale=1, min_width=50, elem_id="random_seed")
+                seed = gr.Slider(
+                    label="Seed",
+                    show_label=True,
+                    minimum=0,
+                    maximum=MAX_SEED,
+                    value=233,
+                    step=1,
+                    scale=4,
+                )
+                randomize_seed = gr.Button(
+                    "Random Seed", scale=1, min_width=50, elem_id="random_seed"
+                )
 
         with gr.Column(elem_id="column_output"):
             gr.Markdown("## OUTPUT", elem_id="output_header")
@@ -203,12 +247,16 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image De
                 )
                 latency_result = gr.Text(label="Inference Latency", show_label=True)
 
-            download_result = gr.DownloadButton("Download Result", elem_id="download_result")
+            download_result = gr.DownloadButton(
+                "Download Result", elem_id="download_result"
+            )
             gr.Markdown("### Instructions")
             gr.Markdown("**1**. Enter a text prompt (e.g. a cat)")
             gr.Markdown("**2**. Start sketching")
             gr.Markdown("**3**. Change the image style using a style template")
-            gr.Markdown("**4**. Adjust the effect of sketch guidance using the slider (typically between 0.2 and 0.4)")
+            gr.Markdown(
+                "**4**. Adjust the effect of sketch guidance using the slider (typically between 0.2 and 0.4)"
+            )
             gr.Markdown("**5**. Try different seeds to generate different results")
 
     run_inputs = [canvas, prompt, prompt_template, sketch_guidance, seed]
@@ -222,7 +270,13 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image De
         queue=False,
     ).then(run, inputs=run_inputs, outputs=run_outputs, api_name=False)
 
-    style.change(lambda x: STYLES[x], inputs=[style], outputs=[prompt_template], api_name=False, queue=False)
+    style.change(
+        lambda x: STYLES[x],
+        inputs=[style],
+        outputs=[prompt_template],
+        api_name=False,
+        queue=False,
+    )
     gr.on(
         triggers=[prompt.submit, run_button.click, canvas.change],
         fn=run,
@@ -233,7 +287,9 @@ with gr.Blocks(css_paths="assets/style.css", title=f"SVDQuant Sketch-to-Image De
 
     download_sketch.click(fn=save_image, inputs=canvas, outputs=download_sketch)
     download_result.click(fn=save_image, inputs=result, outputs=download_result)
-    gr.Markdown("MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility")
+    gr.Markdown(
+        "MIT Accessibility: https://accessibility.mit.edu/", elem_id="accessibility"
+    )
 
 
 if __name__ == "__main__":

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -36,20 +37,20 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
-#include "cutlass/epilogue/thread/linear_combination_bias_elementwise.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
+#include "cutlass/epilogue/thread/linear_combination_bias_elementwise.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/gemm/gemm.h"
-#include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 #include "cutlass/gemm/kernel/gemm_universal.h"
+#include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
-#include "cutlass/gemm/kernel/default_gemm_universal.h"
-#include "cutlass/gemm/kernel/default_gemm_with_broadcast.h"
 #include "cutlass/gemm/device/default_gemm_configuration.h"
 #include "cutlass/gemm/device/gemm_universal_base.h"
+#include "cutlass/gemm/kernel/default_gemm_universal.h"
+#include "cutlass/gemm/kernel/default_gemm_with_broadcast.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -96,12 +97,15 @@ template <
     typename InstructionShape_ = typename DefaultGemmConfiguration<
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
         ElementAccumulator_>::InstructionShape,
-    /// Epilogue output operator      - must satisfy concept of 'EpilogueWithBroadcastOp'
-    typename EpilogueOutputOp_ = cutlass::epilogue::thread::LinearCombinationBiasElementwise<
-        ElementC_, ElementAccumulator_, ElementAccumulator_,
-        ElementC_, ElementC_, 128 / cutlass::sizeof_bits<ElementC_>::value>,
+    /// Epilogue output operator      - must satisfy concept of
+    /// 'EpilogueWithBroadcastOp'
+    typename EpilogueOutputOp_ =
+        cutlass::epilogue::thread::LinearCombinationBiasElementwise<
+            ElementC_, ElementAccumulator_, ElementAccumulator_, ElementC_,
+            ElementC_, 128 / cutlass::sizeof_bits<ElementC_>::value>,
     /// Threadblock-level swizzling operator
-    typename ThreadblockSwizzle_ = threadblock::GemmIdentityThreadblockSwizzle<>,
+    typename ThreadblockSwizzle_ =
+        threadblock::GemmIdentityThreadblockSwizzle<>,
     /// Number of stages used in the pipelined mainloop
     int Stages =
         DefaultGemmConfiguration<OperatorClass_, ArchTag_, ElementA_, ElementB_,
@@ -121,36 +125,16 @@ template <
     /// Complex elementwise transformation on A operand
     ComplexTransform TransformA = ComplexTransform::kNone,
     /// Complex elementwise transformation on B operand
-    ComplexTransform TransformB = ComplexTransform::kNone
->
-class GemmUniversalWithBroadcast :
-  public GemmUniversalBase<
-    typename kernel::DefaultGemmWithBroadcast<
-      ElementA_,
-      LayoutA_,
-      TransformA,
-      AlignmentA,
-      ElementB_,
-      LayoutB_,
-      TransformB,
-      AlignmentB,
-      ElementC_,
-      LayoutC_,
-      ElementAccumulator_,
-      OperatorClass_,
-      ArchTag_,
-      ThreadblockShape_,
-      WarpShape_,
-      InstructionShape_,
-      EpilogueOutputOp_,
-      ThreadblockSwizzle_,
-      Stages,
-      Operator_
-    >::GemmKernel
-  > {
+    ComplexTransform TransformB = ComplexTransform::kNone>
+class GemmUniversalWithBroadcast
+    : public GemmUniversalBase<typename kernel::DefaultGemmWithBroadcast<
+          ElementA_, LayoutA_, TransformA, AlignmentA, ElementB_, LayoutB_,
+          TransformB, AlignmentB, ElementC_, LayoutC_, ElementAccumulator_,
+          OperatorClass_, ArchTag_, ThreadblockShape_, WarpShape_,
+          InstructionShape_, EpilogueOutputOp_, ThreadblockSwizzle_, Stages,
+          Operator_>::GemmKernel> {
 
- public:
-
+public:
   using ElementAccumulator = ElementAccumulator_;
   using OperatorClass = OperatorClass_;
   using ArchTag = ArchTag_;
@@ -167,30 +151,12 @@ class GemmUniversalWithBroadcast :
   static ComplexTransform const kTransformA = TransformA;
   static ComplexTransform const kTransformB = TransformB;
 
-  using Base = GemmUniversalBase<
-    typename kernel::DefaultGemmWithBroadcast<
-      ElementA_,
-      LayoutA_,
-      TransformA,
-      AlignmentA,
-      ElementB_,
-      LayoutB_,
-      TransformB,
-      AlignmentB,
-      ElementC_,
-      LayoutC_,
-      ElementAccumulator_,
-      OperatorClass_,
-      ArchTag_,
-      ThreadblockShape_,
-      WarpShape_,
-      InstructionShape_,
-      EpilogueOutputOp_,
-      ThreadblockSwizzle_,
-      Stages,
-      Operator_
-    >::GemmKernel
-  >;
+  using Base = GemmUniversalBase<typename kernel::DefaultGemmWithBroadcast<
+      ElementA_, LayoutA_, TransformA, AlignmentA, ElementB_, LayoutB_,
+      TransformB, AlignmentB, ElementC_, LayoutC_, ElementAccumulator_,
+      OperatorClass_, ArchTag_, ThreadblockShape_, WarpShape_,
+      InstructionShape_, EpilogueOutputOp_, ThreadblockSwizzle_, Stages,
+      Operator_>::GemmKernel>;
 
   using Arguments = typename Base::Arguments;
   using GemmKernel = typename Base::GemmKernel;
@@ -198,7 +164,8 @@ class GemmUniversalWithBroadcast :
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Partial specialization for column-major output exchanges problem size and operand.
+/// Partial specialization for column-major output exchanges problem size and
+/// operand.
 template <
     /// Element type for A matrix operand
     typename ElementA_,
@@ -240,14 +207,13 @@ template <
     ComplexTransform TransformA,
     /// Complex elementwise transformation on B operand
     ComplexTransform TransformB>
-class GemmUniversalWithBroadcast<ElementA_, LayoutA_, ElementB_, LayoutB_, ElementC_,
-           layout::ColumnMajor,  // partially specialized on LayoutC
-           ElementAccumulator_, OperatorClass_, ArchTag_, ThreadblockShape_,
-           WarpShape_, InstructionShape_, EpilogueOutputOp_,
-           ThreadblockSwizzle_, Stages, AlignmentA, AlignmentB,
-           Operator_, TransformA, TransformB> {
- public:
-
+class GemmUniversalWithBroadcast<
+    ElementA_, LayoutA_, ElementB_, LayoutB_, ElementC_,
+    layout::ColumnMajor, // partially specialized on LayoutC
+    ElementAccumulator_, OperatorClass_, ArchTag_, ThreadblockShape_,
+    WarpShape_, InstructionShape_, EpilogueOutputOp_, ThreadblockSwizzle_,
+    Stages, AlignmentA, AlignmentB, Operator_, TransformA, TransformB> {
+public:
   using ElementA = ElementA_;
   using LayoutA = LayoutA_;
   using TensorRefA = TensorRef<ElementA const, LayoutA>;
@@ -274,27 +240,12 @@ class GemmUniversalWithBroadcast<ElementA_, LayoutA_, ElementB_, LayoutB_, Eleme
   static ComplexTransform const kTransformB = TransformB;
 
   using UnderlyingOperator = typename GemmUniversalWithBroadcast<
-    ElementB,
-    typename layout::LayoutTranspose<LayoutB>::type,
-    ElementA,
-    typename layout::LayoutTranspose<LayoutA>::type,
-    ElementC,
-    layout::RowMajor,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    kAlignmentB,
-    kAlignmentA,
-    Operator,
-    kTransformB,
-    kTransformA
-  >::Base;
+      ElementB, typename layout::LayoutTranspose<LayoutB>::type, ElementA,
+      typename layout::LayoutTranspose<LayoutA>::type, ElementC,
+      layout::RowMajor, ElementAccumulator, OperatorClass, ArchTag,
+      ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+      ThreadblockSwizzle, Stages, kAlignmentB, kAlignmentA, Operator,
+      kTransformB, kTransformA>::Base;
 
   using GemmKernel = typename UnderlyingOperator::GemmKernel;
   static int const kAlignmentC = EpilogueOutputOp::kCount;
@@ -303,15 +254,14 @@ class GemmUniversalWithBroadcast<ElementA_, LayoutA_, ElementB_, LayoutB_, Eleme
   using Arguments = typename UnderlyingOperator::Arguments;
 
 private:
-
   UnderlyingOperator underlying_operator_;
 
 public:
-
   /// Constructs the GEMM.
-  GemmUniversalWithBroadcast() { }
+  GemmUniversalWithBroadcast() {}
 
-  /// Helper to construct a transposed equivalent for the underying GEMM operator
+  /// Helper to construct a transposed equivalent for the underying GEMM
+  /// operator
   static Arguments to_underlying_arguments(Arguments const &args) {
     return args.transposed_problem();
   }
@@ -325,7 +275,8 @@ public:
   /// Gets the workspace size
   static size_t get_workspace_size(Arguments const &args) {
 
-    return UnderlyingOperator::get_workspace_size(to_underlying_arguments(args));
+    return UnderlyingOperator::get_workspace_size(
+        to_underlying_arguments(args));
   }
 
   /// Computes the grid shape
@@ -339,15 +290,18 @@ public:
   }
 
   /// Initializes GEMM state from arguments.
-  Status initialize(Arguments const &args, void *workspace = nullptr, cudaStream_t stream = nullptr) {
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
-    return underlying_operator_.initialize(to_underlying_arguments(args), workspace, stream);
+    return underlying_operator_.initialize(to_underlying_arguments(args),
+                                           workspace, stream);
   }
 
   /// Lightweight update given a subset of arguments
   Status update(Arguments const &args, void *workspace = nullptr) {
 
-    return underlying_operator_.update(to_underlying_arguments(args), workspace);
+    return underlying_operator_.update(to_underlying_arguments(args),
+                                       workspace);
   }
 
   /// Runs the kernel using initialized state.
@@ -357,15 +311,11 @@ public:
   }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args,
-    void *workspace = nullptr,
-    cudaStream_t stream = nullptr) {
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
     Status status = initialize(args, workspace, stream);
 

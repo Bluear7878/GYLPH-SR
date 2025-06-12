@@ -4,8 +4,7 @@
 using json = nlohmann::json;
 using namespace nlohmann::literals;
 
-namespace ns
-{
+namespace ns {
 class person
 {
   private:
@@ -16,7 +15,9 @@ class person
   public:
     // No default constructor
     person(std::string name_, std::string address_, int age_)
-        : name(std::move(name_)), address(std::move(address_)), age(age_)
+      : name(std::move(name_))
+      , address(std::move(address_))
+      , age(age_)
     {}
 
     friend void to_json(nlohmann::json& nlohmann_json_j, const person& nlohmann_json_t)
@@ -26,7 +27,7 @@ class person
         nlohmann_json_j["age"] = nlohmann_json_t.age;
     }
 };
-} // namespace ns
+}  // namespace ns
 
 int main()
 {

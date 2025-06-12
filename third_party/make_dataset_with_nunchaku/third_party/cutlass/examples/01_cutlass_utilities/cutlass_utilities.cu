@@ -143,7 +143,7 @@ cudaError_t cutlass_hgemm_nn(
   >;
 
   Gemm gemm_op;
-  
+
   cutlass::Status status = gemm_op({
     {M, N, K},
     {A, lda},
@@ -209,7 +209,7 @@ cudaError_t TestCutlassGemm(int M, int N, int K, cutlass::half_t alpha, cutlass:
     stddev,
     bits_less_than_one
   );
-  
+
   cutlass::reference::device::TensorFillRandomGaussian(
     B.device_view(),
     seed * 2019,
@@ -217,7 +217,7 @@ cudaError_t TestCutlassGemm(int M, int N, int K, cutlass::half_t alpha, cutlass:
     stddev,
     bits_less_than_one
   );
-  
+
   cutlass::reference::device::TensorFillRandomGaussian(
     C_cutlass.device_view(),
     seed * 1993,
@@ -229,8 +229,8 @@ cudaError_t TestCutlassGemm(int M, int N, int K, cutlass::half_t alpha, cutlass:
 
   // Copy C_cutlass into C_reference so the GEMM is correct when beta != 0.
   cutlass::device_memory::copy_device_to_device(
-    C_reference.device_data(), 
-    C_cutlass.device_data(), 
+    C_reference.device_data(),
+    C_cutlass.device_data(),
     C_cutlass.capacity());
 
   // Copy the device-side view into host memory
@@ -293,7 +293,7 @@ cudaError_t TestCutlassGemm(int M, int N, int K, cutlass::half_t alpha, cutlass:
 
   // Compare reference to computed results.
   if (!cutlass::reference::host::TensorEquals(
-    C_reference.host_view(), 
+    C_reference.host_view(),
     C_cutlass.host_view())) {
 
     char const *filename = "errors_01_cutlass_utilities.csv";
@@ -339,7 +339,7 @@ int main(int argc, const char *arg[]) {
 
   cudaDeviceProp prop;
   cudaError_t result = cudaGetDeviceProperties(&prop, 0);
-  
+
   if (result != cudaSuccess) {
     std::cerr << "Failed to query device properties with error " << cudaGetErrorString(result) << std::endl;
     return -1;
@@ -397,4 +397,3 @@ int main(int argc, const char *arg[]) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-

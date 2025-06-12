@@ -7,6 +7,7 @@
 This is the official list of CUTLASS developers and contributors.
 
 ## DEVELOPERS
+
 Vijay Thakkar<br />
 Pradeep Ramani<br />
 Cris Cecka<br />
@@ -29,13 +30,16 @@ Jin Wang<br />
 Aditya Atluri<br />
 
 ## CuTe
+
 Cris Cecka<br />
 Vijay Thakkar<br />
 
 ## CUTLASS Product Manager
+
 Matthew Nicely<br />
 
 ## Former CUTLASS Developers
+
 Manish Gupta<br />
 Naila Farooqui<br />
 David Tanner<br />
@@ -44,6 +48,7 @@ Zhaodong Chen<br />
 Chinmay Talegaonkar<br />
 
 ## CONTRIBUTORS
+
 Timothy Costa<br />
 Julien Demouth<br />
 Brian Fahs<br />

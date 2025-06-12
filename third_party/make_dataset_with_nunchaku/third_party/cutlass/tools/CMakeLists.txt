@@ -43,4 +43,3 @@ if (CUTLASS_ENABLE_PROFILER)
     add_subdirectory(profiler)
   endif()
 endif()
-

@@ -101,7 +101,7 @@ cutlass_add_library(cutlass_nvrtc STATIC
   )
 
 target_include_directories(
-  cutlass_nvrtc 
+  cutlass_nvrtc
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
   )

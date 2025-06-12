@@ -7,14 +7,13 @@ int main()
 {
     // create a JSON object with different entry types
     json j =
-    {
-        {"integer", 1},
-        {"floating", 42.23},
-        {"string", "hello world"},
-        {"boolean", true},
-        {"object", {{"key1", 1}, {"key2", 2}}},
-        {"array", {1, 2, 3}}
-    };
+        {
+            {"integer", 1},
+            {"floating", 42.23},
+            {"string", "hello world"},
+            {"boolean", true},
+            {"object", {{"key1", 1}, {"key2", 2}}},
+            {"array", {1, 2, 3}}};
 
     // access existing values
     int v_integer = j.value("integer", 0);

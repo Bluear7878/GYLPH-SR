@@ -1,12 +1,12 @@
 /******************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  ******************************************************************************/
 
@@ -63,7 +64,7 @@ struct CommandLine {
   /**
    * Constructor
    */
-  CommandLine(int argc, const char** argv) {
+  CommandLine(int argc, const char **argv) {
     using namespace std;
 
     for (int i = 1; i < argc; i++) {
@@ -92,11 +93,12 @@ struct CommandLine {
   /**
    * Checks whether a flag "--<flag>" is present in the commandline
    */
-  bool check_cmd_line_flag(const char* arg_name) const {
+  bool check_cmd_line_flag(const char *arg_name) const {
     using namespace std;
 
     for (int i = 0; i < int(keys.size()); ++i) {
-      if (keys[i] == string(arg_name)) return true;
+      if (keys[i] == string(arg_name))
+        return true;
     }
     return false;
   }
@@ -104,16 +106,14 @@ struct CommandLine {
   /**
    * Returns number of naked (non-flag and non-key-value) commandline parameters
    */
-  size_t num_naked_args() const {
-    return args.size();
-  }
+  size_t num_naked_args() const { return args.size(); }
 
   /**
    * Print naked (non-flag and non-key-value) commandline parameters
    */
   void print_naked_args(std::ostream &out) const {
     for (auto arg : args) {
-      out << "   " << arg <<"\n";
+      out << "   " << arg << "\n";
     }
   }
 
@@ -121,7 +121,7 @@ struct CommandLine {
    * Returns the commandline parameter for a given index (not including flags)
    */
   template <typename value_t>
-  void get_cmd_line_argument(int index, value_t& val) const {
+  void get_cmd_line_argument(int index, value_t &val) const {
     using namespace std;
     if (index < args.size()) {
       istringstream str_stream(args[index]);
@@ -130,9 +130,11 @@ struct CommandLine {
   }
 
   /**
-   * Obtains the boolean value specified for a given commandline parameter --<flag>=<bool>
+   * Obtains the boolean value specified for a given commandline parameter
+   * --<flag>=<bool>
    */
-  void get_cmd_line_argument(const char* arg_name, bool& val, bool _default) const {
+  void get_cmd_line_argument(const char *arg_name, bool &val,
+                             bool _default) const {
     val = _default;
     if (check_cmd_line_flag(arg_name)) {
       std::string value;
@@ -141,24 +143,24 @@ struct CommandLine {
       val = !(value == "0" || value == "false");
     }
   }
-  
+
   /**
-   * Obtains the value specified for a given commandline parameter --<flag>=<value>
+   * Obtains the value specified for a given commandline parameter
+   * --<flag>=<value>
    */
   template <typename value_t>
-  void get_cmd_line_argument(const char* arg_name,
-                             value_t& val) const {
+  void get_cmd_line_argument(const char *arg_name, value_t &val) const {
 
     get_cmd_line_argument(arg_name, val, val);
   }
 
   /**
-   * Obtains the value specified for a given commandline parameter --<flag>=<value>
+   * Obtains the value specified for a given commandline parameter
+   * --<flag>=<value>
    */
   template <typename value_t>
-  void get_cmd_line_argument(const char* arg_name,
-                             value_t& val,
-                             value_t const& _default) const {
+  void get_cmd_line_argument(const char *arg_name, value_t &val,
+                             value_t const &_default) const {
     using namespace std;
 
     val = _default;
@@ -172,11 +174,11 @@ struct CommandLine {
   }
 
   /**
-   * Returns the values specified for a given commandline parameter --<flag>=<value>,<value>*
+   * Returns the values specified for a given commandline parameter
+   * --<flag>=<value>,<value>*
    */
   template <typename value_t>
-  void get_cmd_line_arguments(const char* arg_name,
-                              std::vector<value_t>& vals,
+  void get_cmd_line_arguments(const char *arg_name, std::vector<value_t> &vals,
                               char sep = ',') const {
     using namespace std;
 
@@ -198,10 +200,10 @@ struct CommandLine {
    * Returns the values specified for a given commandline parameter
    * --<flag>=<value>,<value_start:value_end>*
    */
-  void get_cmd_line_argument_pairs(const char* arg_name,
-                                   std::vector<std::pair<std::string, std::string> >& tokens,
-                                   char delim = ',',
-                                   char sep = ':') const {
+  void get_cmd_line_argument_pairs(
+      const char *arg_name,
+      std::vector<std::pair<std::string, std::string>> &tokens,
+      char delim = ',', char sep = ':') const {
     if (check_cmd_line_flag(arg_name)) {
       std::string value;
       get_cmd_line_argument(arg_name, value);
@@ -214,15 +216,14 @@ struct CommandLine {
    * Returns a list of ranges specified for a given commandline parameter
    * --<flag>=<key:value>,<key:value>*
    */
-  void get_cmd_line_argument_ranges(const char* arg_name,
-                                    std::vector<std::vector<std::string> >& vals,
-                                    char delim = ',',
-                                    char sep = ':') const {
+  void get_cmd_line_argument_ranges(const char *arg_name,
+                                    std::vector<std::vector<std::string>> &vals,
+                                    char delim = ',', char sep = ':') const {
     std::vector<std::string> ranges;
     get_cmd_line_arguments(arg_name, ranges, delim);
 
     for (std::vector<std::string>::const_iterator range = ranges.begin();
-      range != ranges.end(); ++range) {
+         range != ranges.end(); ++range) {
 
       std::vector<std::string> range_vals;
       separate_string(*range, range_vals, sep);
@@ -240,9 +241,8 @@ struct CommandLine {
   //-------------------------------------------------------------------------
 
   /// Tokenizes a comma-delimited list of string pairs delimited by ':'
-  static void tokenize(std::vector<std::pair<std::string, std::string> >& tokens,
-                       std::string const& str,
-                       char delim = ',',
+  static void tokenize(std::vector<std::pair<std::string, std::string>> &tokens,
+                       std::string const &str, char delim = ',',
                        char sep = ':') {
     // Home-built to avoid Boost dependency
     size_t s_idx = 0;
@@ -268,24 +268,22 @@ struct CommandLine {
   }
 
   /// Tokenizes a comma-delimited list of string pairs delimited by ':'
-  static void tokenize(std::vector<std::string>& tokens,
-                       std::string const& str,
-                       char delim = ',',
-                       char sep = ':') {
-    typedef std::vector<std::pair<std::string, std::string> > TokenVector;
+  static void tokenize(std::vector<std::string> &tokens, std::string const &str,
+                       char delim = ',', char sep = ':') {
+    typedef std::vector<std::pair<std::string, std::string>> TokenVector;
     typedef TokenVector::const_iterator token_iterator;
 
-    std::vector<std::pair<std::string, std::string> > token_pairs;
+    std::vector<std::pair<std::string, std::string>> token_pairs;
     tokenize(token_pairs, str, delim, sep);
-    for (token_iterator tok = token_pairs.begin(); tok != token_pairs.end(); ++tok) {
+    for (token_iterator tok = token_pairs.begin(); tok != token_pairs.end();
+         ++tok) {
       tokens.push_back(tok->first);
     }
   }
 
   template <typename value_t>
-  static void separate_string(std::string const& str,
-                              std::vector<value_t>& vals,
-                              char sep = ',') {
+  static void separate_string(std::string const &str,
+                              std::vector<value_t> &vals, char sep = ',') {
     std::istringstream str_stream(str);
     std::string::size_type old_pos = 0;
     std::string::size_type new_pos = 0;
@@ -310,4 +308,4 @@ struct CommandLine {
   }
 };
 
-}  // namespace cutlass
+} // namespace cutlass

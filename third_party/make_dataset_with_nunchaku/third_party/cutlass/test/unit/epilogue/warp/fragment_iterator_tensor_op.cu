@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -35,8 +36,8 @@
 #include "../../common/cutlass_unit_test.h"
 
 #include "cutlass/aligned_buffer.h"
-#include "cutlass/half.h"
 #include "cutlass/gemm/warp/default_mma_tensor_op.h"
+#include "cutlass/half.h"
 
 #include "cutlass/epilogue/warp/fragment_iterator_tensor_op.h"
 
@@ -54,26 +55,17 @@ TEST(SM75_Epilogue_warp_FragmentIterator, mma_f32_64x64x8) {
       cutlass::sizeof_bits<Element>::value, 64>;
 
   using MmaTensorOp = typename cutlass::gemm::warp::DefaultMmaTensorOp<
-    Shape,
-    InstructionShape,
-    Element,
-    LayoutA,
-    Element,
-    LayoutB,
-    ElementC,
-    cutlass::layout::RowMajor
-  >::Type;
+      Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
+      cutlass::layout::RowMajor>::Type;
 
   using FragmentIterator = cutlass::epilogue::warp::FragmentIteratorTensorOp<
-    Shape,
-    typename MmaTensorOp::Policy::Operator::Shape,
-    typename MmaTensorOp::Policy::Operator::ElementC,
-    typename MmaTensorOp::Policy::Operator::FragmentC,
-    cutlass::layout::RowMajor
-  >;
+      Shape, typename MmaTensorOp::Policy::Operator::Shape,
+      typename MmaTensorOp::Policy::Operator::ElementC,
+      typename MmaTensorOp::Policy::Operator::FragmentC,
+      cutlass::layout::RowMajor>;
 
-  // This test just prints things.
-  #if 0
+// This test just prints things.
+#if 0
   typename MmaTensorOp::FragmentC accum;
 
   std::cout << "Native accumulators:\n";
@@ -82,7 +74,7 @@ TEST(SM75_Epilogue_warp_FragmentIterator, mma_f32_64x64x8) {
     accum[i] = ElementC(i);
 
     std::cout << accum[i] << " ";
-    if (i && !((i + 1) % 4)) { 
+    if (i && !((i + 1) % 4)) {
       std::cout << "\n";
     }
   }
@@ -114,7 +106,7 @@ TEST(SM75_Epilogue_warp_FragmentIterator, mma_f32_64x64x8) {
 
     ++fragment_iterator;
   }
-  #endif
+#endif
 }
 
 TEST(SM75_Epilogue_warp_FragmentIterator, mma_f16_64x64x8) {
@@ -129,26 +121,17 @@ TEST(SM75_Epilogue_warp_FragmentIterator, mma_f16_64x64x8) {
       cutlass::sizeof_bits<Element>::value, 64>;
 
   using MmaTensorOp = typename cutlass::gemm::warp::DefaultMmaTensorOp<
-    Shape,
-    InstructionShape,
-    Element,
-    LayoutA,
-    Element,
-    LayoutB,
-    ElementC,
-    cutlass::layout::RowMajor
-  >::Type;
+      Shape, InstructionShape, Element, LayoutA, Element, LayoutB, ElementC,
+      cutlass::layout::RowMajor>::Type;
 
   using FragmentIterator = cutlass::epilogue::warp::FragmentIteratorTensorOp<
-    Shape,
-    typename MmaTensorOp::Policy::Operator::Shape,
-    typename MmaTensorOp::Policy::Operator::ElementC,
-    typename MmaTensorOp::Policy::Operator::FragmentC,
-    cutlass::layout::RowMajor
-  >;
+      Shape, typename MmaTensorOp::Policy::Operator::Shape,
+      typename MmaTensorOp::Policy::Operator::ElementC,
+      typename MmaTensorOp::Policy::Operator::FragmentC,
+      cutlass::layout::RowMajor>;
 
-  // This test just prints things.
-  #if 0
+// This test just prints things.
+#if 0
   typename MmaTensorOp::FragmentC accum;
 
   std::cout << "Native accumulators:\n";
@@ -157,7 +140,7 @@ TEST(SM75_Epilogue_warp_FragmentIterator, mma_f16_64x64x8) {
     accum[i] = ElementC(i);
 
     std::cout << (float)accum[i] << " ";
-    if (i && !((i + 1) % 4)) { 
+    if (i && !((i + 1) % 4)) {
       std::cout << "\n";
     }
   }
@@ -189,6 +172,6 @@ TEST(SM75_Epilogue_warp_FragmentIterator, mma_f16_64x64x8) {
 
     ++fragment_iterator;
   }
-  #endif
+#endif
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////

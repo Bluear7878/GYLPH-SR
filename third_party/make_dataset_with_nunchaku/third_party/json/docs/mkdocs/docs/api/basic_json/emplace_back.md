@@ -11,12 +11,12 @@ Creates a JSON value from the passed parameters `args` to the end of the JSON va
 ## Template parameters
 
 `Args`
-:   compatible types to create a `basic_json` object
+: compatible types to create a `basic_json` object
 
 ## Parameters
 
 `args` (in)
-:   arguments to forward to a constructor of `basic_json`
+: arguments to forward to a constructor of `basic_json`
 
 ## Return value
 
@@ -35,18 +35,20 @@ Amortized constant.
 
 ??? example
 
-    The example shows how `emplace_back()` can be used to add elements to a JSON array. Note how the `null` value was
-    silently converted to a JSON array.
-        
-    ```cpp
-    --8<-- "examples/emplace_back.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/emplace_back.output"
-    ```
+````
+The example shows how `emplace_back()` can be used to add elements to a JSON array. Note how the `null` value was
+silently converted to a JSON array.
+
+```cpp
+--8<-- "examples/emplace_back.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/emplace_back.output"
+```
+````
 
 ## Version history
 

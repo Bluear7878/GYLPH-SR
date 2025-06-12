@@ -6,7 +6,7 @@ import sys
 import setuptools
 import torch
 from packaging import version as packaging_version
-from torch.utils.cpp_extension import BuildExtension, CUDA_HOME, CUDAExtension
+from torch.utils.cpp_extension import CUDA_HOME, BuildExtension, CUDAExtension
 
 
 class CustomBuildExtension(BuildExtension):
@@ -37,7 +37,9 @@ def get_sm_targets() -> list[str]:
     except:
         raise Exception("nvcc not found")
 
-    support_sm120 = packaging_version.parse(nvcc_version) >= packaging_version.parse("12.8")
+    support_sm120 = packaging_version.parse(nvcc_version) >= packaging_version.parse(
+        "12.8"
+    )
 
     install_mode = os.getenv("NUNCHAKU_INSTALL_MODE", "FAST")
     if install_mode == "FAST":
@@ -98,8 +100,23 @@ if __name__ == "__main__":
 
     assert len(sm_targets) > 0, "No SM targets found"
 
-    GCC_FLAGS = ["-DENABLE_BF16=1", "-DBUILD_NUNCHAKU=1", "-fvisibility=hidden", "-g", "-std=c++20", "-UNDEBUG", "-Og"]
-    MSVC_FLAGS = ["/DENABLE_BF16=1", "/DBUILD_NUNCHAKU=1", "/std:c++20", "/UNDEBUG", "/Zc:__cplusplus", "/FS"]
+    GCC_FLAGS = [
+        "-DENABLE_BF16=1",
+        "-DBUILD_NUNCHAKU=1",
+        "-fvisibility=hidden",
+        "-g",
+        "-std=c++20",
+        "-UNDEBUG",
+        "-Og",
+    ]
+    MSVC_FLAGS = [
+        "/DENABLE_BF16=1",
+        "/DBUILD_NUNCHAKU=1",
+        "/std:c++20",
+        "/UNDEBUG",
+        "/Zc:__cplusplus",
+        "/FS",
+    ]
     NVCC_FLAGS = [
         "-DENABLE_BF16=1",
         "-DBUILD_NUNCHAKU=1",
@@ -129,7 +146,14 @@ if __name__ == "__main__":
     for target in sm_targets:
         NVCC_FLAGS += ["-gencode", f"arch=compute_{target},code=sm_{target}"]
 
-    NVCC_MSVC_FLAGS = ["-Xcompiler", "/Zc:__cplusplus", "-Xcompiler", "/FS", "-Xcompiler", "/bigobj"]
+    NVCC_MSVC_FLAGS = [
+        "-Xcompiler",
+        "/Zc:__cplusplus",
+        "-Xcompiler",
+        "/FS",
+        "-Xcompiler",
+        "/bigobj",
+    ]
 
     nunchaku_extension = CUDAExtension(
         name="nunchaku._C",
@@ -143,12 +167,24 @@ if __name__ == "__main__":
             *ncond("src/SanaModel.cpp"),
             "src/Serialization.cpp",
             "src/Module.cpp",
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim64_fp16_sm80.cu"),
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim64_bf16_sm80.cu"),
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim128_fp16_sm80.cu"),
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim128_bf16_sm80.cu"),
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_block_hdim64_fp16_sm80.cu"),
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_block_hdim64_bf16_sm80.cu"),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim64_fp16_sm80.cu"
+            ),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim64_bf16_sm80.cu"
+            ),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim128_fp16_sm80.cu"
+            ),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_hdim128_bf16_sm80.cu"
+            ),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_block_hdim64_fp16_sm80.cu"
+            ),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_block_hdim64_bf16_sm80.cu"
+            ),
             *ncond(
                 "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/src/flash_fwd_block_hdim128_fp16_sm80.cu"
             ),
@@ -172,10 +208,19 @@ if __name__ == "__main__":
             "src/kernels/gemm_f16.cu",
             "src/kernels/awq/gemm_awq.cu",
             "src/kernels/awq/gemv_awq.cu",
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/flash_api.cpp"),
-            *ncond("third_party/Block-Sparse-Attention/csrc/block_sparse_attn/flash_api_adapter.cpp"),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/flash_api.cpp"
+            ),
+            *ncond(
+                "third_party/Block-Sparse-Attention/csrc/block_sparse_attn/flash_api_adapter.cpp"
+            ),
         ],
-        extra_compile_args={"gcc": GCC_FLAGS, "msvc": MSVC_FLAGS, "nvcc": NVCC_FLAGS, "nvcc_msvc": NVCC_MSVC_FLAGS},
+        extra_compile_args={
+            "gcc": GCC_FLAGS,
+            "msvc": MSVC_FLAGS,
+            "nvcc": NVCC_FLAGS,
+            "nvcc_msvc": NVCC_MSVC_FLAGS,
+        },
         include_dirs=INCLUDE_DIRS,
     )
 

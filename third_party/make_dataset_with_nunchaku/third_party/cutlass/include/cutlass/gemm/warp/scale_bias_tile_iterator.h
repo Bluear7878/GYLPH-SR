@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -39,20 +40,20 @@
 #include "cutlass/cutlass.h"
 
 #include "cutlass/array.h"
+#include "cutlass/matrix_shape.h"
 #include "cutlass/numeric_types.h"
 #include "cutlass/tensor_ref.h"
-#include "cutlass/matrix_shape.h"
 
 #include "cutlass/arch/memory_sm75.h"
 #include "cutlass/gemm/gemm.h"
 
 #include "cutlass/layout/matrix.h"
-#include "cutlass/layout/tensor.h"
 #include "cutlass/layout/pitch_linear.h"
+#include "cutlass/layout/tensor.h"
 #include "cutlass/layout/tensor_op_multiplicand_sm75.h"
 
-#include "cutlass/platform/platform.h"
 #include "cutlass/fast_math.h"
+#include "cutlass/platform/platform.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -100,8 +101,8 @@ template <
     /// Number of partitions along K dimension
     int PartitionsK_>
 class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
-                             InstructionShape_, Policy_, 32, PartitionsK_> {
- public:
+                            InstructionShape_, Policy_, 32, PartitionsK_> {
+public:
   /// Shape of tile to load (concept: PitchLinearShape)
   using Shape = Shape_;
 
@@ -138,12 +139,11 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
   /// Internal structure of iterator - made public to enable introspection
   using Policy = Policy_;
 
- private:
-
+private:
   /// Pointer type used for accesses
   using AccessType = Array<Element, kElementsPerAccess>;
 
- public:
+public:
   //
   // Derived quantities
   //
@@ -152,8 +152,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
   using Fragment = Array<Element, 2 * Policy::kLdsmOpInner *
                                       InstructionShape::kContiguous / kThreads>;
 
- private:
-
+private:
   /// Shared memory base pointers - not advanced
   AccessType const *pointer_;
 
@@ -164,18 +163,15 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
   /// to XOR it
   int k_group_idx_;
 
- public:
+public:
   /// Default ctor constructs null iterator
   CUTLASS_HOST_DEVICE
   ScaleBiasTileIterator()
-      : pointer_(nullptr),
-        byte_offset_(0),
-        k_group_idx_(0) {}
+      : pointer_(nullptr), byte_offset_(0), k_group_idx_(0) {}
 
   /// Constructor from TensorRef
   CUTLASS_DEVICE
-  ScaleBiasTileIterator(TensorRef const &ref_scale_bias,
-                         int lane_id)
+  ScaleBiasTileIterator(TensorRef const &ref_scale_bias, int lane_id)
       : byte_offset_(0), k_group_idx_(0) {
     /// 16816 only
     pointer_ = reinterpret_cast<AccessType const *>(ref_scale_bias.data()) +
@@ -194,8 +190,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
   /// Advances an iterator along logical dimensions of matrix in units of whole
   /// tiles
   CUTLASS_DEVICE
-  ScaleBiasTileIterator &add_tile_offset(
-      TensorCoord const &tile_offset) {
+  ScaleBiasTileIterator &add_tile_offset(TensorCoord const &tile_offset) {
     int whole_tiles = tile_offset.contiguous() / Policy::kGroupsPerTile;
     int k_groups_delta = tile_offset.contiguous() % Policy::kGroupsPerTile;
 
@@ -235,8 +230,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
   ///< advances in units of whole tiles along the logical coordinate space of
   ///< the tensor
   CUTLASS_DEVICE
-  ScaleBiasTileIterator &operator+=(
-      TensorCoord const &tile_offset) {
+  ScaleBiasTileIterator &operator+=(TensorCoord const &tile_offset) {
     add_tile_offset(tile_offset);
     return *this;
   }
@@ -244,8 +238,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
   ///< advances in units of whole tiles along the logical coordinate space of
   ///< the tensor
   CUTLASS_DEVICE
-  ScaleBiasTileIterator &operator-=(
-      TensorCoord const &tile_offset) {
+  ScaleBiasTileIterator &operator-=(TensorCoord const &tile_offset) {
     add_tile_offset(-tile_offset);
     return *this;
   }
@@ -277,8 +270,8 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
             reinterpret_cast<char const *>(source_ptr) + byte_offset +
             byte_offset_;
 
-        cutlass::arch::ldsm<layout::RowMajor, 4>(
-            fetch_ptr[access_idx], source_byte_ptr);
+        cutlass::arch::ldsm<layout::RowMajor, 4>(fetch_ptr[access_idx],
+                                                 source_byte_ptr);
       }
     }
   }
@@ -325,8 +318,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::PitchLinear,
       /// loads a tile with a logical offset AND a pointer offset
       Index byte_offset) const {
     Index pointer_offset = tile_offset.contiguous() *
-                               InstructionShape::kContiguous /
-                               kElementsPerAccess;
+                           InstructionShape::kContiguous / kElementsPerAccess;
 
     byte_offset += sizeof_bits<AccessType>::value * pointer_offset / 8;
 
@@ -367,8 +359,8 @@ template <
     /// Number of partitions along K dimension
     int PartitionsK_>
 class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
-                             InstructionShape_, Policy_, 32, PartitionsK_> {
- public:
+                            InstructionShape_, Policy_, 32, PartitionsK_> {
+public:
   /// Shape of tile to load (concept: PitchLinearShape)
   using Shape = Shape_;
 
@@ -407,7 +399,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
                                InstructionShape::kRow>,
       Policy, kThreads, PartitionsK_>;
 
- public:
+public:
   //
   // Derived quantities
   //
@@ -415,11 +407,11 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
   /// Fragment object holding a thread's part of a tile
   using Fragment = typename Base::Fragment;
 
- private:
+private:
   /// Underlying tile iterator
   Base iterator_;
 
- public:
+public:
   /// Default ctor constructs null iterator
   CUTLASS_HOST_DEVICE
   ScaleBiasTileIterator() {}
@@ -440,8 +432,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
   /// Advances an iterator along logical dimensions of matrix in units of whole
   /// tiles
   CUTLASS_HOST_DEVICE
-  ScaleBiasTileIterator &add_tile_offset(
-      TensorCoord const &tile_offset) {
+  ScaleBiasTileIterator &add_tile_offset(TensorCoord const &tile_offset) {
     iterator_.add_tile_offset({tile_offset.column(), tile_offset.row()});
 
     return *this;
@@ -450,9 +441,10 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
   /// Advances an iterator along logical dimensions of matrix in units of whole
   /// tiles
   CUTLASS_DEVICE
-  ScaleBiasTileIterator &add_tile_offset_negative(
-      TensorCoord const &tile_offset) {
-    iterator_.add_tile_offset_negative({tile_offset.column(), tile_offset.row()});
+  ScaleBiasTileIterator &
+  add_tile_offset_negative(TensorCoord const &tile_offset) {
+    iterator_.add_tile_offset_negative(
+        {tile_offset.column(), tile_offset.row()});
 
     return *this;
   }
@@ -476,8 +468,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
   ///< advances in units of whole tiles along the logical coordinate space of
   ///< the tensor
   CUTLASS_DEVICE
-  ScaleBiasTileIterator &operator+=(
-      TensorCoord const &tile_offset) {
+  ScaleBiasTileIterator &operator+=(TensorCoord const &tile_offset) {
     add_tile_offset(PitchLinearCoord(tile_offset.column(), tile_offset.row()));
     return *this;
   }
@@ -485,8 +476,7 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
   ///< advances in units of whole tiles along the logical coordinate space of
   ///< the tensor
   CUTLASS_DEVICE
-  ScaleBiasTileIterator &operator-=(
-      TensorCoord const &tile_offset) {
+  ScaleBiasTileIterator &operator-=(TensorCoord const &tile_offset) {
     add_tile_offset(-PitchLinearCoord(tile_offset.column(), tile_offset.row()));
     return *this;
   }
@@ -558,15 +548,13 @@ class ScaleBiasTileIterator<Shape_, Element_, cutlass::layout::RowMajor,
   ///
   /// This is used by some nontrivial permuted layouts.
   CUTLASS_DEVICE
-  void set_kgroup_index(int k_group) {
-    iterator_.set_kgroup_index(k_group); 
-  }
+  void set_kgroup_index(int k_group) { iterator_.set_kgroup_index(k_group); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 } // namespace warp
-} // namespace gemm 
+} // namespace gemm
 } // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

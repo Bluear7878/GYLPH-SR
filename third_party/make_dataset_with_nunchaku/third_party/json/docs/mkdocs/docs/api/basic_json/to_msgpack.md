@@ -13,22 +13,22 @@ Serializes a given JSON value `j` to a byte vector using the MessagePack seriali
 serialization format which aims to be more compact than JSON itself, yet more efficient to parse.
 
 1. Returns a byte vector containing the MessagePack serialization.
-2. Writes the MessagePack serialization to an output adapter.
+1. Writes the MessagePack serialization to an output adapter.
 
 The exact mapping and its limitations is described on a [dedicated page](../../features/binary_formats/messagepack.md).
 
 ## Parameters
 
 `j` (in)
-:   JSON value to serialize
+: JSON value to serialize
 
 `o` (in)
-:   output adapter to write serialization to
+: output adapter to write serialization to
 
 ## Return value
 
 1. MessagePack serialization as byte vector
-2. (none)
+1. (none)
 
 ## Exception safety
 
@@ -42,17 +42,19 @@ Linear in the size of the JSON value `j`.
 
 ??? example
 
-    The example shows the serialization of a JSON value to a byte vector in MessagePack format.
-     
-    ```cpp
-    --8<-- "examples/to_msgpack.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/to_msgpack.output"
-    ```
+````
+The example shows the serialization of a JSON value to a byte vector in MessagePack format.
+
+```cpp
+--8<-- "examples/to_msgpack.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/to_msgpack.output"
+```
+````
 
 ## Version history
 

@@ -30,14 +30,15 @@
 #
 #################################################################################################
 
+
 class gen_build_sys:
-    def __init__(self, cutlass_deps_dir, output_dir = "../"):
+    def __init__(self, cutlass_deps_dir, output_dir="../"):
         self.output_dir = output_dir
         self.cutlass_deps_dir = cutlass_deps_dir
 
     def gen_top(self):
         code = ""
-        code += '''\
+        code += """\
 # Auto Generated code - Do not edit.
 
 cmake_minimum_required(VERSION 3.8)
@@ -47,9 +48,11 @@ set(CUDA_PATH ${{CUDA_TOOLKIT_ROOT_DIR}})
 set(CUTLASS_PATH \"{cutlass_deps_dir}/include\")
 set(CUTLASS_UTIL_PATH \"{cutlass_deps_dir}/tools/util/include\")
 list(APPEND CMAKE_MODULE_PATH ${{CUDAToolkit_LIBRARY_DIR}})
-'''.format(cutlass_deps_dir=self.cutlass_deps_dir)
+""".format(
+            cutlass_deps_dir=self.cutlass_deps_dir
+        )
 
-        code += '''\
+        code += """\
 set(GPU_ARCHS \"\" CACHE STRING
   \"List of GPU architectures (semicolon-separated) to be compiled for.\")
 
@@ -96,8 +99,8 @@ set(COMMON_LIB_DIRS
 )
 list(APPEND COMMON_HEADER_DIRS ${CUTLASS_PATH})
 list(APPEND COMMON_HEADER_DIRS ${CUTLASS_UTIL_PATH})
-'''
-        code += '''\
+"""
+        code += """\
 include_directories(
   ${COMMON_HEADER_DIRS}
 )
@@ -122,7 +125,7 @@ target_link_libraries(sample PRIVATE
 if(NOT DEFINED LIB_INSTALL_PATH)
 	set(LIB_INSTALL_PATH ${CMAKE_CURRENT_BINARY_DIR})
 endif()
-'''
+"""
         return code
 
     def gen_code(self):

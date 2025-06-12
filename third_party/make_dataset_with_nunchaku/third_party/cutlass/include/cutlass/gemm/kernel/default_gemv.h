@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,21 +18,22 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 #pragma once
 
-#include "cutlass/gemm/threadblock/gemv.h"
 #include "cutlass/gemm/threadblock/default_gemv_core.h"
+#include "cutlass/gemm/threadblock/gemv.h"
 #include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
 namespace cutlass {
@@ -108,25 +109,29 @@ struct DefaultGemv {
 
   /// Policy for the iterator that reads/writes C/D
   using IteratorPolicyCD = typename platform::conditional<
-        platform::is_same<LayoutCD, layout::RowMajor>::value,
-        cutlass::transform::PitchLinearTilePolicyStripminedThreadContiguous<
-          layout::PitchLinearShape<ThreadBlockShape::kN, ThreadBlockShape::kM>, Core::kThreadsPerN, ThreadShape::kN>,
-        cutlass::transform::PitchLinearTilePolicyStripminedThreadStrided<
-          layout::PitchLinearShape<ThreadBlockShape::kM, ThreadBlockShape::kN>, Core::kThreadsPerN, ThreadShape::kM>>::type;
+      platform::is_same<LayoutCD, layout::RowMajor>::value,
+      cutlass::transform::PitchLinearTilePolicyStripminedThreadContiguous<
+          layout::PitchLinearShape<ThreadBlockShape::kN, ThreadBlockShape::kM>,
+          Core::kThreadsPerN, ThreadShape::kN>,
+      cutlass::transform::PitchLinearTilePolicyStripminedThreadStrided<
+          layout::PitchLinearShape<ThreadBlockShape::kM, ThreadBlockShape::kN>,
+          Core::kThreadsPerN, ThreadShape::kM>>::type;
 
   /// Iterator that reads/writes C/D
   using IteratorCD = cutlass::transform::threadblock::PredicatedTileIterator<
-   cutlass::MatrixShape<ThreadBlockShape::kM, ThreadBlockShape::kN>, ElementCD, LayoutCD, 0, IteratorPolicyCD>;
+      cutlass::MatrixShape<ThreadBlockShape::kM, ThreadBlockShape::kN>,
+      ElementCD, LayoutCD, 0, IteratorPolicyCD>;
 
   /// Fragment storage for C/D
   using FragmentCD = typename IteratorCD::Fragment;
 
   // Define the threadblock swizzle
-  using ThreadBlockSwizzle = cutlass::gemm::threadblock::GemvBatchedStridedThreadblockDefaultSwizzle;
+  using ThreadBlockSwizzle =
+      cutlass::gemm::threadblock::GemvBatchedStridedThreadblockDefaultSwizzle;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass

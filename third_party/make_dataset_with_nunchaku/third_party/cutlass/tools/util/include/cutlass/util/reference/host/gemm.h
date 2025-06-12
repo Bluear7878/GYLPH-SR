@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -35,79 +36,59 @@
 #pragma once
 
 #include "cutlass/coord.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/functional.h"
 #include "cutlass/numeric_conversion.h"
+#include "cutlass/numeric_types.h"
 
-#include "cutlass/tensor_view.h"
-#include "cutlass/gemm/gemm.h"
 #include "cutlass/arch/mma.h"
+#include "cutlass/gemm/gemm.h"
+#include "cutlass/tensor_view.h"
 #include "cutlass/util/host_tensor.h"
 
 namespace cutlass {
 namespace reference {
 namespace host {
 
-template<typename Out, typename In>
-struct CastIfScalar {
-  static Out cast(In in) {
-    return Out(in);
-  }
+template <typename Out, typename In> struct CastIfScalar {
+  static Out cast(In in) { return Out(in); }
 };
 
-template<typename OutScalar, typename In>
+template <typename OutScalar, typename In>
 struct CastIfScalar<cutlass::complex<OutScalar>, In> {
   typedef cutlass::complex<OutScalar> Out;
-  static Out cast(In in) {
-    return Out(static_cast<OutScalar>(in));
-  }
+  static Out cast(In in) { return Out(static_cast<OutScalar>(in)); }
 };
 
-template<typename OutScalar, typename InScalar>
+template <typename OutScalar, typename InScalar>
 struct CastIfScalar<cutlass::complex<OutScalar>, cutlass::complex<InScalar>> {
   typedef cutlass::complex<OutScalar> Out;
   typedef cutlass::complex<InScalar> In;
-  static Out cast(In in) {
-    return Out(in);
-  }
+  static Out cast(In in) { return Out(in); }
 };
 
-template<typename Out, typename In>
-Out cast_if_scalar(In in) {
+template <typename Out, typename In> Out cast_if_scalar(In in) {
   return CastIfScalar<Out, In>::cast(in);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Computes a general matrix product among matrices (tensors of rank=2) pointed to by TensorRef
-/// objects.
-template <
-  typename ElementA,
-  typename LayoutA,
-  typename ElementB,
-  typename LayoutB,
-  typename ElementC,
-  typename LayoutC,
-  typename ScalarType,
-  typename ComputeType,
-  typename InnerProductOp = multiply_add<ComputeType>,
-  typename ConvertOp = NumericConverter<ElementC, ScalarType>
->
-void compute_gemm(
-  gemm::GemmCoord problem_size,
-  ScalarType alpha,
-  TensorRef<ElementA, LayoutA> tensor_a,
-  TensorRef<ElementB, LayoutB> tensor_b,
-  ScalarType beta,
-  TensorRef<ElementC, LayoutC> tensor_c,
-  TensorRef<ElementC, LayoutC> tensor_d,
-  ComputeType initial_accum) {
+/// Computes a general matrix product among matrices (tensors of rank=2) pointed
+/// to by TensorRef objects.
+template <typename ElementA, typename LayoutA, typename ElementB,
+          typename LayoutB, typename ElementC, typename LayoutC,
+          typename ScalarType, typename ComputeType,
+          typename InnerProductOp = multiply_add<ComputeType>,
+          typename ConvertOp = NumericConverter<ElementC, ScalarType>>
+void compute_gemm(gemm::GemmCoord problem_size, ScalarType alpha,
+                  TensorRef<ElementA, LayoutA> tensor_a,
+                  TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
+                  TensorRef<ElementC, LayoutC> tensor_c,
+                  TensorRef<ElementC, LayoutC> tensor_d,
+                  ComputeType initial_accum) {
 
-  static_assert(
-    LayoutA::kRank == 2 &&
-    LayoutB::kRank == 2 &&
-    LayoutC::kRank == 2, "Tensors must be of rank 2");
-
+  static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                    LayoutC::kRank == 2,
+                "Tensors must be of rank 2");
 
   // Note: batch is ignored.
   int const M = problem_size.m();
@@ -159,9 +140,9 @@ void compute_gemm(
           MatrixCoord coord = MatrixCoord(row, col);
 
           if (row < M && col < N) {
-            tensor_d.at(coord) = convert_op(
-              alpha * ScalarType(accum[i][j]) +
-              beta * ScalarType(tensor_c.at(coord)));
+            tensor_d.at(coord) =
+                convert_op(alpha * ScalarType(accum[i][j]) +
+                           beta * ScalarType(tensor_c.at(coord)));
           }
         }
       }
@@ -171,28 +152,18 @@ void compute_gemm(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Computes a general matrix product among matrices (tensors of rank=2) pointed to by TensorRef
-/// objects.
-template <
-  typename ElementA,
-  typename LayoutA,
-  typename ElementB,
-  typename LayoutB,
-  typename ElementC,
-  typename LayoutC,
-  typename ScalarType,
-  typename ComputeType,
-  typename InnerProductOp = multiply_add<ComputeType>,
-  typename ConvertOp = NumericConverter<ElementC, ScalarType>
->
-void compute_gemm(
-  gemm::GemmCoord problem_size,
-  ScalarType alpha,
-  TensorRef<ElementA, LayoutA> tensor_a,
-  TensorRef<ElementB, LayoutB> tensor_b,
-  ScalarType beta,
-  TensorRef<ElementC, LayoutC> tensor_c,
-  ComputeType initial_accum) {
+/// Computes a general matrix product among matrices (tensors of rank=2) pointed
+/// to by TensorRef objects.
+template <typename ElementA, typename LayoutA, typename ElementB,
+          typename LayoutB, typename ElementC, typename LayoutC,
+          typename ScalarType, typename ComputeType,
+          typename InnerProductOp = multiply_add<ComputeType>,
+          typename ConvertOp = NumericConverter<ElementC, ScalarType>>
+void compute_gemm(gemm::GemmCoord problem_size, ScalarType alpha,
+                  TensorRef<ElementA, LayoutA> tensor_a,
+                  TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
+                  TensorRef<ElementC, LayoutC> tensor_c,
+                  ComputeType initial_accum) {
   compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                ScalarType, ComputeType, InnerProductOp, ConvertOp>(
       problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_c,
@@ -201,17 +172,10 @@ void compute_gemm(
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ElementA,
-  typename LayoutA,
-  typename ElementB,
-  typename LayoutB,
-  typename ElementC,
-  typename LayoutC,
-  typename ScalarType,
-  typename ComputeType,
-  typename InnerProductOp = cutlass::arch::OpMultiplyAdd
->
+template <typename ElementA, typename LayoutA, typename ElementB,
+          typename LayoutB, typename ElementC, typename LayoutC,
+          typename ScalarType, typename ComputeType,
+          typename InnerProductOp = cutlass::arch::OpMultiplyAdd>
 struct Gemm;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -228,28 +192,29 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
         problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, initial_accum);
   }
-  
+
   void operator()(gemm::GemmCoord problem_size, ScalarType alpha,
                   TensorRef<ElementA, LayoutA> tensor_a,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   TensorRef<ElementC, LayoutC> tensor_d,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
-        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d, initial_accum);
+        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d,
+        initial_accum);
   }
 };
 
@@ -267,28 +232,29 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
         problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, initial_accum);
   }
-  
+
   void operator()(gemm::GemmCoord problem_size, ScalarType alpha,
                   TensorRef<ElementA, LayoutA> tensor_a,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   TensorRef<ElementC, LayoutC> tensor_d,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
-        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d, initial_accum);
+        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d,
+        initial_accum);
   }
 };
 
@@ -306,9 +272,9 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>,
@@ -322,14 +288,15 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   TensorRef<ElementC, LayoutC> tensor_d,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>,
                  NumericConverterClamp<ElementC, ScalarType>>(
-        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d, initial_accum);
+        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d,
+        initial_accum);
   }
 };
 
@@ -347,9 +314,9 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, xor_add<ComputeType>>(
@@ -362,13 +329,14 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   TensorRef<ElementC, LayoutC> tensor_d,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, xor_add<ComputeType>>(
-        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d, initial_accum);
+        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d,
+        initial_accum);
   }
 };
 
@@ -384,9 +352,9 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, and_add<ComputeType>>(
@@ -399,13 +367,14 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   TensorRef<ElementC, LayoutC> tensor_d,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, and_add<ComputeType>>(
-        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d, initial_accum);
+        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d,
+        initial_accum);
   }
 };
 
@@ -423,28 +392,29 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
         problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, initial_accum);
   }
-  
+
   void operator()(gemm::GemmCoord problem_size, ScalarType alpha,
                   TensorRef<ElementA, LayoutA> tensor_a,
                   TensorRef<ElementB, LayoutB> tensor_b, ScalarType beta,
                   TensorRef<ElementC, LayoutC> tensor_c,
                   TensorRef<ElementC, LayoutC> tensor_d,
                   ComputeType initial_accum = ComputeType(0)) {
-    static_assert(
-        LayoutA::kRank == 2 && LayoutB::kRank == 2 && LayoutC::kRank == 2,
-        "Tensors must be of rank 2");
+    static_assert(LayoutA::kRank == 2 && LayoutB::kRank == 2 &&
+                      LayoutC::kRank == 2,
+                  "Tensors must be of rank 2");
 
     compute_gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
                  ScalarType, ComputeType, multiply_add<ComputeType>>(
-        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d, initial_accum);
+        problem_size, alpha, tensor_a, tensor_b, beta, tensor_c, tensor_d,
+        initial_accum);
   }
 };
 
@@ -460,31 +430,22 @@ struct Gemm<ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, ScalarType,
 //
 // TensorRefCollection* is a type satisfying the TensorRefCollection concept.
 //
-template <
-  typename TensorRefCollectionA,
-  typename TensorRefCollectionB,
-  typename TensorRefCollectionC,
-  typename ScalarType,
-  typename AccumulatorType
->
-void BatchedGemm(
-  gemm::GemmCoord problem_size,
-  int batch_count,
-  ScalarType alpha,
-  TensorRefCollectionA const& tensor_a,
-  TensorRefCollectionB const& tensor_b,
-  ScalarType beta,
-  TensorRefCollectionC &tensor_c,
-  AccumulatorType initial_accum) {
+template <typename TensorRefCollectionA, typename TensorRefCollectionB,
+          typename TensorRefCollectionC, typename ScalarType,
+          typename AccumulatorType>
+void BatchedGemm(gemm::GemmCoord problem_size, int batch_count,
+                 ScalarType alpha, TensorRefCollectionA const &tensor_a,
+                 TensorRefCollectionB const &tensor_b, ScalarType beta,
+                 TensorRefCollectionC &tensor_c,
+                 AccumulatorType initial_accum) {
 
   typename TensorRefCollectionA::ConstIterator tensor_a_it = tensor_a.begin();
   typename TensorRefCollectionB::ConstIterator tensor_b_it = tensor_b.begin();
   typename TensorRefCollectionC::ConstIterator tensor_c_it = tensor_c.begin();
 
-  for (int batch = 0;
-    batch < batch_count;
-    ++batch, ++tensor_a_it, ++tensor_b_it, ++tensor_c_it) {
-    
+  for (int batch = 0; batch < batch_count;
+       ++batch, ++tensor_a_it, ++tensor_b_it, ++tensor_c_it) {
+
     Gemm<typename TensorRefCollectionA::Element,
          typename TensorRefCollectionA::Layout,
          typename TensorRefCollectionB::Element,
@@ -500,28 +461,21 @@ void BatchedGemm(
   }
 }
 
-/// Computes a general matrix product among matrices (tensors of rank=2) pointed to by TensorRef
-/// objects.
+/// Computes a general matrix product among matrices (tensors of rank=2) pointed
+/// to by TensorRef objects.
 //
 // TensorRefCollection* is a type satisfying the TensorRefCollection concept.
 //
-template <
-  typename TensorRefCollectionA,
-  typename TensorRefCollectionB,
-  typename TensorRefCollectionC,
-  typename ScalarType,
-  typename AccumulatorType
->
-void BatchedGemm(
-  gemm::GemmCoord problem_size,
-  int batch_count,
-  ScalarType alpha,
-  TensorRefCollectionA const& tensor_a,
-  TensorRefCollectionB const& tensor_b,
-  ScalarType beta,
-  TensorRefCollectionC &tensor_c) {
+template <typename TensorRefCollectionA, typename TensorRefCollectionB,
+          typename TensorRefCollectionC, typename ScalarType,
+          typename AccumulatorType>
+void BatchedGemm(gemm::GemmCoord problem_size, int batch_count,
+                 ScalarType alpha, TensorRefCollectionA const &tensor_a,
+                 TensorRefCollectionB const &tensor_b, ScalarType beta,
+                 TensorRefCollectionC &tensor_c) {
 
-  BatchedGemm(problem_size, batch_count, alpha, tensor_a, tensor_b, beta, tensor_c, ScalarType(0));
+  BatchedGemm(problem_size, batch_count, alpha, tensor_a, tensor_b, beta,
+              tensor_c, ScalarType(0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

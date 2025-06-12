@@ -35,14 +35,8 @@ Utility functions for converting between frontend datatypes and CUTLASS datatype
 """
 
 import cutlass
-from cutlass_library import (
-    DataTypeSize,
-    MathOperation,
-    MathInstruction
-)
-from cutlass.backend.library import (
-    TileDescription,
-)
+from cutlass.backend.library import TileDescription
+from cutlass_library import DataTypeSize, MathInstruction, MathOperation
 
 bfloat16_available = None
 cupy_available = None
@@ -77,6 +71,7 @@ def is_numpy_available():
 def is_numpy_tensor(inp) -> bool:
     if is_numpy_available():
         import numpy as np
+
         return isinstance(inp, np.ndarray)
     return False
 
@@ -84,6 +79,7 @@ def is_numpy_tensor(inp) -> bool:
 def numpy_library_type(inp) -> cutlass.DataType:
     if is_numpy_available():
         import numpy as np
+
         if inp == np.float16:
             return cutlass.DataType.f16
         elif inp == np.float32:
@@ -124,6 +120,7 @@ def is_cupy_available():
 def is_cupy_tensor(inp) -> bool:
     if is_cupy_available():
         import cupy as cp
+
         return isinstance(inp, cp.ndarray)
     return False
 
@@ -131,6 +128,7 @@ def is_cupy_tensor(inp) -> bool:
 def cupy_library_type(inp) -> cutlass.DataType:
     if is_cupy_available():
         import cupy as cp
+
         if inp == cp.float16:
             return cutlass.DataType.f16
         elif inp == cp.float32:
@@ -186,6 +184,7 @@ def is_torch_available():
 def is_torch_tensor(inp) -> bool:
     if is_torch_available():
         import torch
+
         return isinstance(inp, torch.Tensor)
     return False
 
@@ -214,6 +213,7 @@ def is_bfloat16_available():
 def bfloat16_library_type(inp) -> cutlass.DataType:
     if is_bfloat16_available():
         import bfloat16
+
         if inp == bfloat16.bfloat16:
             return cutlass.DataType.bf16
 
@@ -221,6 +221,7 @@ def bfloat16_library_type(inp) -> cutlass.DataType:
 def bfloat16_type(inp):
     if is_bfloat16_available():
         import bfloat16
+
         if inp == cutlass.DataType.bf16:
             return bfloat16.bfloat16
 
@@ -257,18 +258,20 @@ def _tensor_from_torch(pt_tensor):
 
 
 def get_datatype_and_layout(tensor):
-    if (is_numpy_tensor(tensor) or is_cupy_tensor(tensor)):
+    if is_numpy_tensor(tensor) or is_cupy_tensor(tensor):
         return _tensor_from_numpy(tensor)
     elif is_torch_tensor(tensor):
         return _tensor_from_torch(tensor)
     elif isinstance(tensor, float) or isinstance(tensor, int):
         return (cutlass.DataType.f32, cutlass.LayoutType.RowMajor)
     else:
-        raise Exception(f"Unable to convert tensor of type {type(tensor)} to Python-bound CUTLASS datatype and layout.")
+        raise Exception(
+            f"Unable to convert tensor of type {type(tensor)} to Python-bound CUTLASS datatype and layout."
+        )
 
 
 def get_tensor_shape(tensor, op="GEMM"):
-    if (is_numpy_tensor(tensor) or is_cupy_tensor(tensor)):
+    if is_numpy_tensor(tensor) or is_cupy_tensor(tensor):
         return tensor.shape
     elif is_torch_tensor(tensor):
         size = tensor.size()
@@ -280,7 +283,9 @@ def get_tensor_shape(tensor, op="GEMM"):
     elif isinstance(tensor, float) or isinstance(tensor, int):
         return (1,)
     else:
-        raise Exception(f"Unable to convert tensor of type {type(tensor)} to Python-bound CUTLASS datatype and layout.")
+        raise Exception(
+            f"Unable to convert tensor of type {type(tensor)} to Python-bound CUTLASS datatype and layout."
+        )
 
 
 _math_operation_value_map = {x.value: x for x in MathOperation}
@@ -288,14 +293,18 @@ _math_operation_value_map = {x.value: x for x in MathOperation}
 
 def backend_math_operation(math_op: MathOperation):
     if math_op.value not in _math_operation_value_map.keys():
-        raise Exception(f"Unable to convert math operation of type {math_op} to backend math operation.")
+        raise Exception(
+            f"Unable to convert math operation of type {math_op} to backend math operation."
+        )
     return _math_operation_value_map[math_op.value]
 
 
-def construct_backend_td(td: cutlass.TileDescription,
-                         kernel_schedule: cutlass.KernelScheduleType,
-                         epilogue_schedule: cutlass.EpilogueScheduleType,
-                         tile_scheduler: cutlass.TileSchedulerType) -> TileDescription:
+def construct_backend_td(
+    td: cutlass.TileDescription,
+    kernel_schedule: cutlass.KernelScheduleType,
+    epilogue_schedule: cutlass.EpilogueScheduleType,
+    tile_scheduler: cutlass.TileSchedulerType,
+) -> TileDescription:
     mi = td.math_instruction
     backend_mi = MathInstruction(
         mi.instruction_shape,
@@ -303,11 +312,19 @@ def construct_backend_td(td: cutlass.TileDescription,
         mi.element_b,
         mi.element_accumulator,
         mi.opcode_class,
-        backend_math_operation(mi.math_operation)
+        backend_math_operation(mi.math_operation),
     )
     cluster_shape = td.cluster_shape if hasattr(td, "cluster_shape") else [1, 1, 1]
-    return TileDescription(td.threadblock_shape, td.stages, td.warp_count,
-                           backend_mi, cluster_shape, kernel_schedule, epilogue_schedule, tile_scheduler)
+    return TileDescription(
+        td.threadblock_shape,
+        td.stages,
+        td.warp_count,
+        backend_mi,
+        cluster_shape,
+        kernel_schedule,
+        epilogue_schedule,
+        tile_scheduler,
+    )
 
 
 def td_from_profiler_op(op) -> TileDescription:
@@ -319,9 +336,9 @@ def td_from_profiler_op(op) -> TileDescription:
     :returns: backend TileDescription
     :rtype: cutlass.backend.TileDescription
     """
-    kschedule = op.kernel_schedule if hasattr(op, 'kernel_schedule') else None
-    eschedule = op.epilogue_schedule if hasattr(op, 'epilogue_schedule') else None
-    tschedule = op.tile_scheduler if hasattr(op, 'tile_scheduler') else None
+    kschedule = op.kernel_schedule if hasattr(op, "kernel_schedule") else None
+    eschedule = op.epilogue_schedule if hasattr(op, "epilogue_schedule") else None
+    tschedule = op.tile_scheduler if hasattr(op, "tile_scheduler") else None
     return construct_backend_td(op.tile_description, kschedule, eschedule, tschedule)
 
 
@@ -335,7 +352,9 @@ def td_from_profiler_td(td: TileDescription) -> TileDescription:
     :returns: backend TileDescription
     :rtype: cutlass.backend.TileDescription
     """
-    return construct_backend_td(td, kernel_schedule=None, epilogue_schedule=None, tile_scheduler=None)
+    return construct_backend_td(
+        td, kernel_schedule=None, epilogue_schedule=None, tile_scheduler=None
+    )
 
 
 def to_camel_case(snake_str):

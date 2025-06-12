@@ -34,7 +34,7 @@
 Python registration for compute nodes in EVT
 """
 
-from cutlass.backend.evt.ir.node import NodeBase, ImplBase
+from cutlass.backend.evt.ir.node import ImplBase, NodeBase
 from cutlass.backend.library import FloatRoundStyle
 
 
@@ -42,6 +42,7 @@ class ComputeImplBase(ImplBase):
     """
     Base class for compute implementation
     """
+
     def __init__(self, node) -> None:
         super().__init__(node)
 
@@ -50,6 +51,7 @@ class ComputeImpl(ComputeImplBase):
     """
     Implementation for Compute Node
     """
+
     def __init__(self, node) -> None:
         super().__init__(node)
 
@@ -67,13 +69,17 @@ class ComputeNode(NodeBase):
     """
     Compute Node in DAG IR
     """
-    possible_impls = [
-        ComputeImpl
-    ]
+
+    possible_impls = [ComputeImpl]
+
     def __init__(
-        self, name: str, fn, element_output,
+        self,
+        name: str,
+        fn,
+        element_output,
         element_compute,
-        round_style=FloatRoundStyle.ToNearest) -> None:
+        round_style=FloatRoundStyle.ToNearest,
+    ) -> None:
         super().__init__(name)
         self.op = "compute"
         self.fn = fn

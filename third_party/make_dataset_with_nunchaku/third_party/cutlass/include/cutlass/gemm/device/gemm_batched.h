@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,16 +35,16 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/device_kernel.h"
+#include "cutlass/numeric_types.h"
 
-#include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 #include "cutlass/gemm/kernel/gemm_batched.h"
+#include "cutlass/gemm/threadblock/threadblock_swizzle.h"
 
-#include "cutlass/gemm/kernel/default_gemm.h"
 #include "cutlass/gemm/device/default_gemm_configuration.h"
+#include "cutlass/gemm/kernel/default_gemm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -53,37 +54,40 @@ namespace device {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/*! Gemm device-level operator. This is an interface to efficient CUTLASS GEMM kernels that may
-  be invoked from host code.
+/*! Gemm device-level operator. This is an interface to efficient CUTLASS GEMM
+  kernels that may be invoked from host code.
 
   The contributions of this class are:
-    
-    1. At compile time, it maps data types and high-level structural parameters onto 
-       specific CUTLASS components.
 
-    2. At runtime, it maps logical arguments to GEMM problems to kernel parameters.
+    1. At compile time, it maps data types and high-level structural parameters
+  onto specific CUTLASS components.
+
+    2. At runtime, it maps logical arguments to GEMM problems to kernel
+  parameters.
 
     3. At runtime, it launches kernels on the device.
 
-  The intent is to provide a convenient mechanism for interacting with most plausible GEMM
-  configurations for each supported architecture. Consequently, not all parameters are exposed
-  to the top-level interface. Rather, sensible defaults at each level of the CUTLASS hierarchy
-  are selected to tradeoff simplicity of the interface with flexibility. We expect 
-  most configurations to be specified at this level. Applications with more exotic requirements 
-  may construct their kernels of interest using CUTLASS components at the threadblock, warp, 
-  and thread levels of abstraction.
+  The intent is to provide a convenient mechanism for interacting with most
+  plausible GEMM configurations for each supported architecture. Consequently,
+  not all parameters are exposed to the top-level interface. Rather, sensible
+  defaults at each level of the CUTLASS hierarchy are selected to tradeoff
+  simplicity of the interface with flexibility. We expect most configurations to
+  be specified at this level. Applications with more exotic requirements may
+  construct their kernels of interest using CUTLASS components at the
+  threadblock, warp, and thread levels of abstraction.
 
-  CUTLASS exposes computations using the functor design pattern in which objects compose some
-  internal state with an overloaded function call operator. This enables decoupling of
-  initialization from execution, possibly reducing overhead during steady state phases of
-  application execution.
+  CUTLASS exposes computations using the functor design pattern in which objects
+  compose some internal state with an overloaded function call operator. This
+  enables decoupling of initialization from execution, possibly reducing
+  overhead during steady state phases of application execution.
 
-  CUTLASS device-level operators expose an Arguments structure encompassing each logical
-  input to the computation. This is distinct from the kernel-level Params structure pattern
-  which contains application-specific precomputed state needed by the device code.
+  CUTLASS device-level operators expose an Arguments structure encompassing each
+  logical input to the computation. This is distinct from the kernel-level
+  Params structure pattern which contains application-specific precomputed state
+  needed by the device code.
 
-  Example of a CUTLASS GEMM operator implementing the functionality of cuBLAS's SGEMM NN
-  is as follows:
+  Example of a CUTLASS GEMM operator implementing the functionality of cuBLAS's
+  SGEMM NN is as follows:
 
     //
     // Instantiate the CUTLASS GEMM operator.
@@ -104,11 +108,12 @@ namespace device {
 
     cutlass::Status status = gemm_op({
       {m, n, k},                          // GemmCoord problem_size,
-      {A, lda},                           // TensorRef<float, layout::ColumnMajor> ref_A,
-      {B, ldb},                           // TensorRef<float, layout::ColumnMajor> ref_B,
-      {C, ldc},                           // TensorRef<float, layout::ColumnMajor> ref_C,
-      {D, ldd},                           // TensorRef<float, layout::ColumnMajor> ref_D,
-      {alpha, beta}                       // EpilogueOutputOp::Params epilogue_op_params
+      {A, lda},                           // TensorRef<float,
+  layout::ColumnMajor> ref_A, {B, ldb},                           //
+  TensorRef<float, layout::ColumnMajor> ref_B, {C, ldc}, // TensorRef<float,
+  layout::ColumnMajor> ref_C, {D, ldd},                           //
+  TensorRef<float, layout::ColumnMajor> ref_D, {alpha, beta} //
+  EpilogueOutputOp::Params epilogue_op_params
     });
 
 
@@ -117,48 +122,48 @@ namespace device {
     template <
       /// Element type for A matrix operand
       typename ElementA,
-      
+
       /// Layout type for A matrix operand
       typename LayoutA,
-      
+
       /// Element type for B matrix operand
       typename ElementB,
-      
+
       /// Layout type for B matrix operand
       typename LayoutB,
-      
+
       /// Element type for C and D matrix operands
       typename ElementC,
-      
+
       /// Layout type for C and D matrix operands
       typename LayoutC,
-      
+
       /// Element type for internal accumulation
       typename ElementAccumulator,
 
       /// Operator class tag
       typename OperatorClass,
-      
+
       /// Tag indicating architecture to tune for.  This is the minimum SM that
       /// supports the intended feature. The device kernel can be built
       /// targeting any SM larger than this number.
       typename ArchTag,
-      
+
       /// Threadblock-level tile size (concept: GemmShape)
       typename ThreadblockShape,
-      
+
       /// Warp-level tile size (concept: GemmShape)
       typename WarpShape,
-      
+
       /// Warp-level tile size (concept: GemmShape)
       typename InstructionShape,
-      
+
       /// Epilogue output operator
       typename EpilogueOutputOp,
-      
+
       /// Threadblock-level swizzling operator
       typename ThreadblockSwizzle,
-      
+
       /// Number of stages used in the pipelined mainloop
       int Stages
     >
@@ -200,7 +205,8 @@ template <
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
         ElementAccumulator_>::EpilogueOutputOp,
     /// Threadblock-level swizzling operator
-    typename ThreadblockSwizzle_ = threadblock::GemmBatchedIdentityThreadblockSwizzle,
+    typename ThreadblockSwizzle_ =
+        threadblock::GemmBatchedIdentityThreadblockSwizzle,
     /// Number of stages used in the pipelined mainloop
     int Stages =
         DefaultGemmConfiguration<OperatorClass_, ArchTag_, ElementA_, ElementB_,
@@ -216,11 +222,9 @@ template <
     /// Operation performed by GEMM
     typename Operator_ = typename DefaultGemmConfiguration<
         OperatorClass_, ArchTag_, ElementA_, ElementB_, ElementC_,
-        ElementAccumulator_>::Operator
->
+        ElementAccumulator_>::Operator>
 class GemmBatched {
- public:
-
+public:
   using ElementA = ElementA_;
   using LayoutA = LayoutA_;
   using TensorRefA = TensorRef<ElementA const, LayoutA>;
@@ -247,28 +251,14 @@ class GemmBatched {
 
   /// Define the kernel
   using DefaultGemmKernel = typename kernel::DefaultGemm<
-    ElementA,
-    LayoutA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    kAlignmentB,
-    ElementC,
-    LayoutC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    kStages,
-    false,
-    Operator
-  >::GemmKernel;
+      ElementA, LayoutA, kAlignmentA, ElementB, LayoutB, kAlignmentB, ElementC,
+      LayoutC, ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape,
+      WarpShape, InstructionShape, EpilogueOutputOp, ThreadblockSwizzle,
+      kStages, false, Operator>::GemmKernel;
 
-  using GemmKernel = kernel::GemmBatched<typename DefaultGemmKernel::Mma, typename DefaultGemmKernel::Epilogue, ThreadblockSwizzle>;
+  using GemmKernel = kernel::GemmBatched<typename DefaultGemmKernel::Mma,
+                                         typename DefaultGemmKernel::Epilogue,
+                                         ThreadblockSwizzle>;
 
   /// Argument structure
   struct Arguments {
@@ -295,62 +285,50 @@ class GemmBatched {
 
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Arguments() { }
+    Arguments() {}
 
-    /// Constructs an Arguments structure 
+    /// Constructs an Arguments structure
     CUTLASS_HOST_DEVICE
-    Arguments(
-      GemmCoord problem_size_,
-      TensorRef<ElementA const, LayoutA> ref_A_,
-      int64_t stride_A_,
-      TensorRef<ElementB const, LayoutB> ref_B_,
-      int64_t stride_B_,
-      TensorRef<ElementC const, LayoutC> ref_C_,
-      int64_t stride_C_,
-      TensorRef<ElementC, LayoutC> ref_D_,
-      int64_t stride_D_,
-      typename EpilogueOutputOp::Params epilogue_,
-      int batch_count_
-    ):
-      problem_size(problem_size_),
-      ref_A(ref_A_),
-      stride_A(stride_A_),
-      ref_B(ref_B_),
-      stride_B(stride_B_),
-      ref_C(ref_C_),
-      stride_C(stride_C_),
-      ref_D(ref_D_),
-      stride_D(stride_D_),
-      epilogue(epilogue_),
-      batch_count(batch_count_) { }
+    Arguments(GemmCoord problem_size_,
+              TensorRef<ElementA const, LayoutA> ref_A_, int64_t stride_A_,
+              TensorRef<ElementB const, LayoutB> ref_B_, int64_t stride_B_,
+              TensorRef<ElementC const, LayoutC> ref_C_, int64_t stride_C_,
+              TensorRef<ElementC, LayoutC> ref_D_, int64_t stride_D_,
+              typename EpilogueOutputOp::Params epilogue_, int batch_count_)
+        : problem_size(problem_size_), ref_A(ref_A_), stride_A(stride_A_),
+          ref_B(ref_B_), stride_B(stride_B_), ref_C(ref_C_),
+          stride_C(stride_C_), ref_D(ref_D_), stride_D(stride_D_),
+          epilogue(epilogue_), batch_count(batch_count_) {}
   };
 
 private:
-
   /// Kernel parameters object
   typename GemmKernel::Params params_;
 
 public:
-
   /// Constructs the GEMM.
-  GemmBatched() { }
+  GemmBatched() {}
 
   /// Determines whether the GEMM can execute the given problem.
   static Status can_implement(Arguments const &args) {
 
-    if (!TensorRef_aligned(args.ref_A, kAlignmentA) || (args.stride_A % kAlignmentA)) {
+    if (!TensorRef_aligned(args.ref_A, kAlignmentA) ||
+        (args.stride_A % kAlignmentA)) {
       return Status::kErrorMisalignedOperand;
     }
 
-    if (!TensorRef_aligned(args.ref_B, kAlignmentB) || (args.stride_B % kAlignmentB)) {
+    if (!TensorRef_aligned(args.ref_B, kAlignmentB) ||
+        (args.stride_B % kAlignmentB)) {
       return Status::kErrorMisalignedOperand;
     }
 
-    if (!TensorRef_aligned(args.ref_C, kAlignmentC) || (args.stride_C % kAlignmentC)) {
+    if (!TensorRef_aligned(args.ref_C, kAlignmentC) ||
+        (args.stride_C % kAlignmentC)) {
       return Status::kErrorMisalignedOperand;
     }
 
-    if (!TensorRef_aligned(args.ref_D, kAlignmentC) || (args.stride_D % kAlignmentC)) {
+    if (!TensorRef_aligned(args.ref_D, kAlignmentC) ||
+        (args.stride_D % kAlignmentC)) {
       return Status::kErrorMisalignedOperand;
     }
 
@@ -358,36 +336,33 @@ public:
   }
 
   /// Gets the workspace size
-  static size_t get_workspace_size(Arguments const &args) {
-    return 0;
-  }
+  static size_t get_workspace_size(Arguments const &args) { return 0; }
 
   /// Initializes GEMM state from arguments.
-  Status initialize(Arguments const &args, void *workspace = nullptr, cudaStream_t stream = nullptr) {
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
     // Determine grid shape
     ThreadblockSwizzle threadblock_swizzle;
 
     cutlass::gemm::GemmCoord grid_shape = threadblock_swizzle.get_tiled_shape(
-      args.problem_size,
-      {ThreadblockShape::kM, ThreadblockShape::kN, ThreadblockShape::kK},
-      args.batch_count);
+        args.problem_size,
+        {ThreadblockShape::kM, ThreadblockShape::kN, ThreadblockShape::kK},
+        args.batch_count);
 
     // Initialize the Params structure
-    params_ = typename GemmKernel::Params{
-      args.problem_size,
-      grid_shape,
-      args.ref_A.non_const_ref(),
-      args.stride_A,
-      args.ref_B.non_const_ref(),
-      args.stride_B,
-      args.ref_C.non_const_ref(),
-      args.stride_C,
-      args.ref_D,
-      args.stride_D,
-      args.epilogue,
-      args.batch_count
-    };
+    params_ = typename GemmKernel::Params{args.problem_size,
+                                          grid_shape,
+                                          args.ref_A.non_const_ref(),
+                                          args.stride_A,
+                                          args.ref_B.non_const_ref(),
+                                          args.stride_B,
+                                          args.ref_C.non_const_ref(),
+                                          args.stride_C,
+                                          args.ref_D,
+                                          args.stride_D,
+                                          args.epilogue,
+                                          args.batch_count};
 
     return Status::kSuccess;
   }
@@ -398,7 +373,7 @@ public:
     params_.ref_A.reset(args.ref_A.non_const_ref().data());
     params_.ref_B.reset(args.ref_B.non_const_ref().data());
     params_.ref_C.reset(args.ref_C.non_const_ref().data());
-    params_.ref_D.reset(args.ref_D.data()); 
+    params_.ref_D.reset(args.ref_D.data());
 
     return Status::kSuccess;
   }
@@ -432,18 +407,14 @@ public:
   }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
+
     Status status = initialize(args, workspace);
-    
+
     if (status == Status::kSuccess) {
       status = run(stream);
     }
@@ -454,64 +425,47 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// Partial specialization for column-major output exchanges problem size and operand.
+/// Partial specialization for column-major output exchanges problem size and
+/// operand.
 template <
-  /// Element type for A matrix operand
-  typename ElementA_,
-  /// Layout type for A matrix operand
-  typename LayoutA_,
-  /// Element type for B matrix operand
-  typename ElementB_,
-  /// Layout type for B matrix operand
-  typename LayoutB_,
-  /// Element type for C and D matrix operands
-  typename ElementC_,
-  /// Element type for internal accumulation
-  typename ElementAccumulator_,
-  /// Operator class tag
-  typename OperatorClass_,
-  /// Tag indicating architecture to tune for
-  typename ArchTag_,
-  /// Threadblock-level tile size (concept: GemmShape)
-  typename ThreadblockShape_,
-  /// Warp-level tile size (concept: GemmShape)
-  typename WarpShape_,
-  /// Warp-level tile size (concept: GemmShape)
-  typename InstructionShape_,
-  /// Epilogue output operator
-  typename EpilogueOutputOp_,
-  /// Threadblock-level swizzling operator
-  typename ThreadblockSwizzle_,
-  /// Number of stages used in the pipelined mainloop
-  int Stages,
-  /// Access granularity of A matrix in units of elements
-  int AlignmentA,
-  /// Access granularity of B matrix in units of elements
-  int AlignmentB,
-  typename Operator_
->
-class GemmBatched<
-  ElementA_,
-  LayoutA_,
-  ElementB_,
-  LayoutB_,
-  ElementC_,
-  layout::ColumnMajor,
-  ElementAccumulator_,
-  OperatorClass_,
-  ArchTag_,
-  ThreadblockShape_,
-  WarpShape_,
-  InstructionShape_,
-  EpilogueOutputOp_,
-  ThreadblockSwizzle_,
-  Stages,
-  AlignmentA,
-  AlignmentB,
-  Operator_
-> {
+    /// Element type for A matrix operand
+    typename ElementA_,
+    /// Layout type for A matrix operand
+    typename LayoutA_,
+    /// Element type for B matrix operand
+    typename ElementB_,
+    /// Layout type for B matrix operand
+    typename LayoutB_,
+    /// Element type for C and D matrix operands
+    typename ElementC_,
+    /// Element type for internal accumulation
+    typename ElementAccumulator_,
+    /// Operator class tag
+    typename OperatorClass_,
+    /// Tag indicating architecture to tune for
+    typename ArchTag_,
+    /// Threadblock-level tile size (concept: GemmShape)
+    typename ThreadblockShape_,
+    /// Warp-level tile size (concept: GemmShape)
+    typename WarpShape_,
+    /// Warp-level tile size (concept: GemmShape)
+    typename InstructionShape_,
+    /// Epilogue output operator
+    typename EpilogueOutputOp_,
+    /// Threadblock-level swizzling operator
+    typename ThreadblockSwizzle_,
+    /// Number of stages used in the pipelined mainloop
+    int Stages,
+    /// Access granularity of A matrix in units of elements
+    int AlignmentA,
+    /// Access granularity of B matrix in units of elements
+    int AlignmentB, typename Operator_>
+class GemmBatched<ElementA_, LayoutA_, ElementB_, LayoutB_, ElementC_,
+                  layout::ColumnMajor, ElementAccumulator_, OperatorClass_,
+                  ArchTag_, ThreadblockShape_, WarpShape_, InstructionShape_,
+                  EpilogueOutputOp_, ThreadblockSwizzle_, Stages, AlignmentA,
+                  AlignmentB, Operator_> {
 public:
-
   using ElementA = ElementA_;
   using LayoutA = LayoutA_;
   using TensorRefA = TensorRef<ElementA const, LayoutA>;
@@ -538,25 +492,13 @@ public:
   static bool const kSplitKSerial = false;
 
   //
-  using UnderlyingOperator = GemmBatched< 
-    ElementB,
-    typename layout::LayoutTranspose<LayoutB>::type,
-    ElementA,
-    typename layout::LayoutTranspose<LayoutA>::type,
-    ElementC,
-    layout::RowMajor,    
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    kAlignmentB,
-    kAlignmentA
-  >;
+  using UnderlyingOperator =
+      GemmBatched<ElementB, typename layout::LayoutTranspose<LayoutB>::type,
+                  ElementA, typename layout::LayoutTranspose<LayoutA>::type,
+                  ElementC, layout::RowMajor, ElementAccumulator, OperatorClass,
+                  ArchTag, ThreadblockShape, WarpShape, InstructionShape,
+                  EpilogueOutputOp, ThreadblockSwizzle, Stages, kAlignmentB,
+                  kAlignmentA>;
 
   using UnderlyingArguments = typename UnderlyingOperator::Arguments;
   using GemmKernel = typename UnderlyingOperator::GemmKernel;
@@ -586,60 +528,39 @@ public:
 
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Arguments() { }
+    Arguments() {}
 
-    /// Constructs an Arguments structure 
+    /// Constructs an Arguments structure
     CUTLASS_HOST_DEVICE
-    Arguments(
-      GemmCoord problem_size_,
-      TensorRef<ElementA const, LayoutA> ref_A_,
-      int64_t stride_A_,
-      TensorRef<ElementB const, LayoutB> ref_B_,
-      int64_t stride_B_,
-      TensorRef<ElementC const, LayoutC> ref_C_,
-      int64_t stride_C_,
-      TensorRef<ElementC, LayoutC> ref_D_,
-      int64_t stride_D_,
-      typename EpilogueOutputOp::Params epilogue_,
-      int batch_count_
-    ):
-      problem_size(problem_size_),
-      ref_A(ref_A_),
-      stride_A(stride_A_),
-      ref_B(ref_B_),
-      stride_B(stride_B_),
-      ref_C(ref_C_),
-      stride_C(stride_C_),
-      ref_D(ref_D_),
-      stride_D(stride_D_),
-      epilogue(epilogue_),
-      batch_count(batch_count_) { }
+    Arguments(GemmCoord problem_size_,
+              TensorRef<ElementA const, LayoutA> ref_A_, int64_t stride_A_,
+              TensorRef<ElementB const, LayoutB> ref_B_, int64_t stride_B_,
+              TensorRef<ElementC const, LayoutC> ref_C_, int64_t stride_C_,
+              TensorRef<ElementC, LayoutC> ref_D_, int64_t stride_D_,
+              typename EpilogueOutputOp::Params epilogue_, int batch_count_)
+        : problem_size(problem_size_), ref_A(ref_A_), stride_A(stride_A_),
+          ref_B(ref_B_), stride_B(stride_B_), ref_C(ref_C_),
+          stride_C(stride_C_), ref_D(ref_D_), stride_D(stride_D_),
+          epilogue(epilogue_), batch_count(batch_count_) {}
   };
 
 private:
-
   UnderlyingOperator underlying_operator_;
 
 public:
-
   /// Constructs the GEMM.
-  GemmBatched() { }
+  GemmBatched() {}
 
-  /// Helper to construct a transposed equivalent for the underying GEMM operator
+  /// Helper to construct a transposed equivalent for the underying GEMM
+  /// operator
   static UnderlyingArguments to_underlying_arguments(Arguments const &args) {
     return UnderlyingArguments(
-      {args.problem_size.n(), args.problem_size.m(), args.problem_size.k()},
-      {args.ref_B.data(), args.ref_B.stride(0)},
-      args.stride_B,
-      {args.ref_A.data(), args.ref_A.stride(0)},
-      args.stride_A,
-      {args.ref_C.data(), args.ref_C.stride(0)},
-      args.stride_C,
-      {args.ref_D.data(), args.ref_D.stride(0)},
-      args.stride_D,
-      args.epilogue,
-      args.batch_count
-    );
+        {args.problem_size.n(), args.problem_size.m(), args.problem_size.k()},
+        {args.ref_B.data(), args.ref_B.stride(0)}, args.stride_B,
+        {args.ref_A.data(), args.ref_A.stride(0)}, args.stride_A,
+        {args.ref_C.data(), args.ref_C.stride(0)}, args.stride_C,
+        {args.ref_D.data(), args.ref_D.stride(0)}, args.stride_D, args.epilogue,
+        args.batch_count);
   }
 
   /// Determines whether the GEMM can execute the given problem.
@@ -650,20 +571,24 @@ public:
 
   /// Gets the workspace size
   static size_t get_workspace_size(Arguments const &args) {
-    
-    return UnderlyingOperator::get_workspace_size(to_underlying_arguments(args));
+
+    return UnderlyingOperator::get_workspace_size(
+        to_underlying_arguments(args));
   }
 
   /// Initializes GEMM state from arguments.
-  Status initialize(Arguments const &args, void *workspace = nullptr, cudaStream_t stream = nullptr) {
+  Status initialize(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
 
-    return underlying_operator_.initialize(to_underlying_arguments(args), workspace);
+    return underlying_operator_.initialize(to_underlying_arguments(args),
+                                           workspace);
   }
 
   /// Lightweight update given a subset of arguments
   Status update(Arguments const &args, void *workspace = nullptr) {
 
-    return underlying_operator_.update(to_underlying_arguments(args), workspace);
+    return underlying_operator_.update(to_underlying_arguments(args),
+                                       workspace);
   }
 
   /// Runs the kernel using initialized state.
@@ -673,25 +598,20 @@ public:
   }
 
   /// Runs the kernel using initialized state.
-  Status operator()(cudaStream_t stream = nullptr) {
-    return run(stream);
-  }
+  Status operator()(cudaStream_t stream = nullptr) { return run(stream); }
 
   /// Runs the kernel using initialized state.
-  Status operator()(
-    Arguments const &args, 
-    void *workspace = nullptr, 
-    cudaStream_t stream = nullptr) {
-    
+  Status operator()(Arguments const &args, void *workspace = nullptr,
+                    cudaStream_t stream = nullptr) {
+
     Status status = initialize(args, workspace, stream);
-    
+
     if (status == Status::kSuccess) {
       status = run(stream);
     }
 
     return status;
   }
-
 };
 
 ////////////////////////////////////////////////////////////////////////////////

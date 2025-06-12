@@ -29,6 +29,5 @@
 
 cutlass_example_add_executable(
   43_ell_block_sparse_gemm
-  ell_block_sparse_gemm.cu 
+  ell_block_sparse_gemm.cu
   )
-

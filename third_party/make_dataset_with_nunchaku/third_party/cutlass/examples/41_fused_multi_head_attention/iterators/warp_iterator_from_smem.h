@@ -55,24 +55,21 @@ template <
     /// Operand identity
     Operand Operand_,
     /// Data type of A elements
-    typename Element_,
-    typename InstructionShape_,
-    bool kTranspose = false>
+    typename Element_, typename InstructionShape_, bool kTranspose = false>
 class WarpIteratorFromSmem {
- public:
+public:
   /// Shape of tile to load (concept: MatrixShape)
   using Shape = cutlass::MatrixShape<32, 32>;
 
   /// Operand tag
   static Operand const kOperand = Operand_;
-  static_assert(
-      kOperand == Operand::kA,
-      "No support for OperandB at the moment");
+  static_assert(kOperand == Operand::kA,
+                "No support for OperandB at the moment");
 
   /// Basic check
-  static_assert(
-      kOperand == Operand::kA || kOperand == Operand::kB,
-      "WarpIteratorFromSmem may only be instantiated for A or B operands to warp-level Mma.");
+  static_assert(kOperand == Operand::kA || kOperand == Operand::kB,
+                "WarpIteratorFromSmem may only be instantiated for A or B "
+                "operands to warp-level Mma.");
 
   /// Element type
   using Element = Element_;
@@ -84,9 +81,9 @@ class WarpIteratorFromSmem {
   /// Shape of one matrix product operation (concept: MatrixShape)
   using InstructionShape = InstructionShape_;
   static_assert(InstructionShape::kRow == 16, "Only supports 16x8x8 / 16x8x16");
-  static_assert(
-      InstructionShape::kColumn == 8 || InstructionShape::kColumn == 16,
-      "Only supports 16x8x8 / 16x8x16");
+  static_assert(InstructionShape::kColumn == 8 ||
+                    InstructionShape::kColumn == 16,
+                "Only supports 16x8x8 / 16x8x16");
 
   /// Delta between *MMA operations (in units of *MMA operations, concept:
   /// MatrixShape)
@@ -112,25 +109,24 @@ class WarpIteratorFromSmem {
       (sizeof_bits<Element>::value >= 32 ? 1
                                          : 32 / sizeof_bits<Element>::value);
 
-  using InstructionCount = MatrixShape<
-      Shape::kRow / InstructionShape::kRow,
-      Shape::kColumn / InstructionShape::kColumn>;
+  using InstructionCount =
+      MatrixShape<Shape::kRow / InstructionShape::kRow,
+                  Shape::kColumn / InstructionShape::kColumn>;
 
   static int const kIterations = (kOperand == Operand::kA)
-      ? InstructionCount::kColumn
-      : InstructionCount::kRow;
+                                     ? InstructionCount::kColumn
+                                     : InstructionCount::kRow;
 
- public:
+public:
   //
   // Derived quantities
   //
 
   /// Fragment object holding a thread's part of a tile
-  using Fragment = Array<
-      Element,
-      (kOperand == Operand::kA)
-          ? (Shape::kRow* InstructionShape::kColumn / kThreads)
-          : (Shape::kColumn* InstructionShape::kRow / kThreads)>;
+  using Fragment =
+      Array<Element, (kOperand == Operand::kA)
+                         ? (Shape::kRow *InstructionShape::kColumn / kThreads)
+                         : (Shape::kColumn *InstructionShape::kRow / kThreads)>;
 
   /// Memory access type
   // using AccessType = AlignedArray<Element, kElementsPerAccess>;
@@ -145,7 +141,7 @@ class WarpIteratorFromSmem {
   static int const kTilesPerInstruction = InstructionShape::kRow / 8;
   static_assert(kTilesPerInstruction == 2, "Only supports 16x8x16 and 16x8x8");
 
- private:
+private:
   /// Underlying tensor reference
   TensorRef ref_;
 
@@ -155,13 +151,13 @@ class WarpIteratorFromSmem {
   /// Iterations in a tile
   int iterations_;
 
- public:
+public:
   /// Constructor from TensorRef
   CUTLASS_HOST_DEVICE
-  WarpIteratorFromSmem(TensorRef const& ref, int lane_id)
+  WarpIteratorFromSmem(TensorRef const &ref, int lane_id)
       : WarpIteratorFromSmem(ref, {Shape::kRow, Shape::kColumn}, lane_id) {}
   CUTLASS_HOST_DEVICE
-  WarpIteratorFromSmem(TensorRef const& ref, TensorCoord extent, int lane_id)
+  WarpIteratorFromSmem(TensorRef const &ref, TensorCoord extent, int lane_id)
       : ref_(ref), iterations_(0) {
     // See also:
     // https://docs.nvidia.com/cuda/archive/11.7.1/parallel-thread-execution/index.html#warp-level-matrix-fragment-mma-1688
@@ -170,15 +166,13 @@ class WarpIteratorFromSmem {
     int ldsm_vec_num = (lane_id >> 3);
     if (kOperand == Operand::kA) {
       origin_ = MatrixCoord(lane_id % 8, 0);
-      static_assert(
-          InstructionCount::kRow * kTilesPerInstruction == 4,
-          "can't use ldmatrix.x4");
+      static_assert(InstructionCount::kRow * kTilesPerInstruction == 4,
+                    "can't use ldmatrix.x4");
       int access_m_idx = ldsm_vec_num % kTilesPerInstruction;
       int inner_idx = (ldsm_vec_num / kTilesPerInstruction) % kAccessesInner;
       int inst_m_idx = ldsm_vec_num / (kTilesPerInstruction * kAccessesInner);
-      MatrixCoord offset(
-          access_m_idx * 8 + inst_m_idx * InstructionShape::kRow,
-          inner_idx * 4 * kElementsPerAccess);
+      MatrixCoord offset(access_m_idx * 8 + inst_m_idx * InstructionShape::kRow,
+                         inner_idx * 4 * kElementsPerAccess);
       if (kTranspose) {
         offset = MatrixCoord(offset.column(), offset.row());
       }
@@ -194,8 +188,8 @@ class WarpIteratorFromSmem {
         for (int inner_idx = 0; inner_idx < kAccessesInner; ++inner_idx) {
           int access_idx = inner_idx + kAccessesInner * inst_n_idx;
 
-          MatrixCoord offset(
-              inner_idx * 4 * kElementsPerAccess, inst_n_idx * 8);
+          MatrixCoord offset(inner_idx * 4 * kElementsPerAccess,
+                             inst_n_idx * 8);
 
           if (access_idx == ldsm_vec_num) {
             if (kTranspose) {
@@ -213,9 +207,9 @@ class WarpIteratorFromSmem {
   /// Advances an iterator along logical dimensions of matrix in units of whole
   /// tiles
   CUTLASS_HOST_DEVICE
-  WarpIteratorFromSmem& add_tile_offset(TensorCoord const& tile_offset) {
-    TensorCoord coord_offset(
-        tile_offset.row() * Shape::kRow, tile_offset.column() * Shape::kColumn);
+  WarpIteratorFromSmem &add_tile_offset(TensorCoord const &tile_offset) {
+    TensorCoord coord_offset(tile_offset.row() * Shape::kRow,
+                             tile_offset.column() * Shape::kColumn);
     if (kTranspose) {
       coord_offset = TensorCoord{coord_offset.column(), coord_offset.row()};
     }
@@ -240,7 +234,7 @@ class WarpIteratorFromSmem {
 
   /// increase iterations in a tile
   CUTLASS_HOST_DEVICE
-  WarpIteratorFromSmem& operator++() {
+  WarpIteratorFromSmem &operator++() {
     iterations_++;
 
     if (iterations_ >= kIterations)
@@ -251,27 +245,29 @@ class WarpIteratorFromSmem {
 
   /// Loads a fragment from memory at the location pointed to by the iterator.
   CUTLASS_DEVICE
-  void load(Fragment& frag) const {
-    AccessType* access_ptr = reinterpret_cast<AccessType*>(&frag);
-    using LoadLayout = typename platform::
-        conditional<kTranspose, layout::ColumnMajor, layout::RowMajor>::type;
+  void load(Fragment &frag) const {
+    AccessType *access_ptr = reinterpret_cast<AccessType *>(&frag);
+    using LoadLayout =
+        typename platform::conditional<kTranspose, layout::ColumnMajor,
+                                       layout::RowMajor>::type;
 
     CUTLASS_PRAGMA_UNROLL
-    for (int access_m_idx = 0; access_m_idx <
+    for (int access_m_idx = 0;
+         access_m_idx <
          (InstructionCount::kRow * kTilesPerInstruction * kAccessesInner) / 4;
          ++access_m_idx) {
       MatrixCoord offset;
       if (kOperand == Operand::kA) {
-        offset = MatrixCoord(
-            access_m_idx * 16, iterations_ * InstructionShape::kColumn);
+        offset = MatrixCoord(access_m_idx * 16,
+                             iterations_ * InstructionShape::kColumn);
       } else {
         offset = MatrixCoord(iterations_ * InstructionShape::kRow, 0);
       }
       if (kTranspose) {
         offset = MatrixCoord(offset.column(), offset.row());
       }
-      cutlass::arch::ldsm<LoadLayout, 4>(
-          access_ptr[access_m_idx], ref_.data() + ref_.offset(offset));
+      cutlass::arch::ldsm<LoadLayout, 4>(access_ptr[access_m_idx],
+                                         ref_.data() + ref_.offset(offset));
     }
   }
 };

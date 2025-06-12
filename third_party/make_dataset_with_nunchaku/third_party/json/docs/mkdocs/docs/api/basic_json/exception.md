@@ -54,17 +54,19 @@ constructor.
 
 ??? example
 
-    The following code shows how arbitrary library exceptions can be caught.
-    
-    ```cpp
-    --8<-- "examples/exception.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/exception.output"
-    ```
+````
+The following code shows how arbitrary library exceptions can be caught.
+
+```cpp
+--8<-- "examples/exception.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/exception.output"
+```
+````
 
 ## See also
 

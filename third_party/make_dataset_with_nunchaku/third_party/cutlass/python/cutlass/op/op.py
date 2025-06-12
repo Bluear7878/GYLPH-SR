@@ -36,16 +36,16 @@ Base operation used for defining high-level CUTLASS operations (e.g., GEMM, Conv
 
 from bisect import bisect_left
 
-from cutlass_library import DataType, DataTypeSize, OperationKind, SharedMemPerCC
-
 import cutlass
 from cutlass import get_option_registry
 from cutlass.backend.evt import EpilogueFunctorVisitor
 from cutlass.backend.utils.device import device_cc
-from cutlass.epilogue import get_activations, get_activation_epilogue, identity
+from cutlass.epilogue import get_activation_epilogue, get_activations, identity
 from cutlass.library_defaults import KernelsForDataType, _generator_ccs
 from cutlass.swizzle import get_swizzling_functors
-from cutlass.utils import datatypes, check
+from cutlass.utils import check, datatypes
+from cutlass_library import (DataType, DataTypeSize, OperationKind,
+                             SharedMemPerCC)
 
 
 class OperationBase:
@@ -53,7 +53,9 @@ class OperationBase:
     Base operation used for defining high-level CUTLASS operations (e.g., GEMM, Conv2d)
     """
 
-    def __init__(self, cc: int = None, kernel_cc: int = None, operation_kind = OperationKind.Gemm):
+    def __init__(
+        self, cc: int = None, kernel_cc: int = None, operation_kind=OperationKind.Gemm
+    ):
         """
         :param cc: compute capability of device for which kernels should be compiled. For example, if running on H100, this should be set to 90
         :type cc: int
@@ -65,13 +67,19 @@ class OperationBase:
         self.operation_kind = operation_kind
         self.cc = cc if cc is not None else device_cc()
         self.specified_kernel_cc = kernel_cc is not None
-        self.current_cc = kernel_cc if kernel_cc is not None else self._find_closest_cc(self.cc)
+        self.current_cc = (
+            kernel_cc if kernel_cc is not None else self._find_closest_cc(self.cc)
+        )
         self.tile_description = None
 
-        self.options = get_option_registry().options_for_cc(self.current_cc, operation_kind)
+        self.options = get_option_registry().options_for_cc(
+            self.current_cc, operation_kind
+        )
 
         if self.options is None:
-            raise Exception(f"Invalid or unsupported compute capability: {self.current_cc}")
+            raise Exception(
+                f"Invalid or unsupported compute capability: {self.current_cc}"
+            )
 
         # Default activation function: identity
         self._activation = identity
@@ -92,8 +100,8 @@ class OperationBase:
         # Find closest CC lower than this CC
         idx = bisect_left(_generator_ccs, cc)
         if idx == 0:
-            raise Exception(f'No valid CC to fall back to for {cc}')
-        return _generator_ccs[idx-1]
+            raise Exception(f"No valid CC to fall back to for {cc}")
+        return _generator_ccs[idx - 1]
 
     def activations(self) -> list:
         """
@@ -122,9 +130,11 @@ class OperationBase:
         """
         if cc != self.current_cc:
             if cc not in _generator_ccs:
-                raise Exception(f'Invalid CC for CUTLASS kernels: {cc}.')
+                raise Exception(f"Invalid CC for CUTLASS kernels: {cc}.")
             self.current_cc = cc
-            self.options = get_option_registry().options_for_cc(self.current_cc, self.operation_kind)
+            self.options = get_option_registry().options_for_cc(
+                self.current_cc, self.operation_kind
+            )
 
     def _verify_scalar(self, scalar, ref_scalar, ref_dtype, name):
         """
@@ -186,7 +196,9 @@ class OperationBase:
         """
         if ref_dtype == DataType.void:
             if tensor is not None or ref_tensor is not None:
-                raise Exception("Operands with element DataType.void must not be provided a tensor")
+                raise Exception(
+                    "Operands with element DataType.void must not be provided a tensor"
+                )
             return None
 
         if tensor is None:
@@ -219,18 +231,26 @@ class OperationBase:
             self.op_class = oc
         else:
             raise Exception(
-                f'Unsupported operation class {oc} for CC {self.cc} and data type combination '
-                f'({self._element_a}, {self._element_b}, {self._element_accumulator}) and '
-                f'layout combination ({self._layout_a}, {self._layout_b}).')
+                f"Unsupported operation class {oc} for CC {self.cc} and data type combination "
+                f"({self._element_a}, {self._element_b}, {self._element_accumulator}) and "
+                f"layout combination ({self._layout_a}, {self._layout_b})."
+            )
 
         # Changing the op class also changes the possible operations available. Reset these.
         self.possible_operations = self.options.operations(
-            self.op_class, self._element_a, self._element_b,
-            self._element_accumulator, self._layout_a, self._layout_b)
+            self.op_class,
+            self._element_a,
+            self._element_b,
+            self._element_accumulator,
+            self._layout_a,
+            self._layout_b,
+        )
 
         # Changing the op class changes the elements per access in the epilogue. Reset this.
         if self.epilogue_functor is not None:
-            self.epilogue_functor = self._reset_epilogue_functor_alignment(self._elements_per_access(), self.epilogue_functor)
+            self.epilogue_functor = self._reset_epilogue_functor_alignment(
+                self._elements_per_access(), self.epilogue_functor
+            )
 
     #
     # Epilogue
@@ -257,22 +277,28 @@ class OperationBase:
             if self.current_cc == 90 and activation != identity:
                 # CUTLASS 3.0 kernels in Python currently only support identity activation. If one requests a non-identity activation,
                 # revert to using a CUTLASS 2.x kernel by using SM80-tagged kernels.
-                cutlass.logger.warning("Reverting to using SM80-tagged kernel. Opclass may change.")
+                cutlass.logger.warning(
+                    "Reverting to using SM80-tagged kernel. Opclass may change."
+                )
                 if self._element_c != self._element_d:
-                    raise Exception("CUTLASS 2.x kernels require element C to be the same as element D")
+                    raise Exception(
+                        "CUTLASS 2.x kernels require element C to be the same as element D"
+                    )
                 self._reset_options(80)
                 self._reset_operations(reset_epilogue=False)
-            elif (self.cc == 90 and self.current_cc != 90 and activation == identity):
+            elif self.cc == 90 and self.current_cc != 90 and activation == identity:
                 # SM80 fallback kernels are currently used. Since an identity activation is requested,
                 # we can switch back to using SM90 kernels.
                 self._reset_options(90)
                 self._reset_operations(reset_epilogue=False)
         else:
             if self.current_cc == 90 and activation != identity:
-                raise Exception("Epilogues with elementwise fusion are not currently supported "
-                                "in the Python interface for 3.x kernels. To use 2.x kernels "
-                                "with fused elementwise epilogues, do not set the `kernel_cc` "
-                                "parameter when constructing the Gemm object.")
+                raise Exception(
+                    "Epilogues with elementwise fusion are not currently supported "
+                    "in the Python interface for 3.x kernels. To use 2.x kernels "
+                    "with fused elementwise epilogues, do not set the `kernel_cc` "
+                    "parameter when constructing the Gemm object."
+                )
 
         return get_activation_epilogue(
             activation,
@@ -295,7 +321,9 @@ class OperationBase:
         if isinstance(epilogue_functor, EpilogueFunctorVisitor):
             return epilogue_functor
 
-        if epilogue_functor is None or not hasattr(epilogue_functor, 'activation_functor'):
+        if epilogue_functor is None or not hasattr(
+            epilogue_functor, "activation_functor"
+        ):
             # Identity epilogue does not have 'activation_functor'
             activation = identity
         else:
@@ -372,14 +400,19 @@ class OperationBase:
             # Filter invalid epilogue schedules
             if td.epilogue_schedule not in [
                 cutlass.EpilogueScheduleType.TmaWarpSpecialized,
-                cutlass.EpilogueScheduleType.TmaWarpSpecializedCooperative]:
+                cutlass.EpilogueScheduleType.TmaWarpSpecializedCooperative,
+            ]:
                 continue
             epilogue_smem_bytes = self.epilogue_functor.get_smem_size(td)
 
             # Verify the maximum number of mainloop stages
-            mainloop_smem_per_stage = check.calculate_smem_usage_per_stage(td, OperationKind.Gemm)
+            mainloop_smem_per_stage = check.calculate_smem_usage_per_stage(
+                td, OperationKind.Gemm
+            )
             smem_capacity_bytes = SharedMemPerCC[self.cc] << 10
-            mainloop_stages = (smem_capacity_bytes - epilogue_smem_bytes) // mainloop_smem_per_stage
+            mainloop_stages = (
+                smem_capacity_bytes - epilogue_smem_bytes
+            ) // mainloop_smem_per_stage
             if mainloop_stages < 2:
                 # Mainloop stages must >= 2
                 continue
@@ -388,9 +421,9 @@ class OperationBase:
         if len(new_possible_operations.all_operations) == 0:
             raise RuntimeError(
                 "The epilogue consumes too much shared memory. "
-                "No valid tile description is found in the generator.")
+                "No valid tile description is found in the generator."
+            )
         self.possible_operations = new_possible_operations
-
 
     def run_setup(self):
         """

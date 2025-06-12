@@ -7,10 +7,10 @@ import torch
 from safetensors.torch import save_file
 from tqdm import tqdm
 
+from ...utils import filter_state_dict, load_state_dict_in_safetensors
 from .diffusers_converter import to_diffusers
 from .packer import NunchakuWeightPacker
 from .utils import is_nunchaku_format, pad
-from ...utils import filter_state_dict, load_state_dict_in_safetensors
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,10 @@ def pack_lowrank_weight(weight: torch.Tensor, down: bool) -> torch.Tensor:
         down (`bool`):
             whether the weight is for down projection in low-rank branch.
     """
-    assert weight.dtype in (torch.float16, torch.bfloat16), f"Unsupported weight dtype {weight.dtype}."
+    assert weight.dtype in (
+        torch.float16,
+        torch.bfloat16,
+    ), f"Unsupported weight dtype {weight.dtype}."
     lane_n, lane_k = 1, 2  # lane_n is always 1, lane_k is 32 bits // 16 bits = 2
     n_pack_size, k_pack_size = 2, 2
     num_n_lanes, num_k_lanes = 8, 4
@@ -54,7 +57,9 @@ def pack_lowrank_weight(weight: torch.Tensor, down: bool) -> torch.Tensor:
         c, r = weight.shape
         c_frags, r_frags = c // frag_n, r // frag_k
         weight = weight.view(c_frags, frag_n, r_frags, frag_k).permute(0, 2, 1, 3)
-    weight = weight.reshape(c_frags, r_frags, n_pack_size, num_n_lanes, k_pack_size, num_k_lanes, lane_k)
+    weight = weight.reshape(
+        c_frags, r_frags, n_pack_size, num_n_lanes, k_pack_size, num_k_lanes, lane_k
+    )
     weight = weight.permute(0, 1, 3, 5, 2, 4, 6).contiguous()
     return weight.view(c, r)
 
@@ -69,7 +74,10 @@ def unpack_lowrank_weight(weight: torch.Tensor, down: bool) -> torch.Tensor:
             whether the weight is for down projection in low-rank branch.
     """
     c, r = weight.shape
-    assert weight.dtype in (torch.float16, torch.bfloat16), f"Unsupported weight dtype {weight.dtype}."
+    assert weight.dtype in (
+        torch.float16,
+        torch.bfloat16,
+    ), f"Unsupported weight dtype {weight.dtype}."
     lane_n, lane_k = 1, 2  # lane_n is always 1, lane_k is 32 bits // 16 bits = 2
     n_pack_size, k_pack_size = 2, 2
     num_n_lanes, num_k_lanes = 8, 4
@@ -79,7 +87,9 @@ def unpack_lowrank_weight(weight: torch.Tensor, down: bool) -> torch.Tensor:
         r_frags, c_frags = r // frag_n, c // frag_k
     else:
         c_frags, r_frags = c // frag_n, r // frag_k
-    weight = weight.view(c_frags, r_frags, num_n_lanes, num_k_lanes, n_pack_size, k_pack_size, lane_k)
+    weight = weight.view(
+        c_frags, r_frags, num_n_lanes, num_k_lanes, n_pack_size, k_pack_size, lane_k
+    )
     weight = weight.permute(0, 1, 4, 2, 5, 3, 6).contiguous()
     weight = weight.view(c_frags, r_frags, frag_n, frag_k)
     if down:
@@ -92,7 +102,9 @@ def unpack_lowrank_weight(weight: torch.Tensor, down: bool) -> torch.Tensor:
 def reorder_adanorm_lora_up(lora_up: torch.Tensor, splits: int) -> torch.Tensor:
     c, r = lora_up.shape
     assert c % splits == 0
-    return lora_up.view(splits, c // splits, r).transpose(0, 1).reshape(c, r).contiguous()
+    return (
+        lora_up.view(splits, c // splits, r).transpose(0, 1).reshape(c, r).contiguous()
+    )
 
 
 def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
@@ -111,8 +123,12 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
             candidate_local_names = [candidate_local_names]
         # region original LoRA
         orig_lora = (
-            orig_state_dict.get(f"{converted_block_name}.{converted_local_name}.lora_down", None),
-            orig_state_dict.get(f"{converted_block_name}.{converted_local_name}.lora_up", None),
+            orig_state_dict.get(
+                f"{converted_block_name}.{converted_local_name}.lora_down", None
+            ),
+            orig_state_dict.get(
+                f"{converted_block_name}.{converted_local_name}.lora_up", None
+            ),
         )
         if orig_lora[0] is None or orig_lora[1] is None:
             assert orig_lora[0] is None and orig_lora[1] is None
@@ -135,8 +151,12 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
             candidate_local_name = candidate_local_names[0]
             assert "_q" in candidate_local_name
             candidate_local_name = candidate_local_name.replace("_q", "_qkv")
-            lora_A = extra_lora_dict.get(f"{candidate_block_name}.{candidate_local_name}.lora_A.weight", None)
-            lora_B = extra_lora_dict.get(f"{candidate_block_name}.{candidate_local_name}.lora_B.weight", None)
+            lora_A = extra_lora_dict.get(
+                f"{candidate_block_name}.{candidate_local_name}.lora_A.weight", None
+            )
+            lora_B = extra_lora_dict.get(
+                f"{candidate_block_name}.{candidate_local_name}.lora_B.weight", None
+            )
             if lora_A is None and lora_B is None:
                 extra_lora_list = None
             else:
@@ -147,8 +167,14 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
         if extra_lora_list is None:
             extra_lora_list = [
                 (
-                    extra_lora_dict.get(f"{candidate_block_name}.{candidate_local_name}.lora_A.weight", None),
-                    extra_lora_dict.get(f"{candidate_block_name}.{candidate_local_name}.lora_B.weight", None),
+                    extra_lora_dict.get(
+                        f"{candidate_block_name}.{candidate_local_name}.lora_A.weight",
+                        None,
+                    ),
+                    extra_lora_dict.get(
+                        f"{candidate_block_name}.{candidate_local_name}.lora_B.weight",
+                        None,
+                    ),
                 )
                 for candidate_local_name in candidate_local_names
             ]
@@ -165,17 +191,28 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
                 for lora_index in range(len(extra_lora_list)):
                     if extra_lora_list[lora_index][0] is None:
                         assert extra_lora_list[lora_index][1] is None
-                        extra_lora_list[lora_index] = (first_lora[0].clone(), torch.zeros_like(first_lora[1]))
-                if all(lora[0].equal(extra_lora_list[0][0]) for lora in extra_lora_list):
+                        extra_lora_list[lora_index] = (
+                            first_lora[0].clone(),
+                            torch.zeros_like(first_lora[1]),
+                        )
+                if all(
+                    lora[0].equal(extra_lora_list[0][0]) for lora in extra_lora_list
+                ):
                     # if all extra LoRAs have the same lora_down, use it
                     extra_lora_down = extra_lora_list[0][0]
-                    extra_lora_up = torch.cat([lora[1] for lora in extra_lora_list], dim=0)
+                    extra_lora_up = torch.cat(
+                        [lora[1] for lora in extra_lora_list], dim=0
+                    )
                 else:
-                    extra_lora_down = torch.cat([lora[0] for lora in extra_lora_list], dim=0)
+                    extra_lora_down = torch.cat(
+                        [lora[0] for lora in extra_lora_list], dim=0
+                    )
                     extra_lora_up_c = sum(lora[1].shape[0] for lora in extra_lora_list)
                     extra_lora_up_r = sum(lora[1].shape[1] for lora in extra_lora_list)
                     assert extra_lora_up_r == extra_lora_down.shape[0]
-                    extra_lora_up = torch.zeros((extra_lora_up_c, extra_lora_up_r), dtype=extra_lora_down.dtype)
+                    extra_lora_up = torch.zeros(
+                        (extra_lora_up_c, extra_lora_up_r), dtype=extra_lora_down.dtype
+                    )
                     c, r = 0, 0
                     for lora in extra_lora_list:
                         c_next, r_next = c + lora[1].shape[0], r + lora[1].shape[1]
@@ -183,7 +220,10 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
                         c, r = c_next, r_next
             else:
                 extra_lora_down, extra_lora_up = extra_lora_list[0]
-            extra_lora: tuple[torch.Tensor, torch.Tensor] = (extra_lora_down, extra_lora_up)
+            extra_lora: tuple[torch.Tensor, torch.Tensor] = (
+                extra_lora_down,
+                extra_lora_up,
+            )
             logger.debug(
                 f" - Found {candidate_block_name} LoRA of {candidate_local_names} (rank: {extra_lora[0].shape[0]})"
             )
@@ -196,16 +236,25 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
                 lora = None
             else:
                 logger.debug("    - Using extra LoRA")
-                lora = (extra_lora[0].to(default_dtype), extra_lora[1].to(default_dtype))
+                lora = (
+                    extra_lora[0].to(default_dtype),
+                    extra_lora[1].to(default_dtype),
+                )
         elif extra_lora is None:
             logger.debug("    - Using original LoRA")
             lora = orig_lora
         else:
             lora = (
-                torch.cat([orig_lora[0], extra_lora[0].to(orig_lora[0].dtype)], dim=0),  # [r, c]
-                torch.cat([orig_lora[1], extra_lora[1].to(orig_lora[1].dtype)], dim=1),  # [c, r]
+                torch.cat(
+                    [orig_lora[0], extra_lora[0].to(orig_lora[0].dtype)], dim=0
+                ),  # [r, c]
+                torch.cat(
+                    [orig_lora[1], extra_lora[1].to(orig_lora[1].dtype)], dim=1
+                ),  # [c, r]
             )
-            logger.debug(f"    - Merging original and extra LoRA (rank: {lora[0].shape[0]})")
+            logger.debug(
+                f"    - Merging original and extra LoRA (rank: {lora[0].shape[0]})"
+            )
         # endregion
         if lora is not None:
             if convert_map[converted_local_name] == "adanorm_single":
@@ -213,7 +262,11 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
                     converted,
                     {
                         "lora_down": pad(lora[0], divisor=16, dim=0),
-                        "lora_up": pad(reorder_adanorm_lora_up(lora[1], splits=3), divisor=16, dim=1),
+                        "lora_up": pad(
+                            reorder_adanorm_lora_up(lora[1], splits=3),
+                            divisor=16,
+                            dim=1,
+                        ),
                     },
                     prefix=converted_local_name,
                 )
@@ -222,7 +275,11 @@ def convert_to_nunchaku_transformer_block_lowrank_dict(  # noqa: C901
                     converted,
                     {
                         "lora_down": pad(lora[0], divisor=16, dim=0),
-                        "lora_up": pad(reorder_adanorm_lora_up(lora[1], splits=6), divisor=16, dim=1),
+                        "lora_up": pad(
+                            reorder_adanorm_lora_up(lora[1], splits=6),
+                            divisor=16,
+                            dim=1,
+                        ),
                     },
                     prefix=converted_local_name,
                 )
@@ -253,10 +310,18 @@ def convert_to_nunchaku_flux_single_transformer_block_lowrank_dict(
         lora_down = extra_lora_dict[f"{candidate_block_name}.proj_out.lora_A.weight"]
         lora_up = extra_lora_dict[f"{candidate_block_name}.proj_out.lora_B.weight"]
         assert lora_down.shape[1] == n1 + n2
-        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.0.lora_A.weight"] = lora_down[:, :n1].clone()
-        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.0.lora_B.weight"] = lora_up.clone()
-        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.1.lora_A.weight"] = lora_down[:, n1:].clone()
-        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.1.lora_B.weight"] = lora_up.clone()
+        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.0.lora_A.weight"] = (
+            lora_down[:, :n1].clone()
+        )
+        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.0.lora_B.weight"] = (
+            lora_up.clone()
+        )
+        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.1.lora_A.weight"] = (
+            lora_down[:, n1:].clone()
+        )
+        extra_lora_dict[f"{candidate_block_name}.proj_out.linears.1.lora_B.weight"] = (
+            lora_up.clone()
+        )
         extra_lora_dict.pop(f"{candidate_block_name}.proj_out.lora_A.weight")
         extra_lora_dict.pop(f"{candidate_block_name}.proj_out.lora_B.weight")
 
@@ -317,7 +382,11 @@ def convert_to_nunchaku_flux_transformer_block_lowrank_dict(
             "norm1.linear": "norm1.linear",
             "norm1_context.linear": "norm1_context.linear",
             "qkv_proj": ["attn.to_q", "attn.to_k", "attn.to_v"],
-            "qkv_proj_context": ["attn.add_q_proj", "attn.add_k_proj", "attn.add_v_proj"],
+            "qkv_proj_context": [
+                "attn.add_q_proj",
+                "attn.add_k_proj",
+                "attn.add_v_proj",
+            ],
             "norm_q": "attn.norm_q",
             "norm_k": "attn.norm_k",
             "norm_added_q": "attn.norm_added_q",
@@ -356,7 +425,9 @@ def convert_to_nunchaku_flux_lowrank_dict(
         orig_state_dict = base_model
 
     if isinstance(lora, str):
-        extra_lora_dict = load_state_dict_in_safetensors(lora, filter_prefix="transformer.")
+        extra_lora_dict = load_state_dict_in_safetensors(
+            lora, filter_prefix="transformer."
+        )
     else:
         extra_lora_dict = filter_state_dict(lora, filter_prefix="transformer.")
 
@@ -376,7 +447,9 @@ def convert_to_nunchaku_flux_lowrank_dict(
             k_v = k.replace(".to_q.", ".to_v.").replace(".add_q_proj.", ".add_v_proj.")
             keys = [k_q, k_k, k_v]
             values = [vector_dict.pop(key) for key in keys]
-            new_k = k_q.replace(".to_q.", ".to_qkv.").replace(".add_q_proj.", ".add_qkv_proj.")
+            new_k = k_q.replace(".to_q.", ".to_qkv.").replace(
+                ".add_q_proj.", ".add_qkv_proj."
+            )
             vector_dict[new_k] = torch.cat(values, dim=0)
 
     for k in extra_lora_dict.keys():
@@ -405,10 +478,14 @@ def convert_to_nunchaku_flux_lowrank_dict(
     for param_name in orig_state_dict.keys():
         if param_name.startswith(("transformer_blocks.", "single_transformer_blocks.")):
             block_names.add(".".join(param_name.split(".")[:2]))
-    block_names = sorted(block_names, key=lambda x: (x.split(".")[0], int(x.split(".")[-1])))
+    block_names = sorted(
+        block_names, key=lambda x: (x.split(".")[0], int(x.split(".")[-1]))
+    )
     logger.debug(f"Converting {len(block_names)} transformer blocks...")
     converted: dict[str, torch.Tensor] = {}
-    for block_name in tqdm(block_names, dynamic_ncols=True, desc="Converting LoRAs to nunchaku format"):
+    for block_name in tqdm(
+        block_names, dynamic_ncols=True, desc="Converting LoRAs to nunchaku format"
+    ):
         if block_name.startswith("transformer_blocks"):
             convert_fn = convert_to_nunchaku_flux_transformer_block_lowrank_dict
         else:
@@ -475,12 +552,18 @@ def to_nunchaku(
 
 
 def fuse_vectors(
-    vectors: dict[str, torch.Tensor], base_sd: dict[str, torch.Tensor], strength: float = 1
+    vectors: dict[str, torch.Tensor],
+    base_sd: dict[str, torch.Tensor],
+    strength: float = 1,
 ) -> dict[str, torch.Tensor]:
     tensors: dict[str, torch.Tensor] = {}
     packer = NunchakuWeightPacker(bits=4)
     for k, v in base_sd.items():
-        if v.ndim != 1 or "smooth" in k or (k.startswith("single_transformer_blocks.") and ".mlp_fc2." in k):
+        if (
+            v.ndim != 1
+            or "smooth" in k
+            or (k.startswith("single_transformer_blocks.") and ".mlp_fc2." in k)
+        ):
             continue
         if "norm_q" in k or "norm_k" in k or "norm_added_q" in k or "norm_added_k" in k:
             new_k = k.replace(".norm_", ".attn.norm_")
@@ -503,7 +586,11 @@ def fuse_vectors(
 
         else:
             if k.startswith("single_transformer_blocks."):
-                name_map = {".qkv_proj.": ".attn.to_qkv.", ".out_proj.": ".proj_out.", ".mlp_fc1.": ".proj_mlp."}
+                name_map = {
+                    ".qkv_proj.": ".attn.to_qkv.",
+                    ".out_proj.": ".proj_out.",
+                    ".mlp_fc1.": ".proj_mlp.",
+                }
             else:
                 assert k.startswith("transformer_blocks.")
                 name_map = {

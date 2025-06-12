@@ -37,9 +37,9 @@ import logging
 import unittest
 
 import cutlass
+from cutlass import swizzle
 from cutlass.backend import *
 from cutlass.epilogue import *
-from cutlass import swizzle
 
 from utils.evt_testbed import EVTTestBed, EVTTestCaseBase
 
@@ -53,6 +53,7 @@ class TestEVTComputeSM90(EVTTestCaseBase):
         """
         Test Arithmatic op
         """
+
         def evt_arith_compute(accum, C, alpha, beta, gamma):
             D = ((accum + C) * alpha - gamma) / beta
             return D
@@ -64,7 +65,7 @@ class TestEVTComputeSM90(EVTTestCaseBase):
                 "alpha": 1.5,
                 "beta": 0.5,
                 "gamma": 2.5,
-                "D": self.fake_tensor(self.element, (l, m, n))
+                "D": self.fake_tensor(self.element, (l, m, n)),
             }
 
             launcher = EVTTestBed(self.element, evt_arith_compute, example_inputs)
@@ -76,6 +77,7 @@ class TestEVTComputeSM90(EVTTestCaseBase):
         """
         Test Function call
         """
+
         def evt_func_call(accum, C, alpha, beta, gamma):
             D = multiply_add(relu(accum + alpha) + C, beta, gamma)
             return D
@@ -87,7 +89,7 @@ class TestEVTComputeSM90(EVTTestCaseBase):
                 "alpha": 1.5,
                 "beta": 0.5,
                 "gamma": 2.5,
-                "D": self.fake_tensor(self.element, (l, m, n))
+                "D": self.fake_tensor(self.element, (l, m, n)),
             }
 
             launcher = EVTTestBed(self.element, evt_func_call, example_inputs)
@@ -96,5 +98,5 @@ class TestEVTComputeSM90(EVTTestCaseBase):
             launcher.verify((m, n, k), input_keys, result_keys, l)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

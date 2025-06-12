@@ -32,22 +32,21 @@
 
 import ctypes
 
-from cutlass_library import SubstituteTemplate
 import numpy as np
-from scipy.special import erf
-
-from cutlass_library import DataType, DataTypeTag
 from cutlass.backend.c_types import MatrixCoord_
 from cutlass.backend.frontend import NumpyFrontend
 from cutlass.backend.library import ActivationOp, ActivationOpTag
-from cutlass.utils.datatypes import is_numpy_tensor, is_torch_available, is_torch_tensor
+from cutlass.utils.datatypes import (is_numpy_tensor, is_torch_available,
+                                     is_torch_tensor)
+from cutlass_library import DataType, DataTypeTag, SubstituteTemplate
+from scipy.special import erf
 
 dtype2ctype = {
     DataType.f16: ctypes.c_uint16,
     DataType.f32: ctypes.c_float,
     DataType.f64: ctypes.c_double,
     DataType.s8: ctypes.c_int8,
-    DataType.s32: ctypes.c_int32
+    DataType.s32: ctypes.c_int32,
 }
 
 if is_torch_available():
@@ -133,8 +132,12 @@ class LinearCombination(EpilogueFunctorBase):
     tag = "cutlass::epilogue::thread::LinearCombination"
 
     def __init__(
-        self, element_output, epilogue_vector_length,
-        element_accumulator=None, element_epilogue=None) -> None:
+        self,
+        element_output,
+        epilogue_vector_length,
+        element_accumulator=None,
+        element_epilogue=None,
+    ) -> None:
         super().__init__()
 
         if element_accumulator is None:
@@ -162,7 +165,7 @@ class LinearCombination(EpilogueFunctorBase):
                 ("alpha", c_element_epilogue),
                 ("beta", c_element_epilogue),
                 ("alpha_ptr", ctypes.c_void_p),
-                ("beta_ptr", ctypes.c_void_p)
+                ("beta_ptr", ctypes.c_void_p),
             ]
 
             def __init__(self, alpha, beta, *args) -> None:
@@ -196,8 +199,12 @@ class LinearCombinationClamp(LinearCombination):
     tag = "cutlass::epilogue::thread::LinearCombinationClamp"
 
     def __init__(
-        self, element_output, epilogue_vector_length,
-        element_accumulator=None, element_epilogue=None) -> None:
+        self,
+        element_output,
+        epilogue_vector_length,
+        element_accumulator=None,
+        element_epilogue=None,
+    ) -> None:
         # Base constructor
         super().__init__(
             element_output,
@@ -248,7 +255,8 @@ class FastLinearCombinationClamp(EpilogueFunctorBase):
         super().__init__()
 
         self.template_arguments = [
-            DataTypeTag[element_output], str(epilogue_vector_length)
+            DataTypeTag[element_output],
+            str(epilogue_vector_length),
         ]
 
         self.element_accumulator = DataType.s32
@@ -299,9 +307,13 @@ class LinearCombinationGeneric(LinearCombination):
     tag = "cutlass::epilogue::thread::LinearCombinationGeneric"
 
     def __init__(
-        self, activation_functor,
-        element_output, epilogue_vector_length,
-        element_accumulator=None, element_epilogue=None) -> None:
+        self,
+        activation_functor,
+        element_output,
+        epilogue_vector_length,
+        element_accumulator=None,
+        element_epilogue=None,
+    ) -> None:
         super().__init__(
             element_output,
             epilogue_vector_length,
@@ -309,14 +321,15 @@ class LinearCombinationGeneric(LinearCombination):
             element_epilogue,
         )
 
-        self.template_arguments = [
-            activation_functor.emit()] + self.template_arguments
+        self.template_arguments = [activation_functor.emit()] + self.template_arguments
 
         self.activation_functor = activation_functor
         self.element_epilogue = element_epilogue
 
         # get epilogue output op
-        self.epilogue_type = self.activation_functor.epilogue_output_op(self.element_epilogue)
+        self.epilogue_type = self.activation_functor.epilogue_output_op(
+            self.element_epilogue
+        )
 
 
 class ActivationFunctor:
@@ -350,6 +363,7 @@ class ActivationFunctor:
 
         return _EpilogueOutputOpParams
 
+
 class ActivationMeta(type):
     @classmethod
     def __call__(cls, x, *args):
@@ -362,11 +376,16 @@ class ActivationMeta(type):
 
     @classmethod
     def numpy(cls, *args):
-        raise NotImplementedError(f"Numpy reference for {cls.__name__[:-4]} is not implemented.")
+        raise NotImplementedError(
+            f"Numpy reference for {cls.__name__[:-4]} is not implemented."
+        )
 
     @classmethod
     def torch(cls, *args):
-        raise NotImplementedError(f"PyTorch reference for {cls.__name__[:-4]} is not implemented.")
+        raise NotImplementedError(
+            f"PyTorch reference for {cls.__name__[:-4]} is not implemented."
+        )
+
 
 ##############################################################################
 # identity operator
@@ -378,6 +397,7 @@ class identityMeta(ActivationMeta):
     @classmethod
     def torch(cls, x):
         return x
+
 
 class identity(ActivationFunctor, metaclass=identityMeta):
     binding_type = ActivationOp.Identity
@@ -394,6 +414,7 @@ class reluMeta(ActivationMeta):
     def torch(cls, x):
         return F.relu(x)
 
+
 class relu(ActivationFunctor, metaclass=reluMeta):
     binding_type = ActivationOp.ReLU
 
@@ -409,6 +430,7 @@ class leakyReLUMeta(ActivationMeta):
     def torch(cls, x, leaky_alpha):
         return F.leaky_relu(x, leaky_alpha)
 
+
 class leaky_relu(ActivationFunctor, metaclass=leakyReLUMeta):
     binding_type = ActivationOp.LeakyReLU
 
@@ -422,7 +444,7 @@ class leaky_relu(ActivationFunctor, metaclass=leakyReLUMeta):
                 ("beta", c_element_epilogue),
                 ("alpha_ptr", ctypes.c_void_p),
                 ("beta_ptr", ctypes.c_void_p),
-                ("leaky_alpha", c_element_epilogue)
+                ("leaky_alpha", c_element_epilogue),
             ]
 
             def __init__(self, alpha, beta, leaky_alpha=0.2, *args) -> None:
@@ -446,6 +468,7 @@ class tanhMeta(ActivationMeta):
     def torch(cls, x):
         return torch.tanh(x)
 
+
 class tanh(ActivationFunctor, metaclass=tanhMeta):
     binding_type = ActivationOp.Tanh
 
@@ -460,6 +483,7 @@ class sigmoidMeta(ActivationMeta):
     @classmethod
     def torch(cls, x):
         return F.sigmoid(x)
+
 
 class sigmoid(ActivationFunctor, metaclass=sigmoidMeta):
     binding_type = ActivationOp.Sigmoid

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -47,7 +48,8 @@ namespace kernel {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Enumerated type describing the type of scheduling to perform for the ProblemVisitor
+/// Enumerated type describing the type of scheduling to perform for the
+/// ProblemVisitor
 enum class GroupScheduleMode {
   // Perform all scheduling on device
   kDeviceOnly,
@@ -56,8 +58,7 @@ enum class GroupScheduleMode {
 };
 
 /// Visitor class to abstract away the algorithm for iterating over tiles
-template <typename ProblemSizeHelper,
-          typename ThreadblockShape_>
+template <typename ProblemSizeHelper, typename ThreadblockShape_>
 struct BaseGroupedProblemVisitor {
   using ThreadblockShape = ThreadblockShape_;
 
@@ -67,18 +68,19 @@ struct BaseGroupedProblemVisitor {
     int32_t problem_start;
 
     CUTLASS_DEVICE
-    ProblemInfo() : problem_idx(kNoPrefetchEntry), problem_start(kNoPrefetchEntry) {}
+    ProblemInfo()
+        : problem_idx(kNoPrefetchEntry), problem_start(kNoPrefetchEntry) {}
 
     CUTLASS_DEVICE
-    ProblemInfo(int32_t problem_idx_, int32_t problem_start_) :
-      problem_idx(problem_idx_), problem_start(problem_start_) {}
+    ProblemInfo(int32_t problem_idx_, int32_t problem_start_)
+        : problem_idx(problem_idx_), problem_start(problem_start_) {}
   };
 
   struct Params {
     cutlass::gemm::GemmCoord const *problem_sizes;
-    int32_t                         problem_count;
-    void const                     *workspace;
-    int32_t                         tile_count;
+    int32_t problem_count;
+    void const *workspace;
+    int32_t tile_count;
 
     //
     // Methods
@@ -86,22 +88,16 @@ struct BaseGroupedProblemVisitor {
 
     /// Ctor
     CUTLASS_HOST_DEVICE
-    Params(): problem_sizes(nullptr), problem_count(0), workspace(nullptr), tile_count(0) { }
+    Params()
+        : problem_sizes(nullptr), problem_count(0), workspace(nullptr),
+          tile_count(0) {}
 
     /// Ctor
     CUTLASS_HOST_DEVICE
-    Params(
-      cutlass::gemm::GemmCoord const *problem_sizes,
-      int32_t                         problem_count,
-      void const                     *workspace = nullptr,
-      int32_t                         tile_count = 0
-    ):
-      problem_sizes(problem_sizes),
-      problem_count(problem_count),
-      workspace(workspace),
-      tile_count(tile_count)
-    {}
-
+    Params(cutlass::gemm::GemmCoord const *problem_sizes, int32_t problem_count,
+           void const *workspace = nullptr, int32_t tile_count = 0)
+        : problem_sizes(problem_sizes), problem_count(problem_count),
+          workspace(workspace), tile_count(tile_count) {}
   };
 
   Params params;
@@ -113,46 +109,33 @@ struct BaseGroupedProblemVisitor {
   // Methods
   //
   CUTLASS_DEVICE
-  BaseGroupedProblemVisitor(
-    Params const &params_,
-    int32_t block_idx
-  ):
-  params(params_),
-  tile_idx(block_idx),
-  problem_tile_start(0),
-  problem_idx(0)
-  {}
+  BaseGroupedProblemVisitor(Params const &params_, int32_t block_idx)
+      : params(params_), tile_idx(block_idx), problem_tile_start(0),
+        problem_idx(0) {}
 
   /// Get the grid shape
   CUTLASS_HOST_DEVICE
-  static cutlass::gemm::GemmCoord grid_shape(const cutlass::gemm::GemmCoord& problem) {
+  static cutlass::gemm::GemmCoord
+  grid_shape(const cutlass::gemm::GemmCoord &problem) {
     return ProblemSizeHelper::grid_shape(problem);
   }
 
   /// Gets the global tile index
   CUTLASS_HOST_DEVICE
-  int32_t tile_index() const {
-    return tile_idx;
-  }
+  int32_t tile_index() const { return tile_idx; }
 
   /// Gets the index of the problem
   CUTLASS_HOST_DEVICE
-  int32_t problem_index() const {
-    return problem_idx;
-  }
+  int32_t problem_index() const { return problem_idx; }
 
   CUTLASS_HOST_DEVICE
-  int32_t threadblock_idx() const {
-    return tile_idx - problem_tile_start;
-  }
+  int32_t threadblock_idx() const { return tile_idx - problem_tile_start; }
 
   CUTLASS_DEVICE
-  void advance(int32_t grid_size) {
-    tile_idx += grid_size;
-  }
+  void advance(int32_t grid_size) { tile_idx += grid_size; }
 
   CUTLASS_HOST_DEVICE
-  static void possibly_transpose_problem(cutlass::gemm::GemmCoord& problem) {
+  static void possibly_transpose_problem(cutlass::gemm::GemmCoord &problem) {
     ProblemSizeHelper::possibly_transpose_problem(problem);
   }
 
@@ -165,11 +148,13 @@ struct BaseGroupedProblemVisitor {
   }
 
   CUTLASS_HOST_DEVICE
-  static int32_t tile_count(const cutlass::gemm::GemmCoord& grid) {
+  static int32_t tile_count(const cutlass::gemm::GemmCoord &grid) {
     return ProblemSizeHelper::tile_count(grid);
   }
 
-  static int32_t group_tile_count(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr, int32_t problem_count) {
+  static int32_t
+  group_tile_count(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                   int32_t problem_count) {
     int32_t total_tiles = 0;
     for (int32_t i = 0; i < problem_count; ++i) {
       auto problem = host_problem_sizes_ptr[i];
@@ -184,27 +169,20 @@ struct BaseGroupedProblemVisitor {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ProblemSizeHelper,
-  typename ThreadblockShape,
-  GroupScheduleMode GroupScheduleMode_,
-  int PrefetchTileCount,
-  int ThreadCount
->
+template <typename ProblemSizeHelper, typename ThreadblockShape,
+          GroupScheduleMode GroupScheduleMode_, int PrefetchTileCount,
+          int ThreadCount>
 struct GroupedProblemVisitor;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // ProblemVisitor that performs all scheduling on device
 //
-template <typename ProblemSizeHelper,
-          typename ThreadblockShape,
-          int PrefetchTileCount,
-          int ThreadCount>
-struct GroupedProblemVisitor<ProblemSizeHelper,
-                             ThreadblockShape,
-                             GroupScheduleMode::kDeviceOnly,
-                             PrefetchTileCount,
-                             ThreadCount>: public BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape> {
+template <typename ProblemSizeHelper, typename ThreadblockShape,
+          int PrefetchTileCount, int ThreadCount>
+struct GroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape,
+                             GroupScheduleMode::kDeviceOnly, PrefetchTileCount,
+                             ThreadCount>
+    : public BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape> {
   using Base = BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape>;
   using Params = typename Base::Params;
   static int const kThreadCount = ThreadCount;
@@ -223,38 +201,39 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
   // Methods
   //
   CUTLASS_DEVICE
-  GroupedProblemVisitor(
-    Params const &params_,
-    SharedStorage &shared_storage_,
-    int32_t block_idx
-  ): Base(params_, block_idx),
-  problem_ending_tile(0),
-  shared_storage(shared_storage_)
-  {
+  GroupedProblemVisitor(Params const &params_, SharedStorage &shared_storage_,
+                        int32_t block_idx)
+      : Base(params_, block_idx), problem_ending_tile(0),
+        shared_storage(shared_storage_) {
     this->problem_idx = -1 * kThreadsPerWarp;
     this->problem_tile_start = 0;
   }
 
   CUTLASS_DEVICE
   bool next_tile() {
-    // Check whether the tile to compute is within the range of the current problem.
-    int32_t problem_tile_end = __shfl_sync(0xffffffff, problem_ending_tile, this->problem_idx % kThreadsPerWarp);
+    // Check whether the tile to compute is within the range of the current
+    // problem.
+    int32_t problem_tile_end = __shfl_sync(0xffffffff, problem_ending_tile,
+                                           this->problem_idx % kThreadsPerWarp);
     if (this->tile_idx < problem_tile_end) {
       return true;
     }
 
-    // Check whether the tile to compute is within the current group of problems fetched by the warp.
-    // The last tile for this group is the final tile of the problem held by the final thread in the warp.
-    int32_t group_tile_end = __shfl_sync(0xffffffff, problem_ending_tile, kThreadsPerWarp-1);
+    // Check whether the tile to compute is within the current group of problems
+    // fetched by the warp. The last tile for this group is the final tile of
+    // the problem held by the final thread in the warp.
+    int32_t group_tile_end =
+        __shfl_sync(0xffffffff, problem_ending_tile, kThreadsPerWarp - 1);
 
-    // Keep the starting problem for this group in `problem_idx`. This is done to reduce
-    // register pressure. The starting problem for this group is simply the first problem
-    // in the group most recently fetched by the warp.
+    // Keep the starting problem for this group in `problem_idx`. This is done
+    // to reduce register pressure. The starting problem for this group is
+    // simply the first problem in the group most recently fetched by the warp.
     int32_t &group_problem_start = this->problem_idx;
-    group_problem_start = (this->problem_idx / kThreadsPerWarp) * kThreadsPerWarp;
+    group_problem_start =
+        (this->problem_idx / kThreadsPerWarp) * kThreadsPerWarp;
 
-    // Keep the starting tile for this group in `problem_tile_start`. This is done to reduce
-    // register pressure.
+    // Keep the starting tile for this group in `problem_tile_start`. This is
+    // done to reduce register pressure.
     int32_t &group_tile_start = this->problem_tile_start;
 
     // Each thread in the warp processes a separate problem to advance until
@@ -265,9 +244,10 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
         return false;
       }
 
-      // Since `group_tile_start` is a reference to `this->problem_tile_start`, this
-      // also sets `this->problem_tile_start`. The fact that `this->problem_tile_start`
-      // is also set here is used later in `next_tile`.
+      // Since `group_tile_start` is a reference to `this->problem_tile_start`,
+      // this also sets `this->problem_tile_start`. The fact that
+      // `this->problem_tile_start` is also set here is used later in
+      // `next_tile`.
       group_tile_start = group_tile_end;
 
       int lane_idx = threadIdx.x % kThreadsPerWarp;
@@ -276,14 +256,15 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
       // Compute the number of tiles in the problem assigned to each thread.
       problem_ending_tile = 0;
       if (lane_problem < this->params.problem_count) {
-        cutlass::gemm::GemmCoord problem = this->params.problem_sizes[lane_problem];
+        cutlass::gemm::GemmCoord problem =
+            this->params.problem_sizes[lane_problem];
         this->possibly_transpose_problem(problem);
         cutlass::gemm::GemmCoord grid = this->grid_shape(problem);
         problem_ending_tile = this->tile_count(grid);
       }
 
-      // Compute a warp-wide inclusive prefix sum to compute the ending tile index of
-      // each thread's problem.
+      // Compute a warp-wide inclusive prefix sum to compute the ending tile
+      // index of each thread's problem.
       CUTLASS_PRAGMA_UNROLL
       for (int i = 1; i < kThreadsPerWarp; i <<= 1) {
         int32_t val = __shfl_up_sync(0xffffffff, problem_ending_tile, i);
@@ -292,57 +273,59 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
         }
       }
 
-      // The total tile count for this group is now in the final position of the prefix sum
-      int32_t tiles_in_group = __shfl_sync(0xffffffff, problem_ending_tile, kThreadsPerWarp-1);
+      // The total tile count for this group is now in the final position of the
+      // prefix sum
+      int32_t tiles_in_group =
+          __shfl_sync(0xffffffff, problem_ending_tile, kThreadsPerWarp - 1);
 
       problem_ending_tile += group_tile_start;
       group_tile_end += tiles_in_group;
     }
 
-    // The next problem to process is the first one that does not have ending tile position
-    // that is greater than or equal to tile index.
-    int32_t problem_idx_in_group =
-        __popc(__ballot_sync(0xffffffff, problem_ending_tile <= this->tile_idx));
+    // The next problem to process is the first one that does not have ending
+    // tile position that is greater than or equal to tile index.
+    int32_t problem_idx_in_group = __popc(
+        __ballot_sync(0xffffffff, problem_ending_tile <= this->tile_idx));
 
     this->problem_idx = group_problem_start + problem_idx_in_group;
 
-    // The starting tile for this problem is the ending tile of the previous problem. In cases
-    // where `problem_idx_in_group` is the first problem in the group, we do not need to reset
-    // `problem_tile_start`, because it is set to the previous group's ending tile in the while
-    // loop above.
+    // The starting tile for this problem is the ending tile of the previous
+    // problem. In cases where `problem_idx_in_group` is the first problem in
+    // the group, we do not need to reset `problem_tile_start`, because it is
+    // set to the previous group's ending tile in the while loop above.
     if (problem_idx_in_group > 0) {
-      this->problem_tile_start = __shfl_sync(0xffffffff, problem_ending_tile, problem_idx_in_group - 1);
+      this->problem_tile_start = __shfl_sync(0xffffffff, problem_ending_tile,
+                                             problem_idx_in_group - 1);
     }
 
     return true;
   }
 
-  static size_t get_workspace_size(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr,
-                                   int32_t problem_count,
-                                   int32_t block_count) {
+  static size_t
+  get_workspace_size(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                     int32_t problem_count, int32_t block_count) {
     return 0;
   }
 
-  static void host_precompute(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr,
-                              int32_t problem_count,
-                              int32_t block_count,
-                              void* host_workspace_ptr) {}
+  static void
+  host_precompute(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                  int32_t problem_count, int32_t block_count,
+                  void *host_workspace_ptr) {}
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // Precomputes schedule on host and prefetches into shared memory
 //
-template <typename ProblemSizeHelper,
-          typename ThreadblockShape,
-          int PrefetchTileCount,
-          int ThreadCount>
-struct GroupedProblemVisitor<ProblemSizeHelper,
-                             ThreadblockShape,
+template <typename ProblemSizeHelper, typename ThreadblockShape,
+          int PrefetchTileCount, int ThreadCount>
+struct GroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape,
                              GroupScheduleMode::kHostPrecompute,
-                             PrefetchTileCount,
-                             ThreadCount> : public BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape> {
-  static_assert(PrefetchTileCount > 0,
-                "GroupedProblemVisitor with GroupScheduleMode `kHostPrecompute` currently requires prefetching to shared memory");
+                             PrefetchTileCount, ThreadCount>
+    : public BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape> {
+  static_assert(
+      PrefetchTileCount > 0,
+      "GroupedProblemVisitor with GroupScheduleMode `kHostPrecompute` "
+      "currently requires prefetching to shared memory");
 
   using Base = BaseGroupedProblemVisitor<ProblemSizeHelper, ThreadblockShape>;
   using Params = typename Base::Params;
@@ -367,15 +350,12 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
   // Methods
   //
   CUTLASS_DEVICE
-  GroupedProblemVisitor(
-    Params const &params_,
-    SharedStorage &shared_storage_,
-    int32_t block_idx
-  ): Base(params_, block_idx),
-  tiles_computed(0),
-  shared_storage(shared_storage_),
-  problem_info_ptr(reinterpret_cast<ProblemInfo const*>(params_.workspace))
-  {
+  GroupedProblemVisitor(Params const &params_, SharedStorage &shared_storage_,
+                        int32_t block_idx)
+      : Base(params_, block_idx), tiles_computed(0),
+        shared_storage(shared_storage_),
+        problem_info_ptr(
+            reinterpret_cast<ProblemInfo const *>(params_.workspace)) {
     iterations_per_block = (params_.tile_count - 1 + gridDim.x) / gridDim.x;
     block_load_start = iterations_per_block * block_idx;
     // Start prefetching the first set of tiles to compute
@@ -410,20 +390,23 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
     return true;
   }
 
-  static size_t get_workspace_size(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr,
-                                   int32_t problem_count,
-                                   int32_t block_count) {
-    int32_t total_tiles = Base::group_tile_count(host_problem_sizes_ptr, problem_count);
+  static size_t
+  get_workspace_size(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                     int32_t problem_count, int32_t block_count) {
+    int32_t total_tiles =
+        Base::group_tile_count(host_problem_sizes_ptr, problem_count);
     int32_t entries_per_block = ((total_tiles - 1 + block_count) / block_count);
     return sizeof(ProblemInfo) * entries_per_block * block_count;
   }
 #if !defined(__CUDACC_RTC__)
-  static void host_precompute(const cutlass::gemm::GemmCoord* host_problem_sizes_ptr,
-                              int32_t problem_count,
-                              int32_t block_count,
-                              void* host_workspace_ptr) {
-    ProblemInfo* host_problem_info_ptr = reinterpret_cast<ProblemInfo*>(host_workspace_ptr);
-    int32_t total_tiles = Base::group_tile_count(host_problem_sizes_ptr, problem_count);
+  static void
+  host_precompute(const cutlass::gemm::GemmCoord *host_problem_sizes_ptr,
+                  int32_t problem_count, int32_t block_count,
+                  void *host_workspace_ptr) {
+    ProblemInfo *host_problem_info_ptr =
+        reinterpret_cast<ProblemInfo *>(host_workspace_ptr);
+    int32_t total_tiles =
+        Base::group_tile_count(host_problem_sizes_ptr, problem_count);
     int32_t entries_per_block = (total_tiles - 1 + block_count) / block_count;
 
     int tile = 0;
@@ -435,7 +418,8 @@ struct GroupedProblemVisitor<ProblemSizeHelper,
       int tiles = Base::tile_count(grid);
       ProblemInfo problem_info(p_idx, start_tile);
       for (int i = 0; i < tiles; ++i, ++tile) {
-        host_problem_info_ptr[(entries_per_block * (tile % block_count)) + (tile / block_count)] = problem_info;
+        host_problem_info_ptr[(entries_per_block * (tile % block_count)) +
+                              (tile / block_count)] = problem_info;
       }
       start_tile += tiles;
     }
@@ -447,8 +431,10 @@ private:
     CUTLASS_PRAGMA_UNROLL
     for (int32_t i = 0; i < kPrefetchTileCount; i += kThreadCount) {
       int32_t offset = threadIdx.x + i;
-      if (offset < kPrefetchTileCount && (tiles_computed + offset < iterations_per_block)) {
-        shared_storage.prefetched_problems[offset] = problem_info_ptr[block_load_start + tiles_computed + offset];
+      if (offset < kPrefetchTileCount &&
+          (tiles_computed + offset < iterations_per_block)) {
+        shared_storage.prefetched_problems[offset] =
+            problem_info_ptr[block_load_start + tiles_computed + offset];
       }
     }
   }

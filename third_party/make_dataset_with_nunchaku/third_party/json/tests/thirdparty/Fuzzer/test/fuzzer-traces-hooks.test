@@ -22,4 +22,3 @@ RECOMMENDED_DICT:###### Recommended dictionary. ######
 RECOMMENDED_DICT-DAG: "foo"
 RECOMMENDED_DICT-DAG: "bar"
 RECOMMENDED_DICT:###### End of recommended dictionary. ######
-

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,25 +18,26 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 #pragma once
 
+#include "cute/arch/cluster_sm90.hpp"
+#include "cute/container/array.hpp"
+#include "cute/numeric/integral_constant.hpp"
+#include "cute/util/type_traits.hpp"
+#include "cutlass/arch/barrier.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/detail/dependent_false.hpp"
-#include "cute/numeric/integral_constant.hpp"
-#include "cute/arch/cluster_sm90.hpp"
-#include "cutlass/arch/barrier.h"
-#include "cute/util/type_traits.hpp"
-#include "cute/container/array.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,26 +47,25 @@ namespace cutlass {
 
 using namespace cute;
 
-enum class BarrierStatus : uint32_t {
-  WaitAgain = 0u,
-  WaitDone  = 1u
-};
+enum class BarrierStatus : uint32_t { WaitAgain = 0u, WaitDone = 1u };
 
 class ArrivalToken {
 public:
   CUTLASS_HOST_DEVICE
-  ArrivalToken(BarrierStatus barrier_status) : barrier_status_(barrier_status) {}
+  ArrivalToken(BarrierStatus barrier_status)
+      : barrier_status_(barrier_status) {}
 
   CUTLASS_HOST_DEVICE
   ArrivalToken() = delete;
 
   CUTLASS_HOST_DEVICE
   BarrierStatus get() const {
-    return barrier_status_;;
+    return barrier_status_;
+    ;
   }
 
   CUTLASS_HOST_DEVICE
-  bool operator==(ArrivalToken const& other) const {
+  bool operator==(ArrivalToken const &other) const {
     return barrier_status_ == other.get();
   }
 
@@ -73,12 +73,12 @@ private:
   BarrierStatus barrier_status_;
 
   CUTLASS_HOST_DEVICE
-  friend bool operator==(const ArrivalToken& left, const BarrierStatus& right) {
+  friend bool operator==(const ArrivalToken &left, const BarrierStatus &right) {
     return left.get() == right;
   }
 
   CUTLASS_HOST_DEVICE
-  friend bool operator==(const BarrierStatus& left, const ArrivalToken& right) {
+  friend bool operator==(const BarrierStatus &left, const ArrivalToken &right) {
     return left == right.get();
   }
 };
@@ -93,8 +93,7 @@ class ConsumerToken : public ArrivalToken {
 
 // Circular Buffer Index + Associated Phase
 // Assumes only one operation possible - i.e., ++
-template<uint32_t Stages_>
-struct PipelineState {
+template <uint32_t Stages_> struct PipelineState {
 
   static constexpr uint32_t Stages = Stages_;
 
@@ -103,28 +102,20 @@ struct PipelineState {
   uint32_t count_ = 0;
 
   CUTLASS_DEVICE
-  PipelineState(): index_{}, phase_{}, count_{} {}
+  PipelineState() : index_{}, phase_{}, count_{} {}
 
   CUTLASS_DEVICE
   PipelineState(int index, uint32_t phase, uint32_t count)
-    : index_(index)
-    , phase_(phase)
-    , count_(count) {}
+      : index_(index), phase_(phase), count_(count) {}
 
   CUTLASS_DEVICE
-  int index() const {
-    return index_;
-  }
+  int index() const { return index_; }
 
   CUTLASS_DEVICE
-  uint32_t phase() const {
-    return phase_;
-  }
+  uint32_t phase() const { return phase_; }
 
   CUTLASS_DEVICE
-  uint32_t count() const {
-    return count_;
-  }
+  uint32_t count() const { return count_; }
 
   CUTLASS_DEVICE
   void operator++() {
@@ -139,7 +130,7 @@ struct PipelineState {
   }
 
   CUTLASS_DEVICE
-  PipelineState& operator=(const PipelineState& other) {
+  PipelineState &operator=(const PipelineState &other) {
     index_ = other.index();
     phase_ = other.phase();
     count_ = other.count();
@@ -150,12 +141,13 @@ struct PipelineState {
   PipelineState advance(uint32_t num_iterations) {
     if constexpr (Stages > 0) {
       // Number of iterations cross over the stage boundary => flipped phase
-      if ((num_iterations < Stages) && (index_ + num_iterations) >= Stages ) {
+      if ((num_iterations < Stages) && (index_ + num_iterations) >= Stages) {
         phase_ ^= 1;
       }
       // How many times number of iterations cross over the stage boundary and
       // end up on a odd number => flipped phase
-      if ((num_iterations >= Stages) && (((index_ + num_iterations) / Stages) % 2) == 1) {
+      if ((num_iterations >= Stages) &&
+          (((index_ + num_iterations) / Stages) % 2) == 1) {
         phase_ ^= 1;
       }
       index_ = (index_ + num_iterations) % Stages;
@@ -165,14 +157,14 @@ struct PipelineState {
   }
 
   CUTLASS_DEVICE
-  static PipelineState make_pipeline_state(PipelineState start_state, uint32_t num_iterations) {
+  static PipelineState make_pipeline_state(PipelineState start_state,
+                                           uint32_t num_iterations) {
     return start_state.advance(num_iterations);
   }
 };
 
-template<class Pipeline>  
-CUTLASS_DEVICE
-PipelineState<Pipeline::Stages> make_producer_start_state() {
+template <class Pipeline>
+CUTLASS_DEVICE PipelineState<Pipeline::Stages> make_producer_start_state() {
   // Producer starts with an opposite phase as the buffers are initially empty
   constexpr int InitialProducerStage = 0;
   constexpr uint32_t InitialProducerPhase = 1;
@@ -185,15 +177,11 @@ PipelineState<Pipeline::Stages> make_producer_start_state() {
 // TMA load (producer) Async Pipeline class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Assumptions : Constructor is visible Cluster-wide (as it needs a Cluster-Sync)
-// We have exactly one thread elected in the Producer as the "leader"
-// Currently, it is optional to elect a leader for the Consumers
-template <
-  int Stages_,
-  class ClusterShape_
->
-class PipelineTmaAsync {
-public :
+// Assumptions : Constructor is visible Cluster-wide (as it needs a
+// Cluster-Sync) We have exactly one thread elected in the Producer as the
+// "leader" Currently, it is optional to elect a leader for the Consumers
+template <int Stages_, class ClusterShape_> class PipelineTmaAsync {
+public:
   using ClusterShape = ClusterShape_;
   using FullBarrier = cutlass::arch::ClusterTransactionBarrier;
   using EmptyBarrier = cutlass::arch::ClusterBarrier;
@@ -223,10 +211,9 @@ public :
 
   // Constructor
   CUTLASS_DEVICE
-  PipelineTmaAsync(SharedStorage& storage, Params params)
-      : params_(params)
-      , full_barrier_ptr_(&storage.full_barrier_[0])
-      , empty_barrier_ptr_(&storage.empty_barrier_[0]) {
+  PipelineTmaAsync(SharedStorage &storage, Params params)
+      : params_(params), full_barrier_ptr_(&storage.full_barrier_[0]),
+        empty_barrier_ptr_(&storage.empty_barrier_[0]) {
 
     int warp_idx = canonical_warp_idx();
     int lane_predicate = cute::elect_one_sync();
@@ -237,8 +224,10 @@ public :
       for (int i = 0; i < Stages; ++i) {
         full_barrier_ptr_[i].init(1);
       }
-      uint32_t const num_consumer_warpgroups_per_cluster = params_.num_consumers / NumThreadsPerWarpGroup;
-      uint32_t const multicast_consumer_arrival_count = (cute::size<0>(cluster_shape) + cute::size<1>(cluster_shape) - 1) *
+      uint32_t const num_consumer_warpgroups_per_cluster =
+          params_.num_consumers / NumThreadsPerWarpGroup;
+      uint32_t const multicast_consumer_arrival_count =
+          (cute::size<0>(cluster_shape) + cute::size<1>(cluster_shape) - 1) *
           num_consumer_warpgroups_per_cluster;
       // Barrier EMPTY init
       for (int i = 0; i < Stages; ++i) {
@@ -248,48 +237,50 @@ public :
     cutlass::arch::fence_barrier_init();
 
     // Logic to optimally schedule Empty Arrives
-    // Goal : To divide SYNCS Empty Arrival duty equally amongst the Warp-Group (128 threads)
+    // Goal : To divide SYNCS Empty Arrival duty equally amongst the Warp-Group
+    // (128 threads)
     dim3 block_id = cute::block_id_in_cluster();
     auto cluster_size = cute::size(cluster_shape);
     static constexpr int MaxClusterSize = 16;
-    static_assert(cluster_size <= MaxClusterSize, "ERROR : Cluster size too large !" );
+    static_assert(cluster_size <= MaxClusterSize,
+                  "ERROR : Cluster size too large !");
 
-    // STEP 1 : Use Cute Layout function to generate an optimal dst block-id (0-15)
+    // STEP 1 : Use Cute Layout function to generate an optimal dst block-id
+    // (0-15)
     if (params_.num_consumers % NumThreadsPerWarpGroup == 0) {
       int thread_idx = threadIdx.x % NumThreadsPerWarpGroup;
-      is_signalling_thread_ = (thread_idx % (NumThreadsPerWarpGroup / MaxClusterSize)) == 0;
-      auto layout = cute::composition(Swizzle<2,0,-2>{},
-                                      Layout<Shape<_4,_4>,Stride<_4,_1>>{});
+      is_signalling_thread_ =
+          (thread_idx % (NumThreadsPerWarpGroup / MaxClusterSize)) == 0;
+      auto layout = cute::composition(Swizzle<2, 0, -2>{},
+                                      Layout<Shape<_4, _4>, Stride<_4, _1>>{});
       uint32_t thread_row = warp_idx % 4;
       uint32_t thread_col = (thread_idx / 8) % 4;
       dst_blockid_ = layout(thread_row, thread_col);
-    }
-    else if (params_.num_consumers == 32) {
+    } else if (params_.num_consumers == 32) {
       int thread_idx = threadIdx.x % 32;
       is_signalling_thread_ = (thread_idx % (32 / MaxClusterSize)) == 0;
-      auto layout = Layout<Shape<_4,_4>,Stride<_4, _1>>{};
+      auto layout = Layout<Shape<_4, _4>, Stride<_4, _1>>{};
       uint32_t thread_row = thread_idx / 8;
       uint32_t thread_col = (thread_idx % 8) / 2;
       dst_blockid_ = layout(thread_row, thread_col);
-    }
-    else {
+    } else {
       is_signalling_thread_ = 0;
-      #ifndef NDEBUG
-        asm volatile ("brkpt;\n" ::);
-      #endif
+#ifndef NDEBUG
+      asm volatile("brkpt;\n" ::);
+#endif
     }
 
     // STEP 2: Find if this dst block-id needs an arrival for this problem
     is_signalling_thread_ &= dst_blockid_ < cluster_size;
-    is_signalling_thread_ &= is_same_row_or_col(dst_blockid_, block_id, cluster_shape);
+    is_signalling_thread_ &=
+        is_same_row_or_col(dst_blockid_, block_id, cluster_shape);
   }
 
   CUTLASS_DEVICE
-  bool is_same_row_or_col(int dst_block_id, dim3 block_id, ClusterShape cluster_shape) {
+  bool is_same_row_or_col(int dst_block_id, dim3 block_id,
+                          ClusterShape cluster_shape) {
     return (((dst_block_id % cute::size<0>(cluster_shape)) == block_id.x) ||
-            (
-              ((dst_block_id / cute::size<0>(cluster_shape)) == block_id.y)
-            ));
+            (((dst_block_id / cute::size<0>(cluster_shape)) == block_id.y)));
   }
 
   ////////////////////
@@ -298,14 +289,14 @@ public :
   // Four member functions are always used in pairs:
   //
   // * producer_try_acquire and producer_acquire, and
-  // * consumer_try_wait and consumer_wait. 
+  // * consumer_try_wait and consumer_wait.
   //
   // The two functions with "try" in their names are called "try" functions,
   // and the other two are conceptually "finalize" functions.
-  // The "try" function in each pair starts the process of waiting on the barrier to flip.
-  // It opportunistically waits for an implementation-dependent timeout.
-  // Whether or not the barrier has flipped yet, the try function will return a token.
-  // If the token indicates that the barrier has not flipped,
+  // The "try" function in each pair starts the process of waiting on the
+  // barrier to flip. It opportunistically waits for an implementation-dependent
+  // timeout. Whether or not the barrier has flipped yet, the try function will
+  // return a token. If the token indicates that the barrier has not flipped,
   // then the token must be passed into the corresponding "finalize" function.
   // The finalize function will then block until the barrier has flipped.
   // If the token indicates that the barrier _has_ flipped,
@@ -313,12 +304,14 @@ public :
   // The finalize function will return immediately in that case.
 
   CUTLASS_DEVICE
-  ProducerToken producer_try_acquire(PipelineState state, uint32_t skip_wait = false) {
+  ProducerToken producer_try_acquire(PipelineState state,
+                                     uint32_t skip_wait = false) {
     return producer_try_acquire(state.index(), state.phase(), skip_wait);
   }
 
   CUTLASS_DEVICE
-  void producer_acquire(PipelineState state, ProducerToken barrier_token = {BarrierStatus::WaitAgain}) {
+  void producer_acquire(PipelineState state, ProducerToken barrier_token = {
+                                                 BarrierStatus::WaitAgain}) {
     producer_acquire(state.index(), state.phase(), barrier_token);
   }
 
@@ -332,13 +325,13 @@ public :
   CUTLASS_DEVICE
   void producer_tail(PipelineState state) {
     for (int count = 0; count < Stages; ++count) {
-      producer_acquire(state);  
+      producer_acquire(state);
       ++state;
     }
   }
 
   CUTLASS_DEVICE
-  ProducerBarrierType* producer_get_barrier(PipelineState state) {
+  ProducerBarrierType *producer_get_barrier(PipelineState state) {
     return producer_get_barrier(state.index());
   }
 
@@ -346,15 +339,17 @@ public :
   // Consumer APIs
   ////////////////////
   CUTLASS_DEVICE
-  ConsumerToken consumer_try_wait(PipelineState state, uint32_t skip_wait = false) {
+  ConsumerToken consumer_try_wait(PipelineState state,
+                                  uint32_t skip_wait = false) {
     return consumer_try_wait(state.index(), state.phase(), skip_wait);
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_test_wait(PipelineState state, uint32_t skip_wait = false) {
+  ConsumerToken consumer_test_wait(PipelineState state,
+                                   uint32_t skip_wait = false) {
     return consumer_test_wait(state.index(), state.phase(), skip_wait);
   }
-  
+
   CUTLASS_DEVICE
   void consumer_wait(PipelineState state) {
     consumer_wait(state.index(), state.phase());
@@ -370,7 +365,7 @@ public :
     consumer_release(state.index());
   }
 
-private :
+private:
   uint32_t dst_blockid_ = 0;
   uint32_t is_signalling_thread_ = 0;
   FullBarrier *full_barrier_ptr_ = nullptr;
@@ -378,7 +373,8 @@ private :
   Params params_;
 
   CUTLASS_DEVICE
-  ProducerToken producer_try_acquire(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ProducerToken producer_try_acquire(uint32_t stage, uint32_t phase,
+                                     uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
@@ -387,7 +383,8 @@ private :
   }
 
   CUTLASS_DEVICE
-  void producer_acquire(uint32_t stage, uint32_t phase, ProducerToken barrier_token) {
+  void producer_acquire(uint32_t stage, uint32_t phase,
+                        ProducerToken barrier_token) {
     if (barrier_token == BarrierStatus::WaitAgain) {
       empty_barrier_ptr_[stage].wait(phase);
     }
@@ -395,49 +392,55 @@ private :
     if (params_.is_leader) {
       full_barrier_ptr_[stage].arrive_and_expect_tx(params_.transaction_bytes);
     }
-    #ifndef NDEBUG
-    if (params_.role == ThreadCategory::Consumer || params_.role == ThreadCategory::NonParticipant) {
-      asm volatile ("brkpt;\n" ::);
+#ifndef NDEBUG
+    if (params_.role == ThreadCategory::Consumer ||
+        params_.role == ThreadCategory::NonParticipant) {
+      asm volatile("brkpt;\n" ::);
     }
 
     // Most likely you have elected more than one leader
     if (params_.is_leader && (threadIdx.x % 32 != 0)) {
-      asm volatile ("brkpt;\n" ::);
+      asm volatile("brkpt;\n" ::);
     }
-    #endif
+#endif
   }
 
   // NOP for TMA based mainloop
   CUTLASS_DEVICE
   void producer_commit(uint32_t stage, uint32_t bytes) {
-    // Below code is used only for unit-testing (in the absence of TMA commit)
-    #if CUTLASS_UNIT_TEST_PIPELINE
-      if (params_.is_leader) {
-        // STEP 1 : Commit to self
-        full_barrier_ptr_[stage].complete_transaction(bytes);
+// Below code is used only for unit-testing (in the absence of TMA commit)
+#if CUTLASS_UNIT_TEST_PIPELINE
+    if (params_.is_leader) {
+      // STEP 1 : Commit to self
+      full_barrier_ptr_[stage].complete_transaction(bytes);
 
-        // STEP 2 : Commit to other blocks in our cluster
-        auto cluster_shape = ClusterShape{};
-        Layout block_layout_in_cluster = make_layout(cluster_shape);
-        dim3 local_block_id = cute::block_id_in_cluster();
+      // STEP 2 : Commit to other blocks in our cluster
+      auto cluster_shape = ClusterShape{};
+      Layout block_layout_in_cluster = make_layout(cluster_shape);
+      dim3 local_block_id = cute::block_id_in_cluster();
 
-        CUTLASS_PRAGMA_UNROLL
-        for(int n = 0; n < size<1>(block_layout_in_cluster); ++n) {
-          uint32_t dst_block_id = block_layout_in_cluster(local_block_id.x,n,Int<0>{});
-          full_barrier_ptr_[stage].complete_transaction(dst_block_id, bytes, n!=local_block_id.y);
-        }
-
-        CUTLASS_PRAGMA_UNROLL
-        for(int m = 0; m < size<0>(block_layout_in_cluster); ++m) {
-          uint32_t dst_block_id = block_layout_in_cluster(m,local_block_id.y,Int<0>{});
-          full_barrier_ptr_[stage].complete_transaction(dst_block_id, bytes, m!=local_block_id.x);
-        }
+      CUTLASS_PRAGMA_UNROLL
+      for (int n = 0; n < size<1>(block_layout_in_cluster); ++n) {
+        uint32_t dst_block_id =
+            block_layout_in_cluster(local_block_id.x, n, Int<0>{});
+        full_barrier_ptr_[stage].complete_transaction(dst_block_id, bytes,
+                                                      n != local_block_id.y);
       }
-    #endif
+
+      CUTLASS_PRAGMA_UNROLL
+      for (int m = 0; m < size<0>(block_layout_in_cluster); ++m) {
+        uint32_t dst_block_id =
+            block_layout_in_cluster(m, local_block_id.y, Int<0>{});
+        full_barrier_ptr_[stage].complete_transaction(dst_block_id, bytes,
+                                                      m != local_block_id.x);
+      }
+    }
+#endif
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_try_wait(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ConsumerToken consumer_try_wait(uint32_t stage, uint32_t phase,
+                                  uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
@@ -446,14 +449,15 @@ private :
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_test_wait(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ConsumerToken consumer_test_wait(uint32_t stage, uint32_t phase,
+                                   uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
     uint32_t barrier_status = full_barrier_ptr_[stage].test_wait(phase);
     return {static_cast<BarrierStatus>(barrier_status)};
   }
-  
+
   // Wait for producer to commit transactions (done by TMA)
   CUTLASS_DEVICE
   void consumer_wait(uint32_t stage, uint32_t phase) {
@@ -462,7 +466,8 @@ private :
 
   // Wait for producer to commit transactions (done by TMA)
   CUTLASS_DEVICE
-  void consumer_wait(uint32_t stage, uint32_t phase, ConsumerToken barrier_token) {
+  void consumer_wait(uint32_t stage, uint32_t phase,
+                     ConsumerToken barrier_token) {
     if (barrier_token == BarrierStatus::WaitAgain) {
       full_barrier_ptr_[stage].wait(phase);
     }
@@ -472,37 +477,40 @@ private :
   // Ensures all blocks in the Same Row and Column get notifed.
   CUTLASS_DEVICE
   void consumer_release(uint32_t stage, uint32_t skip = false) {
-    empty_barrier_ptr_[stage].arrive(dst_blockid_, is_signalling_thread_ & (!skip));
-    #ifndef NDEBUG
-    if (params_.role == ThreadCategory::Producer || params_.role == ThreadCategory::NonParticipant) {
-      asm volatile ("brkpt;\n" ::);
+    empty_barrier_ptr_[stage].arrive(dst_blockid_,
+                                     is_signalling_thread_ & (!skip));
+#ifndef NDEBUG
+    if (params_.role == ThreadCategory::Producer ||
+        params_.role == ThreadCategory::NonParticipant) {
+      asm volatile("brkpt;\n" ::);
     }
-    #endif
+#endif
   }
 
   CUTLASS_DEVICE
-  ProducerBarrierType* producer_get_barrier(uint32_t stage) {
-    return reinterpret_cast<ProducerBarrierType*>(&full_barrier_ptr_[stage]);
+  ProducerBarrierType *producer_get_barrier(uint32_t stage) {
+    return reinterpret_cast<ProducerBarrierType *>(&full_barrier_ptr_[stage]);
   }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // TMA store pipeline class
-// producer-only class, no async barriers between threads because consumer is TMA unit
+// producer-only class, no async barriers between threads because consumer is
+// TMA unit
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template <
-  int Stages_,
-  // The number of committed TMA store batches that can be in flight upon return of producer acquire
-  int UnacquiredStages_ = Stages_-1
->
+template <int Stages_,
+          // The number of committed TMA store batches that can be in flight
+          // upon return of producer acquire
+          int UnacquiredStages_ = Stages_ - 1>
 class PipelineTmaStore {
 public:
   static constexpr uint32_t Stages = Stages_;
   static_assert(Stages_ > 0);
   static_assert(UnacquiredStages_ >= 0);
-  static constexpr uint32_t UnacquiredStages = static_cast<uint32_t>(UnacquiredStages_);
+  static constexpr uint32_t UnacquiredStages =
+      static_cast<uint32_t>(UnacquiredStages_);
   using PipelineState = cutlass::PipelineState<Stages>;
 
   struct Params {
@@ -537,7 +545,8 @@ private:
   Params params_;
 
   // Wait for the least recently committed batch of TMA stores to complete
-  // or until at most UnacquiredStages TMA store batches are in-flight (if specified)
+  // or until at most UnacquiredStages TMA store batches are in-flight (if
+  // specified)
   CUTLASS_DEVICE
   void producer_acquire([[maybe_unused]] uint32_t stage, uint32_t count) {
     if (params_.always_wait || count > UnacquiredStages) {
@@ -547,13 +556,15 @@ private:
 
   // Commit the most recently issued batch of TMA stores
   CUTLASS_DEVICE
-  void producer_commit([[maybe_unused]] uint32_t stage, [[maybe_unused]] uint32_t count) {
+  void producer_commit([[maybe_unused]] uint32_t stage,
+                       [[maybe_unused]] uint32_t count) {
     tma_store_arrive();
   }
 };
 
 template <>
-class PipelineTmaStore< /* Stages_ = */ 0, /* UnacquiredStages = Stages_ - 1 = */ -1 > {
+class PipelineTmaStore</* Stages_ = */ 0,
+                       /* UnacquiredStages = Stages_ - 1 = */ -1> {
 public:
   static constexpr uint32_t Stages = 0;
   static constexpr uint32_t UnacquiredStages = 0;
@@ -565,29 +576,32 @@ public:
 
   PipelineTmaStore() = default;
   CUTLASS_DEVICE
-    PipelineTmaStore(Params params) : params_(params) {}
+  PipelineTmaStore(Params params) : params_(params) {}
 
   ////////////////////
   // Producer APIs
   ////////////////////
 
-  template<class ThisTemplateParameterExistsOnlyForDependentFalse = int>
-  CUTLASS_DEVICE
-    void producer_acquire(PipelineState /* state */,
-      ThisTemplateParameterExistsOnlyForDependentFalse* /* unused */ = nullptr) {
-    static_assert(cutlass::detail::dependent_false<ThisTemplateParameterExistsOnlyForDependentFalse>,
-      "It is never valid to call PipelineTmaStore<0>::producer_acquire");
+  template <class ThisTemplateParameterExistsOnlyForDependentFalse = int>
+  CUTLASS_DEVICE void producer_acquire(
+      PipelineState /* state */,
+      ThisTemplateParameterExistsOnlyForDependentFalse * /* unused */ =
+          nullptr) {
+    static_assert(
+        cutlass::detail::dependent_false<
+            ThisTemplateParameterExistsOnlyForDependentFalse>,
+        "It is never valid to call PipelineTmaStore<0>::producer_acquire");
   }
 
   // Commit the most recently issued batch of TMA stores
   CUTLASS_DEVICE
-    void producer_commit(PipelineState state) {
+  void producer_commit(PipelineState state) {
     producer_commit(state.index(), state.count());
   }
 
   // Wait for all TMA stores to complete
   CUTLASS_DEVICE
-    void producer_tail([[maybe_unused]] PipelineState state) {
+  void producer_tail([[maybe_unused]] PipelineState state) {
     tma_store_wait<0>();
   }
 
@@ -596,20 +610,20 @@ private:
 
   // Commit the most recently issued batch of TMA stores
   CUTLASS_DEVICE
-    void producer_commit([[maybe_unused]] uint32_t stage, [[maybe_unused]] uint32_t count) {
+  void producer_commit([[maybe_unused]] uint32_t stage,
+                       [[maybe_unused]] uint32_t count) {
     tma_store_arrive();
   }
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// Simple producer-consumer async Pipeline class using producer transaction barriers
+// Simple producer-consumer async Pipeline class using producer transaction
+// barriers
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template <int Stages_>
-class PipelineTransactionAsync {
-public :
+template <int Stages_> class PipelineTransactionAsync {
+public:
   using FullBarrier = cutlass::arch::ClusterTransactionBarrier;
   using EmptyBarrier = cutlass::arch::ClusterBarrier;
   using ProducerBarrierType = FullBarrier::ValueType;
@@ -639,10 +653,9 @@ public :
 
   // Constructor
   CUTLASS_DEVICE
-  PipelineTransactionAsync(SharedStorage& storage, Params const& params)
-    : params_(params)
-    , full_barrier_ptr_(storage.full_barrier_.data())
-    , empty_barrier_ptr_(storage.empty_barrier_.data()) {
+  PipelineTransactionAsync(SharedStorage &storage, Params const &params)
+      : params_(params), full_barrier_ptr_(storage.full_barrier_.data()),
+        empty_barrier_ptr_(storage.empty_barrier_.data()) {
 
     int warp_idx = canonical_warp_idx();
     int lane_predicate = cute::elect_one_sync();
@@ -664,52 +677,53 @@ public :
   // Four member functions are always used in pairs:
   //
   // * producer_try_acquire and producer_acquire, and
-  // * consumer_try_wait and consumer_wait. 
+  // * consumer_try_wait and consumer_wait.
   //
   // The two functions with "try" in their names are called "try" functions,
   // and the other two are conceptually "finalize" functions.
-  // The "try" function in each pair starts the process of waiting on the barrier to flip.
-  // It opportunistically waits for an implementation-dependent timeout.
-  // Whether or not the barrier has flipped yet, the try function will return a token.
-  // If the token indicates that the barrier has not flipped,
+  // The "try" function in each pair starts the process of waiting on the
+  // barrier to flip. It opportunistically waits for an implementation-dependent
+  // timeout. Whether or not the barrier has flipped yet, the try function will
+  // return a token. If the token indicates that the barrier has not flipped,
   // then the token must be passed into the corresponding "finalize" function.
   // The finalize function will then block until the barrier has flipped.
   // If the token indicates that the barrier _has_ flipped,
   // then it is still correct to pass it into the finalize function.
   // The finalize function will return immediately in that case.
   CUTLASS_DEVICE
-  ProducerToken producer_try_acquire(PipelineState state, uint32_t skip_wait = false) {
+  ProducerToken producer_try_acquire(PipelineState state,
+                                     uint32_t skip_wait = false) {
     return producer_try_acquire(state.index(), state.phase(), skip_wait);
   }
 
   CUTLASS_DEVICE
-  void producer_acquire(PipelineState state, ProducerToken barrier_token = {BarrierStatus::WaitAgain}) {
+  void producer_acquire(PipelineState state, ProducerToken barrier_token = {
+                                                 BarrierStatus::WaitAgain}) {
     producer_acquire(state.index(), state.phase(), barrier_token);
   }
 
-  // Perform an expect-tx operation on the stage's full barrier. Must be called by 1 thread
+  // Perform an expect-tx operation on the stage's full barrier. Must be called
+  // by 1 thread
   CUTLASS_DEVICE
   void producer_expect_transaction(PipelineState state) {
     producer_expect_transaction(state.index());
   }
 
   CUTLASS_DEVICE
-  void producer_commit(PipelineState state) {
-    producer_commit(state.index());
-  }
+  void producer_commit(PipelineState state) { producer_commit(state.index()); }
 
   // Prevents early exit of producer blocks in Cluster.
   // This should be called once before kernel exits.
   CUTLASS_DEVICE
   void producer_tail(PipelineState state) {
     for (int count = 0; count < Stages; ++count) {
-      producer_acquire(state);  
+      producer_acquire(state);
       ++state;
     }
   }
 
   CUTLASS_DEVICE
-  ProducerBarrierType* producer_get_barrier(PipelineState state) {
+  ProducerBarrierType *producer_get_barrier(PipelineState state) {
     return producer_get_barrier(state.index());
   }
 
@@ -717,17 +731,20 @@ public :
   // Consumer APIs
   ////////////////////
   CUTLASS_DEVICE
-  ConsumerToken consumer_try_wait(PipelineState state, uint32_t skip_wait = false) {
+  ConsumerToken consumer_try_wait(PipelineState state,
+                                  uint32_t skip_wait = false) {
     return consumer_try_wait(state.index(), state.phase(), skip_wait);
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_test_wait(PipelineState state, uint32_t skip_wait = false) {
+  ConsumerToken consumer_test_wait(PipelineState state,
+                                   uint32_t skip_wait = false) {
     return consumer_test_wait(state.index(), state.phase(), skip_wait);
   }
-  
+
   CUTLASS_DEVICE
-  void consumer_wait(PipelineState state, ConsumerToken barrier_token = {BarrierStatus::WaitAgain}) {
+  void consumer_wait(PipelineState state,
+                     ConsumerToken barrier_token = {BarrierStatus::WaitAgain}) {
     consumer_wait(state.index(), state.phase(), barrier_token);
   }
 
@@ -742,7 +759,8 @@ private:
   Params params_;
 
   CUTLASS_DEVICE
-  ProducerToken producer_try_acquire(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ProducerToken producer_try_acquire(uint32_t stage, uint32_t phase,
+                                     uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
@@ -751,13 +769,15 @@ private:
   }
 
   CUTLASS_DEVICE
-  void producer_acquire(uint32_t stage, uint32_t phase, ProducerToken barrier_token) {
+  void producer_acquire(uint32_t stage, uint32_t phase,
+                        ProducerToken barrier_token) {
     if (barrier_token == BarrierStatus::WaitAgain) {
       empty_barrier_ptr_[stage].wait(phase);
     }
   }
 
-  // Perform an expect-tx operation on the stage's full barrier. Must be called by 1 thread
+  // Perform an expect-tx operation on the stage's full barrier. Must be called
+  // by 1 thread
   CUTLASS_DEVICE
   void producer_expect_transaction(uint32_t stage) {
     full_barrier_ptr_[stage].expect_transaction(params_.transaction_bytes);
@@ -769,12 +789,13 @@ private:
   }
 
   CUTLASS_DEVICE
-  ProducerBarrierType* producer_get_barrier(uint32_t stage) {
-    return reinterpret_cast<ProducerBarrierType*>(&full_barrier_ptr_[stage]);
+  ProducerBarrierType *producer_get_barrier(uint32_t stage) {
+    return reinterpret_cast<ProducerBarrierType *>(&full_barrier_ptr_[stage]);
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_try_wait(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ConsumerToken consumer_try_wait(uint32_t stage, uint32_t phase,
+                                  uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
@@ -783,16 +804,18 @@ private:
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_test_wait(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ConsumerToken consumer_test_wait(uint32_t stage, uint32_t phase,
+                                   uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
     uint32_t barrier_status = full_barrier_ptr_[stage].test_wait(phase);
     return {static_cast<BarrierStatus>(barrier_status)};
   }
-  
+
   CUTLASS_DEVICE
-  void consumer_wait(uint32_t stage, uint32_t phase, ConsumerToken barrier_token) {
+  void consumer_wait(uint32_t stage, uint32_t phase,
+                     ConsumerToken barrier_token) {
     if (barrier_token == BarrierStatus::WaitAgain) {
       full_barrier_ptr_[stage].wait(phase);
     }
@@ -809,9 +832,8 @@ private:
 // Simple producer-consumer async Pipeline class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-template <int Stages_>
-class PipelineAsync {
-public :
+template <int Stages_> class PipelineAsync {
+public:
   using FullBarrier = cutlass::arch::ClusterBarrier;
   using EmptyBarrier = cutlass::arch::ClusterBarrier;
   using ProducerBarrierType = FullBarrier::ValueType;
@@ -839,18 +861,15 @@ public :
   };
 
   // Default assumption when only storage is passed is :
-  // => single producer, single consumer & they are in the same block (within the Cluster)
+  // => single producer, single consumer & they are in the same block (within
+  // the Cluster)
   CUTLASS_DEVICE
-  PipelineAsync(SharedStorage& storage)
-    : PipelineAsync(storage, {}) {}
+  PipelineAsync(SharedStorage &storage) : PipelineAsync(storage, {}) {}
 
   CUTLASS_DEVICE
-  PipelineAsync(
-    SharedStorage& storage,
-    Params const& params) :
-      params_(params),
-      full_barrier_ptr_(&storage.full_barrier_[0]),
-      empty_barrier_ptr_(&storage.empty_barrier_[0]) {
+  PipelineAsync(SharedStorage &storage, Params const &params)
+      : params_(params), full_barrier_ptr_(&storage.full_barrier_[0]),
+        empty_barrier_ptr_(&storage.empty_barrier_[0]) {
 
     int warp_idx = canonical_warp_idx();
     int lane_predicate = cute::elect_one_sync();
@@ -872,38 +891,40 @@ public :
   // Four member functions are always used in pairs:
   //
   // * producer_try_acquire and producer_acquire, and
-  // * consumer_try_wait and consumer_wait. 
+  // * consumer_try_wait and consumer_wait.
   //
   // The two functions with "try" in their names are called "try" functions,
   // and the other two are conceptually "finalize" functions.
-  // The "try" function in each pair starts the process of waiting on the barrier to flip.
-  // It opportunistically waits for an implementation-dependent timeout.
-  // Whether or not the barrier has flipped yet, the try function will return a token.
-  // If the token indicates that the barrier has not flipped,
+  // The "try" function in each pair starts the process of waiting on the
+  // barrier to flip. It opportunistically waits for an implementation-dependent
+  // timeout. Whether or not the barrier has flipped yet, the try function will
+  // return a token. If the token indicates that the barrier has not flipped,
   // then the token must be passed into the corresponding "finalize" function.
   // The finalize function will then block until the barrier has flipped.
   // If the token indicates that the barrier _has_ flipped,
   // then it is still correct to pass it into the finalize function.
   // The finalize function will return immediately in that case.
   CUTLASS_DEVICE
-  ProducerToken producer_try_acquire(PipelineState state, uint32_t skip_wait = false) {
+  ProducerToken producer_try_acquire(PipelineState state,
+                                     uint32_t skip_wait = false) {
     return producer_try_acquire(state.index(), state.phase(), skip_wait);
   }
 
   CUTLASS_DEVICE
-  void producer_acquire(PipelineState state, ProducerToken barrier_token = {BarrierStatus::WaitAgain}) {
+  void producer_acquire(PipelineState state, ProducerToken barrier_token = {
+                                                 BarrierStatus::WaitAgain}) {
     producer_acquire(state.index(), state.phase(), barrier_token);
   }
 
   CUTLASS_DEVICE
-  void producer_commit(PipelineState state) {
-    producer_commit(state.index());
-  }
+  void producer_commit(PipelineState state) { producer_commit(state.index()); }
 
-  template<class UserDefinedArriveOp>
-  CUTLASS_DEVICE
-  void producer_commit(PipelineState state, UserDefinedArriveOp&& user_defined_arrive_op) {
-    cute::forward<UserDefinedArriveOp>(user_defined_arrive_op)(producer_get_barrier(state.index()));
+  template <class UserDefinedArriveOp>
+  CUTLASS_DEVICE void
+  producer_commit(PipelineState state,
+                  UserDefinedArriveOp &&user_defined_arrive_op) {
+    cute::forward<UserDefinedArriveOp>(user_defined_arrive_op)(
+        producer_get_barrier(state.index()));
     producer_commit(state);
   }
 
@@ -912,13 +933,13 @@ public :
   CUTLASS_DEVICE
   void producer_tail(PipelineState state) {
     for (int count = 0; count < Stages; ++count) {
-      producer_acquire(state);  
+      producer_acquire(state);
       ++state;
     }
   }
 
   CUTLASS_DEVICE
-  ProducerBarrierType* producer_get_barrier(PipelineState state) {
+  ProducerBarrierType *producer_get_barrier(PipelineState state) {
     return producer_get_barrier(state.index());
   }
 
@@ -926,17 +947,20 @@ public :
   // Consumer APIs
   ////////////////////
   CUTLASS_DEVICE
-  ConsumerToken consumer_try_wait(PipelineState state, uint32_t skip_wait = false) {
+  ConsumerToken consumer_try_wait(PipelineState state,
+                                  uint32_t skip_wait = false) {
     return consumer_try_wait(state.index(), state.phase(), skip_wait);
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_test_wait(PipelineState state, uint32_t skip_wait = false) {
+  ConsumerToken consumer_test_wait(PipelineState state,
+                                   uint32_t skip_wait = false) {
     return consumer_test_wait(state.index(), state.phase(), skip_wait);
   }
-  
+
   CUTLASS_DEVICE
-  void consumer_wait(PipelineState state, ConsumerToken barrier_token = {BarrierStatus::WaitAgain}) {
+  void consumer_wait(PipelineState state,
+                     ConsumerToken barrier_token = {BarrierStatus::WaitAgain}) {
     consumer_wait(state.index(), state.phase(), barrier_token);
   }
 
@@ -951,7 +975,8 @@ private:
   EmptyBarrier *empty_barrier_ptr_;
 
   CUTLASS_DEVICE
-  ProducerToken producer_try_acquire(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ProducerToken producer_try_acquire(uint32_t stage, uint32_t phase,
+                                     uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
@@ -960,24 +985,24 @@ private:
   }
 
   CUTLASS_DEVICE
-  void producer_acquire(uint32_t stage, uint32_t phase, ProducerToken barrier_token) {
+  void producer_acquire(uint32_t stage, uint32_t phase,
+                        ProducerToken barrier_token) {
     if (barrier_token == BarrierStatus::WaitAgain) {
       empty_barrier_ptr_[stage].wait(phase);
     }
   }
 
   CUTLASS_DEVICE
-  void producer_commit(uint32_t stage) {
-    full_barrier_ptr_[stage].arrive();
+  void producer_commit(uint32_t stage) { full_barrier_ptr_[stage].arrive(); }
+
+  CUTLASS_DEVICE
+  ProducerBarrierType *producer_get_barrier(uint32_t stage) {
+    return reinterpret_cast<ProducerBarrierType *>(&full_barrier_ptr_[stage]);
   }
 
   CUTLASS_DEVICE
-  ProducerBarrierType* producer_get_barrier(uint32_t stage) {
-    return reinterpret_cast<ProducerBarrierType*>(&full_barrier_ptr_[stage]);
-  }
-
-  CUTLASS_DEVICE
-  ConsumerToken consumer_try_wait(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ConsumerToken consumer_try_wait(uint32_t stage, uint32_t phase,
+                                  uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
@@ -986,14 +1011,15 @@ private:
   }
 
   CUTLASS_DEVICE
-  ConsumerToken consumer_test_wait(uint32_t stage, uint32_t phase, uint32_t skip_wait) {
+  ConsumerToken consumer_test_wait(uint32_t stage, uint32_t phase,
+                                   uint32_t skip_wait) {
     if (skip_wait) {
       return {BarrierStatus::WaitDone};
     }
     uint32_t barrier_status = full_barrier_ptr_[stage].test_wait(phase);
     return {static_cast<BarrierStatus>(barrier_status)};
   }
-  
+
   CUTLASS_DEVICE
   void consumer_wait(uint32_t stage, uint32_t phase) {
     uint32_t done = full_barrier_ptr_[stage].test_wait(phase);
@@ -1003,7 +1029,8 @@ private:
   }
 
   CUTLASS_DEVICE
-  void consumer_wait(uint32_t stage, uint32_t phase, ConsumerToken barrier_token) {
+  void consumer_wait(uint32_t stage, uint32_t phase,
+                     ConsumerToken barrier_token) {
     if (barrier_token == BarrierStatus::WaitAgain) {
       full_barrier_ptr_[stage].wait(phase);
     }
@@ -1015,19 +1042,17 @@ private:
   }
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Barrier to ensure an Ordered Sequence between
-// SequenceLength number of groups (each with group_size participants) executing SequenceDepth Stages
-// i.e., for all i < j - only after id "i" arrives at a particular stage "m"
-// will the wait() for id "j" succeed for the same stage
+// SequenceLength number of groups (each with group_size participants) executing
+// SequenceDepth Stages i.e., for all i < j - only after id "i" arrives at a
+// particular stage "m" will the wait() for id "j" succeed for the same stage
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<int SequenceDepth, int SequenceLength>
-class OrderedSequenceBarrier {
-public :
+template <int SequenceDepth, int SequenceLength> class OrderedSequenceBarrier {
+public:
   using Barrier = cutlass::arch::ClusterBarrier;
 
   struct SharedStorage {
@@ -1039,7 +1064,7 @@ public :
     uint32_t group_size;
   };
 
-private :
+private:
   // In future this Params object can be replaced easily with a CG object
   Params params_;
   Barrier *barrier_ptr_;
@@ -1050,18 +1075,17 @@ private :
 
 public:
   OrderedSequenceBarrier() = delete;
-  OrderedSequenceBarrier(const OrderedSequenceBarrier&) = delete;
-  OrderedSequenceBarrier(OrderedSequenceBarrier&&) = delete;
-  OrderedSequenceBarrier& operator=(const OrderedSequenceBarrier&) = delete;
-  OrderedSequenceBarrier& operator=(OrderedSequenceBarrier&&) = delete;
+  OrderedSequenceBarrier(const OrderedSequenceBarrier &) = delete;
+  OrderedSequenceBarrier(OrderedSequenceBarrier &&) = delete;
+  OrderedSequenceBarrier &operator=(const OrderedSequenceBarrier &) = delete;
+  OrderedSequenceBarrier &operator=(OrderedSequenceBarrier &&) = delete;
   ~OrderedSequenceBarrier() = default;
 
   CUTLASS_DEVICE
-  OrderedSequenceBarrier(SharedStorage& storage, Params const& params) :
-      params_(params),
-      barrier_ptr_(&storage.barrier_[0][0]),
-      // Group 0 - starts with an opposite phase
-      stage_({0, params.group_id == 0, 0}) {
+  OrderedSequenceBarrier(SharedStorage &storage, Params const &params)
+      : params_(params), barrier_ptr_(&storage.barrier_[0][0]),
+        // Group 0 - starts with an opposite phase
+        stage_({0, params.group_id == 0, 0}) {
     int warp_idx = canonical_warp_idx();
     int lane_predicate = cute::elect_one_sync();
 
@@ -1093,18 +1117,15 @@ public:
   }
 
   CUTLASS_DEVICE
-  void advance() {
-    ++stage_;
-  }
+  void advance() { ++stage_; }
 
 private:
-
   CUTLASS_DEVICE
-  Barrier& get_barrier_for_current_stage(int group_id) {
+  Barrier &get_barrier_for_current_stage(int group_id) {
     return barrier_ptr_[stage_.index() * Length + group_id];
   }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // end namespace cutlass
+} // end namespace cutlass

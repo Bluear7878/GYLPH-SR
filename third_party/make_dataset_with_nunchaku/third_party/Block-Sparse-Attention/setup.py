@@ -1,30 +1,23 @@
 # Copyright (c) 2023, Tri Dao.
 # Adapted from https://github.com/Dao-AILab/flash-attention/blob/main/setup.py
 
-import sys
-import warnings
-import os
-import re
 import ast
-from pathlib import Path
-from packaging.version import parse, Version
+import os
 import platform
-
-from setuptools import setup, find_packages
+import re
 import subprocess
-
-import urllib.request
+import sys
 import urllib.error
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+import urllib.request
+import warnings
+from pathlib import Path
 
 import torch
-from torch.utils.cpp_extension import (
-    BuildExtension,
-    CppExtension,
-    CUDAExtension,
-    CUDA_HOME,
-)
-
+from packaging.version import Version, parse
+from setuptools import find_packages, setup
+from torch.utils.cpp_extension import (CUDA_HOME, BuildExtension, CppExtension,
+                                       CUDAExtension)
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -35,9 +28,7 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 
 PACKAGE_NAME = "block_sparse_attn"
 
-BASE_WHEEL_URL = (
-    "https://github.com/Dao-AILab/flash-attention/releases/download/{tag_name}/{wheel_name}"
-)
+BASE_WHEEL_URL = "https://github.com/Dao-AILab/flash-attention/releases/download/{tag_name}/{wheel_name}"
 
 # FORCE_BUILD: Force a fresh build locally, instead of attempting to find prebuilt wheels
 # SKIP_CUDA_BUILD: Intended to allow CI to use a simple `python setup.py sdist` run to copy over raw files, without any cuda compilation
@@ -63,7 +54,9 @@ def get_platform():
 
 
 def get_cuda_bare_metal_version(cuda_dir):
-    raw_output = subprocess.check_output([cuda_dir + "/bin/nvcc", "-V"], universal_newlines=True)
+    raw_output = subprocess.check_output(
+        [cuda_dir + "/bin/nvcc", "-V"], universal_newlines=True
+    )
     output = raw_output.split()
     release_idx = output.index("release") + 1
     bare_metal_version = parse(output[release_idx].split(",")[0])
@@ -103,7 +96,9 @@ if not SKIP_CUDA_BUILD:
     # See https://github.com/pytorch/pytorch/pull/70650
     generator_flag = []
     torch_dir = torch.__path__[0]
-    if os.path.exists(os.path.join(torch_dir, "include", "ATen", "CUDAGeneratorImpl.h")):
+    if os.path.exists(
+        os.path.join(torch_dir, "include", "ATen", "CUDAGeneratorImpl.h")
+    ):
         generator_flag = ["-DOLD_GENERATOR_PATH"]
 
     check_if_cuda_home_none("block_sparse_attn")
@@ -190,7 +185,6 @@ if not SKIP_CUDA_BUILD:
                 "csrc/block_sparse_attn/src/flash_fwd_block_hdim64_bf16_sm80.cu",
                 "csrc/block_sparse_attn/src/flash_fwd_block_hdim128_fp16_sm80.cu",
                 "csrc/block_sparse_attn/src/flash_fwd_block_hdim128_bf16_sm80.cu",
-                
                 "csrc/block_sparse_attn/src/flash_bwd_block_hdim32_fp16_sm80.cu",
                 "csrc/block_sparse_attn/src/flash_bwd_block_hdim32_bf16_sm80.cu",
                 "csrc/block_sparse_attn/src/flash_bwd_block_hdim64_fp16_sm80.cu",
@@ -249,7 +243,9 @@ def get_wheel_url():
     torch_version_raw = parse(torch.__version__)
     # For CUDA 11, we only compile for CUDA 11.8, and for CUDA 12 we only compile for CUDA 12.2
     # to save CI time. Minor versions should be compatible.
-    torch_cuda_version = parse("11.8") if torch_cuda_version.major == 11 else parse("12.2")
+    torch_cuda_version = (
+        parse("11.8") if torch_cuda_version.major == 11 else parse("12.2")
+    )
     python_version = f"cp{sys.version_info.major}{sys.version_info.minor}"
     platform_name = get_platform()
     flash_version = get_package_version()
@@ -260,7 +256,9 @@ def get_wheel_url():
 
     # Determine wheel URL based on CUDA version, torch version, python version and OS
     wheel_filename = f"{PACKAGE_NAME}-{flash_version}+cu{cuda_version}torch{torch_version}cxx11abi{cxx11_abi}-{python_version}-{python_version}-{platform_name}.whl"
-    wheel_url = BASE_WHEEL_URL.format(tag_name=f"v{flash_version}", wheel_name=wheel_filename)
+    wheel_url = BASE_WHEEL_URL.format(
+        tag_name=f"v{flash_version}", wheel_name=wheel_filename
+    )
     return wheel_url, wheel_filename
 
 
@@ -326,11 +324,13 @@ setup(
         "Operating System :: Unix",
     ],
     ext_modules=ext_modules,
-    cmdclass={"bdist_wheel": CachedWheelsCommand, "build_ext": BuildExtension}
-    if ext_modules
-    else {
-        "bdist_wheel": CachedWheelsCommand,
-    },
+    cmdclass=(
+        {"bdist_wheel": CachedWheelsCommand, "build_ext": BuildExtension}
+        if ext_modules
+        else {
+            "bdist_wheel": CachedWheelsCommand,
+        }
+    ),
     python_requires=">=3.7",
     install_requires=[
         "torch",

@@ -1,6 +1,6 @@
 #include <iostream>
-#include <string_view>
 #include <nlohmann/json.hpp>
+#include <string_view>
 
 using namespace std::string_view_literals;
 using json = nlohmann::json;
@@ -11,8 +11,8 @@ int main()
     json j_object = {{"one", 1}, {"two", 2}};
 
     // call find
-    auto it_two = j_object.find("two"sv);
-    auto it_three = j_object.find("three"sv);
+    auto it_two = j_object.find("two" sv);
+    auto it_three = j_object.find("three" sv);
 
     // print values
     std::cout << std::boolalpha;

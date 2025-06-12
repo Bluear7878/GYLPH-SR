@@ -6,7 +6,7 @@
 
 Implicit GEMM is the formulation of a convolution operation as a GEMM (generalized matrix-matrix
 product). Convolution takes an activation tensor and applies a sliding filter on it to produce an
-output tensor. 
+output tensor.
 
 ## Introduction
 
@@ -15,7 +15,6 @@ This release of CUTLASS contains several artifacts related to convolution.
 - [**Implicit GEMM Algorithm**](implicit_gemm_convolution.md#implicit-gemm-algorithm)
 - [**CUTLASS Convolution Implementation**](implicit_gemm_convolution.md#cutlass-convolution-implementation)
 - [**Convolution Examples**](implicit_gemm_convolution.md#convolution-example)
-
 
 # Implicit GEMM Algorithm
 
@@ -36,18 +35,19 @@ the existing warp-level GEMM components accumulate the result of
 convolution and update the output tensor.
 
 This section describes the structure of an efficient Implicit GEMM Convolution CUDA kernel
-for Turing Tensor Cores. 
+for Turing Tensor Cores.
 
 ## Mapping Convolution to GEMM
 
 The forward convolutional layer computes an output tensor _y = conv(x, w)_ where x(NHWC), w(KRSC), and y(NPQK)
-are 4-D tensors. 
+are 4-D tensors.
 
 This computation may be described by the following analytic function.
 
 ```
 y[n, p, q, k] = sum_c(sum_r(sum_s( x[n, f(p, r), g(q, s), c] * w[k, r, s, c] )))
 ```
+
 where functions _f_ and _g_ are defined as follows.
 
 ```
@@ -55,7 +55,7 @@ f(p, r) = p * stride_h + R - r - 1 + pad_h
 g(q, s) = q * stride_w + S - s - 1 + pad_w
 ```
 
-A [host](/tools/util/include/cutlass/util/reference/host/convolution.h) and [device](/tools/util/include/cutlass/util/reference/device/convolution.h) 
+A [host](/tools/util/include/cutlass/util/reference/host/convolution.h) and [device](/tools/util/include/cutlass/util/reference/device/convolution.h)
 reference implementation are provided in the CUTLASS Utilities.
 
 This computation may be mapped to the elements of a matrix product as follows.
@@ -63,23 +63,29 @@ This computation may be mapped to the elements of a matrix product as follows.
 ```
 C = gemm(A, B)
 ```
+
 where
+
 - A is a row-major matrix of extent _NHW_-by-_RSC_ containing activations
 - B is a column-major matrix of extent _RSC_-by-_K_ containing filters
 - C is a row-major matrix of extent _NPQ_-by-_K_ containing the output
 
 Each element of the output matrix _Cij_ corresponds to an element in the output tensor y[n, p, q, k] according to
 the following relation.
+
 ```
 y[n, p, q, k] = Cij
 ```
+
 where
+
 ```
 i = q + Q * (p + P * n)
 j = k
 ```
 
 These relations may be inverted as follows.
+
 ```
 k = j
 
@@ -96,7 +102,9 @@ GEMM _K_ dimension (not to be confused with the filter tensor dimension _K_) by 
 ```
 gemm_k = s + S * (r + R * c)
 ```
+
 and inverse
+
 ```
 c = gemm_k / (RS)
 residual = gemm_k % (RS)
@@ -106,6 +114,7 @@ s = residual % S
 ```
 
 Given these equations, a GEMM triple loop nest could be augmented with tensor indexing as follows.
+
 ```c++
 int GEMM_M = N * P * Q;
 int GEMM_N = K;
@@ -145,14 +154,14 @@ for (int gemm_i = 0; gemm_i < GEMM_M; ++gemm_i) {
   }
 }
 ```
-The [CUTLASS GEMM implementation](/media/docs/efficient_gemm.md) explicitly iterates over tiles. Consequently, 
+
+The [CUTLASS GEMM implementation](/media/docs/efficient_gemm.md) explicitly iterates over tiles. Consequently,
 a tile iterator could be implemented to compute these functions analytically and load the appropriate
 elements. However, the resulting modulo arithmetic would be computationally intensive, and overhead would
-limit performance of a GEMM kernel targeting Turing Tensor Cores. 
+limit performance of a GEMM kernel targeting Turing Tensor Cores.
 
 The following section describes how an efficient implementation may be implemented within the structure of
 a hierarchical GEMM kernel targeting Tensor Cores.
-
 
 # CUTLASS Convolution Implementation
 
@@ -175,9 +184,9 @@ operation is defined as follows.
 ```c++
 /// Define an Implicit GEMM convolution forward propagation (fprop) kernel
 using Conv2dFpropKernel = typename cutlass::conv::kernel::DefaultConv2dFprop<
-  ElementInputA,                                          // data type of element a (mapped to activation for fprop)                         
+  ElementInputA,                                          // data type of element a (mapped to activation for fprop)
   LayoutInputA,                                           // layout of element a (mapped to activation for fprop)
-  ElementInputB,                                          // data type of element b (mapped to filters for fprop)  
+  ElementInputB,                                          // data type of element b (mapped to filters for fprop)
   LayoutInputB,                                           // layout of element b (mapped to filters for fprop)
   ElementC,                                               // data type of element c (mapped to output for fprop)
   LayoutC,                                                // layout of element c (mapped to output for fprop)
@@ -187,11 +196,11 @@ using Conv2dFpropKernel = typename cutlass::conv::kernel::DefaultConv2dFprop<
   ThreadblockShape,                                       // shape of threadblock tile
   WarpShape,                                              // shape of warp-level GEMM tile
   InstructionShape,                                       // shape of target math instruction
-  EpilogueOp,                                             // epilogue operator 
+  EpilogueOp,                                             // epilogue operator
   SwizzleThreadBlock,                                     // optional function to reorder threadblocks for locality
   NumStages,                                              // number of pipeline stages in threadblock-scoped GEMM
   cutlass::arch::OpMultiplyAddSaturate,                   // math operation on data of element a and b
-  cutlass::conv::IteratorAlgorithm::kOptimized            // global memory iterator algorithm  
+  cutlass::conv::IteratorAlgorithm::kOptimized            // global memory iterator algorithm
 >::Kernel
 ```
 
@@ -201,9 +210,9 @@ the following concrete data types, layouts, and tile shapes.
 ```c++
 /// Define an Implicit GEMM convolution forward propagation (fprop) kernel
 using Conv2dFpropKernel = typename cutlass::conv::kernel::DefaultConv2dFprop<
-  cutlass::int4b_t,                                    // data type of element a (mapped to activation for fprop)                         
+  cutlass::int4b_t,                                    // data type of element a (mapped to activation for fprop)
   cutlass::layout::TensorNHWC,                         // layout of element a (mapped to activation for fprop)
-  cutlass::int4b_t,                                    // data type of element b (mapped to filters for fprop)  
+  cutlass::int4b_t,                                    // data type of element b (mapped to filters for fprop)
   cutlass::layout::TensorNHWC,                         // layout of element b (mapped to filters for fprop)
   int32_t,                                             // data type of element c (mapped to output for fprop)
   cutlass::layout::TensorNHWC,                         // layout of element c (mapped to output for fprop)
@@ -219,23 +228,22 @@ using Conv2dFpropKernel = typename cutlass::conv::kernel::DefaultConv2dFprop<
                                                        // memory access. This becomes the vector width of
                                                        // math instructions in the epilogue too.
     int32_t,                                           // Data type of accumulator
-    float>;    ,                                       // epilogue operator 
+    float>;    ,                                       // epilogue operator
   SwizzleThreadBlock,                                  // optional function to reorder threadblocks for locality
   2,                                                   // number of pipeline stages in threadblock-scoped GEMM
   cutlass::arch::OpMultiplyAddSaturate,                // math operation on data of element a and b
-  cutlass::conv::IteratorAlgorithm::kOptimized         // global memory iterator algorithm  
+  cutlass::conv::IteratorAlgorithm::kOptimized         // global memory iterator algorithm
 >::Kernel
 ```
 
-That is, this computes 2D convolutional forward propagation with 4-bit integer inputs and outputs (`cutlass::int4b_t`). 
+That is, this computes 2D convolutional forward propagation with 4-bit integer inputs and outputs (`cutlass::int4b_t`).
 Internal accumulation is performed using 32-bit integers (`int32_t`), and an elementwise linear combination operation
 is performed on the output in single-precision floating point (`float`).
 
-The threadblock and warp-level tile shapes refer to the hierarchically blocked GEMM computation 
+The threadblock and warp-level tile shapes refer to the hierarchically blocked GEMM computation
 [described here](/media/docs/gemm_api.md). Larger tiles achieve greater reuse of data loaded through shared memory
 but launch fewer CTAs and may not fully occupy the GPU for small problem sizes. Smaller tile configurations achieve
 lower peak utilizations but may better match the number of SMs within the GPU for real-world workloads.
-
 
 ## Launching the convolution
 
@@ -252,7 +260,7 @@ cutlass::conv::Mode mode = cutlass::conv::Mode::kCrossCorrelation;
 // Split K dimension into 1 partitions
 int split_k_slices = 1;
 
-cutlass::conv::Conv2dProblemSize problem_size(      
+cutlass::conv::Conv2dProblemSize problem_size(
     options.input_size,
     options.filter_size,
     options.padding,
@@ -272,7 +280,7 @@ typename ImplicitGemm::Arguments arguments{
 };
 ```
 
-The `mode` flag indicates whether to compute cross correlation or convolution. The arguments 
+The `mode` flag indicates whether to compute cross correlation or convolution. The arguments
 `input_size`, `filter_size`, `padding`, `conv_stride`, and `dilation` specify the dimensions of the
 input and output tensors and characterize the problem size.
 
@@ -323,7 +331,7 @@ The example demonstrates how the input and output tensors may be written to a fi
 ```c++
   std::ofstream output_workspace(ss.str());
 
-  output_workspace 
+  output_workspace
     << "Input = \n" << tensor_a.host_view() << "\n\n"
     << "Filters = \n" << tensor_b.host_view() << "\n\n";
 
@@ -333,24 +341,25 @@ The example demonstrates how the input and output tensors may be written to a fi
   output_workspace << "Computed = \n" << tensor_c.host_view() << std::endl;
 ```
 
-
 ## CUTLASS Components
 
 CUTLASS defines the following CUDA C++ templates to implement Implicit GEMM Convolution which are described in greater detail in subsequent sections.
 
 **Activations tile iterators** load the activations tile into registers. Two implementations are provided:
+
 - [conv2d_fprop_activation_tile_access_iterator_analytic.h](/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_analytic.h) computes pointer deltas and masks analytically
-- [conv2d_fprop_activation_tile_access_iterator_optimized.h](/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_optimized.h) optimizes iterating over global memory and 
-creating GEMM-A tile in shared memory.
+- [conv2d_fprop_activation_tile_access_iterator_optimized.h](/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_optimized.h) optimizes iterating over global memory and
+  creating GEMM-A tile in shared memory.
 
 **Filter tile iterators** load filters into registers. Similarly, two implementations are provided:
+
 - [conv2d_fprop_filter_tile_access_iterator_analytic.h](/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_analytic.h) computes pointer deltas and masks analytically
-- [conv2d_fprop_filter_tile_access_iterator_optimized.h](/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_optimized.h) optimizes iterating over global memory and 
-creating GEMM-B tile in shared memory.
+- [conv2d_fprop_filter_tile_access_iterator_optimized.h](/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_optimized.h) optimizes iterating over global memory and
+  creating GEMM-B tile in shared memory.
 
 The improvements covered by optimized iterators are:
 
-a. Precomputing kernel-invariant pointer deltas on the host 
+a. Precomputing kernel-invariant pointer deltas on the host
 b. Computing cta-invariant mask predicates on device-side iterator ctors
 c. Use of [fast divmod](/include/cutlass/fast_math.h) to map GEMM dimensions to convolution tensors.
 
@@ -358,13 +367,14 @@ For example, an _optimized_ activation iterator uses fast divmod to map GEMM _M_
 
 **Pipelined mainloop** loads threadblock-scoped tiles from global memory into shared memory and then applies
 CUTLASS warp-level GEMM operations to load from Shared Memory and issue instructions to Turing Tensor Cores.
+
 - [mma_pipelined.h](/include/cutlass/conv/threadblock/implicit_gemm_pipelined.h)
 
 Operations for storing to shared memory and performing warp-wide matrix multiply operations using
 Turing Tensor Cores are applied directly from the CUTLASS GEMM components. These include the
 following components.
 
-**Regular Tile Iterator** implemented in 
+**Regular Tile Iterator** implemented in
 [transform::threadblock::RegularTileIterator](/include/cutlass/transform/threadblock/regular_tile_iterator.h)
 stores register-backed fragments to Shared Memory in permuted layouts.
 
@@ -380,29 +390,29 @@ the output tensor. It is implemented in [epilogue::threadblock::Epilogue](/inclu
 The Implicit GEMM Convolution algorithm partitions the GEMM _K_ dimension (of extent _CRS_) into
 threadblock tiles and assigning each threadblock tile to one filter position and an interval
 of channels. After iterating over all filter positions, the convolution algorithm advances to the
-next interval of channels and proceeds from filter `r=0, s=0`. 
+next interval of channels and proceeds from filter `r=0, s=0`.
 
-The matrix product of one threadblock tile is computed per iteration of 
+The matrix product of one threadblock tile is computed per iteration of
 the mainloop as described in the [CUTLASS GEMM implementation](/media/docs/efficient_gemm.md). To
 summarize, the threadblock tile of activations and filters are loaded from tensors in global memory
 and stored to shared memory. Each thread within the threadblock loads one or more vectors and
-collectively span the entire tile. 
+collectively span the entire tile.
 
 The following figure illustrates one particular iteration of the Implicit GEMM mainloop. Each
 thread within the threadblock is mapped to several vectors of elements in the Activations and
 Filters tensors. Each index in the GEMM _M_ dimension corresponds to a unique _(N,P,Q)_
-index of the output tensor, and pointers may be computed based on this as well as 
+index of the output tensor, and pointers may be computed based on this as well as
 filter position _(r,s)_.
 
 ![ALT](/media/images/conv2d-fprop-int4.png "Convolution Forward Propagation on INT4 data.")
 
 The CUTLASS component that embodies this functionality is [Conv2dFpropFilterTileAccessIteratorAnalytic](/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_analytic.h).
-Its constructor computes the mapping of GEMM _M_ to _(N, P, Q)_, the `at()` method maps the linear offset into the Activations 
-tensor for each memory access the thread is to perform. Additionally, the method `valid()` computes the valided of the access 
-for each filter position and for each memory access to indicate whether the memory access will be within the bounds of the 
-tensor or out of bounds. 
+Its constructor computes the mapping of GEMM _M_ to _(N, P, Q)_, the `at()` method maps the linear offset into the Activations
+tensor for each memory access the thread is to perform. Additionally, the method `valid()` computes the valided of the access
+for each filter position and for each memory access to indicate whether the memory access will be within the bounds of the
+tensor or out of bounds.
 
-`operator++()` iterates over memory accesses performed by a thread in both contiguous and strided dimension. 
+`operator++()` iterates over memory accesses performed by a thread in both contiguous and strided dimension.
 
 ```c++
 // cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_analytic.h
@@ -414,23 +424,24 @@ Conv2dFpropActivationTileAccessIteratorAnalytic &operator++() {
     return *this;
   }
   iteration_contiguous_ = 0;
-  
+
   ++iteration_strided_;
   if (iteration_strided_ < ThreadMap::Iterations::kStrided) {
     return *this;
   }
   iteration_strided_ = 0;
- 
+
   return *this;
 }
 ```
 
-After all accesses have been visited for the current threadblock tile, `advance()` updates the pointers to next tile. 
+After all accesses have been visited for the current threadblock tile, `advance()` updates the pointers to next tile.
 Offsets added to each pointer follows the traversal of filter positions, performing one of the
 following:
+
 - advance from filter position _(r, s, c)_ to filter position _(r, s+1, c)_
 - advance from filter position _(r, S-1, c)_ to filter position _(r+1, 0, c)_
-- advance from filter position _(R-1, S-1, c)_ to filter position _(0, 0, c+32)_ 
+- advance from filter position _(R-1, S-1, c)_ to filter position _(0, 0, c+32)_
 
 This logic within method `advance()`'s body computes the above three updates for the activation GEMM-A tile.
 
@@ -445,13 +456,13 @@ void advance() {
     return;
   }
   filter_s_ = 0;
-  
+
   ++filter_r_;
   if (filter_r_ < problem_size_.R) {
     return;
   }
   filter_r_ = 0;
-  
+
   filter_c_ += Shape::kRow * problem_size_.split_k_slices;
 }
 ```
@@ -459,7 +470,7 @@ void advance() {
 Similar logic holds for [Conv2dFpropFilterTileAccessIteratorAnalytic](/include/cutlass/conv/threadblock/conv2d_fprop_filter_tile_access_iterator_analytic.h).
 
 To reduce computational overhead in the mainloop body, the pointer offsets may be precomputed
-in host code and provided to the CUDA kernel as a lookup table in its `Params` structure. 
+in host code and provided to the CUDA kernel as a lookup table in its `Params` structure.
 As shown in [Conv2dFpropFilterTileAccessIteratorOptimized](/include/cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_optimized.h),
 the logic to compute offsets from filter position has been extracted to the `Params` constructor.
 
@@ -492,16 +503,16 @@ This allows only a simple lookup from the _delta table_ performed in device code
 ```c++
 // cutlass/conv/threadblock/conv2d_fprop_activation_tile_access_iterator_optimized.h
 CUTLASS_HOST_DEVICE
-void advance() { 
+void advance() {
 
   int next_idx = 0;
- 
+
   // moves to the next tile
   ++filter_s_;
   if (filter_s_ == problem_size_.S) {
     filter_s_ = 0;
     ++filter_r_;
- 
+
     if (filter_r_ < problem_size_.R) {
       next_idx = 1;
     }
@@ -510,10 +521,10 @@ void advance() {
       next_idx = 2;
     }
   }
-  
+
   add_byte_offset_(params_.inc_next[next_idx]); // in addition to Conv2dFpropActivationTileAccessIteratorAnalytic::advance()
 
-  if (next_idx == 2) {  
+  if (next_idx == 2) {
     filter_c_ += params_.filter_c_delta;
   }
 }
@@ -525,12 +536,12 @@ void advance() {
 Turing Tensor Cores compute matrix multiply-accumulate operations efficiently by sharing data among all
 threads within a warp. The following operations are supported.
 
-| **Shape** | **A**   | **B**   | **C**   |
+| **Shape** | **A** | **B** | **C** |
 |-----------|---------|---------|---------|
-| 8x8x32    | int4b_t | int4b_t | int32_t |
-| 8x8x16    | int8b_t | int8b_t | int32_t |
-| 16x8x8    | half    | half    | half    |
-| 16x8x8    | half    | half    | float   |
+| 8x8x32 | int4b_t | int4b_t | int32_t |
+| 8x8x16 | int8b_t | int8b_t | int32_t |
+| 16x8x8 | half | half | half |
+| 16x8x8 | half | half | float |
 
 Functionally, the Turing 8x8x32 matrix multiply operation distributes the _A_, _B_, and _C_ matrix across 32
 threads within a warp according to the following illustration.
@@ -539,7 +550,7 @@ threads within a warp according to the following illustration.
 
 This Tensor Core operation is accessible to the CUDA programmer via the PTX instruction
 [`mma.sync`](https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-fragment-mma-8832).
-CUTLASS wraps inline PTX with device-side intrinsics defined in [`cutlass/arch/mma_sm75.h`](/include/cutlass/arch/mma_sm75.h) 
+CUTLASS wraps inline PTX with device-side intrinsics defined in [`cutlass/arch/mma_sm75.h`](/include/cutlass/arch/mma_sm75.h)
 as in the following example.
 
 ```c++
@@ -556,14 +567,14 @@ asm volatile(
 ```
 
 To load data efficiently from Shared Memory into registers with the distribution among
-warps matching the above, the Turing GPU architecture introduces 
+warps matching the above, the Turing GPU architecture introduces
 [`ldmatrix`](https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions-ldmatrix).
 `ldmatrix` is the ultimate warp-cooperative instruction, as all threads contribute addresses to up to 32 row vectors of
 size 128-bits in length. These rows are fetched from Shared Memory and then distributed among groups of four threads
 per row.
 
 The arrangement of SMEM pointers and destination registers within threads is illustrated as follows. Thread 0 is highlighted
-in the illustration to emphasize the mapping. 
+in the illustration to emphasize the mapping.
 
 ![ALT](/media/images/ldmatrix-8x128bx4.png "Turing ldmatrix PTX instruction")
 
@@ -586,7 +597,7 @@ To ensure this data movement is efficient, care must be taken to ensure bank con
 uses a permuted Shared Memory layout to avoid bank conflicts when storing to Shared Memory and to efficiently
 load from Shared Memory using `ldmatrix`. The following figure illustrates the thread mapping used for
 the loading the activations and filters threadblock tiles from global memory and the permuted layout in
-Shared Memory. 
+Shared Memory.
 
 ![ALT](/media/images/tensor-op-permuted-smem-layout-TN.png "Shared Memory layout used for Turing Tensor Cores")
 
@@ -595,10 +606,11 @@ loading one 128-bit vector. The tile in global memory could correspond either to
 or filters and is assumed to be 'strip-mined' with four threads loading consecutive channels.
 
 Shared Memory is visualized as a 'row-major' matrix with eight columns representing
-the eight 128-bit banks.  
-As described in the CUTLASS GTC 2019 presentation [slides](https://developer.download.nvidia.com/video/gputechconf/gtc/2019/presentation/s9593-cutensor-high-performance-tensor-operations-in-cuda-v2.pdf), 
+the eight 128-bit banks.
+As described in the CUTLASS GTC 2019 presentation [slides](https://developer.download.nvidia.com/video/gputechconf/gtc/2019/presentation/s9593-cutensor-high-performance-tensor-operations-in-cuda-v2.pdf),
 [recording](https://developer.nvidia.com/gtc/2019/video/S9593), an access to Shared Memory will be conflict-free if
 the following conditions are satisfied across each warp:
+
 - {T0, T1, .., T7} do not access the same 128-bit bank
 - {T8, T9, .., T15} do not access the same 128-bit bank
 - {T16, T17, .., T23} do not access the same 128-bit bank
@@ -614,9 +626,9 @@ the vectors and applies an XOR operation on the column index of each thread's po
 This transformation on the layout will be instrumental in reading slices of data from Shared Memory
 to compute the warp-level matrix multiply using Tensor Cores.
 
-The following figure shows how the first sixteen threads participating in an `ldmatrix` instruction 
-logically map to the c=0..31 slice of a matrix in Shared Memory. This slice is known as a "k-group" 
-within the code because it corresponds to the same K-index of a warp-level matrix multiply. 
+The following figure shows how the first sixteen threads participating in an `ldmatrix` instruction
+logically map to the c=0..31 slice of a matrix in Shared Memory. This slice is known as a "k-group"
+within the code because it corresponds to the same K-index of a warp-level matrix multiply.
 
 ![ALT](/media/images/tensor-op-permuted-smem-layout-TN-k0.png "Load kgroup=0 from Shared Memory using ldmatrix")
 
@@ -626,6 +638,7 @@ banks, as do _T8 ... T15_. and beyond.
 
 To advance to the next "k-group" within Shared Memory, pointers are updated using an XOR operation according to
 the following sequence:
+
 - **^1** advances from _k=0_ to _k=1_
 - **^3** advances from _k=1_ to _k=2_
 - **^1** advances from _k=2_ to _k=3_
@@ -642,11 +655,12 @@ loading slices of data from permuted Shared Memory and issuing operations to Ten
 After the mainloop terminates, the accumulator tile of the warp-level GEMM stores a warp's contribution to the output
 tensor. However, the distribution of data among threads within the threadblock is specialized for efficient matrix multiply-accumulate
 operations using Tensor Cores and is not conducive to efficient, coalesced operations to Global Memory. A data rearrangement is
-needed. 
+needed.
 
 The **Epilogue** is the component for exchanging accumulator elements through Shared Memory, loading slices of the output
-matrix or tensor, applying an elementwise operation such as linear scaling or bias, and storing the result to the output tensor. 
+matrix or tensor, applying an elementwise operation such as linear scaling or bias, and storing the result to the output tensor.
 CUTLASS structures this as several components:
+
 - [cutlass::epilogue::threadblock::Epilogue](/include/cutlass/epilogue/threadblock/epilogue.h) - the top-level component for looping over the entire threadblock tile
 - [cutlass::epilogue::warp::TileIteratorTensorOp](/include/cutlass/epilogue/warp/tile_iterator_tensor_op.h) - a specialized component for storing accumulators for Tensor Core to Shared Memory
 - [cutlass::epilogue::threadblock::SharedLoadIterator](/include/cutlass/epilogue/threadblock/shared_load_iterator.h) - a component for loading elements from a row-major arrangement in Shared Memory
@@ -663,14 +677,16 @@ b. showcase instantiation of use of these templates in device code, and
 c. assert functional correctness.
 
 **Convolution unit tests**
+
 - Device-wide convolution operator: [conv2d_fprop_implicit_gemm_s4nhwc_s4nhwc_s32nhwc_tensor_op_s32_sm75.cu](/test/unit/conv/device/conv2d_fprop_implicit_gemm_s4nhwc_s4nhwc_s32nhwc_tensor_op_s32_sm75.cu)
 
 **GEMM unit tests**
+
 - Warp-scoped matrix multiply for Turing Tensor Cores: [gemm_sm75.cu](/test/unit/gemm/warp/gemm_sm75.cu)
 
 **Epilogue unit tests**
-- Epilogue for Turing Tensor Cores: [epilogue_tensor_op.cu](/test/unit/epilogue/threadblock/epilogue_tensor_op.cu)
 
+- Epilogue for Turing Tensor Cores: [epilogue_tensor_op.cu](/test/unit/epilogue/threadblock/epilogue_tensor_op.cu)
 
 # Convolution Example
 
@@ -680,9 +696,8 @@ of Implicit GEMM Convolution.
 ## Building and Running the Example
 
 Example `09_turing_tensorop_conv2dfprop` computes a forward convolutional layer in which inputs and
-outputs are 4-b integers. The example source is visible in 
+outputs are 4-b integers. The example source is visible in
 [examples/09_turing_tensorop_conv2dfprop/turing_tensorop_conv2dfprop.cu](/examples/09_turing_tensorop_conv2dfprop/turing_tensorop_conv2dfprop.cu).
-
 
 Before building the example, first perform the prerequisite steps for building any CUTLASS component [described here](/media/docs/quickstart.md).
 Compute capability 7.5 refers to the Turing architecture, and this work requires CUDA 10.2 Toolkit or later to target
@@ -695,10 +710,11 @@ $ cmake .. -DCUTLASS_NVCC_ARCHS=75
 ```
 
 To build the example, execute `make 09_turing_tensorop_conv2dfprop` from the build directory.
+
 ```bash
 $ make 09_turing_tensorop_conv2dfprop
 
-$ ls examples/09_turing_tensorop_conv2dfprop 
+$ ls examples/09_turing_tensorop_conv2dfprop
 examples/09_turing_tensorop_conv2dfprop
 
 ```
@@ -708,6 +724,7 @@ initialize them to random values, and compute the result of a convolutional laye
 tensors may be saved to .csv files, and the CUTLASS host-side reference check may be executed to verify correctness.
 
 The complete usage statement is visible by running with `--help`:
+
 ```bash
 $ ./examples/09_turing_tensorop_conv2dfprop/09_turing_tensorop_conv2dfprop --help
 09_turing_tensorop_conv2dfprop example
@@ -757,7 +774,6 @@ build$ ./examples/09_turing_tensorop_conv2dfprop/09_turing_tensorop_conv2dfprop 
 ```
 
 Convolution can also be run by the CUTLASS Profiler.
-
 
 # Copyright
 

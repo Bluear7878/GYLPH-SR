@@ -36,20 +36,21 @@ Store node and implementations
 
 import ctypes
 
-from cutlass_library import DataType
-
 from cutlass.backend.c_types import tuple_factory
 from cutlass.backend.epilogue import dtype2ctype, to_ctype_value
-from cutlass.backend.evt.ir.node import NodeBase, ImplBase, NoOpImpl
+from cutlass.backend.evt.ir.node import ImplBase, NodeBase, NoOpImpl
 from cutlass.backend.evt.ir.tensor import Tensor
 from cutlass.backend.library import FloatRoundStyle, FunctionalOp
+from cutlass_library import DataType
 
 
 class StoreImplBase(ImplBase):
     """
     Base class for store node implementation
     """
+
     reserved_names = ["D"]
+
     def __init__(self, node) -> None:
         super().__init__(node)
         self.element = node.element
@@ -66,11 +67,10 @@ class StoreDImpl(StoreImplBase):
     def argument_type_d(self):
         stride_mnl = self.get_stride_mnl()
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
+
         class _Argument(ctypes.Structure):
-            _fields_ = [
-                ("ptr_D", ctypes.c_void_p),
-                ("stride_D", tuple_type)
-            ]
+            _fields_ = [("ptr_D", ctypes.c_void_p), ("stride_D", tuple_type)]
+
             def __init__(self, ptr: int) -> None:
                 self.ptr_D = ptr
                 self.stride_D = tuple_type(stride_mnl)
@@ -94,11 +94,10 @@ class AuxStoreImpl(StoreImplBase):
         stride_mnl = self.get_stride_mnl()
         name = self.name
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
+
         class _Argument(ctypes.Structure):
-            _fields_ = [
-                ("ptr_aux", ctypes.c_void_p),
-                ("dAux", tuple_type)
-            ]
+            _fields_ = [("ptr_aux", ctypes.c_void_p), ("dAux", tuple_type)]
+
             def __init__(self, kwargs) -> None:
                 ptr = kwargs[name]
                 self.ptr_aux = ptr
@@ -114,8 +113,12 @@ class AuxStoreImpl(StoreImplBase):
             return False
 
         strideMN = node.store_tensor.stride[-2:]
-        if (strideMN[0] == 1 and strideMN[1] != 0 or
-            strideMN[0] != 0 and strideMN[1] == 1 ):
+        if (
+            strideMN[0] == 1
+            and strideMN[1] != 0
+            or strideMN[0] != 0
+            and strideMN[1] == 1
+        ):
             return True
         else:
             return False
@@ -136,29 +139,29 @@ class ReductionImplBase(StoreImplBase):
         Return the reduction identity of the current reduce_fn
         """
         maxes = {
-            DataType.f32: (2 ** 31) - 1,
-            DataType.f16: (2 ** 15),
-            DataType.s32: (2 ** 31) - 1,
-            DataType.s8: (2 ** 7) - 1
+            DataType.f32: (2**31) - 1,
+            DataType.f16: (2**15),
+            DataType.s32: (2**31) - 1,
+            DataType.s8: (2**7) - 1,
         }
         mins = {
             DataType.f32: -maxes[DataType.f32],
             DataType.f16: -maxes[DataType.f16],
             DataType.s32: -maxes[DataType.s32],
-            DataType.s8: -maxes[DataType.s8]
+            DataType.s8: -maxes[DataType.s8],
         }
         if self.reg_reduce_fn == FunctionalOp.Maximum:
             if self.element_compute not in mins:
                 raise Exception(f"No min entry for data type {self.element_compute}")
             return to_ctype_value(mins[self.element_compute], self.element_compute)
         elif self.reg_reduce_fn == FunctionalOp.Multiplies:
-            return to_ctype_value(1., self.element_compute)
+            return to_ctype_value(1.0, self.element_compute)
         elif self.reg_reduce_fn == FunctionalOp.Minimum:
             if self.element_compute not in maxes:
                 raise Exception(f"No max entry for data type {self.element_compute}")
             return to_ctype_value(maxes[self.element_compute], self.element_compute)
         else:
-            return to_ctype_value(0., self.element_compute)
+            return to_ctype_value(0.0, self.element_compute)
 
     @property
     def argument_type(self):
@@ -168,12 +171,14 @@ class ReductionImplBase(StoreImplBase):
         tuple_type = tuple_factory(stride_mnl, self.stride_dtype)
         element_compute = self.element_compute
         reduce_identity = self.get_reduce_identity()
+
         class _Argument(ctypes.Structure):
             _fields_ = [
                 ("ptr", ctypes.c_void_p),
                 ("reduce_identity", dtype2ctype[element_compute]),
-                ("dMNL", tuple_type)
+                ("dMNL", tuple_type),
             ]
+
             def __init__(self, kwargs) -> None:
                 ptr = kwargs[name]
                 self.ptr = ptr
@@ -235,11 +240,16 @@ class StoreNode(NodeBase):
     """
     Store node
     """
+
     possible_impls = [
-        AuxStoreImpl, RowReductionImpl,
-        ColumnReductionImpl, ScalarReductionImpl,
-        NoOpImpl, StoreDImpl
+        AuxStoreImpl,
+        RowReductionImpl,
+        ColumnReductionImpl,
+        ScalarReductionImpl,
+        NoOpImpl,
+        StoreDImpl,
     ]
+
     def __init__(self, name: str) -> None:
         super().__init__(name)
         self.op = "store"
@@ -260,7 +270,7 @@ class StoreNode(NodeBase):
         """
         self._store_tensor = Tensor(**kwargs)
 
-    def type_propagation(self, input_node_metas: 'list[NodeBase]'):
+    def type_propagation(self, input_node_metas: "list[NodeBase]"):
         """
         The store nodes has element_output = element_input
         """
@@ -271,7 +281,7 @@ class StoreNode(NodeBase):
         assert len(input_node_metas) == 1, "Store node can only have one input node"
         self.element_output = input_node_metas[0].element_output
 
-    def broadcast_propagation(self, input_node_metas: 'list[NodeBase]'):
+    def broadcast_propagation(self, input_node_metas: "list[NodeBase]"):
         super().broadcast_propagation(input_node_metas)
         if self.is_output:
             self._store_tensor.broadcast(self.tensor.shape)

@@ -1,6 +1,6 @@
 #include <iostream>
 
-# define JSON_DIAGNOSTICS 1
+#define JSON_DIAGNOSTICS 1
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;

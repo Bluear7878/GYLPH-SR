@@ -32,4 +32,3 @@ cutlass_example_add_executable(
   29_3xtf32_complex_gemm
   29_3xtf32_complex_gemm.cu
   )
-

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -47,8 +48,7 @@ namespace device {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Gemm>
-struct TestbedSplitK : public Testbed<Gemm> {
+template <typename Gemm> struct TestbedSplitK : public Testbed<Gemm> {
 
   using Base = Testbed<Gemm>;
 
@@ -59,12 +59,11 @@ struct TestbedSplitK : public Testbed<Gemm> {
   //
 
   TestbedSplitK(
-    cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
-    cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
-    uint64_t seed_ = 2080
-  ):
-    Base(init_A_, init_B_, init_C_, seed_) { }
+      cutlass::Distribution::Kind init_A_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_B_ = cutlass::Distribution::Uniform,
+      cutlass::Distribution::Kind init_C_ = cutlass::Distribution::Uniform,
+      uint64_t seed_ = 2080)
+      : Base(init_A_, init_B_, init_C_, seed_) {}
 
   /// Returns true if the CUDA device is sufficient to execute the kernel.
   bool sufficient() const {
@@ -94,18 +93,17 @@ struct TestbedSplitK : public Testbed<Gemm> {
 
     return true;
   }
-  
+
   /// Executes one test
-  bool run(
-    cutlass::gemm::GemmCoord problem_size, 
-    int split_k_slices,
-    ElementCompute alpha = ElementCompute(1), 
-    ElementCompute beta = ElementCompute(0)) {
+  bool run(cutlass::gemm::GemmCoord problem_size, int split_k_slices,
+           ElementCompute alpha = ElementCompute(1),
+           ElementCompute beta = ElementCompute(0)) {
 
     // Waive test if insufficient CUDA device
     if (!sufficient()) {
       if (CUTLASS_TEST_UNIT_ENABLE_WARNINGS) {
-        std::cerr << "Test waived due to insufficient CUDA device." << std::endl;
+        std::cerr << "Test waived due to insufficient CUDA device."
+                  << std::endl;
       }
       return true;
     }
@@ -116,15 +114,13 @@ struct TestbedSplitK : public Testbed<Gemm> {
     // Initialize the GEMM operator
     //
 
-    typename Gemm::Arguments arguments{
-      problem_size,
-      this->tensor_A.device_ref(),
-      this->tensor_B.device_ref(),
-      this->tensor_C.device_ref(),
-      this->tensor_D.device_ref(),
-      {alpha, beta},
-      split_k_slices
-    };
+    typename Gemm::Arguments arguments{problem_size,
+                                       this->tensor_A.device_ref(),
+                                       this->tensor_B.device_ref(),
+                                       this->tensor_C.device_ref(),
+                                       this->tensor_D.device_ref(),
+                                       {alpha, beta},
+                                       split_k_slices};
 
     Gemm gemm_op;
 
@@ -154,29 +150,20 @@ struct TestbedSplitK : public Testbed<Gemm> {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Gemm>
-bool TestAllGemmSplitK() {
+template <typename Gemm> bool TestAllGemmSplitK() {
   bool passed = true;
 
-  cutlass::gemm::GemmCoord problem_sizes[] = {
-    {8, 8, 2048},
-    {8, 8, 2056},
-    {264, 72, 520},
-    {264, 520,  120},
-    {264, 520,  264}
-  };
+  cutlass::gemm::GemmCoord problem_sizes[] = {{8, 8, 2048},
+                                              {8, 8, 2056},
+                                              {264, 72, 520},
+                                              {264, 520, 120},
+                                              {264, 520, 264}};
 
-  int split_k_slices[] = {
-    1, 2, 4, 5, 7
-  };
+  int split_k_slices[] = {1, 2, 4, 5, 7};
 
-  double problem_alpha[] = {
-    0.5
-  };
+  double problem_alpha[] = {0.5};
 
-  double problem_beta[] = {
-    2.0
-  };
+  double problem_beta[] = {2.0};
 
   using Testbed = TestbedSplitK<Gemm>;
   using ElementCompute = typename Testbed::ElementCompute;
@@ -188,15 +175,12 @@ bool TestAllGemmSplitK() {
       for (double alpha : problem_alpha) {
         for (double beta : problem_beta) {
 
-          passed = testbed.run(
-            problem_size, 
-            split_k_count,
-            ElementCompute(alpha), 
-            ElementCompute(beta)
-          );
+          passed = testbed.run(problem_size, split_k_count,
+                               ElementCompute(alpha), ElementCompute(beta));
 
           if (!passed) {
-            std::cout << "Failed on size " << problem_size << " with split_k_count " << split_k_count << std::endl;
+            std::cout << "Failed on size " << problem_size
+                      << " with split_k_count " << split_k_count << std::endl;
             return false;
           }
         }

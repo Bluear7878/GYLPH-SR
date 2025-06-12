@@ -24,7 +24,7 @@ CUTLASS 3.0 has the following design goals, in no particular order.
 - Support for NVIDIA Hopper GPUs with great performance using
   features such as Tensor Cores, tensor memory accelerator, and thread block clusters.
 
-##  A new Conceptual GEMM Hierarchy
+## A new Conceptual GEMM Hierarchy
 
 CUTLASS 2.x decomposes the moving parts of a GEMM operation
 across a hierarchy that closely mirrors the organization of GPU
@@ -47,19 +47,19 @@ the architecture specific details.
 
 The new conceptual GEMM hierarchy is discussed in detail in the dedicated
 [CUTLASS 3.0 GEMM API documentation readme](/media/docs/gemm_api_3x.md),
-along with code examples of the core concepts and types. 
+along with code examples of the core concepts and types.
 
 ## Adoption of CuTe Layout and Tensors
 
 CUTLASS 3.0 introduces a new core library, CuTe, to describe and manipulate tensors of threads and data.
-CuTe is a collection of C++ CUDA template abstractions for defining and operating on hierarchically multidimensional layouts of threads and data. CuTe provides `Layout` and `Tensor` objects that compactly packages the type, shape, memory space, and layout of data, while performing the complicated indexing for the user. 
+CuTe is a collection of C++ CUDA template abstractions for defining and operating on hierarchically multidimensional layouts of threads and data. CuTe provides `Layout` and `Tensor` objects that compactly packages the type, shape, memory space, and layout of data, while performing the complicated indexing for the user.
 
 CUTLASS 3.0 adopts CuTe throughout the GEMM hierarchy in its templates, greatly simplifying the design,
 improving code composability, and readability. More documentation specific to CuTe can be found in its [dedicated documentation directory](/media/docs/cute/00_quickstart.md).
 
-![CuTe helps reduce named iterator types down to a single vocabulary type, `Layout`](/media/images/cutlass-reduction-in-named-iterators.png)
+![CuTe helps reduce named iterator types down to a single vocabulary type, ](/media/images/cutlass-reduction-in-named-iterators.png)
 
-Programming massively parallel systems with various layers of logical thread and data hierarchies is not a trivial task. 
+Programming massively parallel systems with various layers of logical thread and data hierarchies is not a trivial task.
 
 - `cute::Layout`s always maintain logical consistency of their coordinates,
   allowing us to check pre- and post-conditions at compile time for all static inner loops.
@@ -112,6 +112,6 @@ the GEMM hierarchy to manipulate the mapping between the two.
 CuTe layouts always maintain logical consistency, and for fully static layouts
 (such as in the core unrolled inner loops), provide
 compile time checks that break builds if this consistency is violated.
-In this way, CuTe reifies the thread-to-data-layout mapping, 
+In this way, CuTe reifies the thread-to-data-layout mapping,
 makes it easier to write code that is "correct by construction".
-If the code compiles, it's probably correct. 
+If the code compiles, it's probably correct.

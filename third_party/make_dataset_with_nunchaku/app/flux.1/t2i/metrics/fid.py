@@ -25,7 +25,9 @@ def get_dataset_features(
         desc=f"Extracting {dataset.config_name} features",
         total=(len(dataset) + batch_size - 1) // batch_size,
     ):
-        resized_images = [fn_resize(np.array(image.convert("RGB"))) for image in batch["image"]]
+        resized_images = [
+            fn_resize(np.array(image.convert("RGB"))) for image in batch["image"]
+        ]
         image_tensors = []
         for resized_image in resized_images:
             if resized_image.dtype == "uint8":
@@ -70,7 +72,11 @@ def get_fid_features(
         else:
             assert isinstance(dataset_or_folder, Dataset)
             np_feats = get_dataset_features(
-                dataset_or_folder, model=feat_model, mode=mode, batch_size=batch_size, device=device
+                dataset_or_folder,
+                model=feat_model,
+                mode=mode,
+                batch_size=batch_size,
+                device=device,
             )
 
         mu = np.mean(np_feats, axis=0)
@@ -98,15 +104,26 @@ def compute_fid(
         os.makedirs(".tmp", exist_ok=True)
 
         if isinstance(ref_dirpath_or_dataset, str):
-            sym_ref_dirpath = os.path.join(".tmp", f"ref-{hash(str(ref_dirpath_or_dataset))}-{timestamp}")
-            os.symlink(os.path.abspath(ref_dirpath_or_dataset), os.path.abspath(sym_ref_dirpath))
+            sym_ref_dirpath = os.path.join(
+                ".tmp", f"ref-{hash(str(ref_dirpath_or_dataset))}-{timestamp}"
+            )
+            os.symlink(
+                os.path.abspath(ref_dirpath_or_dataset),
+                os.path.abspath(sym_ref_dirpath),
+            )
             ref_dirpath_or_dataset = sym_ref_dirpath
 
-        sym_gen_dirpath = os.path.join(".tmp", f"gen-{hash(str(gen_dirpath))}-{timestamp}")
+        sym_gen_dirpath = os.path.join(
+            ".tmp", f"gen-{hash(str(gen_dirpath))}-{timestamp}"
+        )
         os.symlink(os.path.abspath(gen_dirpath), os.path.abspath(sym_gen_dirpath))
         gen_dirpath = sym_gen_dirpath
-    mu1, sigma1 = get_fid_features(dataset_or_folder=ref_dirpath_or_dataset, cache_path=ref_cache_path)
-    mu2, sigma2 = get_fid_features(dataset_or_folder=gen_dirpath, cache_path=gen_cache_path)
+    mu1, sigma1 = get_fid_features(
+        dataset_or_folder=ref_dirpath_or_dataset, cache_path=ref_cache_path
+    )
+    mu2, sigma2 = get_fid_features(
+        dataset_or_folder=gen_dirpath, cache_path=gen_cache_path
+    )
     fid_score = fid.frechet_distance(mu1, sigma1, mu2, sigma2)
     fid_score = float(fid_score)
     if use_symlink:

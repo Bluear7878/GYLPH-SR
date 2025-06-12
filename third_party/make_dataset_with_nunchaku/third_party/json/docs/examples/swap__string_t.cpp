@@ -6,7 +6,7 @@ using json = nlohmann::json;
 int main()
 {
     // create a JSON value
-    json value = { "the good", "the bad", "the ugly" };
+    json value = {"the good", "the bad", "the ugly"};
 
     // create string_t
     json::string_t string = "the fast";

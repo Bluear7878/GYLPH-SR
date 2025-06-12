@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -56,8 +57,7 @@ namespace device {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Gemm>
-struct MultistageTestbed {
+template <typename Gemm> struct MultistageTestbed {
 
   using ElementA = typename Gemm::ElementA;
   using ElementB = typename Gemm::ElementB;
@@ -93,7 +93,8 @@ struct MultistageTestbed {
       cutlass::reference::host::TensorFillRandomUniform(view, seed, scope,
                                                         -scope, 0);
     } else if (dist_kind == cutlass::Distribution::Gaussian) {
-      cutlass::reference::host::TensorFillRandomGaussian(view, seed, 0, 0.5, -1);
+      cutlass::reference::host::TensorFillRandomGaussian(view, seed, 0, 0.5,
+                                                         -1);
     } else if (dist_kind == cutlass::Distribution::Identity) {
       cutlass::reference::host::TensorFillIdentity(view);
     } else if (dist_kind == cutlass::Distribution::Sequential) {
@@ -141,10 +142,10 @@ struct MultistageTestbed {
            ElementCompute alpha = ElementCompute(1),
            ElementCompute beta = ElementCompute(0)) {
 
-		// Waives test if CUDA device is insufficient
-		if (!sufficient()) {
-			return true;
-		}
+    // Waives test if CUDA device is insufficient
+    if (!sufficient()) {
+      return true;
+    }
 
     //
     // Allocate the GEMM workspace
@@ -191,7 +192,8 @@ struct MultistageTestbed {
 
     if (status != cutlass::Status::kSuccess) {
       cudaError_t error = cudaGetLastError();
-      std::cerr << "This test is not supported: " << cudaGetErrorString(error) << "\n";
+      std::cerr << "This test is not supported: " << cudaGetErrorString(error)
+                << "\n";
       return true;
     }
 
@@ -214,9 +216,9 @@ struct MultistageTestbed {
         ElementAccumulator, typename Gemm::Operator>
         reference_gemm;
 
-    reference_gemm(
-        problem_size, alpha, tensor_A.host_ref(), tensor_B.host_ref(), beta,
-        reference_D.host_ref(), ElementAccumulator(0));
+    reference_gemm(problem_size, alpha, tensor_A.host_ref(),
+                   tensor_B.host_ref(), beta, reference_D.host_ref(),
+                   ElementAccumulator(0));
 
     tensor_D.sync_host();
 
@@ -293,8 +295,8 @@ struct MultistageTestbed {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace device
-}  // namespace gemm
-}  // namespace test
+} // namespace device
+} // namespace gemm
+} // namespace test
 
 ////////////////////////////////////////////////////////////////////////////////

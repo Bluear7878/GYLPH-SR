@@ -20,7 +20,6 @@ catch (json::parse_error& ex)
 
 In case exceptions are undesired or not supported by the environment, there are different ways to proceed:
 
-
 ## Switch off exceptions
 
 The `parse()` function accepts a `#!cpp bool` parameter `allow_exceptions` which controls whether an exception is
@@ -51,7 +50,6 @@ if (!json::accept(my_input))
 
 Again, there is no diagnostic information available.
 
-
 ## User-defined SAX interface
 
 Finally, you can implement the [SAX interface](sax_interface.md) and decide what should happen in case of a parse error.
@@ -68,54 +66,56 @@ The return value indicates whether the parsing should continue, so the function 
 
 ??? example
 
-    ```cpp
-    #include <iostream>
-    #include "json.hpp"
-    
-    using json = nlohmann::json;
-    
-    class sax_no_exception : public nlohmann::detail::json_sax_dom_parser<json>
-    {
-      public:
-        sax_no_exception(json& j)
-          : nlohmann::detail::json_sax_dom_parser<json>(j, false)
-        {}
-        
-        bool parse_error(std::size_t position,
-                         const std::string& last_token,
-                         const json::exception& ex)
-        {
-            std::cerr << "parse error at input byte " << position << "\n"
-                      << ex.what() << "\n"
-                      << "last read: \"" << last_token << "\""
-                      << std::endl;
-            return false;
-        }
-    };
-    
-    int main()
-    {
-        std::string myinput = "[1,2,3,]";
-    
-        json result;
-        sax_no_exception sax(result);
-        
-        bool parse_result = json::sax_parse(myinput, &sax);
-        if (!parse_result)
-        {
-            std::cerr << "parsing unsuccessful!" << std::endl;
-        }
-        
-        std::cout << "parsed value: " << result << std::endl;
-    }
-    ```
+````
+```cpp
+#include <iostream>
+#include "json.hpp"
 
-    Output:
-    
-    ```
-    parse error at input byte 8
-    [json.exception.parse_error.101] parse error at line 1, column 8: syntax error while parsing value - unexpected ']'; expected '[', '{', or a literal
-    last read: "3,]"
-    parsing unsuccessful!
-    parsed value: [1,2,3]
-    ```
+using json = nlohmann::json;
+
+class sax_no_exception : public nlohmann::detail::json_sax_dom_parser<json>
+{
+  public:
+    sax_no_exception(json& j)
+      : nlohmann::detail::json_sax_dom_parser<json>(j, false)
+    {}
+
+    bool parse_error(std::size_t position,
+                     const std::string& last_token,
+                     const json::exception& ex)
+    {
+        std::cerr << "parse error at input byte " << position << "\n"
+                  << ex.what() << "\n"
+                  << "last read: \"" << last_token << "\""
+                  << std::endl;
+        return false;
+    }
+};
+
+int main()
+{
+    std::string myinput = "[1,2,3,]";
+
+    json result;
+    sax_no_exception sax(result);
+
+    bool parse_result = json::sax_parse(myinput, &sax);
+    if (!parse_result)
+    {
+        std::cerr << "parsing unsuccessful!" << std::endl;
+    }
+
+    std::cout << "parsed value: " << result << std::endl;
+}
+```
+
+Output:
+
+```
+parse error at input byte 8
+[json.exception.parse_error.101] parse error at line 1, column 8: syntax error while parsing value - unexpected ']'; expected '[', '{', or a literal
+last read: "3,]"
+parsing unsuccessful!
+parsed value: [1,2,3]
+```
+````

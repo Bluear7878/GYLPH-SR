@@ -30,7 +30,9 @@ _LICENSE = (
 
 IMAGE_URL = "https://huggingface.co/datasets/playgroundai/MJHQ-30K/resolve/main/mjhq30k_imgs.zip"
 
-META_URL = "https://huggingface.co/datasets/playgroundai/MJHQ-30K/resolve/main/meta_data.json"
+META_URL = (
+    "https://huggingface.co/datasets/playgroundai/MJHQ-30K/resolve/main/meta_data.json"
+)
 
 
 class MJHQConfig(datasets.BuilderConfig):
@@ -50,7 +52,9 @@ class DCI(datasets.GeneratorBasedBuilder):
     VERSION = datasets.Version("0.0.0")
 
     BUILDER_CONFIG_CLASS = MJHQConfig
-    BUILDER_CONFIGS = [MJHQConfig(name="MJHQ", version=VERSION, description="MJHQ-30K full dataset")]
+    BUILDER_CONFIGS = [
+        MJHQConfig(name="MJHQ", version=VERSION, description="MJHQ-30K full dataset")
+    ]
     DEFAULT_CONFIG_NAME = "MJHQ"
 
     def _info(self):
@@ -67,7 +71,11 @@ class DCI(datasets.GeneratorBasedBuilder):
             }
         )
         return datasets.DatasetInfo(
-            description=_DESCRIPTION, features=features, homepage=_HOMEPAGE, license=_LICENSE, citation=_CITATION
+            description=_DESCRIPTION,
+            features=features,
+            homepage=_HOMEPAGE,
+            license=_LICENSE,
+            citation=_CITATION,
         )
 
     def _split_generators(self, dl_manager: datasets.download.DownloadManager):
@@ -75,7 +83,8 @@ class DCI(datasets.GeneratorBasedBuilder):
         image_root = dl_manager.download_and_extract(IMAGE_URL)
         return [
             datasets.SplitGenerator(
-                name=datasets.Split.TRAIN, gen_kwargs={"meta_path": meta_path, "image_root": image_root}
+                name=datasets.Split.TRAIN,
+                gen_kwargs={"meta_path": meta_path, "image_root": image_root},
             ),
         ]
 

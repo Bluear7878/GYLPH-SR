@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /* \file
@@ -35,19 +36,19 @@
 #pragma once
 
 // Standard Library includes
-#include <utility>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
+#include <utility>
 
 // Cute includes
 #include "cute/tensor.hpp"
 
 // Cutlass includes
-#include "cutlass/cutlass.h"
-#include "cutlass/complex.h"
-#include "cutlass/quaternion.h"
 #include "cutlass/array.h"
+#include "cutlass/complex.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/numeric_types.h"
+#include "cutlass/quaternion.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -71,8 +72,7 @@ void TensorFill(Tensor dst, typename Tensor::value_type element) {
 }
 
 /// Fills a tensor with the contents of its layout
-template <typename Tensor>
-void TensorFillSequential(Tensor dst) {
+template <typename Tensor> void TensorFillSequential(Tensor dst) {
 
   auto layout = dst.layout();
 
@@ -89,11 +89,10 @@ void TensorFillSequential(Tensor dst) {
 
 namespace detail {
 
-template <typename Element>
-struct RandomUniformFunc {
+template <typename Element> struct RandomUniformFunc {
 
   using Real = typename RealType<Element>::Type;
-  
+
   uint64_t seed;
   double range;
   double min;
@@ -103,16 +102,11 @@ struct RandomUniformFunc {
   // Methods
   //
 
-  RandomUniformFunc(
-    uint64_t seed_ = 0, 
-    double max = 1,
-    double min_ = 0,
-    int int_scale_ = -1
-  ):
-    seed(seed_), range(max - min_), min(min_), int_scale(int_scale_) {
-      std::srand((unsigned)seed);
-    }
-
+  RandomUniformFunc(uint64_t seed_ = 0, double max = 1, double min_ = 0,
+                    int int_scale_ = -1)
+      : seed(seed_), range(max - min_), min(min_), int_scale(int_scale_) {
+    std::srand((unsigned)seed);
+  }
 
   /// Compute random value and update RNG state
   Element operator()() const {
@@ -121,15 +115,15 @@ struct RandomUniformFunc {
 
     rnd = min + range * rnd;
 
-    // Random values are cast to integer after scaling by a power of two to facilitate error
-    // testing
+    // Random values are cast to integer after scaling by a power of two to
+    // facilitate error testing
     Element result;
-    
+
     if (int_scale >= 0) {
-      rnd = double(int64_t(rnd * double(1 << int_scale))) / double(1 << int_scale);
+      rnd = double(int64_t(rnd * double(1 << int_scale))) /
+            double(1 << int_scale);
       result = static_cast<Element>(Real(rnd));
-    }
-    else {
+    } else {
       result = static_cast<Element>(Real(rnd));
     }
 
@@ -138,11 +132,10 @@ struct RandomUniformFunc {
 };
 
 /// Partial specialization for initializing a complex value.
-template <typename Element>
-struct RandomUniformFunc<complex<Element> > {
+template <typename Element> struct RandomUniformFunc<complex<Element>> {
 
   using Real = typename RealType<Element>::Type;
-  
+
   uint64_t seed;
   double range;
   double min;
@@ -152,16 +145,11 @@ struct RandomUniformFunc<complex<Element> > {
   // Methods
   //
 
-  RandomUniformFunc(
-    uint64_t seed_ = 0, 
-    double max = 1,
-    double min_ = 0,
-    int int_scale_ = -1
-  ):
-    seed(seed_), range(max - min_), min(min_), int_scale(int_scale_) {
-      std::srand((unsigned)seed);
-    }
-
+  RandomUniformFunc(uint64_t seed_ = 0, double max = 1, double min_ = 0,
+                    int int_scale_ = -1)
+      : seed(seed_), range(max - min_), min(min_), int_scale(int_scale_) {
+    std::srand((unsigned)seed);
+  }
 
   /// Compute random value and update RNG state
   complex<Element> operator()() const {
@@ -173,14 +161,13 @@ struct RandomUniformFunc<complex<Element> > {
 
       rnd = min + range * rnd;
 
-      // Random values are cast to integer after scaling by a power of two to facilitate error
-      // testing
-      
+      // Random values are cast to integer after scaling by a power of two to
+      // facilitate error testing
+
       if (int_scale >= 0) {
         rnd = double(int(rnd * double(1 << int_scale)));
         reals[i] = from_real<Element>(Real(rnd / double(1 << int_scale)));
-      }
-      else {
+      } else {
         reals[i] = from_real<Element>(Real(rnd));
       }
     }
@@ -190,8 +177,7 @@ struct RandomUniformFunc<complex<Element> > {
 };
 
 /// Partial specialization for initializing a Quaternion value.
-template <typename Element>
-struct RandomUniformFunc<Quaternion<Element> > {
+template <typename Element> struct RandomUniformFunc<Quaternion<Element>> {
 
   using Real = typename RealType<Element>::Type;
 
@@ -204,16 +190,11 @@ struct RandomUniformFunc<Quaternion<Element> > {
   // Methods
   //
 
-  RandomUniformFunc(
-    uint64_t seed_ = 0,
-    double max = 1,
-    double min_ = 0,
-    int int_scale_ = -1
-  ):
-    seed(seed_), range(max - min_), min(min_), int_scale(int_scale_) {
-      std::srand((unsigned)seed);
-    }
-
+  RandomUniformFunc(uint64_t seed_ = 0, double max = 1, double min_ = 0,
+                    int int_scale_ = -1)
+      : seed(seed_), range(max - min_), min(min_), int_scale(int_scale_) {
+    std::srand((unsigned)seed);
+  }
 
   /// Compute random value and update RNG state
   Quaternion<Element> operator()() const {
@@ -225,14 +206,13 @@ struct RandomUniformFunc<Quaternion<Element> > {
 
       rnd = min + range * rnd;
 
-      // Random values are cast to integer after scaling by a power of two to facilitate error
-      // testing
+      // Random values are cast to integer after scaling by a power of two to
+      // facilitate error testing
 
       if (int_scale >= 0) {
         rnd = double(int(rnd * double(1 << int_scale)));
         reals[i] = from_real<Element>(Real(rnd / double(1 << int_scale)));
-      }
-      else {
+      } else {
         reals[i] = from_real<Element>(Real(rnd));
       }
     }
@@ -246,17 +226,19 @@ struct RandomUniformFunc<Quaternion<Element> > {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Fills a tensor with random values with a uniform random distribution.
-template <typename Tensor>                ///< Tensor object
+template <typename Tensor> ///< Tensor object
 void TensorFillRandomUniform(
-  Tensor dst,                             ///< destination tensor
-  uint64_t seed,                          ///< seed for RNG
-  double max = 1,                         ///< upper bound of distribution
-  double min = 0,                         ///< lower bound for distribution
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
-                                          ///  data.   
+    Tensor dst,     ///< destination tensor
+    uint64_t seed,  ///< seed for RNG
+    double max = 1, ///< upper bound of distribution
+    double min = 0, ///< lower bound for distribution
+    int bits =
+        -1) { ///< If non-negative, specifies number of fractional bits that
+              ///  are not truncated to zero. Permits reducing precision of
+              ///  data.
 
-  detail::RandomUniformFunc<typename Tensor::value_type> random_func(seed, max, min, bits);
+  detail::RandomUniformFunc<typename Tensor::value_type> random_func(seed, max,
+                                                                     min, bits);
 
   for (int64_t idx = 0; idx < cute::size(dst); ++idx) {
     dst(idx) = random_func();
@@ -264,18 +246,17 @@ void TensorFillRandomUniform(
 }
 
 /// Fills a block with random values with a uniform random distribution.
-template <
-  typename Element                        ///< Element type
->
+template <typename Element ///< Element type
+          >
 void BlockFillRandomUniform(
-  Element *ptr,
-  size_t capacity,
-  uint64_t seed,                          ///< seed for RNG
-  double max = 1,                         ///< upper bound of distribution
-  double min = 0,                         ///< lower bound for distribution
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
-                                          ///  data.                 
+    Element *ptr, size_t capacity,
+    uint64_t seed,  ///< seed for RNG
+    double max = 1, ///< upper bound of distribution
+    double min = 0, ///< lower bound for distribution
+    int bits =
+        -1) { ///< If non-negative, specifies number of fractional bits that
+              ///  are not truncated to zero. Permits reducing precision of
+              ///  data.
   detail::RandomUniformFunc<Element> random_func(seed, max, min, bits);
 
   for (size_t i = 0; i < capacity; ++i) {
@@ -291,8 +272,7 @@ void BlockFillRandomUniform(
 
 namespace detail {
 
-template <typename Element>
-struct RandomGaussianFunc {
+template <typename Element> struct RandomGaussianFunc {
 
   uint64_t seed;
   double mean;
@@ -303,14 +283,11 @@ struct RandomGaussianFunc {
   //
   // Methods
   //
-  RandomGaussianFunc(
-    uint64_t seed_ = 0, 
-    double mean_ = 0, 
-    double stddev_ = 1,
-    int int_scale_ = -1
-  ):
-    seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_), pi(std::acos(-1)) {
-      std::srand((unsigned)seed);
+  RandomGaussianFunc(uint64_t seed_ = 0, double mean_ = 0, double stddev_ = 1,
+                     int int_scale_ = -1)
+      : seed(seed_), mean(mean_), stddev(stddev_), int_scale(int_scale_),
+        pi(std::acos(-1)) {
+    std::srand((unsigned)seed);
   }
 
   /// Compute random value and update RNG state
@@ -328,10 +305,10 @@ struct RandomGaussianFunc {
     Element result;
 
     if (int_scale >= 0) {
-      rnd = double(int64_t(rnd * double(1 << int_scale))) / double(1 << int_scale);
+      rnd = double(int64_t(rnd * double(1 << int_scale))) /
+            double(1 << int_scale);
       result = static_cast<Element>(rnd);
-    }
-    else {
+    } else {
       result = static_cast<Element>(rnd);
     }
 
@@ -344,19 +321,19 @@ struct RandomGaussianFunc {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Fills a tensor with random values with a Gaussian distribution.
-template <
-  typename Tensor
->
+template <typename Tensor>
 void TensorFillRandomGaussian(
-  Tensor  dst,                            ///< destination tensor
-  uint64_t seed,                          ///< seed for RNG
-  double mean = 0,                        ///< Gaussian distribution's mean
-  double stddev = 1,                      ///< Gaussian distribution's standard deviation
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
-                                          ///  data.
-  
-  detail::RandomGaussianFunc<typename Tensor::value_type> random_func(seed, mean, stddev, bits);
+    Tensor dst,        ///< destination tensor
+    uint64_t seed,     ///< seed for RNG
+    double mean = 0,   ///< Gaussian distribution's mean
+    double stddev = 1, ///< Gaussian distribution's standard deviation
+    int bits =
+        -1) { ///< If non-negative, specifies number of fractional bits that
+              ///  are not truncated to zero. Permits reducing precision of
+              ///  data.
+
+  detail::RandomGaussianFunc<typename Tensor::value_type> random_func(
+      seed, mean, stddev, bits);
 
   for (int64_t idx = 0; idx < cute::size(dst); ++idx) {
     dst(idx) = random_func();
@@ -364,19 +341,19 @@ void TensorFillRandomGaussian(
 }
 
 /// Fills a block with random values with a Gaussian distribution.
-template <
-  typename Element                        ///< Element type
->
+template <typename Element ///< Element type
+          >
 void BlockFillRandomGaussian(
-  Element *ptr,                           ///< destination buffer
-  size_t capacity,                        ///< number of elements
-  uint64_t seed,                          ///< seed for RNG
-  double mean = 0,                        ///< Gaussian distribution's mean
-  double stddev = 1,                      ///< Gaussian distribution's standard deviation
-  int bits = -1) {                        ///< If non-negative, specifies number of fractional bits that 
-                                          ///  are not truncated to zero. Permits reducing precision of
-                                          ///  data.
-  
+    Element *ptr,      ///< destination buffer
+    size_t capacity,   ///< number of elements
+    uint64_t seed,     ///< seed for RNG
+    double mean = 0,   ///< Gaussian distribution's mean
+    double stddev = 1, ///< Gaussian distribution's standard deviation
+    int bits =
+        -1) { ///< If non-negative, specifies number of fractional bits that
+              ///  are not truncated to zero. Permits reducing precision of
+              ///  data.
+
   detail::RandomGaussianFunc<Element> random_func(seed, mean, stddev, bits);
 
   for (size_t i = 0; i < capacity; ++i) {
@@ -387,14 +364,9 @@ void BlockFillRandomGaussian(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Fills a block of data with sequential elements
-template <
-  typename Element
->
-void BlockFillSequential(
-  Element *ptr,
-  int64_t capacity,
-  Element v = Element(1),
-  Element s = Element(0)) {
+template <typename Element>
+void BlockFillSequential(Element *ptr, int64_t capacity, Element v = Element(1),
+                         Element s = Element(0)) {
   int i = 0;
 
   while (i < capacity) {
@@ -405,15 +377,9 @@ void BlockFillSequential(
 }
 
 /// Fills a block of data with sequential elements
-template <
-  typename Element
->
-void BlockFillSequentialModN(
-  Element *ptr,
-  int64_t capacity,
-  int64_t mod,
-  int64_t v = int64_t(1),
-  int64_t s = int64_t(0)) {
+template <typename Element>
+void BlockFillSequentialModN(Element *ptr, int64_t capacity, int64_t mod,
+                             int64_t v = int64_t(1), int64_t s = int64_t(0)) {
   int i = 0;
 
   while (i < capacity) {

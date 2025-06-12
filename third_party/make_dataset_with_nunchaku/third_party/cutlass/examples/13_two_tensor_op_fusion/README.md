@@ -14,8 +14,8 @@ GEMMs/Convs run back to back in a single kernel. The output accumulator of the
 input of the 2nd GEMM/Conv. This saves a round trip to memory for the activation
 matrix.
 
-
 This example computes the following:
+
 - 1st GEMM/Conv: D0 = relu(alpha0 .\* A0 \*\* B0)
 - 2nd GEMM/Conv: D1 = relu(alpha1 .\* D0 \*\* B1 + beta1 .\* C1)
 
@@ -56,7 +56,6 @@ illustrated in the diagram below.
 
 <p align="center"><img src=/media/images/13_example_shmem_resident_fusion.png></p>
 
-
 When applying the above constraint to convolutions, it is required that the 2nd Convolution
 kernel doesn't have halos such that data used by each threadblock doesn't depend on any other
 threadblock. Typically this requires the 2nd Convolution uses 1x1 filter without any paddings.
@@ -82,7 +81,6 @@ threadblock. Typically this requires the 2nd Convolution uses 1x1 filter without
   - `./examples/13_two_tensor_op_fusion/13_fused_two_gemms_s8_sm75_shmem`
   - `./examples/13_two_tensor_op_fusion/13_fused_two_gemms_s8_sm80_rf`
   - `./examples/13_two_tensor_op_fusion/13_fused_two_gemms_s8_sm80_shmem`
-
 
 # Copyright
 
@@ -115,4 +113,3 @@ SPDX-License-Identifier: BSD-3-Clause
   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-

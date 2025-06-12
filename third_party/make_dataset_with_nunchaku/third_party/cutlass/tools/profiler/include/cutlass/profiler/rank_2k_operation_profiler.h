@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,40 +18,41 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /* \file
    \brief Defines a math function
 
-  
+
 */
 
 #pragma once
 
-#include <vector>
-#include <string>
-#include <memory>
 #include <algorithm>
+#include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 // CUTLASS Library includes
 #include "cutlass/blas3.h"
 #include "cutlass/library/library.h"
-#include "cutlass/library/util.h"
 #include "cutlass/library/manifest.h"
+#include "cutlass/library/util.h"
 
 // Profiler includes
-#include "options.h"
 #include "device_context.h"
 #include "operation_profiler.h"
+#include "options.h"
 #include "performance_result.h"
 #include "problem_space.h"
 
@@ -62,11 +63,9 @@ namespace profiler {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 /// Abstract base class for each math function
 class Rank2KOperationProfiler : public OperationProfiler {
 public:
-
   /// Problem structure obtained from problem space
   struct RankKProblem {
     int64_t n;
@@ -85,31 +84,28 @@ public:
     // Methods
     //
 
-    RankKProblem(): 
-      n(16), k(16), lda(0), ldc(0), 
-      fill_mode(FillMode::kInvalid), blas_mode(BlasMode::kInvalid), 
-      split_k_slices(1), batch_count(1) { }
+    RankKProblem()
+        : n(16), k(16), lda(0), ldc(0), fill_mode(FillMode::kInvalid),
+          blas_mode(BlasMode::kInvalid), split_k_slices(1), batch_count(1) {}
 
     /// Parses the problem
-    Status parse(
-      library::RankKDescription const &operation_desc,
-      ProblemSpace const &problem_space,
-      ProblemSpace::Problem const &problem);
+    Status parse(library::RankKDescription const &operation_desc,
+                 ProblemSpace const &problem_space,
+                 ProblemSpace::Problem const &problem);
 
     /// Total number of bytes loaded
     int64_t bytes(library::RankKDescription const &operation_desc) const;
 
     /// Total number of flops computed
     int64_t flops(library::RankKDescription const &operation_desc) const;
-    
+
     /// Initializes a performance result
-    void initialize_result(
-      PerformanceResult &result,
-      library::RankKDescription const &operation_desc,
-      ProblemSpace const &problem_space);
+    void initialize_result(PerformanceResult &result,
+                           library::RankKDescription const &operation_desc,
+                           ProblemSpace const &problem_space);
   };
 
-  /// Workspace used 
+  /// Workspace used
   struct RankKWorkspace {
 
     DeviceAllocation *A;
@@ -131,12 +127,12 @@ public:
     // Methods
     //
 
-    RankKWorkspace(): 
-      A(nullptr), B(nullptr), C(nullptr), Computed(nullptr), Reference(nullptr) { }
+    RankKWorkspace()
+        : A(nullptr), B(nullptr), C(nullptr), Computed(nullptr),
+          Reference(nullptr) {}
   };
 
 protected:
-
   //
   // Data members
   //
@@ -144,9 +140,8 @@ protected:
   /// GEMM problem obtained from problem space
   RankKProblem problem_;
 
-  /// Device memory allocations 
+  /// Device memory allocations
   RankKWorkspace rank_k_workspace_;
-
 
 public:
   //
@@ -166,59 +161,47 @@ public:
   virtual void print_examples(std::ostream &out) const;
 
   /// Extracts the problem dimensions
-  virtual Status initialize_configuration(
-    Options const &options, 
-    PerformanceReport &report, 
-    DeviceContext &device_context,
-    library::Operation const *operation,
-    ProblemSpace const &problem_space,
-    ProblemSpace::Problem const &problem);
+  virtual Status initialize_configuration(Options const &options,
+                                          PerformanceReport &report,
+                                          DeviceContext &device_context,
+                                          library::Operation const *operation,
+                                          ProblemSpace const &problem_space,
+                                          ProblemSpace::Problem const &problem);
 
   /// Initializes workspace
-  virtual Status initialize_workspace(
-    Options const &options, 
-    PerformanceReport &report, 
-    DeviceContext &device_context,
-    library::Operation const *operation,
-    ProblemSpace const &problem_space,
-    ProblemSpace::Problem const &problem);
+  virtual Status initialize_workspace(Options const &options,
+                                      PerformanceReport &report,
+                                      DeviceContext &device_context,
+                                      library::Operation const *operation,
+                                      ProblemSpace const &problem_space,
+                                      ProblemSpace::Problem const &problem);
 
   /// Verifies CUTLASS against references
-  virtual bool verify_cutlass(
-    Options const &options,  
-    PerformanceReport &report,
-    DeviceContext &device_context,
-    library::Operation const *operation,
-    ProblemSpace const &problem_space,
-    ProblemSpace::Problem const &problem);
+  virtual bool verify_cutlass(Options const &options, PerformanceReport &report,
+                              DeviceContext &device_context,
+                              library::Operation const *operation,
+                              ProblemSpace const &problem_space,
+                              ProblemSpace::Problem const &problem);
 
   /// Measures performance results
-  virtual bool profile(
-    Options const &options, 
-    PerformanceReport &report, 
-    DeviceContext &device_context,
-    library::Operation const *operation,
-    ProblemSpace const &problem_space,
-    ProblemSpace::Problem const &problem);
+  virtual bool profile(Options const &options, PerformanceReport &report,
+                       DeviceContext &device_context,
+                       library::Operation const *operation,
+                       ProblemSpace const &problem_space,
+                       ProblemSpace::Problem const &problem);
 
 protected:
-
   /// Initializes the performance result
-  void initialize_result_(
-    PerformanceResult &result,
-    Options const &options,  
-    library::RankKDescription const &operation_desc,
-    ProblemSpace const &problem_space);
+  void initialize_result_(PerformanceResult &result, Options const &options,
+                          library::RankKDescription const &operation_desc,
+                          ProblemSpace const &problem_space);
 
   /// Verifies CUTLASS against references
-  bool verify_with_cublas_(
-    Options const &options,  
-    PerformanceReport &report,
-    DeviceContext &device_context,
-    library::Operation const *operation,
-    ProblemSpace const &problem_space,
-    ProblemSpace::Problem const &problem);
-
+  bool verify_with_cublas_(Options const &options, PerformanceReport &report,
+                           DeviceContext &device_context,
+                           library::Operation const *operation,
+                           ProblemSpace const &problem_space,
+                           ProblemSpace::Problem const &problem);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

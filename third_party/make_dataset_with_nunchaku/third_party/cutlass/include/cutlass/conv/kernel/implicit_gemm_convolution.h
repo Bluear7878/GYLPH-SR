@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -38,16 +39,16 @@
 
 #include "cutlass/aligned_buffer.h"
 #include "cutlass/array.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/matrix_shape.h"
-#include "cutlass/semaphore.h"
-#include "cutlass/tensor_ref.h"
-#include "cutlass/layout/tensor.h"
-#include "cutlass/gemm/gemm.h"
-#include "cutlass/conv/convolution.h"
 #include "cutlass/conv/conv2d_problem_size.h"
 #include "cutlass/conv/conv3d_problem_size.h"
+#include "cutlass/conv/convolution.h"
 #include "cutlass/epilogue/threadblock/output_iterator_parameter.h"
+#include "cutlass/gemm/gemm.h"
+#include "cutlass/layout/tensor.h"
+#include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
+#include "cutlass/semaphore.h"
+#include "cutlass/tensor_ref.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,14 +58,15 @@ namespace kernel {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Mma_,                                  ///! Threadblock-scoped matrix multiply-accumulate 
-  typename Epilogue_,                             ///! Epilogue
-  typename ThreadblockSwizzle_,                   ///! Threadblock swizzling function
-  conv::Operator ConvOperator,                    ///! Convolutional operator (Fprop, Dgrad, Wgrad)
-  typename ConvProblemSize_ = Conv2dProblemSize,  ///! Convolutional operator on 2D or 3D problem
-  conv::GroupMode GroupMode_ = conv::GroupMode::kNone    ///! Group mode
->
+template <typename Mma_,      ///! Threadblock-scoped matrix multiply-accumulate
+          typename Epilogue_, ///! Epilogue
+          typename ThreadblockSwizzle_, ///! Threadblock swizzling function
+          conv::Operator ConvOperator,  ///! Convolutional operator (Fprop,
+                                        /// Dgrad, Wgrad)
+          typename ConvProblemSize_ =
+              Conv2dProblemSize, ///! Convolutional operator on 2D or 3D problem
+          conv::GroupMode GroupMode_ = conv::GroupMode::kNone ///! Group mode
+          >
 struct ImplicitGemmConvolution {
 
   using Mma = Mma_;
@@ -89,7 +91,7 @@ struct ImplicitGemmConvolution {
 
   using ArchMmaOperator = typename WarpMmaOperator::ArchMmaOperator;
   using MathOperator = typename ArchMmaOperator::Operator;
-  
+
   using OperatorClass = typename WarpMmaOperator::OperatorClass;
   using ArchTag = typename WarpMmaOperator::ArchTag;
 
@@ -98,7 +100,8 @@ struct ImplicitGemmConvolution {
   using InstructionShape = typename ArchMmaOperator::Shape;
 
   static int const kStages = Mma::kStages;
-  static IteratorAlgorithm const kIteratorAlgorithm = Mma::IteratorA::kIteratorAlgorithm; 
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      Mma::IteratorA::kIteratorAlgorithm;
   static StrideSupport const kStrideSupport = Mma::IteratorA::kStrideSupport;
 
   /// Warp count (concept: GemmShape)
@@ -109,10 +112,11 @@ struct ImplicitGemmConvolution {
   using TensorRefB = typename Mma::IteratorB::TensorRef;
   using TensorRefC = cutlass::TensorRef<ElementC, LayoutC>;
 
-  /// Check iterator A and B convolution dimension are the same and 
+  /// Check iterator A and B convolution dimension are the same and
   // set device::ImplicitGemmConvolution::kConvDim
-  static_assert(Mma::IteratorA::kConvDim == Mma::IteratorB::kConvDim, 
-    "Convolution on different different dimensions is not supported");
+  static_assert(
+      Mma::IteratorA::kConvDim == Mma::IteratorB::kConvDim,
+      "Convolution on different different dimensions is not supported");
   static int const kConvDim = Mma::IteratorA::kConvDim;
 
   /// Conv dimension and problem size structure (Conv2d or Conv3d)
@@ -120,26 +124,23 @@ struct ImplicitGemmConvolution {
 
   static conv::GroupMode const kGroupMode = GroupMode_;
 
-  /// Wgrad C stride idx for implicit gemm algorithm 
-  // Conv2d row-major matrix C (KxRSC) 
+  /// Wgrad C stride idx for implicit gemm algorithm
+  // Conv2d row-major matrix C (KxRSC)
   // Conv3d row-major matrix C (KxTRSC)
-  static int const kWgradCStrideIdx = 
-    platform::is_same<LayoutC, cutlass::layout::TensorNHWC>::value ? 2 : 3;
+  static int const kWgradCStrideIdx =
+      platform::is_same<LayoutC, cutlass::layout::TensorNHWC>::value ? 2 : 3;
 
   /// This chooses the appropriate stride element of the C tensor.
-  static int const kTensorCStrideIdx = 
-    (kConvolutionalOperator == conv::Operator::kWgrad ? kWgradCStrideIdx : 0);
+  static int const kTensorCStrideIdx =
+      (kConvolutionalOperator == conv::Operator::kWgrad ? kWgradCStrideIdx : 0);
 
   //
   //
   //
-  using ConvOutputIteratorParameter = epilogue::threadblock::ConvOutputIteratorParameter<
-    LayoutC,
-    typename Epilogue::OutputTileIterator::Layout, 
-    TensorRefC,
-    ConvOperator,
-    ConvProblemSize
-    >;
+  using ConvOutputIteratorParameter =
+      epilogue::threadblock::ConvOutputIteratorParameter<
+          LayoutC, typename Epilogue::OutputTileIterator::Layout, TensorRefC,
+          ConvOperator, ConvProblemSize>;
 
   /// Argument structure
   struct Arguments {
@@ -162,35 +163,20 @@ struct ImplicitGemmConvolution {
 
     /// Default ctor
     CUTLASS_HOST_DEVICE
-    Arguments() { }
-   
-    CUTLASS_HOST_DEVICE 
-    Arguments(
-      ConvProblemSize const & problem_size
-    ):
-      problem_size(problem_size) { }
+    Arguments() {}
 
     CUTLASS_HOST_DEVICE
-    Arguments(
-      ConvProblemSize const & problem_size,
-      TensorRefA const & ref_A,
-      TensorRefB const & ref_B,
-      TensorRefC const & ref_C,
-      TensorRefC const & ref_D,
-      typename EpilogueOutputOp::Params const & output_op,
-      SplitKMode const & split_k_mode = SplitKMode::kSerial
-    ):
-      problem_size(problem_size),
-      ref_A(ref_A),
-      ref_B(ref_B),
-      ref_C(ref_C),
-      ref_D(ref_D),
-      output_op(output_op),
-      split_k_mode(split_k_mode)
-    {
+    Arguments(ConvProblemSize const &problem_size)
+        : problem_size(problem_size) {}
 
-    }
-
+    CUTLASS_HOST_DEVICE
+    Arguments(ConvProblemSize const &problem_size, TensorRefA const &ref_A,
+              TensorRefB const &ref_B, TensorRefC const &ref_C,
+              TensorRefC const &ref_D,
+              typename EpilogueOutputOp::Params const &output_op,
+              SplitKMode const &split_k_mode = SplitKMode::kSerial)
+        : problem_size(problem_size), ref_A(ref_A), ref_B(ref_B), ref_C(ref_C),
+          ref_D(ref_D), output_op(output_op), split_k_mode(split_k_mode) {}
   };
 
   /// Parameters structure
@@ -219,35 +205,27 @@ struct ImplicitGemmConvolution {
     //
 
     CUTLASS_HOST_DEVICE
-    Params(): swizzle_log_tile(0), gemm_k_iterations(0) { }
+    Params() : swizzle_log_tile(0), gemm_k_iterations(0) {}
 
-    /// 
+    ///
     CUTLASS_HOST_DEVICE
-    Params(
-      Arguments const &args,
-      int *semaphore = nullptr
-    ):
-      problem_size(args.problem_size),
-      implicit_gemm_problem_size(cutlass::conv::implicit_gemm_problem_size(kConvolutionalOperator, args.problem_size)),
-      iterator_A(Mma::IteratorA::getParams(args.problem_size, args.ref_A.layout())),
-      ptr_A(args.ref_A.data()),
-      iterator_B(args.problem_size, args.ref_B.layout()),
-      ptr_B(args.ref_B.data()),
-      iterator_C(ConvOutputIteratorParameter::layout(args.ref_C)),
-      ptr_C(args.ref_C.data()),
-      iterator_D(ConvOutputIteratorParameter::layout(args.ref_D)),
-      ptr_D(args.ref_D.data()),
-      output_op(args.output_op),
-      semaphore(semaphore),
-      split_k_mode(args.split_k_mode)
-    {
+    Params(Arguments const &args, int *semaphore = nullptr)
+        : problem_size(args.problem_size),
+          implicit_gemm_problem_size(cutlass::conv::implicit_gemm_problem_size(
+              kConvolutionalOperator, args.problem_size)),
+          iterator_A(Mma::IteratorA::getParams(args.problem_size,
+                                               args.ref_A.layout())),
+          ptr_A(args.ref_A.data()),
+          iterator_B(args.problem_size, args.ref_B.layout()),
+          ptr_B(args.ref_B.data()),
+          iterator_C(ConvOutputIteratorParameter::layout(args.ref_C)),
+          ptr_C(args.ref_C.data()),
+          iterator_D(ConvOutputIteratorParameter::layout(args.ref_D)),
+          ptr_D(args.ref_D.data()), output_op(args.output_op),
+          semaphore(semaphore), split_k_mode(args.split_k_mode) {
       gemm_k_iterations = implicit_gemm_k_iterations(
-        kConvolutionalOperator,
-        ThreadblockShape::kK,
-        args.problem_size,
-        kIteratorAlgorithm,
-        kGroupMode,
-        ThreadblockShape::kN);
+          kConvolutionalOperator, ThreadblockShape::kK, args.problem_size,
+          kIteratorAlgorithm, kGroupMode, ThreadblockShape::kN);
 
       gemm_k_iterations_per_channel = implicit_gemm_k_iterations_per_channel(
           kConvolutionalOperator, args.problem_size, kIteratorAlgorithm);
@@ -255,9 +233,9 @@ struct ImplicitGemmConvolution {
       ThreadblockSwizzle threadblock_swizzle;
 
       grid_tiled_shape = threadblock_swizzle.get_tiled_shape(
-        implicit_gemm_problem_size,
-        {ThreadblockShape::kM, ThreadblockShape::kN, ThreadblockShape::kK},
-        args.problem_size.split_k_slices);
+          implicit_gemm_problem_size,
+          {ThreadblockShape::kM, ThreadblockShape::kN, ThreadblockShape::kK},
+          args.problem_size.split_k_slices);
 
       swizzle_log_tile = threadblock_swizzle.get_log_tile(grid_tiled_shape);
     }
@@ -274,7 +252,7 @@ struct ImplicitGemmConvolution {
   //
 
   CUTLASS_HOST_DEVICE
-  ImplicitGemmConvolution() { } 
+  ImplicitGemmConvolution() {}
 
   /// Executes one ImplicitGEMM
   CUTLASS_DEVICE
@@ -288,7 +266,7 @@ struct ImplicitGemmConvolution {
 
     // Early exit if CTA is out of range
     if (params.grid_tiled_shape.m() <= threadblock_tile_idx.m() ||
-      params.grid_tiled_shape.n() <= threadblock_tile_idx.n()) {
+        params.grid_tiled_shape.n() <= threadblock_tile_idx.n()) {
 
       return;
     }
@@ -300,35 +278,24 @@ struct ImplicitGemmConvolution {
       if (kGroupMode != GroupMode::kDepthwise) {
         int k_per_group = params.problem_size.K / params.problem_size.groups;
         int group_idx = threadblock_tile_idx.n() * Mma::Shape::kN / k_per_group;
-        int channels_per_group = params.problem_size.C / params.problem_size.groups;
+        int channels_per_group =
+            params.problem_size.C / params.problem_size.groups;
         iterator_A_column_offset += group_idx * channels_per_group;
       } else {
         iterator_A_column_offset += threadblock_tile_idx.n() * Mma::Shape::kN;
       }
-    } 
+    }
 
     // Construct iterators to A and B operands
     typename Mma::IteratorA iterator_A(
-      params.iterator_A,
-      params.problem_size,
-      params.ptr_A,
-      thread_idx,
-      MatrixCoord(
-        threadblock_tile_idx.m() * Mma::Shape::kM,
-        iterator_A_column_offset
-      )
-    );
-    
+        params.iterator_A, params.problem_size, params.ptr_A, thread_idx,
+        MatrixCoord(threadblock_tile_idx.m() * Mma::Shape::kM,
+                    iterator_A_column_offset));
+
     typename Mma::IteratorB iterator_B(
-      params.iterator_B,
-      params.problem_size,
-      params.ptr_B,
-      thread_idx,
-      MatrixCoord(
-        threadblock_tile_idx.k() * Mma::Shape::kK,
-        threadblock_tile_idx.n() * Mma::Shape::kN
-      )
-    );
+        params.iterator_B, params.problem_size, params.ptr_B, thread_idx,
+        MatrixCoord(threadblock_tile_idx.k() * Mma::Shape::kK,
+                    threadblock_tile_idx.n() * Mma::Shape::kN));
 
     // Broadcast the warp_id computed by lane 0 to ensure dependent code
     // is compiled as warp-uniform.
@@ -347,7 +314,8 @@ struct ImplicitGemmConvolution {
     accumulators.clear();
 
     // Compute threadblock-scoped matrix multiply-add
-    mma(params.gemm_k_iterations, accumulators, iterator_A, iterator_B, accumulators, params.gemm_k_iterations_per_channel);
+    mma(params.gemm_k_iterations, accumulators, iterator_A, iterator_B,
+        accumulators, params.gemm_k_iterations_per_channel);
 
     //
     // Epilogue
@@ -356,59 +324,53 @@ struct ImplicitGemmConvolution {
     EpilogueOutputOp output_op(params.output_op);
 
     // Construct the semaphore.
-    int block_idx = threadblock_tile_idx.m() + threadblock_tile_idx.n() * params.grid_tiled_shape.m();
+    int block_idx = threadblock_tile_idx.m() +
+                    threadblock_tile_idx.n() * params.grid_tiled_shape.m();
 
     Semaphore semaphore(params.semaphore + block_idx, thread_idx);
-    
+
     // Compute logical position within grid
     threadblock_tile_idx =
         threadblock_swizzle.get_tile_offset(params.swizzle_log_tile);
 
     // If performing a reduction via split-K, fetch the initial synchronization
-    if (params.split_k_mode == SplitKMode::kSerial && params.grid_tiled_shape.k() > 1) {
-        
+    if (params.split_k_mode == SplitKMode::kSerial &&
+        params.grid_tiled_shape.k() > 1) {
+
       // Fetch the synchronization lock initially but do not block.
       semaphore.fetch();
 
-      // Indicate which position in a serial reduction the output operator is currently updating
-      output_op.set_k_partition(threadblock_tile_idx.k(), params.grid_tiled_shape.k());
+      // Indicate which position in a serial reduction the output operator is
+      // currently updating
+      output_op.set_k_partition(threadblock_tile_idx.k(),
+                                params.grid_tiled_shape.k());
     }
 
-    MatrixCoord threadblock_offset(
-      threadblock_tile_idx.m() * Mma::Shape::kM,
-      threadblock_tile_idx.n() * Mma::Shape::kN
-    );
+    MatrixCoord threadblock_offset(threadblock_tile_idx.m() * Mma::Shape::kM,
+                                   threadblock_tile_idx.n() * Mma::Shape::kN);
 
     // Tile iterator writing to destination tensor
     typename Epilogue::OutputTileIterator iterator_D(
-      params.iterator_D,
-      params.ptr_D,
-      ConvOutputIteratorParameter::extent(params.problem_size),
-      thread_idx,
-      threadblock_offset
-    );
-    
+        params.iterator_D, params.ptr_D,
+        ConvOutputIteratorParameter::extent(params.problem_size), thread_idx,
+        threadblock_offset);
+
     // Tile iterator reading from source accumulator tensor
     typename Epilogue::OutputTileIterator iterator_C(
-      params.iterator_C,
-      params.ptr_C,
-      ConvOutputIteratorParameter::extent(params.problem_size),
-      thread_idx,
-      threadblock_offset
-    );
-
+        params.iterator_C, params.ptr_C,
+        ConvOutputIteratorParameter::extent(params.problem_size), thread_idx,
+        threadblock_offset);
 
     // Construct the epilogue
-    Epilogue epilogue(
-      shared_storage.epilogue, 
-      thread_idx, 
-      warp_idx, 
-      lane_idx);
+    Epilogue epilogue(shared_storage.epilogue, thread_idx, warp_idx, lane_idx);
 
-    // Wait on the semaphore - this latency may have been covered by iterator construction
-    if (params.split_k_mode == SplitKMode::kSerial && params.grid_tiled_shape.k() > 1) {
-        
-      // For subsequent threadblocks, the source matrix is held in the 'D' tensor.
+    // Wait on the semaphore - this latency may have been covered by iterator
+    // construction
+    if (params.split_k_mode == SplitKMode::kSerial &&
+        params.grid_tiled_shape.k() > 1) {
+
+      // For subsequent threadblocks, the source matrix is held in the 'D'
+      // tensor.
       if (threadblock_tile_idx.k()) {
         iterator_C = iterator_D;
       }
@@ -418,33 +380,34 @@ struct ImplicitGemmConvolution {
     }
     // Each split-k-slice writes to a unique tensor location
     else if (params.split_k_mode == SplitKMode::kParallel) {
-      iterator_D.add_pointer_offset(threadblock_tile_idx.k() * 
-        cutlass::conv::implicit_gemm_tensor_c_size(ConvOperator, params.problem_size));
+      iterator_D.add_pointer_offset(threadblock_tile_idx.k() *
+                                    cutlass::conv::implicit_gemm_tensor_c_size(
+                                        ConvOperator, params.problem_size));
     }
 
     // Run efficient epilogue
     epilogue(output_op, iterator_D, accumulators, iterator_C);
-  
+
     //
     // Release the semaphore
     //
 
-    if (params.split_k_mode == SplitKMode::kSerial && params.grid_tiled_shape.k() > 1) { 
+    if (params.split_k_mode == SplitKMode::kSerial &&
+        params.grid_tiled_shape.k() > 1) {
 
       int lock = 0;
       if (params.grid_tiled_shape.k() == threadblock_tile_idx.k() + 1) {
 
         // The final threadblock resets the semaphore for subsequent grids.
         lock = 0;
-      }
-      else {
+      } else {
         // Otherwise, the semaphore is incremented
         lock = threadblock_tile_idx.k() + 1;
       }
-      
+
       semaphore.release(lock);
     }
-  } 
+  }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

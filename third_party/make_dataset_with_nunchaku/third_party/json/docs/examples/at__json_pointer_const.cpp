@@ -8,9 +8,10 @@ int main()
 {
     // create a JSON value
     const json j =
-    {
-        {"number", 1}, {"string", "foo"}, {"array", {1, 2}}
-    };
+        {
+            {"number", 1},
+            {"string", "foo"},
+            {"array", {1, 2}}};
 
     // read-only access
 

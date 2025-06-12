@@ -1,22 +1,20 @@
 from contextlib import contextmanager
 from typing import Any, Dict, List, Tuple, Union
-from sgm.modules.distributions.distributions import DiagonalGaussianDistribution
+
 import pytorch_lightning as pl
 import torch
 from omegaconf import ListConfig, OmegaConf
 from safetensors.torch import load_file as load_safetensors
 from torch.optim.lr_scheduler import LambdaLR
 
+from sgm.modules.distributions.distributions import \
+    DiagonalGaussianDistribution
+
 from ..modules import UNCONDITIONAL_CONFIG
 from ..modules.diffusionmodules.wrappers import OPENAIUNETWRAPPER
 from ..modules.ema import LitEma
-from ..util import (
-    default,
-    disabled_train,
-    get_obj_from_str,
-    instantiate_from_config,
-    log_txt_as_img,
-)
+from ..util import (default, disabled_train, get_obj_from_str,
+                    instantiate_from_config, log_txt_as_img)
 
 
 class DiffusionEngine(pl.LightningModule):
@@ -118,14 +116,14 @@ class DiffusionEngine(pl.LightningModule):
     @torch.no_grad()
     def decode_first_stage(self, z):
         z = 1.0 / self.scale_factor * z
-        #debugging!!!!
+        # debugging!!!!
         with torch.autocast("cuda", enabled=not self.disable_first_stage_autocast):
             out = self.first_stage_model.decode(z)
         return out
-    
+
     @torch.no_grad()
     def encode_first_stage_with_denoise(self, x, use_sample=True, is_stage1=False):
-        with torch.amp.autocast('cuda'):
+        with torch.amp.autocast("cuda"):
             if is_stage1:
                 h = self.first_stage_model.denoise_encoder_s1(x)
             else:
@@ -155,37 +153,32 @@ class DiffusionEngine(pl.LightningModule):
     def shared_step(self, batch: Dict) -> Any:
         x_ori = self.get_input(batch)
         device = x_ori.device
-        
+
         _z = self.encode_first_stage_with_denoise(x_ori, use_sample=False)
-        
+
         x_stage1 = self.decode_first_stage(_z)
         x = self.encode_first_stage(x_stage1)
-        
+
         N = _z.shape[0]
-        
+
         batch["global_step"] = self.global_step
-        batch["original_size_as_tuple"] = (
-            torch.tensor([1024, 1024], dtype=torch.int32, device=device)
-                 .repeat(N, 1)
-        )
-        batch["crop_coords_top_left"] = (
-            torch.tensor([0, 0], dtype=torch.int32, device=device)
-                 .repeat(N, 1)
-        )
-        batch["target_size_as_tuple"] = (
-            torch.tensor([1024, 1024], dtype=torch.int32, device=device)
-                 .repeat(N, 1)
-        )
-        batch["aesthetic_score"] = (
-            torch.tensor([9.0], device=device).repeat(N, 1)
-        )
+        batch["original_size_as_tuple"] = torch.tensor(
+            [1024, 1024], dtype=torch.int32, device=device
+        ).repeat(N, 1)
+        batch["crop_coords_top_left"] = torch.tensor(
+            [0, 0], dtype=torch.int32, device=device
+        ).repeat(N, 1)
+        batch["target_size_as_tuple"] = torch.tensor(
+            [1024, 1024], dtype=torch.int32, device=device
+        ).repeat(N, 1)
+        batch["aesthetic_score"] = torch.tensor([9.0], device=device).repeat(N, 1)
 
         batch["control"] = _z
-        #batch["control_scale"] = (
+        # batch["control_scale"] = (
         #    torch.tensor([1.0] * N,  device=device).unsqueeze(-1)
-        #)
-        batch["control_scale"] = torch.tensor([1.0],  device=device).unsqueeze(-1)
-        
+        # )
+        batch["control_scale"] = torch.tensor([1.0], device=device).unsqueeze(-1)
+
         loss, loss_dict = self(x, batch)
         return loss, loss_dict
 
@@ -207,9 +200,7 @@ class DiffusionEngine(pl.LightningModule):
 
         # if self.scheduler_config is not None:
         lr = self.optimizers().param_groups[0]["lr"]
-        self.log(
-            "lr_abs", lr, prog_bar=True, logger=True, on_step=False, on_epoch=True
-        )
+        self.log("lr_abs", lr, prog_bar=True, logger=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -340,9 +331,9 @@ class DiffusionEngine(pl.LightningModule):
 
         c, uc = self.conditioner.get_unconditional_conditioning(
             batch,
-            force_uc_zero_embeddings=ucg_keys
-            if len(self.conditioner.embedders) > 0
-            else [],
+            force_uc_zero_embeddings=(
+                ucg_keys if len(self.conditioner.embedders) > 0 else []
+            ),
         )
 
         sampling_kwargs = {}

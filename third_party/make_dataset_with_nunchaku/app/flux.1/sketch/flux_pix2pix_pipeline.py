@@ -1,14 +1,15 @@
 from typing import Any, Callable
 
 import torch
-from diffusers.pipelines.flux.pipeline_flux import FluxPipeline, FluxPipelineOutput, FluxTransformer2DModel
+from diffusers.pipelines.flux.pipeline_flux import (FluxPipeline,
+                                                    FluxPipelineOutput,
+                                                    FluxTransformer2DModel)
 from einops import rearrange
+from nunchaku.utils import load_state_dict_in_safetensors
 from peft.tuners import lora
 from PIL import Image
 from torch import nn
 from torchvision.transforms import functional as F
-
-from nunchaku.utils import load_state_dict_in_safetensors
 
 
 class FluxPix2pixTurboPipeline(FluxPipeline):
@@ -18,7 +19,9 @@ class FluxPix2pixTurboPipeline(FluxPipeline):
 
         for n, p in transformer.named_parameters():
             if n in self._tuned_state_dict:
-                new_data = self._tuned_state_dict[n] * alpha + self._original_state_dict[n] * (1 - alpha)
+                new_data = self._tuned_state_dict[
+                    n
+                ] * alpha + self._original_state_dict[n] * (1 - alpha)
                 new_data = new_data.to(self._execution_device).to(p.dtype)
                 p.data.copy_(new_data)
         if self.precision == "bf16":
@@ -112,7 +115,11 @@ class FluxPix2pixTurboPipeline(FluxPipeline):
 
         device = self._execution_device
 
-        lora_scale = self.joint_attention_kwargs.get("scale", None) if self.joint_attention_kwargs is not None else None
+        lora_scale = (
+            self.joint_attention_kwargs.get("scale", None)
+            if self.joint_attention_kwargs is not None
+            else None
+        )
         (
             prompt_embeds,
             pooled_prompt_embeds,
@@ -129,7 +136,9 @@ class FluxPix2pixTurboPipeline(FluxPipeline):
         )
 
         if isinstance(image, str):
-            image = Image.open(image).convert("RGB").resize((width, height), Image.LANCZOS)
+            image = (
+                Image.open(image).convert("RGB").resize((width, height), Image.LANCZOS)
+            )
         else:
             image = image.resize((width, height), Image.LANCZOS)
         image_t = F.to_tensor(image) < 0.5
@@ -139,25 +148,41 @@ class FluxPix2pixTurboPipeline(FluxPipeline):
         if hasattr(self, "erosion_kernel"):
             erosion_kernel = self.erosion_kernel
         else:
-            erosion_kernel = torch.ones(1, 1, kernel_size, kernel_size, dtype=self.dtype, device=device)
+            erosion_kernel = torch.ones(
+                1, 1, kernel_size, kernel_size, dtype=self.dtype, device=device
+            )
             self.erosion_kernel = erosion_kernel
 
-        image_t = nn.functional.conv2d(image_t[:, :1], erosion_kernel, padding=kernel_size // 2) > kernel_size**2 - 0.1
+        image_t = (
+            nn.functional.conv2d(
+                image_t[:, :1], erosion_kernel, padding=kernel_size // 2
+            )
+            > kernel_size**2 - 0.1
+        )
         image_t = torch.concat([image_t, image_t, image_t], dim=1).to(self.dtype)
 
         image_t = (image_t - 0.5) * 2
 
         # 4. Prepare latent variables
-        encoded_image = self.vae.encode(image_t, return_dict=False)[0].sample(generator=generator)
-        encoded_image = (encoded_image - self.vae.config.shift_factor) * self.vae.config.scaling_factor
+        encoded_image = self.vae.encode(image_t, return_dict=False)[0].sample(
+            generator=generator
+        )
+        encoded_image = (
+            encoded_image - self.vae.config.shift_factor
+        ) * self.vae.config.scaling_factor
         if generator is None:
             z = torch.randn_like(encoded_image)
         else:
             z = torch.randn(
-                encoded_image.shape, device=generator.device, dtype=encoded_image.dtype, generator=generator
+                encoded_image.shape,
+                device=generator.device,
+                dtype=encoded_image.dtype,
+                generator=generator,
             ).to(device)
         noisy_latent = z * (1 - alpha) + encoded_image * alpha
-        noisy_latent = rearrange(noisy_latent, "b c (h ph) (w pw) -> b (h w) (c ph pw)", ph=2, pw=2)
+        noisy_latent = rearrange(
+            noisy_latent, "b c (h ph) (w pw) -> b (h w) (c ph pw)", ph=2, pw=2
+        )
         num_channels_latents = self.transformer.config.in_channels // 4
         _, latent_image_ids = self.prepare_latents(
             batch_size * num_images_per_prompt,
@@ -199,8 +224,12 @@ class FluxPix2pixTurboPipeline(FluxPipeline):
             image = encoded_output
 
         else:
-            encoded_output = self._unpack_latents(encoded_output, height, width, self.vae_scale_factor)
-            encoded_output = (encoded_output / self.vae.config.scaling_factor) + self.vae.config.shift_factor
+            encoded_output = self._unpack_latents(
+                encoded_output, height, width, self.vae_scale_factor
+            )
+            encoded_output = (
+                encoded_output / self.vae.config.scaling_factor
+            ) + self.vae.config.shift_factor
             image = self.vae.decode(encoded_output, return_dict=False)[0]
             image = self.image_processor.postprocess(image, output_type=output_type)
 

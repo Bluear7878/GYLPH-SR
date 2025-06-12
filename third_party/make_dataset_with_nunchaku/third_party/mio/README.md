@@ -1,4 +1,5 @@
 # mio
+
 An easy to use header-only cross-platform C++11 memory mapping library with an MIT license.
 
 mio has been created with the goal to be easily includable (i.e. no dependencies) in any C++ project that needs memory mapped file IO without the need to pull in Boost.
@@ -6,6 +7,7 @@ mio has been created with the goal to be easily includable (i.e. no dependencies
 Please feel free to open an issue, I'll try to address any concerns as best I can.
 
 ### Why?
+
 Because memory mapping is the best thing since sliced bread!
 
 More seriously, the primary motivation for writing this library instead of using Boost.Iostreams, was the lack of support for establishing a memory mapping with an already open file handle/descriptor. This is possible with mio.
@@ -16,44 +18,56 @@ Albeit a minor nitpick, Boost.Iostreams implements memory mapped file IO with a 
 In mio, there are two classes to cover the two use-cases: one that is move-only (basically a zero-cost abstraction over the system specific mmapping functions), and the other that acts just like its Boost.Iostreams counterpart, with shared semantics.
 
 ### How to create a mapping
+
 NOTE: the file must exist before creating a mapping.
 
 There are three ways to map a file into memory:
 
 - Using the constructor, which throws a `std::system_error` on failure:
+
 ```c++
 mio::mmap_source mmap(path, offset, size_to_map);
 ```
+
 or you can omit the `offset` and `size_to_map` arguments, in which case the
 entire file is mapped:
+
 ```c++
 mio::mmap_source mmap(path);
 ```
 
 - Using the factory function:
+
 ```c++
 std::error_code error;
 mio::mmap_source mmap = mio::make_mmap_source(path, offset, size_to_map, error);
 ```
+
 or:
+
 ```c++
 mio::mmap_source mmap = mio::make_mmap_source(path, error);
 ```
 
 - Using the `map` member function:
+
 ```c++
 std::error_code error;
 mio::mmap_source mmap;
 mmap.map(path, offset, size_to_map, error);
 ```
+
 or:
+
 ```c++
 mmap.map(path, error);
 ```
+
 **NOTE:** The constructors **require** exceptions to be enabled. If you prefer
 to build your projects with `-fno-exceptions`, you can still use the other ways.
 
 Moreover, in each case, you can provide either some string type for the file's path, or you can use an existing, valid file handle.
+
 ```c++
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -70,6 +84,7 @@ int main()
     // ...
 }
 ```
+
 However, mio does not check whether the provided file descriptor has the same access permissions as the desired mapping, so the mapping may fail. Such errors are reported via the `std::error_code` out parameter that is passed to the mapping function.
 
 **WINDOWS USERS**: This library *does* support the use of wide character types
@@ -109,7 +124,7 @@ int main()
     // You can use any iterator based function.
     std::fill(rw_mmap.begin(), rw_mmap.end(), 'a');
 
-    // Or manually iterate through the mapped region just as if it were any other 
+    // Or manually iterate through the mapped region just as if it were any other
     // container, and change each byte's value (since this is a read-write mapping).
     for (auto& b : rw_mmap) {
         b += 10;
@@ -157,6 +172,7 @@ void allocate_file(const std::string& path, const int size)
 ```
 
 `mio::basic_mmap` is move-only, but if multiple copies to the same mapping are needed, use `mio::basic_shared_mmap` which has `std::shared_ptr` semantics and has the same interface as `mio::basic_mmap`.
+
 ```c++
 #include <mio/shared_mmap.hpp>
 
@@ -168,6 +184,7 @@ shared_mmap4.map("path", offset, size_to_map, error);
 ```
 
 It's possible to define the type of a byte (which has to be the same width as `char`), though aliases for the most common ones are provided by default:
+
 ```c++
 using mmap_source = basic_mmap_source<char>;
 using ummap_source = basic_mmap_source<unsigned char>;
@@ -175,7 +192,9 @@ using ummap_source = basic_mmap_source<unsigned char>;
 using mmap_sink = basic_mmap_sink<char>;
 using ummap_sink = basic_mmap_sink<unsigned char>;
 ```
+
 But it may be useful to define your own types, say when using the new `std::byte` type in C++17:
+
 ```c++
 using mmap_source = mio::basic_mmap_source<std::byte>;
 using mmap_sink = mio::basic_mmap_sink<std::byte>;
@@ -183,16 +202,20 @@ using mmap_sink = mio::basic_mmap_sink<std::byte>;
 
 Though generally not needed, since mio maps users requested offsets to page boundaries, you can query the underlying system's page allocation granularity by invoking `mio::page_size()`, which is located in `mio/page.hpp`.
 
-### Single Header File 
-Mio can be added to your project as a single header file simply by including `\single_include\mio\mio.hpp`. Single header files can be regenerated at any time by running the `amalgamate.py` script within `\third_party`.  
+### Single Header File
+
+Mio can be added to your project as a single header file simply by including `\single_include\mio\mio.hpp`. Single header files can be regenerated at any time by running the `amalgamate.py` script within `\third_party`.
+
 ```
 python amalgamate.py -c config.json -s ../include
 ```
 
 ## CMake
+
 As a header-only library, mio has no compiled components. Nevertheless, a [CMake](https://cmake.org/overview/) build system is provided to allow easy testing, installation, and subproject composition on many platforms and operating systems.
 
 ### Testing
+
 Mio is distributed with a small suite of tests and examples.
 When mio is configured as the highest level CMake project, this suite of executables is built by default.
 Mio's test executables are integrated with the CMake test driver program, [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html).
@@ -283,8 +306,9 @@ cmake --build . --config Release --target install
 Note that the last command of the installation sequence may require administrator privileges (e.g. `sudo`) if the installation root directory lies outside your home directory.
 
 This installation
-+ copies the mio header files to the `include/mio` subdirectory of the installation root
-+ generates and copies several CMake configuration files to the `share/cmake/mio` subdirectory of the installation root
+
+- copies the mio header files to the `include/mio` subdirectory of the installation root
+- generates and copies several CMake configuration files to the `share/cmake/mio` subdirectory of the installation root
 
 This latter step allows downstream CMake projects to consume mio via `find_package`, e.g.
 
@@ -297,9 +321,9 @@ target_link_libraries( MyTarget PUBLIC mio::mio )
 
 If mio was installed to a non-conventional location, it may be necessary for downstream projects to specify the mio installation root directory via either
 
-+ the `CMAKE_PREFIX_PATH` configuration option,
-+ the `CMAKE_PREFIX_PATH` environment variable, or
-+ `mio_DIR` environment variable.
+- the `CMAKE_PREFIX_PATH` configuration option,
+- the `CMAKE_PREFIX_PATH` environment variable, or
+- `mio_DIR` environment variable.
 
 Please see the [Kitware documentation](https://cmake.org/cmake/help/v3.0/command/find_package.html) for more information.
 
@@ -313,6 +337,7 @@ cpack -G <generator name> -C Release
 The list of supported generators varies from platform to platform. See the output of `cpack --help` for a complete list of supported generators on your platform.
 
 ### Subproject Composition
+
 To use mio as a subproject, copy the mio repository to your project's dependencies/externals folder.
 If your project is version controlled using git, a git submodule or git subtree can be used to syncronize with the updstream repository.
 The [use](https://services.github.com/on-demand/downloads/submodule-vs-subtree-cheat-sheet/) and [relative advantages](https://andrey.nering.com.br/2016/git-submodules-vs-subtrees/) of these git facilities is beyond the scope of this document, but in brief, each may be established as follows:
@@ -336,4 +361,3 @@ target_link_libraries( MyTarget PUBLIC <mio::mio | mio> )
 ```
 
 Note that, as a subproject, mio's tests and examples will not be built and CPack integration is deferred to the host project.
-

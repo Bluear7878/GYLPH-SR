@@ -18,18 +18,20 @@ the library.
 
 ??? example
 
-    The example shows how to use `NLOHMANN_JSON_NAMESPACE` instead of just `nlohmann`, as well as how to output the value
-    of `NLOHMANN_JSON_NAMESPACE`.
+````
+The example shows how to use `NLOHMANN_JSON_NAMESPACE` instead of just `nlohmann`, as well as how to output the value
+of `NLOHMANN_JSON_NAMESPACE`.
 
-    ```cpp
-    --8<-- "examples/nlohmann_json_namespace.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/nlohmann_json_namespace.output"
-    ```
+```cpp
+--8<-- "examples/nlohmann_json_namespace.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/nlohmann_json_namespace.output"
+```
+````
 
 ## See also
 

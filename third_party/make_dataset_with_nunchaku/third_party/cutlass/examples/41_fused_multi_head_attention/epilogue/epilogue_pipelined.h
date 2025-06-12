@@ -74,19 +74,16 @@ namespace cutlass {
 namespace epilogue {
 namespace threadblock {
 
-template <typename Op>
-struct ApplyEpilogueOp {
-  static CUTLASS_DEVICE typename Op::FragmentOutput apply(
-      Op const& output_op,
-      int row_id,
-      typename Op::FragmentAccumulator const& accum,
-      typename Op::FragmentOutput const& source) {
+template <typename Op> struct ApplyEpilogueOp {
+  static CUTLASS_DEVICE typename Op::FragmentOutput
+  apply(Op const &output_op, int row_id,
+        typename Op::FragmentAccumulator const &accum,
+        typename Op::FragmentOutput const &source) {
     return output_op(accum, source);
   }
-  static CUTLASS_DEVICE typename Op::FragmentOutput apply(
-      Op const& output_op,
-      int row_id,
-      typename Op::FragmentAccumulator const& accum) {
+  static CUTLASS_DEVICE typename Op::FragmentOutput
+  apply(Op const &output_op, int row_id,
+        typename Op::FragmentAccumulator const &accum) {
     return output_op(accum);
   }
 };
@@ -94,46 +91,37 @@ struct ApplyEpilogueOp {
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Epilogue operator
-template <
-    typename Shape_, ///< Shape of threadblock tile (concept: GemmShape)
-    typename WarpMmaOperator_, ///< Warp-level MMA operator (concept:
-                               ///< gemm::warp::MmaTensorOp)
-    int PartitionsK, ///< Number of partitions of the K dimension
-    typename OutputTileIterator_, ///< Tile iterator writing output tensors
-    typename AccumulatorFragmentIterator_, ///< Fragment iterator selecting
-                                           ///< accumulators
-    typename WarpTileIterator_, ///< Warp-scoped tile iterator writing
-                                ///< accumulators to SMEM
-    typename SharedLoadIterator_, ///< Threadblock-scoped tile iterator loading
-                                  ///< from SMEM
-    typename OutputOp_, ///< Output operator
-    typename Padding_, ///< Padding added to SMEM allocation to avoid bank
-                       ///< conflicts (concept: MatrixShape)
-    int FragmentsPerPartition =
-        1, ///< Used to coarsten the epilogue granularity
-    int IterationsUnroll = ///< Used to reduce binary size when epilogue op is
-                           ///< large
-    (!IsEpilogueFunctorHeavy<OutputOp_>::value),
-    typename OutputTileSourceIterator_ =
-        OutputTileIterator_ ///< Tile iterator reading tensors
-    >
-class EpiloguePipelined : public EpilogueBase<
-                              Shape_,
-                              typename WarpMmaOperator_::Shape,
-                              PartitionsK,
-                              AccumulatorFragmentIterator_,
-                              WarpTileIterator_,
-                              Padding_,
-                              FragmentsPerPartition> {
- public:
-  using Base = EpilogueBase<
-      Shape_,
-      typename WarpMmaOperator_::Shape,
-      PartitionsK,
-      AccumulatorFragmentIterator_,
-      WarpTileIterator_,
-      Padding_,
-      FragmentsPerPartition>;
+template <typename Shape_, ///< Shape of threadblock tile (concept: GemmShape)
+          typename WarpMmaOperator_, ///< Warp-level MMA operator (concept:
+                                     ///< gemm::warp::MmaTensorOp)
+          int PartitionsK, ///< Number of partitions of the K dimension
+          typename OutputTileIterator_, ///< Tile iterator writing output
+                                        ///< tensors
+          typename AccumulatorFragmentIterator_, ///< Fragment iterator
+                                                 ///< selecting accumulators
+          typename WarpTileIterator_,   ///< Warp-scoped tile iterator writing
+                                        ///< accumulators to SMEM
+          typename SharedLoadIterator_, ///< Threadblock-scoped tile iterator
+                                        ///< loading from SMEM
+          typename OutputOp_,           ///< Output operator
+          typename Padding_, ///< Padding added to SMEM allocation to avoid bank
+                             ///< conflicts (concept: MatrixShape)
+          int FragmentsPerPartition =
+              1,                 ///< Used to coarsten the epilogue granularity
+          int IterationsUnroll = ///< Used to reduce binary size when epilogue
+                                 ///< op is large
+          (!IsEpilogueFunctorHeavy<OutputOp_>::value),
+          typename OutputTileSourceIterator_ =
+              OutputTileIterator_ ///< Tile iterator reading tensors
+          >
+class EpiloguePipelined
+    : public EpilogueBase<Shape_, typename WarpMmaOperator_::Shape, PartitionsK,
+                          AccumulatorFragmentIterator_, WarpTileIterator_,
+                          Padding_, FragmentsPerPartition> {
+public:
+  using Base = EpilogueBase<Shape_, typename WarpMmaOperator_::Shape,
+                            PartitionsK, AccumulatorFragmentIterator_,
+                            WarpTileIterator_, Padding_, FragmentsPerPartition>;
 
   using Shape = Shape_;
   using WarpMmaOperator = WarpMmaOperator_;
@@ -173,28 +161,25 @@ class EpiloguePipelined : public EpilogueBase<
   using ConstTensorRef = typename OutputTileIterator::ConstTensorRef;
 
   /// Array type used to output
-  using OutputAccessType = Array<
-      typename OutputTileIterator::Element,
-      OutputTileIterator::kElementsPerAccess>;
-  using SourceAccessType = Array<
-      typename OutputTileSourceIterator::Element,
-      OutputTileSourceIterator::kElementsPerAccess>;
+  using OutputAccessType = Array<typename OutputTileIterator::Element,
+                                 OutputTileIterator::kElementsPerAccess>;
+  using SourceAccessType = Array<typename OutputTileSourceIterator::Element,
+                                 OutputTileSourceIterator::kElementsPerAccess>;
 
   /// Array type used by output functor
-  using AccumulatorAccessType = Array<
-      typename WarpTileIterator::Element,
-      OutputTileIterator::kElementsPerAccess>;
+  using AccumulatorAccessType = Array<typename WarpTileIterator::Element,
+                                      OutputTileIterator::kElementsPerAccess>;
 
   /// Number of warps
   using WarpCount = typename Base::WarpCount;
 
   static int constexpr kSmemTiles = Base::kFragmentsPerIteration > 1
-      ? Base::kFragmentsPerIteration
-      : kPartitionsK;
+                                        ? Base::kFragmentsPerIteration
+                                        : kPartitionsK;
   static int constexpr kSmemPointerOffset =
       Base::SharedStorage::StorageShape::kCount / kSmemTiles;
 
- public:
+public:
   static_assert(
       OutputTileSourceIterator::Fragment::kElements ==
           OutputTileIterator::Fragment::kElements,
@@ -207,70 +192,66 @@ class EpiloguePipelined : public EpilogueBase<
           OutputTileIterator::Fragment::kElements,
       "Mismatch between shared load iterator and output tile iterator.");
 
-  static_assert(
-      OutputTileIterator::kElementsPerAccess,
-      "OutputTileIterator::kElementsPerAccess must not be zero.");
+  static_assert(OutputTileIterator::kElementsPerAccess,
+                "OutputTileIterator::kElementsPerAccess must not be zero.");
 
-  static_assert(
-      !(OutputTileIterator::Fragment::kElements %
-        OutputTileIterator::kElementsPerAccess),
-      "Divisibility");
+  static_assert(!(OutputTileIterator::Fragment::kElements %
+                  OutputTileIterator::kElementsPerAccess),
+                "Divisibility");
 
- private:
+private:
   /// Loads fragment from shared memory aligned with output tensor
   SharedLoadIterator shared_load_iterator_;
 
- public:
+public:
   /// Constructor
   CUTLASS_DEVICE
   EpiloguePipelined(
-      typename Base::SharedStorage& shared_storage, ///< Shared storage object
+      typename Base::SharedStorage &shared_storage, ///< Shared storage object
       int thread_idx, ///< ID of a thread within the threadblock
-      int warp_idx, ///< ID of warp within threadblock
-      int lane_idx ///< Id of thread within warp
+      int warp_idx,   ///< ID of warp within threadblock
+      int lane_idx    ///< Id of thread within warp
       )
       : Base(shared_storage, thread_idx, warp_idx, lane_idx),
         shared_load_iterator_(shared_storage.reference(), thread_idx) {}
 
   /// Streams the result to global memory
   CUTLASS_DEVICE
-  void operator()(
-      OutputOp const& output_op, ///< Output operator
-      OutputTileIterator
-          destination_iterator, ///< Tile iterator for destination
-      AccumulatorTile const&
-          accumulators, ///< Complete warp-level accumulator tile
-      OutputTileSourceIterator
-          source_iterator) { ///< Threadblock tile coordinate in GEMM (in units
-                             ///< of threadblock tiles)
+  void
+  operator()(OutputOp const &output_op, ///< Output operator
+             OutputTileIterator
+                 destination_iterator, ///< Tile iterator for destination
+             AccumulatorTile const
+                 &accumulators, ///< Complete warp-level accumulator tile
+             OutputTileSourceIterator
+                 source_iterator) { ///< Threadblock tile coordinate in GEMM (in
+                                    ///< units of threadblock tiles)
 
     if (!output_op.is_source_needed()) {
       compute_source_not_needed_(output_op, destination_iterator, accumulators);
     } else {
-      compute_source_needed_(
-          output_op, destination_iterator, accumulators, source_iterator);
+      compute_source_needed_(output_op, destination_iterator, accumulators,
+                             source_iterator);
     }
   }
   CUTLASS_DEVICE
-  void operator()(
-      OutputOp const& output_op, ///< Output operator
-      OutputTileIterator
-          destination_iterator, ///< Tile iterator for destination
-      AccumulatorTile const&
-          accumulators) { ///< Complete warp-level accumulator tile
+  void operator()(OutputOp const &output_op, ///< Output operator
+                  OutputTileIterator
+                      destination_iterator, ///< Tile iterator for destination
+                  AccumulatorTile const
+                      &accumulators) { ///< Complete warp-level accumulator tile
     compute_source_not_needed_(output_op, destination_iterator, accumulators);
   }
 
- private:
-  template <class Seq>
-  struct acc2smem_source_not_needed;
+private:
+  template <class Seq> struct acc2smem_source_not_needed;
 
   template <size_t... Seq>
   struct acc2smem_source_not_needed<cutlass::index_sequence<Seq...>> {
     template <int Advance>
-    CUTLASS_DEVICE static void helper(
-        AccumulatorFragmentIterator accum_fragment_iterator,
-        WarpTileIterator& warp_tile_iterator) {
+    CUTLASS_DEVICE static void
+    helper(AccumulatorFragmentIterator accum_fragment_iterator,
+           WarpTileIterator &warp_tile_iterator) {
       CUTLASS_PRAGMA_UNROLL
       for (int i = 0; i < Advance; i++) {
         ++accum_fragment_iterator;
@@ -296,32 +277,29 @@ class EpiloguePipelined : public EpilogueBase<
     }
 
     CUTLASS_DEVICE
-    static void push(
-        size_t pos,
-        AccumulatorFragmentIterator const& iterator_begin,
-        WarpTileIterator& warp_tile_iterator) {
-      int dummy[] = {
-          (pos == (Seq * Base::kFragmentsPerIteration)) &&
-          (helper<Seq * Base::kFragmentsPerIteration>(
-               iterator_begin, warp_tile_iterator),
-           0)...};
+    static void push(size_t pos,
+                     AccumulatorFragmentIterator const &iterator_begin,
+                     WarpTileIterator &warp_tile_iterator) {
+      int dummy[] = {(pos == (Seq * Base::kFragmentsPerIteration)) &&
+                     (helper<Seq * Base::kFragmentsPerIteration>(
+                          iterator_begin, warp_tile_iterator),
+                      0)...};
 
       CUTLASS_UNUSED(dummy[0]);
     }
   };
 
-  static_assert(
-      kPartitionsK == 1 || Base::kFragmentsPerIteration == 1,
-      "One of these must be exactly 1.");
+  static_assert(kPartitionsK == 1 || Base::kFragmentsPerIteration == 1,
+                "One of these must be exactly 1.");
 
   /// Streams the result to global memory
   CUTLASS_DEVICE
   void compute_source_not_needed_(
-      OutputOp const& output_op, ///< Output operator
+      OutputOp const &output_op, ///< Output operator
       OutputTileIterator
           destination_iterator, ///< Tile iterator for destination
-      AccumulatorTile const&
-          accumulators ///< Complete warp-level accumulator tile
+      AccumulatorTile const
+          &accumulators ///< Complete warp-level accumulator tile
   ) {
     //
     // Iterator over warp-level accumulator fragment
@@ -333,10 +311,9 @@ class EpiloguePipelined : public EpilogueBase<
     // Iterate over accumulator tile
     //
 
-#pragma unroll(                                                          \
-    IterationsUnroll                                                     \
-        ? OutputTileIterator::kIterations / Base::kFragmentsPerIteration \
-        : 1)
+#pragma unroll(IterationsUnroll ? OutputTileIterator::kIterations /            \
+                                      Base::kFragmentsPerIteration             \
+                                : 1)
     for (int iter = 0; iter < OutputTileIterator::kIterations;
          iter += Base::kFragmentsPerIteration) {
       //
@@ -375,8 +352,8 @@ class EpiloguePipelined : public EpilogueBase<
                 aligned_accum_fragment[0], aligned_accum_fragment[i]);
           }
 
-          shared_load_iterator_.add_pointer_offset(
-              (1 - kPartitionsK) * kSmemPointerOffset);
+          shared_load_iterator_.add_pointer_offset((1 - kPartitionsK) *
+                                                   kSmemPointerOffset);
         }
 
         //
@@ -386,9 +363,7 @@ class EpiloguePipelined : public EpilogueBase<
         typename OutputTileIterator::Fragment output_fragment;
 
         apply_output_operator_source_not_needed_(
-            destination_iterator.thread_start_row(),
-            output_fragment,
-            output_op,
+            destination_iterator.thread_start_row(), output_fragment, output_op,
             aligned_accum_fragment[0]);
 
         //
@@ -406,15 +381,14 @@ class EpiloguePipelined : public EpilogueBase<
     }
   }
 
-  template <class Seq>
-  struct acc2smem_source_needed;
+  template <class Seq> struct acc2smem_source_needed;
 
   template <size_t... Seq>
   struct acc2smem_source_needed<cutlass::index_sequence<Seq...>> {
     template <int Advance>
-    CUTLASS_DEVICE static void helper(
-        AccumulatorFragmentIterator accum_fragment_iterator,
-        WarpTileIterator& warp_tile_iterator) {
+    CUTLASS_DEVICE static void
+    helper(AccumulatorFragmentIterator accum_fragment_iterator,
+           WarpTileIterator &warp_tile_iterator) {
       CUTLASS_PRAGMA_UNROLL
       for (int i = 0; i < Advance; i++) {
         ++accum_fragment_iterator;
@@ -426,24 +400,22 @@ class EpiloguePipelined : public EpilogueBase<
     }
 
     CUTLASS_DEVICE
-    static void push(
-        size_t pos,
-        AccumulatorFragmentIterator const& iterator_begin,
-        WarpTileIterator& warp_tile_iterator) {
-      int dummy[] = {
-          (pos == Seq) &&
-          (helper<Seq>(iterator_begin, warp_tile_iterator), 0)...};
+    static void push(size_t pos,
+                     AccumulatorFragmentIterator const &iterator_begin,
+                     WarpTileIterator &warp_tile_iterator) {
+      int dummy[] = {(pos == Seq) &&
+                     (helper<Seq>(iterator_begin, warp_tile_iterator), 0)...};
     }
   };
 
   /// Streams the result to global memory
   CUTLASS_DEVICE
   void compute_source_needed_(
-      OutputOp const& output_op, ///< Output operator
+      OutputOp const &output_op, ///< Output operator
       OutputTileIterator
           destination_iterator, ///< Tile iterator for destination
-      AccumulatorTile const&
-          accumulators, ///< Complete warp-level accumulator tile
+      AccumulatorTile const
+          &accumulators, ///< Complete warp-level accumulator tile
       OutputTileSourceIterator
           source_iterator ///< Threadblock tile coordinate in GEMM (in units of
                           ///< threadblock tiles)
@@ -478,9 +450,9 @@ class EpiloguePipelined : public EpilogueBase<
         source_iterator.load(source_fragment[(iter + 1) % 2]);
       }
       ++source_iterator;
-      acc2smem_source_needed<
-          cutlass::make_index_sequence<OutputTileIterator::kIterations>>::
-          push(iter, accum_fragment_iterator, this->warp_tile_iterator_);
+      acc2smem_source_needed<cutlass::make_index_sequence<
+          OutputTileIterator::kIterations>>::push(iter, accum_fragment_iterator,
+                                                  this->warp_tile_iterator_);
 
       __syncthreads();
 
@@ -502,12 +474,12 @@ class EpiloguePipelined : public EpilogueBase<
         for (int i = 1; i < kPartitionsK; ++i) {
           shared_load_iterator_.add_pointer_offset(kSmemPointerOffset);
           shared_load_iterator_.load(aligned_accum_fragment[i]);
-          aligned_accum_fragment[0] = add_fragments(
-              aligned_accum_fragment[0], aligned_accum_fragment[i]);
+          aligned_accum_fragment[0] = add_fragments(aligned_accum_fragment[0],
+                                                    aligned_accum_fragment[i]);
         }
 
-        shared_load_iterator_.add_pointer_offset(
-            (1 - kPartitionsK) * kSmemPointerOffset);
+        shared_load_iterator_.add_pointer_offset((1 - kPartitionsK) *
+                                                 kSmemPointerOffset);
       }
 
       //
@@ -517,11 +489,8 @@ class EpiloguePipelined : public EpilogueBase<
       typename OutputTileIterator::Fragment output_fragment;
 
       apply_output_operator_(
-          destination_iterator.thread_start_row(),
-          output_fragment,
-          output_op,
-          aligned_accum_fragment[0],
-          source_fragment[iter % 2]);
+          destination_iterator.thread_start_row(), output_fragment, output_op,
+          aligned_accum_fragment[0], source_fragment[iter % 2]);
 
       //
       // Store the final result
@@ -535,22 +504,22 @@ class EpiloguePipelined : public EpilogueBase<
   /// Helper to invoke the output functor over each vector of output
   CUTLASS_DEVICE
   void apply_output_operator_(
-      int begin_row,
-      typename OutputTileIterator::Fragment& output_fragment,
-      OutputOp const& output_op, ///< Output operator
-      typename SharedLoadIterator::Fragment const& aligned_accum_fragment,
-      typename OutputTileSourceIterator::Fragment const& source_fragment) {
-    OutputAccessType* output_frag_ptr =
-        reinterpret_cast<OutputAccessType*>(&output_fragment);
+      int begin_row, typename OutputTileIterator::Fragment &output_fragment,
+      OutputOp const &output_op, ///< Output operator
+      typename SharedLoadIterator::Fragment const &aligned_accum_fragment,
+      typename OutputTileSourceIterator::Fragment const &source_fragment) {
+    OutputAccessType *output_frag_ptr =
+        reinterpret_cast<OutputAccessType *>(&output_fragment);
 
-    AccumulatorAccessType const* compute_frag_ptr =
-        reinterpret_cast<AccumulatorAccessType const*>(&aligned_accum_fragment);
+    AccumulatorAccessType const *compute_frag_ptr =
+        reinterpret_cast<AccumulatorAccessType const *>(
+            &aligned_accum_fragment);
 
-    SourceAccessType const* source_frag_ptr =
-        reinterpret_cast<SourceAccessType const*>(&source_fragment);
+    SourceAccessType const *source_frag_ptr =
+        reinterpret_cast<SourceAccessType const *>(&source_fragment);
 
     int const kOutputOpIterations = OutputTileIterator::Fragment::kElements /
-        OutputTileIterator::kElementsPerAccess;
+                                    OutputTileIterator::kElementsPerAccess;
 
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kOutputOpIterations; ++i) {
@@ -558,26 +527,25 @@ class EpiloguePipelined : public EpilogueBase<
       output_frag_ptr[i] = ApplyEpilogueOp<OutputOp>::apply(
           output_op,
           begin_row + getRowOffset(i * OutputTileIterator::kElementsPerAccess),
-          compute_frag_ptr[i],
-          source_frag_ptr[i]);
+          compute_frag_ptr[i], source_frag_ptr[i]);
     }
   }
 
   /// Helper to invoke the output functor over each vector of output
   CUTLASS_DEVICE
   void apply_output_operator_source_not_needed_(
-      int begin_row,
-      typename OutputTileIterator::Fragment& output_fragment,
-      OutputOp const& output_op, ///< Output operator
-      typename SharedLoadIterator::Fragment const& aligned_accum_fragment) {
-    OutputAccessType* output_frag_ptr =
-        reinterpret_cast<OutputAccessType*>(&output_fragment);
+      int begin_row, typename OutputTileIterator::Fragment &output_fragment,
+      OutputOp const &output_op, ///< Output operator
+      typename SharedLoadIterator::Fragment const &aligned_accum_fragment) {
+    OutputAccessType *output_frag_ptr =
+        reinterpret_cast<OutputAccessType *>(&output_fragment);
 
-    AccumulatorAccessType const* compute_frag_ptr =
-        reinterpret_cast<AccumulatorAccessType const*>(&aligned_accum_fragment);
+    AccumulatorAccessType const *compute_frag_ptr =
+        reinterpret_cast<AccumulatorAccessType const *>(
+            &aligned_accum_fragment);
 
     int const kOutputOpIterations = OutputTileIterator::Fragment::kElements /
-        OutputTileIterator::kElementsPerAccess;
+                                    OutputTileIterator::kElementsPerAccess;
 
     CUTLASS_PRAGMA_UNROLL
     for (int i = 0; i < kOutputOpIterations; ++i) {
@@ -601,16 +569,16 @@ class EpiloguePipelined : public EpilogueBase<
         CUTLASS_PRAGMA_UNROLL
         for (int row = 0; row < ThreadMap::Iterations::kRow; ++row) {
           int row_offset = row * ThreadMap::Delta::kRow +
-              group * ThreadMap::Delta::kGroup +
-              cluster * ThreadMap::Delta::kCluster;
+                           group * ThreadMap::Delta::kGroup +
+                           cluster * ThreadMap::Delta::kCluster;
           int frag_row_idx =
-              (row +
-               ThreadMap::Iterations::kRow *
-                   (group + ThreadMap::Iterations::kGroup * cluster));
+              (row + ThreadMap::Iterations::kRow *
+                         (group + ThreadMap::Iterations::kGroup * cluster));
           CUTLASS_PRAGMA_UNROLL
           for (int column = 0; column < ThreadMap::Iterations::kColumn;
                ++column) {
-            int frag_idx = ThreadMap::kElementsPerAccess *
+            int frag_idx =
+                ThreadMap::kElementsPerAccess *
                 (frag_row_idx * ThreadMap::Iterations::kColumn + column);
             if (i < frag_idx + ThreadMap::kElementsPerAccess) {
               return row_offset;

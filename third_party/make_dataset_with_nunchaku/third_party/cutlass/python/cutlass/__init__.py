@@ -39,15 +39,18 @@ import cutlass_library
 
 def _cuda_install_path_from_nvcc() -> str:
     import subprocess
-    # Attempt to detect CUDA_INSTALL_PATH based on location of NVCC
-    result = subprocess.run(['which', 'nvcc'], capture_output=True)
-    if result.returncode != 0:
-        raise Exception(f'Unable to find nvcc via `which` utility.')
 
-    cuda_install_path = result.stdout.decode('utf-8').split('/bin/nvcc')[0]
+    # Attempt to detect CUDA_INSTALL_PATH based on location of NVCC
+    result = subprocess.run(["which", "nvcc"], capture_output=True)
+    if result.returncode != 0:
+        raise Exception(f"Unable to find nvcc via `which` utility.")
+
+    cuda_install_path = result.stdout.decode("utf-8").split("/bin/nvcc")[0]
     if not os.path.isdir(cuda_install_path):
-        raise Exception(f'Environment variable "CUDA_INSTALL_PATH" is not defined, '
-                        f'and default path of {cuda_install_path} does not exist.')
+        raise Exception(
+            f'Environment variable "CUDA_INSTALL_PATH" is not defined, '
+            f"and default path of {cuda_install_path} does not exist."
+        )
 
     return cuda_install_path
 
@@ -58,6 +61,8 @@ CUTLASS_PATH = os.getenv("CUTLASS_PATH", cutlass_library.source_path)
 source_path = CUTLASS_PATH
 
 _CUDA_INSTALL_PATH = None
+
+
 def cuda_install_path():
     """
     Helper method for on-demand fetching of the CUDA installation path. This allows
@@ -66,28 +71,28 @@ def cuda_install_path():
     """
     global _CUDA_INSTALL_PATH
     if _CUDA_INSTALL_PATH is None:
-        _CUDA_INSTALL_PATH = os.getenv("CUDA_INSTALL_PATH", _cuda_install_path_from_nvcc())
+        _CUDA_INSTALL_PATH = os.getenv(
+            "CUDA_INSTALL_PATH", _cuda_install_path_from_nvcc()
+        )
     return _CUDA_INSTALL_PATH
+
 
 CACHE_FILE = "compiled_cache.db"
 
-from cutlass_library import (
-    DataType,
-    EpilogueScheduleType,
-    KernelScheduleType,
-    LayoutType,
-    OpcodeClass,
-    TileDescription,
-    TileSchedulerType,
-)
+from cutlass_library import (DataType, EpilogueScheduleType,
+                             KernelScheduleType, LayoutType, OpcodeClass,
+                             TileDescription, TileSchedulerType)
 
 this = sys.modules[__name__]
 this.logger = logging.getLogger(__name__)
 
 # RMM is only supported for Python 3.9+
-if (sys.version_info.major == 3 and sys.version_info.major > 8) or sys.version_info.major > 3:
+if (
+    sys.version_info.major == 3 and sys.version_info.major > 8
+) or sys.version_info.major > 3:
     try:
         import rmm
+
         this.use_rmm = True
     except ImportError:
         this.use_rmm = False
@@ -104,12 +109,15 @@ def set_log_level(level: int):
     """
     this.logger.setLevel(level)
 
+
 set_log_level(logging.ERROR)
 
-from cutlass.library_defaults import OptionRegistry
 from cutlass.backend.utils.device import device_cc
+from cutlass.library_defaults import OptionRegistry
 
 this._option_registry = None
+
+
 def get_option_registry():
     """
     Helper method for on-demand initialization of the options registry. This avoids building
@@ -120,31 +128,35 @@ def get_option_registry():
         this._option_registry = OptionRegistry(device_cc())
     return this._option_registry
 
-this.__version__ = '3.3.0'
+
+this.__version__ = "3.3.0"
 
 from cutlass.backend import create_memory_pool
+from cutlass.backend.evt.ir.tensor import Tensor
 from cutlass.emit.pytorch import pytorch
+from cutlass.op.conv import Conv2d, Conv2dDgrad, Conv2dFprop, Conv2dWgrad
 from cutlass.op.gemm import Gemm
-from cutlass.op.conv import Conv2d, Conv2dFprop, Conv2dDgrad, Conv2dWgrad
 from cutlass.op.gemm_grouped import GroupedGemm
 from cutlass.op.op import OperationBase
-from cutlass.backend.evt.ir.tensor import Tensor
-
 
 this.memory_pool = None
+
+
 def get_memory_pool():
-    """"
+    """ "
     Helper method for on-demand memory pool. This avoids allocating the memory pool unnecessarily
     whe CUTLASS is imported.
     """
     if this.use_rmm and this.memory_pool is None:
-        this.memory_pool = create_memory_pool(init_pool_size=2 ** 30, max_pool_size=2 ** 32)
+        this.memory_pool = create_memory_pool(init_pool_size=2**30, max_pool_size=2**32)
     return this.memory_pool
 
 
 from cuda import cuda, cudart
 
 this._device_id = None
+
+
 def initialize_cuda_context():
     if this._device_id is not None:
         return
@@ -157,7 +169,7 @@ def initialize_cuda_context():
     if device_id is None:
         if not this.use_rmm:
             # Manually call cuInit() and create context by making a runtime API call
-            err, = cudart.cudaFree(0)
+            (err,) = cudart.cudaFree(0)
             if err != cudart.cudaError_t.cudaSuccess:
                 raise RuntimeError(f"cudaFree failed with error {err}")
 

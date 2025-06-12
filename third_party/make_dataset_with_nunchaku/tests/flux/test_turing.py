@@ -1,6 +1,6 @@
 import pytest
-
 from nunchaku.utils import get_precision, is_turing
+
 from .utils import run_test
 
 
@@ -12,7 +12,12 @@ from .utils import run_test
     ],
 )
 def test_flux_dev_on_turing(
-    height: int, width: int, num_inference_steps: int, cpu_offload: bool, i2f_mode: str | None, expected_lpips: float
+    height: int,
+    width: int,
+    num_inference_steps: int,
+    cpu_offload: bool,
+    i2f_mode: str | None,
+    expected_lpips: float,
 ):
     run_test(
         precision=get_precision(),

@@ -12,9 +12,18 @@ if __name__ == "__main__":
         help="path to the quantized model safetensor file",
         default="mit-han-lab/svdq-int4-flux.1-dev/transformer_blocks.safetensors",
     )
-    parser.add_argument("--lora-path", type=str, required=True, help="path to LoRA weights safetensor file")
-    parser.add_argument("--output-root", type=str, default="", help="root to the output safetensor file")
-    parser.add_argument("--lora-name", type=str, default=None, help="name of the LoRA weights")
+    parser.add_argument(
+        "--lora-path",
+        type=str,
+        required=True,
+        help="path to LoRA weights safetensor file",
+    )
+    parser.add_argument(
+        "--output-root", type=str, default="", help="root to the output safetensor file"
+    )
+    parser.add_argument(
+        "--lora-name", type=str, default=None, help="name of the LoRA weights"
+    )
     parser.add_argument(
         "--dtype",
         type=str,

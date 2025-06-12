@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2023 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,34 +18,36 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief High-level interface for running a grouped version of a CUTLASS kernel
+    \brief High-level interface for running a grouped version of a CUTLASS
+   kernel
 */
 
 #pragma once
 
+#include "cutlass/complex.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/fast_math.h"
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/matrix_coord.h"
-#include "cutlass/complex.h"
 #include "cutlass/semaphore.h"
 
+#include "cutlass/gemm/kernel/gemm_grouped_problem_visitor.h"
+#include "cutlass/gemm/kernel/gemm_transpose_operands.h"
 #include "cutlass/layout/matrix.h"
 #include "cutlass/trace.h"
-#include "cutlass/gemm/kernel/gemm_transpose_operands.h"
-#include "cutlass/gemm/kernel/gemm_grouped_problem_visitor.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,12 +58,10 @@ namespace kernel {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// High-level interface for running a grouped version of a CUTLASS kernel
-template <
-  typename BaseKernel_   ///! Kernel-scoped matrix multiply-accumulate
->
+template <typename BaseKernel_ ///! Kernel-scoped matrix multiply-accumulate
+          >
 struct GroupedKernel {
 public:
-
   using BaseKernel = BaseKernel_;
   using Epilogue = typename BaseKernel::Epilogue;
 
@@ -84,7 +84,8 @@ public:
   using TensorRefD = TensorRef<ElementC, LayoutC>;
   static int const kAlignmentC = BaseKernel::kAlignmentC;
 
-  using ElementAccumulator = typename BaseKernel::Mma::Policy::Operator::ElementC;
+  using ElementAccumulator =
+      typename BaseKernel::Mma::Policy::Operator::ElementC;
 
   using EpilogueOutputOp = typename BaseKernel::EpilogueOutputOp;
   using ThreadblockSwizzle = typename BaseKernel::ThreadblockSwizzle;
@@ -118,16 +119,15 @@ public:
   };
 
 public:
-
   //
   // Methods
   //
 
   CUTLASS_DEVICE
-  GroupedKernel() { }
+  GroupedKernel() {}
 
   /// Determines whether kernel satisfies alignment
-  static Status can_implement(cutlass::gemm::GemmCoord const & problem_size) {
+  static Status can_implement(cutlass::gemm::GemmCoord const &problem_size) {
     return Status::kSuccess;
   }
 
@@ -139,7 +139,8 @@ public:
   CUTLASS_DEVICE
   void operator()(Params &params, SharedStorage &shared_storage) {
 
-    ThreadblockSwizzle swizzle(params.problem_visitor, shared_storage.problem_visitor, blockIdx.x);
+    ThreadblockSwizzle swizzle(params.problem_visitor,
+                               shared_storage.problem_visitor, blockIdx.x);
 
     if (ProblemVisitor::kTransposed) {
       params.transpose();
@@ -150,7 +151,8 @@ public:
     // Outer 'persistent' loop to iterate over tiles
     while (swizzle.problem_visitor.next_tile()) {
 
-      typename BaseKernel::Params mma_params = params.to_single_params(swizzle.problem_visitor);
+      typename BaseKernel::Params mma_params =
+          params.to_single_params(swizzle.problem_visitor);
       mma.run_with_swizzle(mma_params, shared_storage.kernel, swizzle);
 
       // Next tile

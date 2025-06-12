@@ -13,22 +13,22 @@ BSON (Binary JSON) is a binary format in which zero or more ordered key/value pa
 so-called document).
 
 1. Returns a byte vector containing the BSON serialization.
-2. Writes the BSON serialization to an output adapter.
+1. Writes the BSON serialization to an output adapter.
 
 The exact mapping and its limitations is described on a [dedicated page](../../features/binary_formats/bson.md).
 
 ## Parameters
 
 `j` (in)
-:   JSON value to serialize
+: JSON value to serialize
 
 `o` (in)
-:   output adapter to write serialization to
+: output adapter to write serialization to
 
 ## Return value
 
 1. BSON serialization as byte vector
-2. (none)
+1. (none)
 
 ## Exception safety
 
@@ -42,17 +42,19 @@ Linear in the size of the JSON value `j`.
 
 ??? example
 
-    The example shows the serialization of a JSON value to a byte vector in BSON format.
-     
-    ```cpp
-    --8<-- "examples/to_bson.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/to_bson.output"
-    ```
+````
+The example shows the serialization of a JSON value to a byte vector in BSON format.
+
+```cpp
+--8<-- "examples/to_bson.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/to_bson.output"
+```
+````
 
 ## Version history
 

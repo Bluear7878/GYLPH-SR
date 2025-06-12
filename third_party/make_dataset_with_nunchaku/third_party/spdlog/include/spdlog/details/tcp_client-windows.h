@@ -63,7 +63,7 @@ public:
         if (is_connected()) {
             close();
         }
-        struct addrinfo hints {};
+        struct addrinfo hints{};
         ZeroMemory(&hints, sizeof(hints));
 
         hints.ai_family = AF_UNSPEC;      // To work with IPv4, IPv6, and so on

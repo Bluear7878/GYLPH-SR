@@ -3,8 +3,7 @@
 
 using json = nlohmann::json;
 
-namespace ns
-{
+namespace ns {
 enum TaskState
 {
     TS_STOPPED,
@@ -14,24 +13,22 @@ enum TaskState
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(TaskState,
-{
-    { TS_INVALID, nullptr },
-    { TS_STOPPED, "stopped" },
-    { TS_RUNNING, "running" },
-    { TS_COMPLETED, "completed" }
-})
+                             {{TS_INVALID, nullptr},
+                              {TS_STOPPED, "stopped"},
+                              {TS_RUNNING, "running"},
+                              {TS_COMPLETED, "completed"}})
 
 enum class Color
 {
-    red, green, blue, unknown
+    red,
+    green,
+    blue,
+    unknown
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(Color,
-{
-    { Color::unknown, "unknown" }, { Color::red, "red" },
-    { Color::green, "green" }, { Color::blue, "blue" }
-})
-} // namespace ns
+                             {{Color::unknown, "unknown"}, {Color::red, "red"}, {Color::green, "green"}, {Color::blue, "blue"}})
+}  // namespace ns
 
 int main()
 {

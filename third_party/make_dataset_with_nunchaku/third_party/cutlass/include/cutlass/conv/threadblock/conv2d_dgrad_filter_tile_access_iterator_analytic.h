@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,40 +18,42 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing loading of convolution tiles mapped to GEMM B (filter tile) 
-    matrix from memory.
+    \brief Templates implementing loading of convolution tiles mapped to GEMM B
+   (filter tile) matrix from memory.
 
     This iterator assumes TensorNHWC layout of tensors in Global Memory.
 
-    The iterator is specialized for each of the three convolution operators: forward propagation (Fprop),
-    backward data gradient (Dgrad), and backward weight gradient (Wgrad). 
+    The iterator is specialized for each of the three convolution operators:
+   forward propagation (Fprop), backward data gradient (Dgrad), and backward
+   weight gradient (Wgrad).
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/conv/conv2d_problem_size.h"
+#include "cutlass/conv/convolution.h"
+#include "cutlass/conv/threadblock/conv2d_params.h"
 #include "cutlass/coord.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/layout/tensor.h"
 #include "cutlass/predicate_vector.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
-#include "cutlass/layout/pitch_linear.h"
-#include "cutlass/layout/tensor.h"
-#include "cutlass/layout/matrix.h"
-#include "cutlass/conv/convolution.h"
-#include "cutlass/conv/conv2d_problem_size.h"
-#include "cutlass/conv/threadblock/conv2d_params.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,34 +63,21 @@ namespace threadblock {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename Shape_,
-  typename Element_,
-  typename ThreadMap_,
-  conv::StrideSupport StrideSupport_ = conv::StrideSupport::kUnity,
-  typename AccessType_ = cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>
->
+template <typename Shape_, typename Element_, typename ThreadMap_,
+          conv::StrideSupport StrideSupport_ = conv::StrideSupport::kUnity,
+          typename AccessType_ =
+              cutlass::AlignedArray<Element_, ThreadMap_::kElementsPerAccess>>
 class Conv2dDgradFilterTileAccessIteratorAnalytic;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Conv2dDgradFilterTileAccessIteratorAnalytic strided dgrad needs special handling to skip MMAs
-// on non-contributing w positions
-template <
-  typename Shape_,
-  typename Element_,
-  typename ThreadMap_,
-  typename AccessType_
->
-class Conv2dDgradFilterTileAccessIteratorAnalytic <
-  Shape_,
-  Element_,
-  ThreadMap_,
-  conv::StrideSupport::kStrided,
-  AccessType_
-> {
+// Conv2dDgradFilterTileAccessIteratorAnalytic strided dgrad needs special
+// handling to skip MMAs on non-contributing w positions
+template <typename Shape_, typename Element_, typename ThreadMap_,
+          typename AccessType_>
+class Conv2dDgradFilterTileAccessIteratorAnalytic<
+    Shape_, Element_, ThreadMap_, conv::StrideSupport::kStrided, AccessType_> {
 public:
-  
   //
   // Types
   //
@@ -102,27 +91,29 @@ public:
   using TensorCoord = typename Layout::TensorCoord;
   using Index = typename Layout::Index;
   using LongIndex = typename Layout::LongIndex;
-  static IteratorAlgorithm const kIteratorAlgorithm = conv::IteratorAlgorithm::kAnalytic;
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      conv::IteratorAlgorithm::kAnalytic;
   static StrideSupport const kStrideSupport = conv::StrideSupport::kStrided;
   static int const kConvDim = 2;
   using ConvProblemSize = typename conv::Conv2dProblemSize;
 
-  static int const kAccessesPerVector = ThreadMap::kElementsPerAccess / AccessType::kElements;
-  
-  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements), 
-    "Vectors implied by the thread map must be divisible by the access type.");
+  static int const kAccessesPerVector =
+      ThreadMap::kElementsPerAccess / AccessType::kElements;
 
-  static_assert(sizeof_bits<Element>::value >= 8, 
-    "DGRAD requires elements of size 8b or larger.");
-  
+  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements),
+                "Vectors implied by the thread map must be divisible by the "
+                "access type.");
+
+  static_assert(sizeof_bits<Element>::value >= 8,
+                "DGRAD requires elements of size 8b or larger.");
+
   //
   // Parameters structure
   //
-  
+
   using Params = Conv2dAnalyticParams<Layout>;
 
 private:
-
   Params const &params_;
   Conv2dProblemSize const &problem_size_;
   LongIndex iteration_contiguous_;
@@ -130,45 +121,38 @@ private:
   LongIndex iteration_vector_;
   char const *pointer_;
 
-  // For a fixed filter position (r,s) find and fill offset_k_, offset_c_ in strided and contiguous dimension 
+  // For a fixed filter position (r,s) find and fill offset_k_, offset_c_ in
+  // strided and contiguous dimension
   int filter_r_;
   int filter_s_;
   int start_r_;
   int start_s_;
-  int offset_k_[ThreadMap::Iterations::kStrided]; 
+  int offset_k_[ThreadMap::Iterations::kStrided];
   int offset_c_[ThreadMap::Iterations::kContiguous];
 
 public:
-
   CUTLASS_HOST_DEVICE
   Conv2dDgradFilterTileAccessIteratorAnalytic(
-    Params const &params, 
-    Conv2dProblemSize const &problem_size,
-    Element const *ptr,
-    int thread_idx,
-    int start_r, int start_s,
-    MatrixCoord const &threadblock_offset = MatrixCoord()
-  ):
-    params_(params), 
-    problem_size_(problem_size), 
-    pointer_(reinterpret_cast<char const *>(ptr)), 
-    filter_r_(start_r),
-    filter_s_(start_s),
-    start_r_(start_r),
-    start_s_(start_s) {
+      Params const &params, Conv2dProblemSize const &problem_size,
+      Element const *ptr, int thread_idx, int start_r, int start_s,
+      MatrixCoord const &threadblock_offset = MatrixCoord())
+      : params_(params), problem_size_(problem_size),
+        pointer_(reinterpret_cast<char const *>(ptr)), filter_r_(start_r),
+        filter_s_(start_s), start_r_(start_r), start_s_(start_s) {
 
-    layout::PitchLinearCoord thread_coord = ThreadMap::initial_offset(thread_idx);
+    layout::PitchLinearCoord thread_coord =
+        ThreadMap::initial_offset(thread_idx);
 
     CUTLASS_PRAGMA_UNROLL
     for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
-      offset_c_[c] = threadblock_offset.column() + thread_coord.contiguous() 
-        + c * ThreadMap::Delta::kContiguous;
+      offset_c_[c] = threadblock_offset.column() + thread_coord.contiguous() +
+                     c * ThreadMap::Delta::kContiguous;
     }
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
-      offset_k_[s] = 
-        threadblock_offset.row() + thread_coord.strided() + s * ThreadMap::Delta::kStrided;
+      offset_k_[s] = threadblock_offset.row() + thread_coord.strided() +
+                     s * ThreadMap::Delta::kStrided;
     }
   }
 
@@ -177,7 +161,8 @@ public:
   void set_iteration_index(Index index) {
     iteration_vector_ = index % kAccessesPerVector;
     int residual_access = index / kAccessesPerVector;
-    iteration_contiguous_ = residual_access % ThreadMap::Iterations::kContiguous;
+    iteration_contiguous_ =
+        residual_access % ThreadMap::Iterations::kContiguous;
     iteration_strided_ = residual_access / ThreadMap::Iterations::kContiguous;
   }
 
@@ -197,14 +182,14 @@ public:
     // Restore filter_s
     filter_s_ = start_s_;
 
-    // Move filter_r 
+    // Move filter_r
     filter_r_ += problem_size_.stride_h;
     if (filter_r_ < problem_size_.R) {
       return;
     }
     // Restore filter_r
     filter_r_ = start_r_;
-    
+
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
       offset_k_[s] += Shape::kRow * problem_size_.split_k_slices;
@@ -217,8 +202,9 @@ public:
   TensorCoord at() const {
 
     int k = offset_k_[iteration_strided_];
-    int c = offset_c_[iteration_contiguous_] + iteration_vector_ * AccessType::kElements;
-    
+    int c = offset_c_[iteration_contiguous_] +
+            iteration_vector_ * AccessType::kElements;
+
     return TensorCoord(k, filter_r_, filter_s_, c);
   }
 
@@ -238,8 +224,8 @@ public:
     TensorCoord coord = at();
     LongIndex offset = params_.layout(coord);
 
-    return reinterpret_cast<AccessType const *>(pointer_ + offset * sizeof_bits<Element>::value / 8);
-
+    return reinterpret_cast<AccessType const *>(
+        pointer_ + offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Increments to the next memory access
@@ -262,7 +248,7 @@ public:
       return *this;
     }
     iteration_strided_ = 0;
- 
+
     return *this;
   }
 
@@ -280,23 +266,13 @@ public:
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Conv2dDgradFilterTileAccessIteratorAnalytic unity strided dgrad is more performant for  dgrad
-// on problem sizes with stride = {1x1}
-template <
-  typename Shape_,
-  typename Element_,
-  typename ThreadMap_,
-  typename AccessType_
->
-class Conv2dDgradFilterTileAccessIteratorAnalytic <
-  Shape_,
-  Element_,
-  ThreadMap_,
-  conv::StrideSupport::kUnity,
-  AccessType_
->{
+// Conv2dDgradFilterTileAccessIteratorAnalytic unity strided dgrad is more
+// performant for  dgrad on problem sizes with stride = {1x1}
+template <typename Shape_, typename Element_, typename ThreadMap_,
+          typename AccessType_>
+class Conv2dDgradFilterTileAccessIteratorAnalytic<
+    Shape_, Element_, ThreadMap_, conv::StrideSupport::kUnity, AccessType_> {
 public:
-  
   //
   // Types
   //
@@ -310,27 +286,29 @@ public:
   using TensorCoord = typename Layout::TensorCoord;
   using Index = typename Layout::Index;
   using LongIndex = typename Layout::LongIndex;
-  static IteratorAlgorithm const kIteratorAlgorithm = conv::IteratorAlgorithm::kAnalytic;
+  static IteratorAlgorithm const kIteratorAlgorithm =
+      conv::IteratorAlgorithm::kAnalytic;
   static StrideSupport const kStrideSupport = conv::StrideSupport::kUnity;
   static int const kConvDim = 2;
   using ConvProblemSize = typename conv::Conv2dProblemSize;
- 
-  static int const kAccessesPerVector = ThreadMap::kElementsPerAccess / AccessType::kElements;
-  
-  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements), 
-    "Vectors implied by the thread map must be divisible by the access type.");
- 
-  static_assert(sizeof_bits<Element>::value >= 8, 
-    "DGRAD requires elements of size 8b or larger.");
-  
+
+  static int const kAccessesPerVector =
+      ThreadMap::kElementsPerAccess / AccessType::kElements;
+
+  static_assert(!(ThreadMap::kElementsPerAccess % AccessType::kElements),
+                "Vectors implied by the thread map must be divisible by the "
+                "access type.");
+
+  static_assert(sizeof_bits<Element>::value >= 8,
+                "DGRAD requires elements of size 8b or larger.");
+
   //
   // Parameters structure
   //
-  
+
   using Params = Conv2dAnalyticParams<Layout>;
 
 private:
-
   Params const &params_;
   Conv2dProblemSize const &problem_size_;
   LongIndex iteration_contiguous_;
@@ -338,40 +316,36 @@ private:
   LongIndex iteration_vector_;
   char const *pointer_;
 
-  // For a fixed filter position (r,s) find and fill offset_k_, offset_c_ in strided and contiguous dimension 
+  // For a fixed filter position (r,s) find and fill offset_k_, offset_c_ in
+  // strided and contiguous dimension
   int filter_r_;
   int filter_s_;
-  int offset_k_[ThreadMap::Iterations::kStrided]; 
+  int offset_k_[ThreadMap::Iterations::kStrided];
   int offset_c_[ThreadMap::Iterations::kContiguous];
 
 public:
-
   CUTLASS_HOST_DEVICE
   Conv2dDgradFilterTileAccessIteratorAnalytic(
-    Params const &params, 
-    Conv2dProblemSize const &problem_size,
-    Element const *ptr,
-    int thread_idx,
-    MatrixCoord const &threadblock_offset = MatrixCoord()
-  ):
-    params_(params), 
-    problem_size_(problem_size), 
-    pointer_(reinterpret_cast<char const *>(ptr)), 
-    filter_r_(0),
-    filter_s_(0) {
+      Params const &params, Conv2dProblemSize const &problem_size,
+      Element const *ptr, int thread_idx,
+      MatrixCoord const &threadblock_offset = MatrixCoord())
+      : params_(params), problem_size_(problem_size),
+        pointer_(reinterpret_cast<char const *>(ptr)), filter_r_(0),
+        filter_s_(0) {
 
-    layout::PitchLinearCoord thread_coord = ThreadMap::initial_offset(thread_idx);
+    layout::PitchLinearCoord thread_coord =
+        ThreadMap::initial_offset(thread_idx);
 
     CUTLASS_PRAGMA_UNROLL
     for (int c = 0; c < ThreadMap::Iterations::kContiguous; ++c) {
-      offset_c_[c] = threadblock_offset.column() + thread_coord.contiguous() 
-        + c * ThreadMap::Delta::kContiguous;
+      offset_c_[c] = threadblock_offset.column() + thread_coord.contiguous() +
+                     c * ThreadMap::Delta::kContiguous;
     }
 
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
-      offset_k_[s] = 
-        threadblock_offset.row() + thread_coord.strided() + s * ThreadMap::Delta::kStrided;
+      offset_k_[s] = threadblock_offset.row() + thread_coord.strided() +
+                     s * ThreadMap::Delta::kStrided;
     }
   }
 
@@ -380,7 +354,8 @@ public:
   void set_iteration_index(Index index) {
     iteration_vector_ = index % kAccessesPerVector;
     int residual_access = index / kAccessesPerVector;
-    iteration_contiguous_ = residual_access % ThreadMap::Iterations::kContiguous;
+    iteration_contiguous_ =
+        residual_access % ThreadMap::Iterations::kContiguous;
     iteration_strided_ = residual_access / ThreadMap::Iterations::kContiguous;
   }
 
@@ -403,7 +378,7 @@ public:
       return;
     }
     filter_r_ = 0;
-    
+
     CUTLASS_PRAGMA_UNROLL
     for (int s = 0; s < ThreadMap::Iterations::kStrided; ++s) {
       offset_k_[s] += Shape::kRow * problem_size_.split_k_slices;
@@ -416,7 +391,8 @@ public:
   TensorCoord at() const {
 
     int k = offset_k_[iteration_strided_];
-    int c = offset_c_[iteration_contiguous_] + iteration_vector_ * AccessType::kElements;
+    int c = offset_c_[iteration_contiguous_] +
+            iteration_vector_ * AccessType::kElements;
 
     return TensorCoord(k, filter_r_, filter_s_, c);
   }
@@ -437,7 +413,8 @@ public:
     TensorCoord coord = at();
     LongIndex offset = params_.layout(coord);
 
-    return reinterpret_cast<AccessType const *>(pointer_ + offset * sizeof_bits<Element>::value / 8);
+    return reinterpret_cast<AccessType const *>(
+        pointer_ + offset * sizeof_bits<Element>::value / 8);
   }
 
   /// Increments to the next memory access
@@ -459,7 +436,7 @@ public:
       return *this;
     }
     iteration_strided_ = 0;
- 
+
     return *this;
   }
 

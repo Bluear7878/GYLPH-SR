@@ -33,4 +33,3 @@ cutlass_example_add_executable(
   09_turing_tensorop_conv2dfprop
   turing_tensorop_conv2dfprop.cu
   )
-

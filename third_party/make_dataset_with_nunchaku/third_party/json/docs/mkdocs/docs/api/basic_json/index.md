@@ -21,19 +21,19 @@ class basic_json;
 
 ## Template parameters
 
-| Template parameter   | Description                                                               | Derived type                                |
+| Template parameter | Description | Derived type |
 |----------------------|---------------------------------------------------------------------------|---------------------------------------------|
-| `ObjectType`         | type for JSON objects                                                     | [`object_t`](object_t.md)                   |
-| `ArrayType`          | type for JSON arrays                                                      | [`array_t`](array_t.md)                     |
-| `StringType`         | type for JSON strings and object keys                                     | [`string_t`](string_t.md)                   |
-| `BooleanType`        | type for JSON booleans                                                    | [`boolean_t`](boolean_t.md)                 |
-| `NumberIntegerType`  | type for JSON integer numbers                                             | [`number_integer_t`](number_integer_t.md)   |
-| `NumberUnsignedType` | type for JSON unsigned integer numbers                                    | [`number_unsigned_t`](number_unsigned_t.md) |
-| `NumberFloatType`    | type for JSON floating-point numbers                                      | [`number_float_t`](number_float_t.md)       |
-| `AllocatorType`      | type of the allocator to use                                              |                                             |
-| `JSONSerializer`     | the serializer to resolve internal calls to `to_json()` and `from_json()` | [`json_serializer`](json_serializer.md)     |
-| `BinaryType`         | type for binary arrays                                                    | [`binary_t`](binary_t.md)                   |
-| `CustomBaseClass`    | extension point for user code                                             | [`json_base_class_t`](json_base_class_t.md) |
+| `ObjectType` | type for JSON objects | [`object_t`](object_t.md) |
+| `ArrayType` | type for JSON arrays | [`array_t`](array_t.md) |
+| `StringType` | type for JSON strings and object keys | [`string_t`](string_t.md) |
+| `BooleanType` | type for JSON booleans | [`boolean_t`](boolean_t.md) |
+| `NumberIntegerType` | type for JSON integer numbers | [`number_integer_t`](number_integer_t.md) |
+| `NumberUnsignedType` | type for JSON unsigned integer numbers | [`number_unsigned_t`](number_unsigned_t.md) |
+| `NumberFloatType` | type for JSON floating-point numbers | [`number_float_t`](number_float_t.md) |
+| `AllocatorType` | type of the allocator to use | |
+| `JSONSerializer` | the serializer to resolve internal calls to `to_json()` and `from_json()` | [`json_serializer`](json_serializer.md) |
+| `BinaryType` | type for binary arrays | [`binary_t`](binary_t.md) |
+| `CustomBaseClass` | extension point for user code | [`json_base_class_t`](json_base_class_t.md) |
 
 ## Specializations
 
@@ -101,29 +101,29 @@ The class satisfies the following concept requirements:
 ### Exceptions
 
 - [**exception**](exception.md) - general exception of the `basic_json` class
-    - [**parse_error**](parse_error.md) - exception indicating a parse error
-    - [**invalid_iterator**](invalid_iterator.md) - exception indicating errors with iterators
-    - [**type_error**](type_error.md) - exception indicating executing a member function with a wrong type
-    - [**out_of_range**](out_of_range.md) - exception indicating access out of the defined range
-    - [**other_error**](other_error.md) - exception indicating other library errors
+  - [**parse_error**](parse_error.md) - exception indicating a parse error
+  - [**invalid_iterator**](invalid_iterator.md) - exception indicating errors with iterators
+  - [**type_error**](type_error.md) - exception indicating executing a member function with a wrong type
+  - [**out_of_range**](out_of_range.md) - exception indicating access out of the defined range
+  - [**other_error**](other_error.md) - exception indicating other library errors
 
 ### Container types
 
-| Type                     | Definition                                                                                                |
+| Type | Definition |
 |--------------------------|-----------------------------------------------------------------------------------------------------------|
-| `value_type`             | `#!cpp basic_json`                                                                                        |
-| `reference`              | `#!cpp value_type&`                                                                                       |
-| `const_reference`        | `#!cpp const value_type&`                                                                                 |
-| `difference_type`        | `#!cpp std::ptrdiff_t`                                                                                    |
-| `size_type`              | `#!cpp std::size_t`                                                                                       |
-| `allocator_type`         | `#!cpp AllocatorType<basic_json>`                                                                         |
-| `pointer`                | `#!cpp std::allocator_traits<allocator_type>::pointer`                                                    |
-| `const_pointer`          | `#!cpp std::allocator_traits<allocator_type>::const_pointer`                                              |
-| `iterator`               | [LegacyBidirectionalIterator](https://en.cppreference.com/w/cpp/named_req/BidirectionalIterator)          |
-| `const_iterator`         | constant [LegacyBidirectionalIterator](https://en.cppreference.com/w/cpp/named_req/BidirectionalIterator) |
-| `reverse_iterator`       | reverse iterator, derived from `iterator`                                                                 |
-| `const_reverse_iterator` | reverse iterator, derived from `const_iterator`                                                           |
-| `iteration_proxy`        | helper type for [`items`](items.md) function                                                              |
+| `value_type` | `#!cpp basic_json` |
+| `reference` | `#!cpp value_type&` |
+| `const_reference` | `#!cpp const value_type&` |
+| `difference_type` | `#!cpp std::ptrdiff_t` |
+| `size_type` | `#!cpp std::size_t` |
+| `allocator_type` | `#!cpp AllocatorType<basic_json>` |
+| `pointer` | `#!cpp std::allocator_traits<allocator_type>::pointer` |
+| `const_pointer` | `#!cpp std::allocator_traits<allocator_type>::const_pointer` |
+| `iterator` | [LegacyBidirectionalIterator](https://en.cppreference.com/w/cpp/named_req/BidirectionalIterator) |
+| `const_iterator` | constant [LegacyBidirectionalIterator](https://en.cppreference.com/w/cpp/named_req/BidirectionalIterator) |
+| `reverse_iterator` | reverse iterator, derived from `iterator` |
+| `const_reverse_iterator` | reverse iterator, derived from `const_iterator` |
+| `iteration_proxy` | helper type for [`items`](items.md) function |
 
 ### JSON value data types
 
@@ -189,7 +189,7 @@ Direct access to the stored value of a JSON value.
 Access to the JSON value
 
 - [**at**](at.md) - access specified element with bounds checking
-- [**operator[]**](operator[].md) - access specified element
+- [**operator[]**](operator%5B%5D.md) - access specified element
 - [**value**](value.md) - access specified object element with default value
 - [**front**](front.md) - access the first element
 - [**back**](back.md) - access the last element
@@ -227,18 +227,18 @@ Access to the JSON value
 - [**emplace**](emplace.md) - add a value to an object if key does not exist
 - [**erase**](erase.md) - remove elements
 - [**insert**](insert.md) - inserts elements
-- [**update**](update.md) - updates a JSON object from another object, overwriting existing keys 
+- [**update**](update.md) - updates a JSON object from another object, overwriting existing keys
 - [**swap**](swap.md) - exchanges the values
 
 ### Lexicographical comparison operators
 
 - [**operator==**](operator_eq.md) - comparison: equal
 - [**operator!=**](operator_ne.md) - comparison: not equal
-- [**operator<**](operator_lt.md) - comparison: less than
+- [**operator\<**](operator_lt.md) - comparison: less than
 - [**operator>**](operator_gt.md) - comparison: greater than
-- [**operator<=**](operator_le.md) - comparison: less than or equal
+- [**operator\<=**](operator_le.md) - comparison: less than or equal
 - [**operator>=**](operator_ge.md) - comparison: greater than or equal
-- [**operator<=>**](operator_spaceship.md) - comparison: 3-way
+- [**operator\<=>**](operator_spaceship.md) - comparison: 3-way
 
 ### Serialization / Dumping
 
@@ -285,34 +285,36 @@ Access to the JSON value
 
 ## Non-member functions
 
-- [**operator<<(std::ostream&)**](../operator_ltlt.md) - serialize to stream
+- [**operator\<<(std::ostream&)**](../operator_ltlt.md) - serialize to stream
 - [**operator>>(std::istream&)**](../operator_gtgt.md) - deserialize from stream
 - [**to_string**](to_string.md) - user-defined `to_string` function for JSON values
 
 ## Literals
 
-- [**operator""_json**](../operator_literal_json.md) - user-defined string literal for JSON values
+- [**operator""\_json**](../operator_literal_json.md) - user-defined string literal for JSON values
 
 ## Helper classes
 
-- [**std::hash&lt;basic_json&gt;**](std_hash.md) - return a hash value for a JSON object
-- [**std::swap&lt;basic_json&gt;**](std_swap.md) - exchanges the values of two JSON objects
+- [**std::hash\<basic_json>**](std_hash.md) - return a hash value for a JSON object
+- [**std::swap\<basic_json>**](std_swap.md) - exchanges the values of two JSON objects
 
 ## Examples
 
 ??? example
 
-    The example shows how the library is used.
-    
-    ```cpp
-    --8<-- "examples/README.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/README.output"
-    ```
+````
+The example shows how the library is used.
+
+```cpp
+--8<-- "examples/README.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/README.output"
+```
+````
 
 ## See also
 

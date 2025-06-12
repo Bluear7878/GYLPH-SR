@@ -19,14 +19,16 @@ By default, the macro is not defined.
 
 ??? example
 
-    The code below switches off the check whether the compiler is supported.
+````
+The code below switches off the check whether the compiler is supported.
 
-    ```cpp
-    #define JSON_SKIP_UNSUPPORTED_COMPILER_CHECK 1
-    #include <nlohmann/json.hpp>
+```cpp
+#define JSON_SKIP_UNSUPPORTED_COMPILER_CHECK 1
+#include <nlohmann/json.hpp>
 
-    ...
-    ```
+...
+```
+````
 
 ## Version history
 

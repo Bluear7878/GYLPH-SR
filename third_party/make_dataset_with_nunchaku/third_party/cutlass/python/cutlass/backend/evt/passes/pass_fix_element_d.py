@@ -37,7 +37,8 @@ In Sm90 epilogue visitor, the node writing D to gmem does not have internal
 element converter, so the compute node producing D must have element_output = type(D).
 """
 
-from cutlass.backend.evt.passes.pass_layout_elimination import PassLayoutManipulateElimination
+from cutlass.backend.evt.passes.pass_layout_elimination import \
+    PassLayoutManipulateElimination
 from cutlass.backend.evt.passes.pass_manager import EVTPassBase
 
 
@@ -47,9 +48,9 @@ class PassFixElementD(EVTPassBase):
     element converter, so the compute node producing D must have
     element_output = type(D)
     """
-    dependencies = [
-        PassLayoutManipulateElimination
-    ]
+
+    dependencies = [PassLayoutManipulateElimination]
+
     def get_producer(self, node, element_D):
         node_meta = self.dag_ir.get_node_meta(node)
         if node_meta.op == "compute":

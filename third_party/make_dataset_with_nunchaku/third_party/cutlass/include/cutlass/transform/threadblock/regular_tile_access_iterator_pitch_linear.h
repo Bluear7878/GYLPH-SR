@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -35,10 +36,10 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/layout/pitch_linear.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/layout/matrix.h"
+#include "cutlass/layout/pitch_linear.h"
 #include "cutlass/matrix_coord.h"
 #include "cutlass/matrix_shape.h"
 #include "cutlass/tensor_ref.h"
@@ -62,11 +63,9 @@ namespace threadblock {
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, int Alignment>
-class RegularTileAccessIterator<
-    Shape_, Element_,
-    layout::PitchLinear,
-    AdvanceRank, ThreadMap_, Alignment> {
- public:
+class RegularTileAccessIterator<Shape_, Element_, layout::PitchLinear,
+                                AdvanceRank, ThreadMap_, Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -90,7 +89,7 @@ class RegularTileAccessIterator<
   /// Element type per access
   using AccessType = Array<Element, ThreadMap::kElementsPerAccess>;
 
- private:
+private:
   //
   // Data members
   //
@@ -110,19 +109,21 @@ class RegularTileAccessIterator<
   /// Iteration in the strided dimension
   int iteration_strided_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : stride_(ref.stride(0) / ThreadMap::kElementsPerAccess),
         byte_offset_(0) {
 
-    layout::PitchLinearCoord thread_offset_base = ThreadMap::initial_offset(thread_id);
+    layout::PitchLinearCoord thread_offset_base =
+        ThreadMap::initial_offset(thread_id);
 
     // initialize pointer
-    pointer_ = reinterpret_cast<AccessType *>(ref.data() + ref.offset(thread_offset_base));
+    pointer_ = reinterpret_cast<AccessType *>(ref.data() +
+                                              ref.offset(thread_offset_base));
 
     set_iteration_index(0);
   }
@@ -146,9 +147,10 @@ class RegularTileAccessIterator<
 
     AccessType *access_ptr = pointer_;
 
-    int access_offset = iteration_strided_ * ThreadMap::Delta::kStrided * stride_ +
-                        iteration_contiguous_ * ThreadMap::Delta::kContiguous /
-                            ThreadMap::kElementsPerAccess;
+    int access_offset =
+        iteration_strided_ * ThreadMap::Delta::kStrided * stride_ +
+        iteration_contiguous_ * ThreadMap::Delta::kContiguous /
+            ThreadMap::kElementsPerAccess;
 
     char *access_byte_ptr =
         reinterpret_cast<char *>(access_ptr + access_offset);
@@ -190,8 +192,9 @@ class RegularTileAccessIterator<
   }
 
   /// Adds a tile offset in the unit of tile.
-  /// In GEMM/Conv implementation, this is used to move in the k dimension in the shared memory.
-  /// Below layouts are the shared memory layouts.  Current SM50 SIMT kernels only use col major A and row major B.
+  /// In GEMM/Conv implementation, this is used to move in the k dimension in
+  /// the shared memory. Below layouts are the shared memory layouts.  Current
+  /// SM50 SIMT kernels only use col major A and row major B.
   ///   For row major A operand, k dimension is contiguous dimension;
   ///   For col major A operand, k dimension is strided dimension;
   ///   For row major B operand, k dimension is strided dimension;
@@ -217,11 +220,9 @@ class RegularTileAccessIterator<
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, int Alignment>
-class RegularTileAccessIterator<
-    Shape_, Element_,
-    layout::ColumnMajor,
-    AdvanceRank, ThreadMap_, Alignment> {
- public:
+class RegularTileAccessIterator<Shape_, Element_, layout::ColumnMajor,
+                                AdvanceRank, ThreadMap_, Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -244,22 +245,19 @@ class RegularTileAccessIterator<
   /// Underlying iterator type
   using UnderlyingIterator = RegularTileAccessIterator<
       layout::PitchLinearShape<Shape::kRow, Shape::kColumn>, Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 0 : 1), 
-      ThreadMap_>;
+      layout::PitchLinear, (kAdvanceRank == 0 ? 0 : 1), ThreadMap_>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
-
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
@@ -302,7 +300,6 @@ class RegularTileAccessIterator<
   }
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Tile iterator specialized for row major layouts
@@ -314,11 +311,9 @@ class RegularTileAccessIterator<
 ///
 template <typename Shape_, typename Element_, int AdvanceRank,
           typename ThreadMap_, int Alignment>
-class RegularTileAccessIterator<
-    Shape_, Element_,
-    layout::RowMajor,
-    AdvanceRank, ThreadMap_, Alignment> {
- public:
+class RegularTileAccessIterator<Shape_, Element_, layout::RowMajor, AdvanceRank,
+                                ThreadMap_, Alignment> {
+public:
   static_assert(
       AdvanceRank == 0 || AdvanceRank == 1,
       "Specialization for pitch-linear iterator may along advance along the "
@@ -341,22 +336,19 @@ class RegularTileAccessIterator<
   /// Underlying iterator type
   using UnderlyingIterator = RegularTileAccessIterator<
       layout::PitchLinearShape<Shape::kColumn, Shape::kRow>, Element,
-      layout::PitchLinear,
-      (kAdvanceRank == 0 ? 1 : 0), 
-      ThreadMap_>;
+      layout::PitchLinear, (kAdvanceRank == 0 ? 1 : 0), ThreadMap_>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
 
- private:
-
+private:
   /// Underlying iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Construct a TileIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
-  RegularTileAccessIterator(TensorRef ref,  ///< Pointer to start of tensor
-                            int thread_id   ///< ID of each participating thread
+  RegularTileAccessIterator(TensorRef ref, ///< Pointer to start of tensor
+                            int thread_id  ///< ID of each participating thread
                             )
       : iterator_({ref.data(), ref.stride()}, thread_id) {}
 
@@ -401,8 +393,8 @@ class RegularTileAccessIterator<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace transform
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace transform
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

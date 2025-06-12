@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -49,22 +50,22 @@
 #include "cutlass/layout/tensor_op_multiplicand_sm75.h"
 #include "cutlass/layout/tensor_op_multiplicand_sm80.h"
 
-#include "cutlass/gemm/warp/mma_simt_policy.h"
-#include "cutlass/gemm/warp/mma_simt.h"
 #include "cutlass/gemm/warp/default_mma_tensor_op.h"
+#include "cutlass/gemm/warp/mma_simt.h"
+#include "cutlass/gemm/warp/mma_simt_policy.h"
 #include "cutlass/gemm/warp/mma_tensor_op_tile_iterator_sm80.h"
 
 #include "cutlass/gemm/threadblock/default_mma_core.h"
 #include "cutlass/gemm/threadblock/default_multistage_mma_complex_core.h"
 #include "cutlass/gemm/threadblock/default_multistage_mma_complex_core_sm80.h"
 
+#include "cutlass/gemm/threadblock/mma_multistage.h"
 #include "cutlass/matrix_shape.h"
 #include "cutlass/numeric_types.h"
 #include "cutlass/transform/pitch_linear_thread_map.h"
+#include "cutlass/transform/threadblock/regular_tile_access_iterator_pitch_linear.h"
 #include "cutlass/transform/threadblock/regular_tile_access_iterator_tensor_op.h"
 #include "cutlass/transform/threadblock/regular_tile_access_iterator_tensor_op_sm80.h"
-#include "cutlass/transform/threadblock/regular_tile_access_iterator_pitch_linear.h"
-#include "cutlass/gemm/threadblock/mma_multistage.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -101,8 +102,8 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
                       layout::ColumnMajor, double, layout::ColumnMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -113,13 +114,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>; 
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -127,7 +130,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   static_assert(WarpCount::kCount > 1,
-    "This specialization requires at least two warps.");
+                "This specialization requires at least two warps.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -189,8 +192,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 /// Partial specialization for double-precision
@@ -220,8 +223,8 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
                       layout::ColumnMajor, double, layout::RowMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -232,13 +235,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>; 
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -246,7 +251,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   static_assert(WarpCount::kCount > 1,
-    "This specialization requires at least two warps.");
+                "This specialization requires at least two warps.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -305,8 +310,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -338,8 +343,8 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
                       layout::RowMajor, double, layout::ColumnMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -350,13 +355,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -419,8 +426,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,8 +459,8 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
                       layout::RowMajor, double, layout::RowMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -464,13 +471,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -478,7 +487,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   static_assert(WarpCount::kCount > 1,
-    "This specialization requires at least two warps.");
+                "This specialization requires at least two warps.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -499,7 +508,6 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using SmemLayoutA = layout::RowMajorTensorOpMultiplicand64bCrosswise;
 
   using SmemLayoutB = layout::RowMajorTensorOpMultiplicandCongruous64b;
-
 
   //
   // Iterators to write to shared memory
@@ -537,8 +545,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -569,9 +577,10 @@ template <
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
-                      layout::AffineRank2ColumnMajor, double, layout::AffineRank2ColumnMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      layout::AffineRank2ColumnMajor, double,
+                      layout::AffineRank2ColumnMajor, double, LayoutC_,
+                      arch::OpClassTensorOp, Stages, Operator_, false, CacheOpA,
+                      CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -582,27 +591,19 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::ColumnMajor,
-                              ElementB,
-                              layout::ColumnMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassTensorOp,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base =
+      DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                     layout::ColumnMajor, ElementB, layout::ColumnMajor,
+                     ElementC, LayoutC, arch::OpClassTensorOp, kStages,
+                     Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -661,9 +662,10 @@ template <
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
-                      layout::AffineRank2ColumnMajor, double, layout::AffineRank2RowMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      layout::AffineRank2ColumnMajor, double,
+                      layout::AffineRank2RowMajor, double, LayoutC_,
+                      arch::OpClassTensorOp, Stages, Operator_, false, CacheOpA,
+                      CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -674,27 +676,18 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::ColumnMajor,
-                              ElementB,
-                              layout::RowMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassTensorOp,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base = DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                              layout::ColumnMajor, ElementB, layout::RowMajor,
+                              ElementC, LayoutC, arch::OpClassTensorOp, kStages,
+                              Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -754,10 +747,10 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpA,
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
-struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
-                      layout::AffineRank2RowMajor, double, layout::AffineRank2ColumnMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+struct DefaultMmaCore<
+    Shape_, WarpShape_, InstructionShape_, double, layout::AffineRank2RowMajor,
+    double, layout::AffineRank2ColumnMajor, double, LayoutC_,
+    arch::OpClassTensorOp, Stages, Operator_, false, CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -768,27 +761,18 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::RowMajor,
-                              ElementB,
-                              layout::ColumnMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassTensorOp,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base = DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                              layout::RowMajor, ElementB, layout::ColumnMajor,
+                              ElementC, LayoutC, arch::OpClassTensorOp, kStages,
+                              Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -848,10 +832,10 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpA,
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
-struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
-                      layout::AffineRank2RowMajor, double, layout::AffineRank2RowMajor, double,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+struct DefaultMmaCore<
+    Shape_, WarpShape_, InstructionShape_, double, layout::AffineRank2RowMajor,
+    double, layout::AffineRank2RowMajor, double, LayoutC_,
+    arch::OpClassTensorOp, Stages, Operator_, false, CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -862,27 +846,18 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, double,
   using ElementC = double;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::RowMajor,
-                              ElementB,
-                              layout::RowMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassTensorOp,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base = DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                              layout::RowMajor, ElementB, layout::RowMajor,
+                              ElementC, LayoutC, arch::OpClassTensorOp, kStages,
+                              Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -948,20 +923,11 @@ template <
     /// per-element transformation for elements of A
     ComplexTransform TransformA_,
     /// per-element transformation for elements of B
-    ComplexTransform TransformB_
-    >
-struct DefaultMmaCore<
-  Shape_, WarpShape_, GemmShape<16, 8, 8>, 
-  complex<float>, LayoutA_, 
-  complex<float>, LayoutB_, 
-  complex<float>, LayoutC_, 
-  arch::OpClassTensorOp, 
-  Stages, 
-  Operator_, 
-  false, 
-  CacheOpA, 
-  CacheOpB,
-  TransformA_, TransformB_, true> {
+    ComplexTransform TransformB_>
+struct DefaultMmaCore<Shape_, WarpShape_, GemmShape<16, 8, 8>, complex<float>,
+                      LayoutA_, complex<float>, LayoutB_, complex<float>,
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB, TransformA_, TransformB_, true> {
 
   using Shape = Shape_;
   using WarpShape = WarpShape_;
@@ -973,15 +939,17 @@ struct DefaultMmaCore<
   using ElementC = complex<float>;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
   static const ComplexTransform TransformA = TransformA_;
   static const ComplexTransform TransformB = TransformB_;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>; 
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -989,7 +957,7 @@ struct DefaultMmaCore<
       "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   static_assert(WarpCount::kCount > 1,
-    "This specialization requires at least two warps.");
+                "This specialization requires at least two warps.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -1004,28 +972,20 @@ struct DefaultMmaCore<
   using Operator = Operator_;
 
   static_assert(
-    platform::is_same<Operator, arch::OpMultiplyAddComplex>::value ||
-    platform::is_same<Operator, arch::OpMultiplyAddGaussianComplex>::value ||
-    platform::is_same<Operator, arch::OpMultiplyAddComplexFastF32>::value,
-    "The operator tag must indicate complex multiplication.");
+      platform::is_same<Operator, arch::OpMultiplyAddComplex>::value ||
+          platform::is_same<Operator,
+                            arch::OpMultiplyAddGaussianComplex>::value ||
+          platform::is_same<Operator, arch::OpMultiplyAddComplexFastF32>::value,
+      "The operator tag must indicate complex multiplication.");
 
   //
   // Underlying template
   //
 
   using MmaComplexCore = DefaultMultistageMmaComplexCore<
-    Shape, WarpShape, InstructionShape,
-    ElementA, LayoutA,
-    ElementB, LayoutB,
-    ElementC, LayoutC,
-    arch::OpClassTensorOp,
-    kStages, 
-    TransformA,
-    TransformB,
-    Operator,
-    kCacheOpA,
-    kCacheOpB
-  >;
+      Shape, WarpShape, InstructionShape, ElementA, LayoutA, ElementB, LayoutB,
+      ElementC, LayoutC, arch::OpClassTensorOp, kStages, TransformA, TransformB,
+      Operator, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -1098,20 +1058,11 @@ template <
     /// per-element transformation for elements of A
     ComplexTransform TransformA_,
     /// per-element transformation for elements of B
-    ComplexTransform TransformB_
-    >
-struct DefaultMmaCore<
-  Shape_, WarpShape_, InstructionShape_, 
-  complex<double>, LayoutA_, 
-  complex<double>, LayoutB_, 
-  complex<double>, LayoutC_, 
-  arch::OpClassTensorOp, 
-  Stages, 
-  Operator_, 
-  false, 
-  CacheOpA, 
-  CacheOpB,
-  TransformA_, TransformB_, true> {
+    ComplexTransform TransformB_>
+struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, complex<double>,
+                      LayoutA_, complex<double>, LayoutB_, complex<double>,
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB, TransformA_, TransformB_, true> {
 
   using Shape = Shape_;
   using WarpShape = WarpShape_;
@@ -1123,15 +1074,17 @@ struct DefaultMmaCore<
   using ElementC = complex<double>;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
   static const ComplexTransform TransformA = TransformA_;
   static const ComplexTransform TransformB = TransformB_;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>; 
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1139,7 +1092,7 @@ struct DefaultMmaCore<
       "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   static_assert(WarpCount::kCount > 1,
-    "This specialization requires at least two warps.");
+                "This specialization requires at least two warps.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -1154,27 +1107,19 @@ struct DefaultMmaCore<
   using Operator = Operator_;
 
   static_assert(
-    platform::is_same<Operator, arch::OpMultiplyAddComplex>::value ||
-    platform::is_same<Operator, arch::OpMultiplyAddGaussianComplex>::value,
-    "The operator tag must indicate complex multiplication.");
+      platform::is_same<Operator, arch::OpMultiplyAddComplex>::value ||
+          platform::is_same<Operator,
+                            arch::OpMultiplyAddGaussianComplex>::value,
+      "The operator tag must indicate complex multiplication.");
 
   //
   // Underlying template
   //
 
   using MmaComplexCore = DefaultMultistageMmaComplexCore<
-    Shape, WarpShape, InstructionShape,
-    ElementA, LayoutA,
-    ElementB, LayoutB,
-    ElementC, LayoutC,
-    arch::OpClassTensorOp,
-    kStages, 
-    TransformA,
-    TransformB,
-    Operator,
-    kCacheOpA,
-    kCacheOpB
-  >;
+      Shape, WarpShape, InstructionShape, ElementA, LayoutA, ElementB, LayoutB,
+      ElementC, LayoutC, arch::OpClassTensorOp, kStages, TransformA, TransformB,
+      Operator, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -1264,9 +1209,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static cutlass::arch::CacheOperation::Kind const kCacheOpB = CacheOpB;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1332,8 +1277,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1387,9 +1332,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static cutlass::arch::CacheOperation::Kind const kCacheOpB = CacheOpB;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1470,8 +1415,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1527,9 +1472,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static cutlass::arch::CacheOperation::Kind const kCacheOpB = CacheOpB;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1603,8 +1548,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1642,8 +1587,8 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                       layout::RowMajor, ElementB_, layout::RowMajor, ElementC_,
-                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      LayoutC_, arch::OpClassTensorOp, Stages, Operator_, false,
+                      CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -1658,9 +1603,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static cutlass::arch::CacheOperation::Kind const kCacheOpB = CacheOpB;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1734,8 +1679,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1803,9 +1748,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static int const kInterleavedK = InterleavedK;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>; 
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1893,8 +1838,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK, AccumulatorsInRowMajor>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                        MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1942,13 +1887,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1980,13 +1927,10 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Iterators to write to shared memory
   //
 
-
   /// ThreadMap of iterator A
   using IteratorThreadMapA = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kM, Shape::kK>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kM, Shape::kK>, kThreads,
+      kElementsPerAccess>;
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileAccessIterator<
@@ -1995,13 +1939,12 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Policy of iterator B
   using IteratorThreadMapB = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kK, Shape::kN>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kK, Shape::kN>, kThreads,
+      kElementsPerAccess>;
 
-  /// Transpose the ThreadMap of iterator B 
-  using SmemThreadMapB = transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapB>;
+  /// Transpose the ThreadMap of iterator B
+  using SmemThreadMapB =
+      transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapB>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileAccessIterator<
@@ -2015,8 +1958,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Define the warp-level op
   static const int WarpNumThreadsM = 4;
   static const int WarpNumThreadsN = 8;
-  static_assert(!(WarpShape::kM % WarpNumThreadsM) && !(WarpShape::kN % WarpNumThreadsN),
-      "WarpShape must be divisible by ThreadTile shape.");
+  static_assert(!(WarpShape::kM % WarpNumThreadsM) &&
+                    !(WarpShape::kN % WarpNumThreadsN),
+                "WarpShape must be divisible by ThreadTile shape.");
   static const int ThreadTileM = WarpShape::kM / WarpNumThreadsM;
   static const int ThreadTileN = WarpShape::kN / WarpNumThreadsN;
   static const int LaneLayout = ThreadTileM > 4 && ThreadTileN > 4 ? 2 : 1;
@@ -2029,33 +1973,28 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                 "Padding must be divisible by Lane");
 
   // these should have max of thread tile also
-  using LaneMmaShape = cutlass::gemm::GemmShape<
-      LaneM,
-      LaneN,
-      1>;
+  using LaneMmaShape = cutlass::gemm::GemmShape<LaneM, LaneN, 1>;
   using Policy = cutlass::gemm::warp::MmaSimtPolicy<
-      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>,   // WarpShape
-      cutlass::layout::RowMajorInterleaved<LaneLayout>,         // LaneLayout
-      LaneMmaShape
-  >;
+      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>, // WarpShape
+      cutlass::layout::RowMajorInterleaved<LaneLayout>,       // LaneLayout
+      LaneMmaShape>;
 
   using MmaWarpSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128, 128, 8
-    ElementA,  /// Data type of A elements
-    SmemLayoutA,   /// Layout of A matrix (concept: MatrixLayout)
-    ElementB,  /// Data type of B elements
-    SmemLayoutB,   /// Layout of B matrix (concept: MatrixLayout)
-    ElementC,  /// Element type of C matrix
-    LayoutC,   /// Layout of C matrix (concept: MatrixLayout)
-    Policy     /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp policy)
-    >;         /// Used for partial specialization
+      WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128,
+                 /// 128, 8
+      ElementA,  /// Data type of A elements
+      SmemLayoutA, /// Layout of A matrix (concept: MatrixLayout)
+      ElementB,    /// Data type of B elements
+      SmemLayoutB, /// Layout of B matrix (concept: MatrixLayout)
+      ElementC,    /// Element type of C matrix
+      LayoutC,     /// Layout of C matrix (concept: MatrixLayout)
+      Policy /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp
+             /// policy)
+      >;     /// Used for partial specialization
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<
-    MmaWarpSimt,
-    MatrixShape<0, 0>,
-    MatrixShape<0, Shape::kK / 32>,
-    WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaWarpSimt, MatrixShape<0, 0>,
+                              MatrixShape<0, Shape::kK / 32>, WarpCount::kK>;
 };
 
 /// Partial specialization for SIMT GEMMs using multistage pipeline.
@@ -2100,13 +2039,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -2138,13 +2079,10 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Iterators to write to shared memory
   //
 
-
   /// ThreadMap of iterator A
   using IteratorThreadMapA = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kM, Shape::kK>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kM, Shape::kK>, kThreads,
+      kElementsPerAccess>;
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileAccessIterator<
@@ -2153,10 +2091,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Policy of iterator B
   using IteratorThreadMapB = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kN, Shape::kK>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kN, Shape::kK>, kThreads,
+      kElementsPerAccess>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileAccessIterator<
@@ -2170,8 +2106,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Define the warp-level op
   static const int WarpNumThreadsM = 4;
   static const int WarpNumThreadsN = 8;
-  static_assert(!(WarpShape::kM % WarpNumThreadsM) && !(WarpShape::kN % WarpNumThreadsN),
-      "WarpShape must be divisible by ThreadTile shape.");
+  static_assert(!(WarpShape::kM % WarpNumThreadsM) &&
+                    !(WarpShape::kN % WarpNumThreadsN),
+                "WarpShape must be divisible by ThreadTile shape.");
   static const int ThreadTileM = WarpShape::kM / WarpNumThreadsM;
   static const int ThreadTileN = WarpShape::kN / WarpNumThreadsN;
   static const int LaneLayout = ThreadTileM > 4 && ThreadTileN > 4 ? 2 : 1;
@@ -2180,33 +2117,28 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static const int LaneM = cutlass::const_min(numElementsA, ThreadTileM);
   static const int LaneN = cutlass::const_min(numElementsB, ThreadTileN);
   // these should have max of thread tile also
-  using LaneMmaShape = cutlass::gemm::GemmShape<
-      LaneM,
-      LaneN,
-      1>;
+  using LaneMmaShape = cutlass::gemm::GemmShape<LaneM, LaneN, 1>;
   using Policy = cutlass::gemm::warp::MmaSimtPolicy<
-      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>,   // WarpShape
-      cutlass::layout::RowMajorInterleaved<LaneLayout>,         // LaneLayout
-      LaneMmaShape
-  >;
+      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>, // WarpShape
+      cutlass::layout::RowMajorInterleaved<LaneLayout>,       // LaneLayout
+      LaneMmaShape>;
 
   using MmaWarpSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128, 128, 8
-    ElementA,  /// Data type of A elements
-    SmemLayoutA,   /// Layout of A matrix (concept: MatrixLayout)
-    ElementB,  /// Data type of B elements
-    SmemLayoutB,   /// Layout of B matrix (concept: MatrixLayout)
-    ElementC,  /// Element type of C matrix
-    LayoutC,   /// Layout of C matrix (concept: MatrixLayout)
-    Policy     /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp policy)
-    >;         /// Used for partial specialization
+      WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128,
+                 /// 128, 8
+      ElementA,  /// Data type of A elements
+      SmemLayoutA, /// Layout of A matrix (concept: MatrixLayout)
+      ElementB,    /// Data type of B elements
+      SmemLayoutB, /// Layout of B matrix (concept: MatrixLayout)
+      ElementC,    /// Element type of C matrix
+      LayoutC,     /// Layout of C matrix (concept: MatrixLayout)
+      Policy /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp
+             /// policy)
+      >;     /// Used for partial specialization
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<
-    MmaWarpSimt,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaWarpSimt, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 /// Partial specialization for SIMT GEMMs using multistage pipeline.
@@ -2251,13 +2183,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -2289,16 +2223,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Iterators to write to shared memory
   //
 
-
   /// ThreadMap of iterator A
   using IteratorThreadMapA = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kK, Shape::kM>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kK, Shape::kM>, kThreads,
+      kElementsPerAccess>;
 
   /// Transpose the ThreadMap of iterator A
-  using SmemThreadMapA = transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapA>;
+  using SmemThreadMapA =
+      transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapA>;
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileAccessIterator<
@@ -2307,13 +2239,12 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Policy of iterator B
   using IteratorThreadMapB = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kK, Shape::kN>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kK, Shape::kN>, kThreads,
+      kElementsPerAccess>;
 
-  /// Transpose the ThreadMap of iterator B 
-  using SmemThreadMapB = transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapB>;
+  /// Transpose the ThreadMap of iterator B
+  using SmemThreadMapB =
+      transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapB>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileAccessIterator<
@@ -2327,8 +2258,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Define the warp-level op
   static const int WarpNumThreadsM = 4;
   static const int WarpNumThreadsN = 8;
-  static_assert(!(WarpShape::kM % WarpNumThreadsM) && !(WarpShape::kN % WarpNumThreadsN),
-      "WarpShape must be divisible by ThreadTile shape.");
+  static_assert(!(WarpShape::kM % WarpNumThreadsM) &&
+                    !(WarpShape::kN % WarpNumThreadsN),
+                "WarpShape must be divisible by ThreadTile shape.");
   static const int ThreadTileM = WarpShape::kM / WarpNumThreadsM;
   static const int ThreadTileN = WarpShape::kN / WarpNumThreadsN;
   static const int LaneLayout = ThreadTileM > 4 && ThreadTileN > 4 ? 2 : 1;
@@ -2341,33 +2273,28 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                 "Padding must be divisible by Lane");
 
   // these should have max of thread tile also
-  using LaneMmaShape = cutlass::gemm::GemmShape<
-      LaneM,
-      LaneN,
-      1>;
+  using LaneMmaShape = cutlass::gemm::GemmShape<LaneM, LaneN, 1>;
   using Policy = cutlass::gemm::warp::MmaSimtPolicy<
-      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>,   // WarpShape
-      cutlass::layout::RowMajorInterleaved<LaneLayout>,         // LaneLayout
-      LaneMmaShape
-  >;
+      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>, // WarpShape
+      cutlass::layout::RowMajorInterleaved<LaneLayout>,       // LaneLayout
+      LaneMmaShape>;
 
   using MmaWarpSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128, 128, 8
-    ElementA,  /// Data type of A elements
-    SmemLayoutA,   /// Layout of A matrix (concept: MatrixLayout)
-    ElementB,  /// Data type of B elements
-    SmemLayoutB,   /// Layout of B matrix (concept: MatrixLayout)
-    ElementC,  /// Element type of C matrix
-    LayoutC,   /// Layout of C matrix (concept: MatrixLayout)
-    Policy     /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp policy)
-    >;         /// Used for partial specialization
+      WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128,
+                 /// 128, 8
+      ElementA,  /// Data type of A elements
+      SmemLayoutA, /// Layout of A matrix (concept: MatrixLayout)
+      ElementB,    /// Data type of B elements
+      SmemLayoutB, /// Layout of B matrix (concept: MatrixLayout)
+      ElementC,    /// Element type of C matrix
+      LayoutC,     /// Layout of C matrix (concept: MatrixLayout)
+      Policy /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp
+             /// policy)
+      >;     /// Used for partial specialization
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<
-    MmaWarpSimt,
-    MatrixShape<Shape::kK / 32, 0>,
-    MatrixShape<0, Shape::kK / 32>,
-    WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaWarpSimt, MatrixShape<Shape::kK / 32, 0>,
+                              MatrixShape<0, Shape::kK / 32>, WarpCount::kK>;
 };
 
 /// Partial specialization for SIMT GEMMs using multistage pipeline.
@@ -2400,8 +2327,8 @@ template <
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                       layout::RowMajor, ElementB_, layout::RowMajor, ElementC_,
-                      LayoutC_, arch::OpClassSimt, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      LayoutC_, arch::OpClassSimt, Stages, Operator_, false,
+                      CacheOpA, CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -2412,13 +2339,15 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -2452,13 +2381,12 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// ThreadMap of iterator A
   using IteratorThreadMapA = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kK, Shape::kM>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kK, Shape::kM>, kThreads,
+      kElementsPerAccess>;
 
   /// Transpose the ThreadMap of iterator A
-  using SmemThreadMapA = transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapA>;
+  using SmemThreadMapA =
+      transform::TransposePitchLinearThreadMapSimt<IteratorThreadMapA>;
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileAccessIterator<
@@ -2467,10 +2395,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Policy of iterator B
   using IteratorThreadMapB = transform::PitchLinearStripminedThreadMap<
-    layout::PitchLinearShape<Shape::kN, Shape::kK>,
-    kThreads,
-    kElementsPerAccess
-  >;
+      layout::PitchLinearShape<Shape::kN, Shape::kK>, kThreads,
+      kElementsPerAccess>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileAccessIterator<
@@ -2484,8 +2410,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Define the warp-level op
   static const int WarpNumThreadsM = 4;
   static const int WarpNumThreadsN = 8;
-  static_assert(!(WarpShape::kM % WarpNumThreadsM) && !(WarpShape::kN % WarpNumThreadsN),
-      "WarpShape must be divisible by ThreadTile shape.");
+  static_assert(!(WarpShape::kM % WarpNumThreadsM) &&
+                    !(WarpShape::kN % WarpNumThreadsN),
+                "WarpShape must be divisible by ThreadTile shape.");
   static const int ThreadTileM = WarpShape::kM / WarpNumThreadsM;
   static const int ThreadTileN = WarpShape::kN / WarpNumThreadsN;
   static const int LaneLayout = ThreadTileM > 4 && ThreadTileN > 4 ? 2 : 1;
@@ -2498,33 +2425,28 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                 "Padding must be divisible by Lane");
 
   // these should have max of thread tile also
-  using LaneMmaShape = cutlass::gemm::GemmShape<
-      LaneM,
-      LaneN,
-      1>;
+  using LaneMmaShape = cutlass::gemm::GemmShape<LaneM, LaneN, 1>;
   using Policy = cutlass::gemm::warp::MmaSimtPolicy<
-      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>,   // WarpShape
-      cutlass::layout::RowMajorInterleaved<LaneLayout>,         // LaneLayout
-      LaneMmaShape
-  >;
+      cutlass::MatrixShape<WarpNumThreadsM, WarpNumThreadsN>, // WarpShape
+      cutlass::layout::RowMajorInterleaved<LaneLayout>,       // LaneLayout
+      LaneMmaShape>;
 
   using MmaWarpSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128, 128, 8
-    ElementA,  /// Data type of A elements
-    SmemLayoutA,   /// Layout of A matrix (concept: MatrixLayout)
-    ElementB,  /// Data type of B elements
-    SmemLayoutB,   /// Layout of B matrix (concept: MatrixLayout)
-    ElementC,  /// Element type of C matrix
-    LayoutC,   /// Layout of C matrix (concept: MatrixLayout)
-    Policy     /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp policy)
-    >;         /// Used for partial specialization
+      WarpShape, /// Size of the Gemm problem - concept: gemm::GemmShape<> 128,
+                 /// 128, 8
+      ElementA,  /// Data type of A elements
+      SmemLayoutA, /// Layout of A matrix (concept: MatrixLayout)
+      ElementB,    /// Data type of B elements
+      SmemLayoutB, /// Layout of B matrix (concept: MatrixLayout)
+      ElementC,    /// Element type of C matrix
+      LayoutC,     /// Layout of C matrix (concept: MatrixLayout)
+      Policy /// Policy describing warp-level MmaTensorOp (concept: MmaTensorOp
+             /// policy)
+      >;     /// Used for partial specialization
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<
-    MmaWarpSimt,
-    MatrixShape<Shape::kK / 32, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaWarpSimt, MatrixShape<Shape::kK / 32, 0>,
+                              MatrixShape<0, 0>, WarpCount::kK>;
 };
 
 /// Partial specialization for SIMT GEMMs using multistage pipeline.
@@ -2556,9 +2478,10 @@ template <
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
-                      layout::AffineRank2ColumnMajor, ElementB_, layout::AffineRank2RowMajor,
-                      ElementC_, LayoutC_, arch::OpClassSimt, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      layout::AffineRank2ColumnMajor, ElementB_,
+                      layout::AffineRank2RowMajor, ElementC_, LayoutC_,
+                      arch::OpClassSimt, Stages, Operator_, false, CacheOpA,
+                      CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -2569,27 +2492,18 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::ColumnMajor,
-                              ElementB,
-                              layout::RowMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassSimt,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base = DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                              layout::ColumnMajor, ElementB, layout::RowMajor,
+                              ElementC, LayoutC, arch::OpClassSimt, kStages,
+                              Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -2651,9 +2565,10 @@ template <
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
-                      layout::AffineRank2RowMajor, ElementB_, layout::AffineRank2ColumnMajor,
-                      ElementC_, LayoutC_, arch::OpClassSimt, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      layout::AffineRank2RowMajor, ElementB_,
+                      layout::AffineRank2ColumnMajor, ElementC_, LayoutC_,
+                      arch::OpClassSimt, Stages, Operator_, false, CacheOpA,
+                      CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -2664,27 +2579,18 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::RowMajor,
-                              ElementB,
-                              layout::ColumnMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassSimt,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base = DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                              layout::RowMajor, ElementB, layout::ColumnMajor,
+                              ElementC, LayoutC, arch::OpClassSimt, kStages,
+                              Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -2746,9 +2652,10 @@ template <
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
-                      layout::AffineRank2ColumnMajor, ElementB_, layout::AffineRank2ColumnMajor,
-                      ElementC_, LayoutC_, arch::OpClassSimt, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      layout::AffineRank2ColumnMajor, ElementB_,
+                      layout::AffineRank2ColumnMajor, ElementC_, LayoutC_,
+                      arch::OpClassSimt, Stages, Operator_, false, CacheOpA,
+                      CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -2759,27 +2666,19 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::ColumnMajor,
-                              ElementB,
-                              layout::ColumnMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassSimt,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base =
+      DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                     layout::ColumnMajor, ElementB, layout::ColumnMajor,
+                     ElementC, LayoutC, arch::OpClassSimt, kStages, Operator,
+                     false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -2810,7 +2709,6 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Policy used to define MmaPipelined
   using MmaPolicy = typename Base::MmaPolicy;
-
 };
 
 /// Partial specialization for SIMT GEMMs using multistage pipeline.
@@ -2842,9 +2740,10 @@ template <
     /// Cache operation of operand B
     cutlass::arch::CacheOperation::Kind CacheOpB>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
-                      layout::AffineRank2RowMajor, ElementB_, layout::AffineRank2RowMajor, ElementC_,
-                      LayoutC_, arch::OpClassSimt, Stages, Operator_,
-                      false, CacheOpA, CacheOpB> {
+                      layout::AffineRank2RowMajor, ElementB_,
+                      layout::AffineRank2RowMajor, ElementC_, LayoutC_,
+                      arch::OpClassSimt, Stages, Operator_, false, CacheOpA,
+                      CacheOpB> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -2855,27 +2754,18 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using ElementC = ElementC_;
   using LayoutC = LayoutC_;
   static int const kStages = Stages;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpA = cutlass::arch::CacheOperation::Always;
-  static cutlass::arch::CacheOperation::Kind const kCacheOpB = cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpA =
+      cutlass::arch::CacheOperation::Always;
+  static cutlass::arch::CacheOperation::Kind const kCacheOpB =
+      cutlass::arch::CacheOperation::Always;
 
   /// Default Operator
   using Operator = Operator_;
 
-  using Base = DefaultMmaCore<Shape,
-                              WarpShape,
-                              InstructionShape,
-                              ElementA,
-                              layout::RowMajor,
-                              ElementB,
-                              layout::RowMajor,
-                              ElementC,
-                              LayoutC,
-                              arch::OpClassSimt,
-                              kStages,
-                              Operator,
-                              false,
-                              kCacheOpA,
-                              kCacheOpB>;
+  using Base = DefaultMmaCore<Shape, WarpShape, InstructionShape, ElementA,
+                              layout::RowMajor, ElementB, layout::RowMajor,
+                              ElementC, LayoutC, arch::OpClassSimt, kStages,
+                              Operator, false, kCacheOpA, kCacheOpB>;
 
   //
   // Shared memory layouts
@@ -2906,11 +2796,10 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Policy used to define MmaPipelined
   using MmaPolicy = typename Base::MmaPolicy;
-
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass

@@ -30,20 +30,12 @@
 #
 #################################################################################################
 
-from cutlass_library import SubstituteTemplate
-
 import cutlass
-from cutlass_library import (
-    DataTypeNames,
-    EpilogueScheduleSuffixes,
-    KernelScheduleSuffixes,
-    LayoutType,
-    OpcodeClassNames,
-    ShortDataTypeNames,
-    ShortLayoutTypeNames
-)
 from cutlass.backend import library
-
+from cutlass_library import (DataTypeNames, EpilogueScheduleSuffixes,
+                             KernelScheduleSuffixes, LayoutType,
+                             OpcodeClassNames, ShortDataTypeNames,
+                             ShortLayoutTypeNames, SubstituteTemplate)
 from gemm_testbed import test_all_gemm
 
 
@@ -140,8 +132,16 @@ def get_name(
             "aA": str(alignments[0]),
             "aB": str(alignments[1]),
             "aC": str(alignments[2]),
-            "k": "" if kernel_schedule is None else KernelScheduleSuffixes[kernel_schedule],
-            "e": "" if epilogue_schedule is None else EpilogueScheduleSuffixes[epilogue_schedule],
+            "k": (
+                ""
+                if kernel_schedule is None
+                else KernelScheduleSuffixes[kernel_schedule]
+            ),
+            "e": (
+                ""
+                if epilogue_schedule is None
+                else EpilogueScheduleSuffixes[epilogue_schedule]
+            ),
             "suffix": "" if suffix is None else suffix,
         },
     )
@@ -163,10 +163,11 @@ def add_test_gemm(
     swizzle=None,
     kernel_schedule=None,
     epilogue_schedule=None,
-    compilation_modes=['nvcc', 'nvrtc'],
+    compilation_modes=["nvcc", "nvrtc"],
     element_A=None,
     element_B=None,
-    element_C=None):
+    element_C=None,
+):
     """
     Create test-running functions with the given specification and set it as a method of ``cls``.
 
@@ -221,6 +222,7 @@ def add_test_gemm(
         element_accumulator = element
 
     for compilation_mode in compilation_modes:
+
         def run(self):
             """
             Dynamically-generated function that constructs a GEMM operation and verifies it against
@@ -230,11 +232,17 @@ def add_test_gemm(
             layout_A, layout_B, layout_C = layouts
             alignment_A, alignment_B, alignment_C = alignments
 
-            plan = cutlass.op.Gemm(element_A=element_A, element_B=element_B,
-                                element_C=element_C, element_D=element_output,
-                                layout_A=layout_A, layout_B=layout_B, layout_C=layout_C,
-                                element_accumulator=element_accumulator,
-                                kernel_cc=cc)
+            plan = cutlass.op.Gemm(
+                element_A=element_A,
+                element_B=element_B,
+                element_C=element_C,
+                element_D=element_output,
+                layout_A=layout_A,
+                layout_B=layout_B,
+                layout_C=layout_C,
+                element_accumulator=element_accumulator,
+                kernel_cc=cc,
+            )
 
             plan.opclass = opclass
             if swizzle is not None:
@@ -247,14 +255,34 @@ def add_test_gemm(
             td.threadblock_shape = threadblock_shape
             td.stages = stages
             td.cluster_shape = cluster_shape
-            op = plan.construct(tile_description=td, alignment_A=alignment_A, alignment_B=alignment_B, alignment_C=alignment_C)
-            self.assertTrue(test_all_gemm(op, 'universal', compilation_mode=compilation_mode))
+            op = plan.construct(
+                tile_description=td,
+                alignment_A=alignment_A,
+                alignment_B=alignment_B,
+                alignment_C=alignment_C,
+            )
+            self.assertTrue(
+                test_all_gemm(op, "universal", compilation_mode=compilation_mode)
+            )
 
         element_epilogue = element_accumulator
         name = get_name(
-            layouts=layouts, alignments=alignments, element_output=element_output, element_accumulator=element_accumulator,
-            element_epilogue=element_epilogue, cluster_shape=cluster_shape, threadblock_shape=threadblock_shape,
-            stages=stages, element_a=element_A, element_b=element_B, element_c=element_C, arch=cc, opclass=opclass,
-            kernel_schedule=kernel_schedule, epilogue_schedule=epilogue_schedule, suffix=f'_{compilation_mode}')
+            layouts=layouts,
+            alignments=alignments,
+            element_output=element_output,
+            element_accumulator=element_accumulator,
+            element_epilogue=element_epilogue,
+            cluster_shape=cluster_shape,
+            threadblock_shape=threadblock_shape,
+            stages=stages,
+            element_a=element_A,
+            element_b=element_B,
+            element_c=element_C,
+            arch=cc,
+            opclass=opclass,
+            kernel_schedule=kernel_schedule,
+            epilogue_schedule=epilogue_schedule,
+            suffix=f"_{compilation_mode}",
+        )
 
         setattr(cls, name, run)

@@ -8,15 +8,18 @@ from safetensors.torch import load_file
 from torch import nn
 from torch.nn import functional as F
 
-from .utils import NunchakuModelLoaderMixin
+from ..._C import QuantizedSanaModel
+from ..._C import utils as cutils
 from ...utils import get_precision
-from ..._C import QuantizedSanaModel, utils as cutils
+from .utils import NunchakuModelLoaderMixin
 
 SVD_RANK = 32
 
 
 class NunchakuSanaTransformerBlocks(nn.Module):
-    def __init__(self, m: QuantizedSanaModel, dtype: torch.dtype, device: str | torch.device):
+    def __init__(
+        self, m: QuantizedSanaModel, dtype: torch.dtype, device: str | torch.device
+    ):
         super(NunchakuSanaTransformerBlocks, self).__init__()
         self.m = m
         self.dtype = dtype
@@ -47,9 +50,15 @@ class NunchakuSanaTransformerBlocks(nn.Module):
         mask = encoder_attention_mask.reshape(batch_size, txt_tokens)
         nunchaku_encoder_hidden_states = encoder_hidden_states[mask > -9000]
 
-        cu_seqlens_txt = F.pad((mask > -9000).sum(dim=1).cumsum(dim=0), pad=(1, 0), value=0).to(torch.int32)
+        cu_seqlens_txt = F.pad(
+            (mask > -9000).sum(dim=1).cumsum(dim=0), pad=(1, 0), value=0
+        ).to(torch.int32)
         cu_seqlens_img = torch.arange(
-            0, (batch_size + 1) * img_tokens, img_tokens, dtype=torch.int32, device=self.device
+            0,
+            (batch_size + 1) * img_tokens,
+            img_tokens,
+            dtype=torch.int32,
+            device=self.device,
         )
 
         if height is None and width is None:
@@ -69,7 +78,8 @@ class NunchakuSanaTransformerBlocks(nn.Module):
                 cu_seqlens_txt.to(self.device),
                 height,
                 width,
-                batch_size % 3 == 0,  # pag is set when loading the model, FIXME: pag_scale == 0
+                batch_size % 3
+                == 0,  # pag is set when loading the model, FIXME: pag_scale == 0
                 True,  # TODO: find a way to detect if we are doing CFG
                 skip_first_layer,
             )
@@ -101,9 +111,15 @@ class NunchakuSanaTransformerBlocks(nn.Module):
         mask = encoder_attention_mask.reshape(batch_size, txt_tokens)
         nunchaku_encoder_hidden_states = encoder_hidden_states[mask > -9000]
 
-        cu_seqlens_txt = F.pad((mask > -9000).sum(dim=1).cumsum(dim=0), pad=(1, 0), value=0).to(torch.int32)
+        cu_seqlens_txt = F.pad(
+            (mask > -9000).sum(dim=1).cumsum(dim=0), pad=(1, 0), value=0
+        ).to(torch.int32)
         cu_seqlens_img = torch.arange(
-            0, (batch_size + 1) * img_tokens, img_tokens, dtype=torch.int32, device=self.device
+            0,
+            (batch_size + 1) * img_tokens,
+            img_tokens,
+            dtype=torch.int32,
+            device=self.device,
         )
 
         if height is None and width is None:
@@ -124,27 +140,38 @@ class NunchakuSanaTransformerBlocks(nn.Module):
                 cu_seqlens_txt.to(self.device),
                 height,
                 width,
-                batch_size % 3 == 0,  # pag is set when loading the model, FIXME: pag_scale == 0
+                batch_size % 3
+                == 0,  # pag is set when loading the model, FIXME: pag_scale == 0
                 True,  # TODO: find a way to detect if we are doing CFG
             )
             .to(original_dtype)
             .to(original_device)
         )
+
     def __del__(self):
         self.m.reset()
+
 
 class NunchakuSanaTransformer2DModel(SanaTransformer2DModel, NunchakuModelLoaderMixin):
     @classmethod
     @utils.validate_hf_hub_args
-    def from_pretrained(cls, pretrained_model_name_or_path: str | os.PathLike, **kwargs):
+    def from_pretrained(
+        cls, pretrained_model_name_or_path: str | os.PathLike, **kwargs
+    ):
         device = kwargs.get("device", "cuda")
         pag_layers = kwargs.get("pag_layers", [])
-        precision = get_precision(kwargs.get("precision", "auto"), device, pretrained_model_name_or_path)
+        precision = get_precision(
+            kwargs.get("precision", "auto"), device, pretrained_model_name_or_path
+        )
         transformer, unquantized_part_path, transformer_block_path = cls._build_model(
             pretrained_model_name_or_path, **kwargs
         )
         m = load_quantized_module(
-            transformer, transformer_block_path, device=device, pag_layers=pag_layers, use_fp4=precision == "fp4"
+            transformer,
+            transformer_block_path,
+            device=device,
+            pag_layers=pag_layers,
+            use_fp4=precision == "fp4",
         )
         transformer.inject_quantized_module(m, device)
         transformer.to_empty(device=device)
@@ -152,8 +179,12 @@ class NunchakuSanaTransformer2DModel(SanaTransformer2DModel, NunchakuModelLoader
         transformer.load_state_dict(unquantized_state_dict, strict=False)
         return transformer
 
-    def inject_quantized_module(self, m: QuantizedSanaModel, device: str | torch.device = "cuda"):
-        self.transformer_blocks = torch.nn.ModuleList([NunchakuSanaTransformerBlocks(m, self.dtype, device)])
+    def inject_quantized_module(
+        self, m: QuantizedSanaModel, device: str | torch.device = "cuda"
+    ):
+        self.transformer_blocks = torch.nn.ModuleList(
+            [NunchakuSanaTransformerBlocks(m, self.dtype, device)]
+        )
         return self
 
 
@@ -173,7 +204,13 @@ def load_quantized_module(
 
     m = QuantizedSanaModel()
     cutils.disable_memory_auto_release()
-    m.init(net.config, pag_layers, use_fp4, net.dtype == torch.bfloat16, 0 if device.index is None else device.index)
+    m.init(
+        net.config,
+        pag_layers,
+        use_fp4,
+        net.dtype == torch.bfloat16,
+        0 if device.index is None else device.index,
+    )
     m.load(path)
     return m
 
@@ -181,5 +218,7 @@ def load_quantized_module(
 def inject_quantized_module(
     net: SanaTransformer2DModel, m: QuantizedSanaModel, device: torch.device
 ) -> SanaTransformer2DModel:
-    net.transformer_blocks = torch.nn.ModuleList([NunchakuSanaTransformerBlocks(m, net.dtype, device)])
+    net.transformer_blocks = torch.nn.ModuleList(
+        [NunchakuSanaTransformerBlocks(m, net.dtype, device)]
+    )
     return net

@@ -19,35 +19,41 @@ By default, implicit conversions are enabled.
 
 !!! info "Future behavior change"
 
-    Implicit conversions will be switched off by default in the next major release of the library.
+```
+Implicit conversions will be switched off by default in the next major release of the library.
 
-    You can prepare existing code by already defining `JSON_USE_IMPLICIT_CONVERSIONS` to `0` and replace any implicit
-    conversions with calls to [`get`](../basic_json/get.md).
+You can prepare existing code by already defining `JSON_USE_IMPLICIT_CONVERSIONS` to `0` and replace any implicit
+conversions with calls to [`get`](../basic_json/get.md).
+```
 
 !!! hint "CMake option"
 
-    Implicit conversions can also be controlled with the CMake option
-    [`JSON_ImplicitConversions`](../../integration/cmake.md#json_legacydiscardedvaluecomparison)
-    (`ON` by default) which defines `JSON_USE_IMPLICIT_CONVERSIONS` accordingly.
+```
+Implicit conversions can also be controlled with the CMake option
+[`JSON_ImplicitConversions`](../../integration/cmake.md#json_legacydiscardedvaluecomparison)
+(`ON` by default) which defines `JSON_USE_IMPLICIT_CONVERSIONS` accordingly.
+```
 
 ## Examples
 
 ??? example
 
-    This is an example for an implicit conversion:
+````
+This is an example for an implicit conversion:
 
-    ```cpp
-    json j = "Hello, world!";
-    std::string s = j;
-    ```
+```cpp
+json j = "Hello, world!";
+std::string s = j;
+```
 
-    When `JSON_USE_IMPLICIT_CONVERSIONS` is defined to `0`, the code above does no longer compile. Instead, it must be
-    written like this:
+When `JSON_USE_IMPLICIT_CONVERSIONS` is defined to `0`, the code above does no longer compile. Instead, it must be
+written like this:
 
-    ```cpp
-    json j = "Hello, world!";
-    auto s = j.template get<std::string>();
-    ```
+```cpp
+json j = "Hello, world!";
+auto s = j.template get<std::string>();
+```
+````
 
 ## See also
 

@@ -10,7 +10,11 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("input_path", type=str, help="Path to checkpoint file")
     parser.add_argument(
-        "-o", "--output-path", type=str, help="Path to save the output checkpoint file", default="output.safetensors"
+        "-o",
+        "--output-path",
+        type=str,
+        help="Path to save the output checkpoint file",
+        default="output.safetensors",
     )
     args = parser.parse_args()
     return args
@@ -36,7 +40,9 @@ def main():
         "transformer.norm_out.linear.bias": swap_scale_shift(
             original_state_dict["final_layer"]["adaLN_modulation.1.bias"]
         ),
-        "transformer.proj_out.weight": original_state_dict["final_layer"]["linear.weight"],
+        "transformer.proj_out.weight": original_state_dict["final_layer"][
+            "linear.weight"
+        ],
         "transformer.proj_out.bias": original_state_dict["final_layer"]["linear.bias"],
     }
     original_state_dict.pop("img_in")
@@ -45,7 +51,9 @@ def main():
     original_lora_state_dict = original_state_dict["lora"]
     for k, v in tqdm(original_lora_state_dict.items()):
         if "double_blocks" in k:
-            new_k = k.replace("double_blocks", "transformer.transformer_blocks").replace(".default", "")
+            new_k = k.replace(
+                "double_blocks", "transformer.transformer_blocks"
+            ).replace(".default", "")
             if "qkv" in new_k:
                 for i, p in enumerate(["q", "k", "v"]):
                     if "lora_A" in new_k:
@@ -59,7 +67,9 @@ def main():
                         chunk_size = v.shape[0] // 3
                         new_k2 = new_k.replace("img_attn.qkv", f"attn.to_{p}")
                         new_k2 = new_k2.replace("txt_attn.qkv", f"attn.add_{p}_proj")
-                        new_state_dict[new_k2] = v[i * chunk_size : (i + 1) * chunk_size]
+                        new_state_dict[new_k2] = v[
+                            i * chunk_size : (i + 1) * chunk_size
+                        ]
             else:
                 new_k = new_k.replace("img_mod.lin", "norm1.linear")
                 new_k = new_k.replace("txt_mod.lin", "norm1_context.linear")
@@ -68,7 +78,9 @@ def main():
                 new_state_dict[new_k] = v
         else:
             assert "single_blocks" in k
-            new_k = k.replace("single_blocks", "transformer.single_transformer_blocks").replace(".default", "")
+            new_k = k.replace(
+                "single_blocks", "transformer.single_transformer_blocks"
+            ).replace(".default", "")
             if "linear1" in k:
                 start = 0
                 for i, p in enumerate(["q", "k", "v", "i"]):

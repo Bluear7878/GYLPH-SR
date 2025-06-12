@@ -34,41 +34,41 @@ You can learn more about its history in Turing Award winner Jack Dongarra's
 and also in the C++ Standard document [P1417](https://wg21.link/p1417).
 The abbreviation SGEMM unpacks as follows.
 
-* "Single-precision" is Fortran-speak for float.
-    The BLAS supports four different matrix or vector element types:
+- "Single-precision" is Fortran-speak for float.
+  The BLAS supports four different matrix or vector element types:
 
-    * S for single precision (`float`),
+  - S for single precision (`float`),
 
-    * D for double precision (`double`),
+  - D for double precision (`double`),
 
-    * C for complex float (like C++'s `std::complex<float>`,
-        where each of the real and imaginary components has type `float`),
-        and
+  - C for complex float (like C++'s `std::complex<float>`,
+    where each of the real and imaginary components has type `float`),
+    and
 
-    * Z for complex double (like C++'s `std::complex<double>`).
+  - Z for complex double (like C++'s `std::complex<double>`).
 
-* "GEneral" means that the matrix is represented
-    as a two-dimensional dense array
-    and not assumed to have any kind of symmetry.
-    The BLAS supports a variety of matrix representations,
-    including
+- "GEneral" means that the matrix is represented
+  as a two-dimensional dense array
+  and not assumed to have any kind of symmetry.
+  The BLAS supports a variety of matrix representations,
+  including
 
-    * SY: SYmmetric,
+  - SY: SYmmetric,
 
-    * HE: HErmitian,
+  - HE: HErmitian,
 
-    * TR: TRiangular,
+  - TR: TRiangular,
 
-    * GB: General Banded,
+  - GB: General Banded,
 
-    * SB: Symmetric Banded,
+  - SB: Symmetric Banded,
 
-    * SP: Symmetric Packed, and
+  - SP: Symmetric Packed, and
 
-    * TP: Triangular Packed.
+  - TP: Triangular Packed.
 
-* MM means "Matrix-matrix multiply," as opposed to other operations,
-    like MV (Matrix-Vector multiply).
+- MM means "Matrix-matrix multiply," as opposed to other operations,
+  like MV (Matrix-Vector multiply).
 
 The string "nt" in the filename means that
 the first input matrix A is "Not transposed,"
@@ -134,13 +134,13 @@ This leaves five kinds of things to explain:
 
 1. Shapes
 
-2. Strides
+1. Strides
 
-3. Block layouts
+1. Block layouts
 
-4. Thread layouts
+1. Thread layouts
 
-5. Launch bounds
+1. Launch bounds
 
 ### Shapes
 
@@ -210,9 +210,9 @@ C++ values have three levels of "compile-time-ness":
 
 1. dynamic (run-time) values,
 
-2. constexpr values, and
+1. constexpr values, and
 
-3. static (compile-time) values.
+1. static (compile-time) values.
 
 (Rather than saying "C++ has,"
 it's more accurate to say "C++17 has."
@@ -255,7 +255,7 @@ int bar()
 }
 ```
 
-"Static" is an unfortunately overloaded term in C++.  Sometimes it means "the opposite of instance," like a "static function" or "static member" of a class.  (Some programming languages, like Java, say "class method" to refer to a "static function of a class.")  That's not what we mean here.  Instead, we mean "part of a compile-time type."  For example, `Int<1>` encodes the value 1 at compile time, as part of the type of a templated class `Int<Value>`.  `Int<3>` and `Int<4>` have different types.  You can get the value of the type like this: `Int<3>::value`.  (The `value` is a `static constexpr` member of the class, where "static" means "opposite of instance.")  As soon as you go from `Int<3>` to `Int<3>::value`, you've gone from (3) above (a compile-time value) to (2) above (a `constexpr` value).  In some situations, this may mean that the compiler treats it as a run-time value.
+"Static" is an unfortunately overloaded term in C++. Sometimes it means "the opposite of instance," like a "static function" or "static member" of a class. (Some programming languages, like Java, say "class method" to refer to a "static function of a class.") That's not what we mean here. Instead, we mean "part of a compile-time type." For example, `Int<1>` encodes the value 1 at compile time, as part of the type of a templated class `Int<Value>`. `Int<3>` and `Int<4>` have different types. You can get the value of the type like this: `Int<3>::value`. (The `value` is a `static constexpr` member of the class, where "static" means "opposite of instance.") As soon as you go from `Int<3>` to `Int<3>::value`, you've gone from (3) above (a compile-time value) to (2) above (a `constexpr` value). In some situations, this may mean that the compiler treats it as a run-time value.
 
 #### Strides
 
@@ -275,7 +275,7 @@ auto dB = make_stride(Int<1>{}, ldB); // (dN,dK)
 auto dC = make_stride(Int<1>{}, ldC); // (dM,dN)
 ```
 
-To evaluate this mapping for a given multidimensional index, take the dot product of the indices with the strides.  For example, the offset of `A(index_m, index_k)` is `index_m * 1 + index_k * ldA`.  Note the implications for the compile-time-ness of the offset.  Any run-time value among either the shape or the strides makes the offset a run-time value.  Of course, if a particular stride is a compile-time constant (especially 1), it's easier for the compiler to optimize the arithmetic and result.
+To evaluate this mapping for a given multidimensional index, take the dot product of the indices with the strides. For example, the offset of `A(index_m, index_k)` is `index_m * 1 + index_k * ldA`. Note the implications for the compile-time-ness of the offset. Any run-time value among either the shape or the strides makes the offset a run-time value. Of course, if a particular stride is a compile-time constant (especially 1), it's easier for the compiler to optimize the arithmetic and result.
 
 Note that in the original source code,
 this example is missing the comments after each line.
@@ -296,7 +296,7 @@ The K mode disappears in the output C.
 "Outermost" here means "rightmost"
 (literally, appearing rightmost in the list M, N, K).
 Note that the shapes form a kind of Einstein tensor notation.
-GEMM does Shape<M, N> = Shape<M, K> * Shape<K, N>.
+GEMM does Shape\<M, N> = Shape\<M, K> * Shape\<K, N>.
 In Einstein notation, the repeated index indicates
 a sum of that term over all values of K.
 
@@ -326,7 +326,7 @@ The previous paragraph relates to shapes, not strides.
 Returning to the strides, the above code describes these strides as "mixed."
 This means that they include both run-time and compile-time values.
 For example, the stride between A(m, k) and A(m+1, k) is `Int<1>`,
-a compile-time value 1.  The stride between A(m, k) and A(m, k+1),
+a compile-time value 1. The stride between A(m, k) and A(m, k+1),
 however, is `ldA`, the "leading dimension of A," a run-time value.
 The "leading dimension" of a matrix
 refers to the stride between consecutive columns of a column-major matrix
@@ -340,9 +340,9 @@ for "the stride that isn't the compile-time constant 1."
 
 #### M-major, N-major, K-major
 
-Note that we haven't uttered the phrases "column-major" or "row-major" here.  This is where the experience of a BLAS user diverges from the experience of a BLAS implementer.  BLAS users speak of "column-major" and "row-major" layouts.  C++23's `mdspan` class encodes these as `layout_left` resp. `layout_right`.  However, we don't speak of "column-major" or "row-major" in our GEMM implementations.
+Note that we haven't uttered the phrases "column-major" or "row-major" here. This is where the experience of a BLAS user diverges from the experience of a BLAS implementer. BLAS users speak of "column-major" and "row-major" layouts. C++23's `mdspan` class encodes these as `layout_left` resp. `layout_right`. However, we don't speak of "column-major" or "row-major" in our GEMM implementations.
 
-We say that a matrix is "M-major" if it is stride 1 in the M-mode, "N-major" if it is stride 1 in the N-mode, or "K-major" if it is stride 1 in the K-mode.  In the above code, A has shape (M, K) and strides (1, ldA).  Since A has stride 1 in the M mode, we say that A is "M major."  B has shape (N, K) and strides (1, ldB), so B is "N-major."  Similarly, C has shape (M, N) and strides (1, ldC), so C is "M major."
+We say that a matrix is "M-major" if it is stride 1 in the M-mode, "N-major" if it is stride 1 in the N-mode, or "K-major" if it is stride 1 in the K-mode. In the above code, A has shape (M, K) and strides (1, ldA). Since A has stride 1 in the M mode, we say that A is "M major." B has shape (N, K) and strides (1, ldB), so B is "N-major." Similarly, C has shape (M, N) and strides (1, ldC), so C is "M major."
 
 How do we translate this into the BLAS user's experience?
 The following table illustrates for B and C.
@@ -356,17 +356,17 @@ Thus, reversing the order of both the modes and the strides
 does not change this evaluation.
 
 | Matrix | User's shape | User's layout | User's strides | Impl layout | Impl shape | Impl strides |
-| ---    | ---          | ---           | ---            | ---         | ---        | ---          |
-| C      | M x N        | Column major  | (1, LDC)       | M-major     | (M, N)     | (1, LDC)     |
-| A      | M x K        | Column major  | (1, LDA)       | M-major     | (M, K)     | (1, LDA)     |
+| --- | --- | --- | --- | --- | --- | --- |
+| C | M x N | Column major | (1, LDC) | M-major | (M, N) | (1, LDC) |
+| A | M x K | Column major | (1, LDA) | M-major | (M, K) | (1, LDA) |
 
-What about the matrix B?  We explained above that B is N-major.  How would that translate back into the BLAS user's experience?  We take a hint here from the filename including "nt."  The "nt" part of the name means that A is not transposed, while B is transposed.  The BLAS convention (see e.g., [the documentation for DGEMM](https://netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html)) is that if you take the transpose, then the dimensions refer to the transpose ("with op( A ) an m by k matrix, op( B ) a k by n matrix and C an m by n matrix").  Thus, this example actually computes `C = beta * C + alpha * A * B^T`, where `B^T` is an K x N matrix with strides (LDB, 1).  The user's "original" matrix B is thus N x K, with strides (1, LDB) -- that's a column-major layout.  (Reversing the modes and the strides preserves the layout, since evaluating the layout mapping just takes the dot product of indices and strides.)  This lets us expand the above table to include B.
+What about the matrix B? We explained above that B is N-major. How would that translate back into the BLAS user's experience? We take a hint here from the filename including "nt." The "nt" part of the name means that A is not transposed, while B is transposed. The BLAS convention (see e.g., [the documentation for DGEMM](https://netlib.org/lapack/explore-html/d1/d54/group__double__blas__level3_gaeda3cbd99c8fb834a60a6412878226e1.html)) is that if you take the transpose, then the dimensions refer to the transpose ("with op( A ) an m by k matrix, op( B ) a k by n matrix and C an m by n matrix"). Thus, this example actually computes `C = beta * C + alpha * A * B^T`, where `B^T` is an K x N matrix with strides (LDB, 1). The user's "original" matrix B is thus N x K, with strides (1, LDB) -- that's a column-major layout. (Reversing the modes and the strides preserves the layout, since evaluating the layout mapping just takes the dot product of indices and strides.) This lets us expand the above table to include B.
 
 | Matrix | Transposed? | User's shape | User's layout | User's strides | Impl layout | Impl shape | Impl strides |
-| ---    | ---         | ---          | ---           | ---            | ---         | ---        | ---          |
-| C      | No          | M x N        | Column major  | (1, LDC)       | M-major     | (M, N)     | (1, LDC)     |
-| A      | No          | M x K        | Column major  | (1, LDA)       | M-major     | (M, K)     | (1, LDA)     |
-| B      | Yes         | N x K        | Column major  | (1, LDB)       | N-major     | (N, K)     | (1, LDB)     |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| C | No | M x N | Column major | (1, LDC) | M-major | (M, N) | (1, LDC) |
+| A | No | M x K | Column major | (1, LDA) | M-major | (M, K) | (1, LDA) |
+| B | Yes | N x K | Column major | (1, LDB) | N-major | (N, K) | (1, LDB) |
 
 CuTe developers say: "In CuTe, you can't tell transposed
 apart from non-transposed, MN-major from K-major, etc.
@@ -377,12 +377,12 @@ Instead, CuTe sees shapes and strides.
 A CuTe developer must reason backwards from the shapes and strides
 in order to see what the BLAS user sees.
 
-Why does CuTe do this?  Consider that matrix multiply performs a reduction in the K-mode.  From the user's perspective, it's reducing across rows of the first input matrix, but across columns of the second input matrix.  If we instead mentally flip the modes of the first input matrix, then the implementation reduces over columns (the K mode) of both input matrices.  This leads to two cases in which the implementation can effectively treat both input matrices in the same way.  (If you call it with A and B reversed, it should even give the same results for these cases.)
+Why does CuTe do this? Consider that matrix multiply performs a reduction in the K-mode. From the user's perspective, it's reducing across rows of the first input matrix, but across columns of the second input matrix. If we instead mentally flip the modes of the first input matrix, then the implementation reduces over columns (the K mode) of both input matrices. This leads to two cases in which the implementation can effectively treat both input matrices in the same way. (If you call it with A and B reversed, it should even give the same results for these cases.)
 
-| Case                       | User asks for A | User asks for B | Abbreviation |
-| ---                        | ---             | ---             | ---          |
-| A is M major, B is N major | Not transposed  | Transposed      | NT           |
-| A and B are both K major   | Transposed      | Not transposed  | TN           |
+| Case | User asks for A | User asks for B | Abbreviation |
+| --- | --- | --- | --- |
+| A is M major, B is N major | Not transposed | Transposed | NT |
+| A and B are both K major | Transposed | Not transposed | TN |
 
 This is why an introductory example starts with NT or TN.
 For a summary of the four different transpose options for A and B,
@@ -390,17 +390,17 @@ and their corresponding implementation layouts,
 please see the table below.
 
 | Transpose abbreviation | User sees A transposed? | User sees B transposed? | A's impl layout | B's impl layout |
-| ---                    | ---                     | ---                     | ---             | ---             |
-| NT                     | No                      | Yes                     | M major         | N major         |
-| TN                     | Yes                     | No                      | K major         | K major         |
-| NN                     | No                      | No                      | M major         | K major         |
-| TT                     | Yes                     | Yes                     | K major         | N major         |
+| --- | --- | --- | --- | --- |
+| NT | No | Yes | M major | N major |
+| TN | Yes | No | K major | K major |
+| NN | No | No | M major | K major |
+| TT | Yes | Yes | K major | N major |
 
 #### MN-major and K-major
 
-As we mentioned above, there are two "preferred arrangements," TN and NT.  In the TN arrangement, both A and B are K-major.  In the NT arrangement, A is M-major and B is N-major.  Even though the two stride-1 modes in NT have different names, it's still the leftmost mode for both A and B that has stride 1.  Thus, we can think of the NT arrangement as "MN-major," analogous to how the TN arrangement is "K-major."
+As we mentioned above, there are two "preferred arrangements," TN and NT. In the TN arrangement, both A and B are K-major. In the NT arrangement, A is M-major and B is N-major. Even though the two stride-1 modes in NT have different names, it's still the leftmost mode for both A and B that has stride 1. Thus, we can think of the NT arrangement as "MN-major," analogous to how the TN arrangement is "K-major."
 
-The two preferred arrangements tend to work themselves into implementations, particularly when they use hardware instructions for accelerating matrix multiplies of blocks.  In some cases, the hardware instruction may require NT (MN-major) or TN (K-major).  For NN or TT, such instructions would require an intermediate transpose -- for example, when loading from global memory to shared memory.
+The two preferred arrangements tend to work themselves into implementations, particularly when they use hardware instructions for accelerating matrix multiplies of blocks. In some cases, the hardware instruction may require NT (MN-major) or TN (K-major). For NN or TT, such instructions would require an intermediate transpose -- for example, when loading from global memory to shared memory.
 
 ### Block layouts
 
@@ -437,7 +437,7 @@ for (int k = 0; k < k_max; ++k)
 }
 ```
 
-We will explain the notation in this loop below.  The important things to remember are that the coordinate `k` loops over the blocks which the calling thread is supposed to compute, the `copy` functions copy A resp. B blocks from global memory (the first argument) to shared memory (the second argument -- same as C++'s `std::copy`, but the opposite of `memcpy`), and the `gemm` function computes C += A * B on the shared memory blocks.
+We will explain the notation in this loop below. The important things to remember are that the coordinate `k` loops over the blocks which the calling thread is supposed to compute, the `copy` functions copy A resp. B blocks from global memory (the first argument) to shared memory (the second argument -- same as C++'s `std::copy`, but the opposite of `memcpy`), and the `gemm` function computes C += A * B on the shared memory blocks.
 
 It turns out that copy takes an optional first argument, the "atom," as in the following.
 
@@ -449,9 +449,9 @@ The "atom" is metadata that explains how to do the copy operation.
 
 There are a few topics to push onto the stack.
 
-The copy function call shows a notation for taking slices of a tensor.  A CuTe `Tensor` is a multidimensional array view.  It consists of a pointer and a `Layout`.  You can learn more about `Tensor`s elsewhere in CuTe's documentation, but for now, please note that `tAgA(_,_,k)` means "create a Tensor that views (i, j, k) for all valid i, all valid j, and a specific value of k."  The result has rank one less than the original Tensor.  CuTe's underscore means the same thing as a single stand-alone colon in Fortran or Matlab.  Note also that CuTe uses the same notation for slices as for tensor indexing.  The implementation can distinguish the two cases by checking whether any of the arguments is an underscore.  In contrast, the C++23 class mdspan uses a separate function, `submdspan` (not in C++23, and proposed for C++26; see [P2630](https://wg21.link/p2630)), for slicing.
+The copy function call shows a notation for taking slices of a tensor. A CuTe `Tensor` is a multidimensional array view. It consists of a pointer and a `Layout`. You can learn more about `Tensor`s elsewhere in CuTe's documentation, but for now, please note that `tAgA(_,_,k)` means "create a Tensor that views (i, j, k) for all valid i, all valid j, and a specific value of k." The result has rank one less than the original Tensor. CuTe's underscore means the same thing as a single stand-alone colon in Fortran or Matlab. Note also that CuTe uses the same notation for slices as for tensor indexing. The implementation can distinguish the two cases by checking whether any of the arguments is an underscore. In contrast, the C++23 class mdspan uses a separate function, `submdspan` (not in C++23, and proposed for C++26; see [P2630](https://wg21.link/p2630)), for slicing.
 
-Fully understanding what `copy` and `gemm` do calls for learning about thread layouts as well, so we will wait to explain them completely.  For now, note that these functions are implicitly parallel, as they are called collectively by all threads in a thread block.
+Fully understanding what `copy` and `gemm` do calls for learning about thread layouts as well, so we will wait to explain them completely. For now, note that these functions are implicitly parallel, as they are called collectively by all threads in a thread block.
 
 The block dimensions are defined near the top of the host function `gemm`.
 
@@ -462,7 +462,7 @@ auto bN = Int<128>{};
 auto bK = Int<  8>{};
 ```
 
-We see that these are fully compile-time dimensions.  This is often the case, especially when we use hardware instructions that only work for certain problem dimensions.  Three lines of code immediately below these construct the block layouts.
+We see that these are fully compile-time dimensions. This is often the case, especially when we use hardware instructions that only work for certain problem dimensions. Three lines of code immediately below these construct the block layouts.
 
 ```c++
 // Define the block layouts (static)
@@ -471,9 +471,9 @@ auto sB = make_layout(make_shape(bN,bK));
 auto sC = make_layout(make_shape(bM,bN));
 ```
 
-Here, the block layouts just come from the block dimensions.  A Layout has two things: a Shape, and Strides.  If the caller does not provide Strides, then CuTe computes Strides corresponding to the default "column-major" arrangement of data.  This just happens to match the global matrices' layouts, but in general doesn't have to.  For example, in the NN or TT cases, we may want to transpose one of the input matrices when copying from global memory to shared memory.
+Here, the block layouts just come from the block dimensions. A Layout has two things: a Shape, and Strides. If the caller does not provide Strides, then CuTe computes Strides corresponding to the default "column-major" arrangement of data. This just happens to match the global matrices' layouts, but in general doesn't have to. For example, in the NN or TT cases, we may want to transpose one of the input matrices when copying from global memory to shared memory.
 
-The example "comments out" some code that prints all the layouts on "thread 0" of each thread block.  If you enable the printing code and run the example, it will print all the layouts.  For example, sA prints as
+The example "comments out" some code that prints all the layouts on "thread 0" of each thread block. If you enable the printing code and run the example, it will print all the layouts. For example, sA prints as
 
 ```
 sA
@@ -491,7 +491,7 @@ sB
 
 consistently with the definitions above.
 
-If you have looked at other GEMM examples in CuTe, you might be wondering about hardware matrix-matrix multiply instructions.  Those instructions tend to require certain values for shapes and strides, that may be a function of the matrix's element type.  CuTe knows about these instructions and their required shapes and strides.  We will go into more detail about that elsewhere.
+If you have looked at other GEMM examples in CuTe, you might be wondering about hardware matrix-matrix multiply instructions. Those instructions tend to require certain values for shapes and strides, that may be a function of the matrix's element type. CuTe knows about these instructions and their required shapes and strides. We will go into more detail about that elsewhere.
 
 The `gemm_device` top-level kernel uses these block layouts to allocate shared memory buffers for A and B tiles.
 
@@ -501,7 +501,7 @@ __shared__ TA smemA[cosize_v<ABlockLayout>];
 __shared__ TB smemB[cosize_v<BBlockLayout>];
 ```
 
-Note how the shared memory buffers' sizes depend only on the A resp. B layouts (and element sizes). What's a `cosize_v`?  The "`_v`" is a C++ naming convention that specifies a function from one or more template argument(s), to a value.  In this case, it's a number of elements.  A layout is a function from a set of multidimensional coordinates to a set of one-dimensional array offsets.  It's a function, so we can speak of its domain and codomain.  The "cosize" of a layout is the size of its codomain.  (See e.g., CuTe's implementation of `Layout`.)  If we want to allocate a linear array, for which all the offsets produced by a layout are valid, then we can use the cosize of the layout as the length of the array (in terms of number of elements, not in terms of number of bytes).
+Note how the shared memory buffers' sizes depend only on the A resp. B layouts (and element sizes). What's a `cosize_v`? The "`_v`" is a C++ naming convention that specifies a function from one or more template argument(s), to a value. In this case, it's a number of elements. A layout is a function from a set of multidimensional coordinates to a set of one-dimensional array offsets. It's a function, so we can speak of its domain and codomain. The "cosize" of a layout is the size of its codomain. (See e.g., CuTe's implementation of `Layout`.) If we want to allocate a linear array, for which all the offsets produced by a layout are valid, then we can use the cosize of the layout as the length of the array (in terms of number of elements, not in terms of number of bytes).
 
 ### Thread layouts
 
@@ -520,7 +520,7 @@ That is, the thread layout for the A read is M-major 32x8, for the B read is N-m
 
 #### The example uses compile-time thread and block layouts
 
-Note that the device function `gemm_device` insists that all the thread and block layouts are static -- that is, known at compile time.  You can see this from the `CUTE_STATIC_ASSERT` statements near the top of `gemm_device`.  `CUTE_STATIC_ASSERT` is a wrapper for `static_assert`, which fails at compile time if its condition is `false`.
+Note that the device function `gemm_device` insists that all the thread and block layouts are static -- that is, known at compile time. You can see this from the `CUTE_STATIC_ASSERT` statements near the top of `gemm_device`. `CUTE_STATIC_ASSERT` is a wrapper for `static_assert`, which fails at compile time if its condition is `false`.
 
 ```c++
 // Preconditions
@@ -533,11 +533,11 @@ CUTE_STATIC_ASSERT(is_static<BThreadLayout>::value);
 CUTE_STATIC_ASSERT(is_static<CThreadLayout>::value);
 ```
 
-Use of static layouts has two advantages.  First, it makes it easier to prove correctness of the algorithm.  If the code compiles, it's likely correct.  (On the other hand, new CuTe users may find themselves doing more debugging at compile time than they have before.)  Second, it makes it easier and faster for CuTe to dispatch to the correct optimized implementations (called "atoms" -- see below) for copying blocks and performing matrix multiplies.
+Use of static layouts has two advantages. First, it makes it easier to prove correctness of the algorithm. If the code compiles, it's likely correct. (On the other hand, new CuTe users may find themselves doing more debugging at compile time than they have before.) Second, it makes it easier and faster for CuTe to dispatch to the correct optimized implementations (called "atoms" -- see below) for copying blocks and performing matrix multiplies.
 
 #### The example's block gemm is parallel over elements of C
 
-In the actual device function, `tC` has layout `CThreadLayout`.  You might recall that the kernel function `gemm_device` uses `CThreadLayout` to derive the launch bounds, specifically the maximum number of threads per block.  The launch bounds show up in the declaration of `gemm_device`.
+In the actual device function, `tC` has layout `CThreadLayout`. You might recall that the kernel function `gemm_device` uses `CThreadLayout` to derive the launch bounds, specifically the maximum number of threads per block. The launch bounds show up in the declaration of `gemm_device`.
 
 ```c++
 template <class MShape, class NShape, class KShape,
@@ -555,7 +555,7 @@ gemm_device(MShape M, NShape N, KShape K,
             Alpha alpha, Beta beta);
 ```
 
-The "size" of `CThreadLayout` is the total number of threads, 16 * 16 = 256.  (We take `::value` because the size is actually `Int<256>`, a compile-time constant with a `static constexpr int value = 256` member.)  This suggests that the block gemm function (in the loop over blocks) parallelizes over elements of the C block.  We can see this as well from the kernel launch (at the end of the `gemm` host function), which uses the size of `CThreadLayout` as the block dimension.
+The "size" of `CThreadLayout` is the total number of threads, 16 * 16 = 256. (We take `::value` because the size is actually `Int<256>`, a compile-time constant with a `static constexpr int value = 256` member.) This suggests that the block gemm function (in the loop over blocks) parallelizes over elements of the C block. We can see this as well from the kernel launch (at the end of the `gemm` host function), which uses the size of `CThreadLayout` as the block dimension.
 
 ```c++
 // Define the thread layouts (static)
@@ -575,7 +575,7 @@ gemm_device
      alpha, beta);
 ```
 
-Note that dimBlock is single-dimensional (despite being a dim3), as the size of a layout is a single value.  We can see this also because the example only ever uses `threadIdx.x`, not `threadIdx.y`.  Yet, C's thread layout has shape (16, 16).  What's with that?  Recall that a thread layout maps from a "logical" coordinate space (possibly multidimensional tuples of indices) to (one-dimensional) integer indices.  In this case, `CThreadLayout` maps from pairs of indices in the Cartesian product space {0, 1, 2, ..., 15} x {0, 1, 2, ..., 15}, to one-dimensional indices 0, 1, 2, ..., 255.  The latter, the output of `CThreadLayout`, is the actual thread index `threadIdx.x` in this case.  `CThreadLayout` has only a shape (16, 16) and no nondefault strides, so it uses CuTe's default column-major arrangement (with strides (1, 16) in this case).
+Note that dimBlock is single-dimensional (despite being a dim3), as the size of a layout is a single value. We can see this also because the example only ever uses `threadIdx.x`, not `threadIdx.y`. Yet, C's thread layout has shape (16, 16). What's with that? Recall that a thread layout maps from a "logical" coordinate space (possibly multidimensional tuples of indices) to (one-dimensional) integer indices. In this case, `CThreadLayout` maps from pairs of indices in the Cartesian product space {0, 1, 2, ..., 15} x {0, 1, 2, ..., 15}, to one-dimensional indices 0, 1, 2, ..., 255. The latter, the output of `CThreadLayout`, is the actual thread index `threadIdx.x` in this case. `CThreadLayout` has only a shape (16, 16) and no nondefault strides, so it uses CuTe's default column-major arrangement (with strides (1, 16) in this case).
 
 #### What does `local_tile` do?
 
@@ -596,11 +596,11 @@ Tensor gC = local_tile(mC, blk_shape, blk_coord, Step<_1,_1, X>{});  // (BLK_M,B
 
 There are two new features here:
 
-* `make_coord`, which returns a `Coord`, a multidimensional index which can be used as the input of a `Layout`; and
+- `make_coord`, which returns a `Coord`, a multidimensional index which can be used as the input of a `Layout`; and
 
-* `local_tile`, which we will explain below.
+- `local_tile`, which we will explain below.
 
-The `Coord`(inate) `blk_coord` refers to the set of blocks (indexed by k -- the underscore here indicating a free parameter) our thread block will access.  (The index k here doesn't mean the K mode; it's the same index as in the loop over blocks that does the computation.)
+The `Coord`(inate) `blk_coord` refers to the set of blocks (indexed by k -- the underscore here indicating a free parameter) our thread block will access. (The index k here doesn't mean the K mode; it's the same index as in the loop over blocks that does the computation.)
 
 If we print out the `gA`, `gB`, and `gC` layouts, we get the following.
 
@@ -618,7 +618,7 @@ gC
 (_1,5120)
 ```
 
-All of these layouts come from the original input or output matrices A, B, and C.  Thus, they preserve the original strides, which are all the same in this example (when using default problem dimensions), 5120.  This is most easily seen in the gC layout.  For the other layouts, there is a clue in 5120 * 8 = 40960.  That is, every time we increase k by one, we "skip over 8 columns" of the global matrix, over to the next block of data.  This illustrates an important feature of CuTe, that it can view the same data with different modes and/or strides, as a way to identify parallelism or locality.
+All of these layouts come from the original input or output matrices A, B, and C. Thus, they preserve the original strides, which are all the same in this example (when using default problem dimensions), 5120. This is most easily seen in the gC layout. For the other layouts, there is a clue in 5120 * 8 = 40960. That is, every time we increase k by one, we "skip over 8 columns" of the global matrix, over to the next block of data. This illustrates an important feature of CuTe, that it can view the same data with different modes and/or strides, as a way to identify parallelism or locality.
 
 ## Next steps
 

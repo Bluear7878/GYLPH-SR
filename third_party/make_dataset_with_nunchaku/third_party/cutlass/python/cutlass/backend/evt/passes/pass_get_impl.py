@@ -43,8 +43,10 @@ import cutlass.backend.evt.backend as evt_backend
 from cutlass.backend.evt.ir import DAGIR, LoadNode
 from cutlass.backend.evt.passes.pass_fix_element_d import PassFixElementD
 from cutlass.backend.evt.passes.pass_manager import EVTPassBase
-from cutlass.backend.evt.passes.pass_no_op_elimination import PassNoOpElimination
-from cutlass.backend.evt.passes.pass_shape_type_propagation import PassShapeTypePropagation
+from cutlass.backend.evt.passes.pass_no_op_elimination import \
+    PassNoOpElimination
+from cutlass.backend.evt.passes.pass_shape_type_propagation import \
+    PassShapeTypePropagation
 
 
 class PassGetImpl(EVTPassBase):
@@ -54,9 +56,10 @@ class PassGetImpl(EVTPassBase):
     on their layout. For instance, a LoadNode can be AuxLoad, Row/Col/Scalar broadcast, etc.
     This pass infers the underlying impl of each node
     """
+
     dependencies = [
         PassShapeTypePropagation,  # The shape and type info are required for inference
-        PassFixElementD
+        PassFixElementD,
     ]
 
     def __init__(self, dag_ir: DAGIR) -> None:
@@ -85,5 +88,5 @@ class PassGetImpl(EVTPassBase):
             node_impl_ccs = getattr(evt_backend, f"sm{self.cc}_nodes")
             node_meta.underlying_impl = getattr(
                 node_impl_ccs,
-                f"Sm{self.cc}" + node_meta.underlying_impl.__class__.__name__
+                f"Sm{self.cc}" + node_meta.underlying_impl.__class__.__name__,
             )(node_meta)

@@ -13,18 +13,18 @@ static basic_json binary(typename binary_t::container_type&& init,
 ```
 
 1. Creates a JSON binary array value from a given binary container.
-2. Creates a JSON binary array value from a given binary container with subtype.
- 
+1. Creates a JSON binary array value from a given binary container with subtype.
+
 Binary values are part of various binary formats, such as CBOR, MessagePack, and BSON. This constructor is used to
 create a value for serialization to those formats.
 
 ## Parameters
 
 `init` (in)
-:   container containing bytes to use as binary type
+: container containing bytes to use as binary type
 
 `subtype` (in)
-:   subtype to use in CBOR, MessagePack, and BSON
+: subtype to use in CBOR, MessagePack, and BSON
 
 ## Return value
 
@@ -49,17 +49,19 @@ of a binary array type, for backwards compatibility and so it does not happen on
 
 ??? example
 
-    The following code shows how to create a binary value.
-     
-    ```cpp
-    --8<-- "examples/binary.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/binary.output"
-    ```
+````
+The following code shows how to create a binary value.
+
+```cpp
+--8<-- "examples/binary.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/binary.output"
+```
+````
 
 ## Version history
 

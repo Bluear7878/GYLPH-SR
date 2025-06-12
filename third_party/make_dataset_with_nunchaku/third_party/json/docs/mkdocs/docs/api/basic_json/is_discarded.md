@@ -26,27 +26,31 @@ Constant.
 
 !!! note "Comparisons"
 
-    Discarded values are never compared equal with [`operator==`](operator_eq.md). That is, checking whether a JSON
-    value `j` is discarded will only work via:
-    
-    ```cpp
-    j.is_discarded()
-    ```
-    
-    because
-    
-    ```cpp
-    j == json::value_t::discarded
-    ```
-    
-    will always be `#!cpp false`.
+````
+Discarded values are never compared equal with [`operator==`](operator_eq.md). That is, checking whether a JSON
+value `j` is discarded will only work via:
+
+```cpp
+j.is_discarded()
+```
+
+because
+
+```cpp
+j == json::value_t::discarded
+```
+
+will always be `#!cpp false`.
+````
 
 !!! note "Removal during parsing with callback functions"
 
-    When a value is discarded by a callback function (see [`parser_callback_t`](parser_callback_t.md)) during parsing,
-    then it is removed when it is part of a structured value. For instance, if the second value of an array is discarded,
-    instead of `#!json [null, discarded, false]`, the array `#!json [null, false]` is returned. Only if the top-level
-    value is discarded, the return value of the `parse` call is discarded.
+```
+When a value is discarded by a callback function (see [`parser_callback_t`](parser_callback_t.md)) during parsing,
+then it is removed when it is part of a structured value. For instance, if the second value of an array is discarded,
+instead of `#!json [null, discarded, false]`, the array `#!json [null, false]` is returned. Only if the top-level
+value is discarded, the return value of the `parse` call is discarded.
+```
 
 This function will always be `#!cpp false` for JSON values after parsing. That is, discarded values can only occur
 during parsing, but will be removed when inside a structured value or replaced by null in other cases.
@@ -55,17 +59,19 @@ during parsing, but will be removed when inside a structured value or replaced b
 
 ??? example
 
-    The following code exemplifies `is_discarded()` for all JSON types.
-    
-    ```cpp
-    --8<-- "examples/is_discarded.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/is_discarded.output"
-    ```
+````
+The following code exemplifies `is_discarded()` for all JSON types.
+
+```cpp
+--8<-- "examples/is_discarded.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/is_discarded.output"
+```
+````
 
 ## Version history
 

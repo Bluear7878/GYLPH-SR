@@ -30,34 +30,14 @@
 #
 #################################################################################################
 
-from pycute import product
-
+from cutlass.backend.evt.ir import (  # Load Node; Compute Node; Store Node
+    AccumulatorImpl, AuxLoadImpl, AuxStoreImpl, ColumnBroadcastImpl,
+    ColumnReductionImpl, ComputeImpl, ComputeNode, LoadNode, LoadSrcImpl,
+    RowBroadcastImpl, RowReductionImpl, ScalarBroadcastImpl,
+    ScalarReductionImpl, StoreDImpl, StoreNode)
+from cutlass.backend.library import FloatRoundStyleTag, FunctionalOp, op_tag
 from cutlass_library import DataTypeSize, DataTypeTag
-from cutlass.backend.evt.ir import (
-    # Load Node
-    AccumulatorImpl,
-    AuxLoadImpl,
-    ColumnBroadcastImpl,
-    LoadNode,
-    LoadSrcImpl,
-    RowBroadcastImpl,
-    ScalarBroadcastImpl,
-    # Compute Node
-    ComputeImpl,
-    ComputeNode,
-    # Store Node
-    AuxStoreImpl,
-    ColumnReductionImpl,
-    RowReductionImpl,
-    ScalarReductionImpl,
-    StoreNode,
-    StoreDImpl,
-)
-from cutlass.backend.library import (
-    FloatRoundStyleTag,
-    FunctionalOp,
-    op_tag,
-)
+from pycute import product
 
 
 class Sm90AccumulatorImpl(AccumulatorImpl):
@@ -124,11 +104,16 @@ using {self.name_camel} = cutlass::epilogue::fusion::Sm90AuxLoad<
 """
         return self._type_decl
 
-    def get_smem_size(self, cta_tile_mnk, epilogue_tile_mn, stages_c, stages_d, epi_tiles):
+    def get_smem_size(
+        self, cta_tile_mnk, epilogue_tile_mn, stages_c, stages_d, epi_tiles
+    ):
         """
         Get the shared memory size based on epilogue_tile_mn, stages_c, and stages_d
         """
-        return (DataTypeSize[self.element] * stages_c * product(epilogue_tile_mn) // 8, 128)
+        return (
+            DataTypeSize[self.element] * stages_c * product(epilogue_tile_mn) // 8,
+            128,
+        )
 
 
 class Sm90ScalarBroadcastImpl(ScalarBroadcastImpl):
@@ -185,7 +170,9 @@ using {self.name_camel} = cutlass::epilogue::fusion::Sm90RowBroadcast<
 """
         return self._type_decl
 
-    def get_smem_size(self, cta_tile_mnk, epilogue_tile_mn, stages_c, stages_d, epi_tiles):
+    def get_smem_size(
+        self, cta_tile_mnk, epilogue_tile_mn, stages_c, stages_d, epi_tiles
+    ):
         """
         Get the shared memory size based on epilogue_tile_mn, stages_c, and stages_d
         """
@@ -249,6 +236,7 @@ using {self.descriptor} = cutlass::epilogue::collective::detail::AuxStoreDescrip
     EpilogueDescriptor, {self.stride_mnl}, {DataTypeTag[self.element]}
 >;
 """
+
     @property
     def type_decl(self):
         """
@@ -267,11 +255,16 @@ using {self.name_camel} = cutlass::epilogue::fusion::Sm90AuxStore<
 """
         return self._type_decl
 
-    def get_smem_size(self, cta_tile_mnk, epilogue_tile_mn, stages_c, stages_d, epi_tiles):
+    def get_smem_size(
+        self, cta_tile_mnk, epilogue_tile_mn, stages_c, stages_d, epi_tiles
+    ):
         """
         Get the shared memory size based on epilogue_tile_mn, stages_c, and stages_d
         """
-        return (DataTypeSize[self.element] * stages_d * product(epilogue_tile_mn) // 8, 128)
+        return (
+            DataTypeSize[self.element] * stages_d * product(epilogue_tile_mn) // 8,
+            128,
+        )
 
 
 class Sm90StoreDImpl(StoreDImpl):
@@ -310,7 +303,6 @@ using {self.name_camel} = cutlass::epilogue::fusion::Sm90ColReduction<
 
 class Sm90RowReductionImpl(RowReductionImpl):
 
-
     @property
     def type_decl(self):
         """
@@ -331,7 +323,6 @@ using {self.name_camel} = cutlass::epilogue::fusion::Sm90RowReduction<
 
 
 class Sm90ScalarReductionImpl(ScalarReductionImpl):
-
 
     @property
     def type_decl(self):

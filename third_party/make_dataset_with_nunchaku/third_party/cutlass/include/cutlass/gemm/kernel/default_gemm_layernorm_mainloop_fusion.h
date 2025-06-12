@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,37 +18,39 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief 
-      Default kernel-level GEMM definitions combine threadblock-scoped matrix multiply-add with
-      the appropriate threadblock-scoped epilogue.
-  
-      Note, CUTLASS epilogues universally target row-major outputs. Column-major outputs are
-      accommodated by exchanging A and B operands and assuming transposed layouts. Partial
-      specializations here choose 'device::GemmTransposed' to implement this functionality.
+    \brief
+      Default kernel-level GEMM definitions combine threadblock-scoped matrix
+   multiply-add with the appropriate threadblock-scoped epilogue.
+
+      Note, CUTLASS epilogues universally target row-major outputs. Column-major
+   outputs are accommodated by exchanging A and B operands and assuming
+   transposed layouts. Partial specializations here choose
+   'device::GemmTransposed' to implement this functionality.
 */
 
 #pragma once
 
 #include "cutlass/cutlass.h"
 
+#include "cutlass/arch/wmma.h"
 #include "cutlass/layout/matrix.h"
 #include "cutlass/numeric_types.h"
-#include "cutlass/arch/wmma.h"
 
-#include "cutlass/epilogue/threadblock/epilogue.h"
 #include "cutlass/epilogue/thread/linear_combination.h"
+#include "cutlass/epilogue/threadblock/epilogue.h"
 
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/kernel/gemm_layernorm_mainloop_fusion.h"
@@ -110,28 +112,31 @@ template <
 struct DefaultGemmLayernormMainloopFusion {
 
   /// Define the threadblock-scoped matrix multiply-accumulate
-  using Mma = typename cutlass::gemm::threadblock::DefaultMmaLayernormMainloopFusion<
-      ElementA, LayoutA, kAlignmentA, ElementB, LayoutB, kAlignmentB,
-      ElementScaleBias, LayoutScaleBias, ElementAccumulator, layout::RowMajor, arch::OpClassTensorOp, arch::Sm80,
-      ThreadblockShape, WarpShape, InstructionShape, Stages,
-      Operator, false, SharedMemoryClear>::ThreadblockMma;
+  using Mma =
+      typename cutlass::gemm::threadblock::DefaultMmaLayernormMainloopFusion<
+          ElementA, LayoutA, kAlignmentA, ElementB, LayoutB, kAlignmentB,
+          ElementScaleBias, LayoutScaleBias, ElementAccumulator,
+          layout::RowMajor, arch::OpClassTensorOp, arch::Sm80, ThreadblockShape,
+          WarpShape, InstructionShape, Stages, Operator, false,
+          SharedMemoryClear>::ThreadblockMma;
 
   static const int kPartitionsK = ThreadblockShape::kK / WarpShape::kK;
 
   /// Define the epilogue
   using Epilogue =
       typename cutlass::epilogue::threadblock::DefaultEpilogueTensorOp<
-          ThreadblockShape, typename Mma::Operator, kPartitionsK, EpilogueOutputOp,
-          EpilogueOutputOp::kCount>::Epilogue;
+          ThreadblockShape, typename Mma::Operator, kPartitionsK,
+          EpilogueOutputOp, EpilogueOutputOp::kCount>::Epilogue;
 
   /// Define the kernel-level GEMM operator.
-  using GemmKernel = kernel::GemmLayernormMainloopFusion<Mma, Epilogue, ThreadblockSwizzle>;
+  using GemmKernel =
+      kernel::GemmLayernormMainloopFusion<Mma, Epilogue, ThreadblockSwizzle>;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

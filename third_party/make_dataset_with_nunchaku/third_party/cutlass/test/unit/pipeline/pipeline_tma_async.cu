@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
@@ -33,51 +34,48 @@
     \brief Unit test for the PipelineTmaAsync class
 */
 
-
 #define KERNEL_DBG_TRACE false
 
 #include "../common/cutlass_unit_test.h"
-#include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
 
-#include <cute/tensor.hpp>
 #include <cute/arch/cluster_sm90.hpp>
+#include <cute/tensor.hpp>
 
-#include <cutlass/util/reference/host/gemm.h>
 #include <cutlass/cluster_launch.hpp>
+#include <cutlass/util/reference/host/gemm.h>
 
 #include "cutlass/core_io.h"
 
-#include "cutlass/util/print_error.hpp"
 #include "cutlass/util/GPU_Clock.hpp"
+#include "cutlass/util/print_error.hpp"
 
-#include "testbed.h"
-#include "cutlass/pipeline/pipeline.hpp"
-#include "cutlass/arch/barrier.h"
 #include "cute/arch/cluster_sm90.hpp"
+#include "cutlass/arch/barrier.h"
+#include "cutlass/pipeline/pipeline.hpp"
+#include "testbed.h"
 
 using namespace cute;
 
 //////////////////// KERNEL /////////////////////////
 
-template <uint32_t Stages, typename ClusterShape>
-struct SharedStorage
-{
-  typename cutlass::PipelineTmaAsync<Stages, ClusterShape>::SharedStorage storage;
+template <uint32_t Stages, typename ClusterShape> struct SharedStorage {
+  typename cutlass::PipelineTmaAsync<Stages, ClusterShape>::SharedStorage
+      storage;
 };
 
 // Goal of this kernel is to complete deadlock-free
 template <class ClusterShape, uint32_t NumStages>
-__global__ static
-void pipeline_device(uint32_t const NumIterations)
-{
+__global__ static void pipeline_device(uint32_t const NumIterations) {
 
   extern __shared__ char shared_memory[];
   using MainloopPipeline = cutlass::PipelineTmaAsync<NumStages, ClusterShape>;
   using PipelineState = cutlass::PipelineState<NumStages>;
 
   using SharedStorage = SharedStorage<NumStages, ClusterShape>;
-  SharedStorage& shared_storage = *reinterpret_cast<SharedStorage*>(shared_memory);
+  SharedStorage &shared_storage =
+      *reinterpret_cast<SharedStorage *>(shared_memory);
 
   [[maybe_unused]] auto cta_layout = Layout<ClusterShape>{}; // (m,n) -> cta_id
   int warp_idx = __shfl_sync(0xffffffff, threadIdx.x / 32, 0);
@@ -87,7 +85,8 @@ void pipeline_device(uint32_t const NumIterations)
   auto cluster_shape = ClusterShape{};
 
   // #Producers = #RowsInCluster + #ColsInCluster - 1
-  uint32_t const NumProducers = cute::size<0>(cluster_shape) + cute::size<1>(cluster_shape) - 1;
+  uint32_t const NumProducers =
+      cute::size<0>(cluster_shape) + cute::size<1>(cluster_shape) - 1;
   uint32_t const TmaTransactionBytes = sizeof(uint32_t) * NumProducers;
   uint32_t const per_cta_bytes = sizeof(uint32_t);
 
@@ -107,13 +106,14 @@ void pipeline_device(uint32_t const NumIterations)
   cute::cluster_wait();
 
   // Total number of gemm_k_iterations
-  auto mma_k_iterations  = NumIterations;
-  auto tma_k_iterations  = NumIterations;
+  auto mma_k_iterations = NumIterations;
+  auto tma_k_iterations = NumIterations;
 
   PipelineState smem_pipe_read;
-  // For the DMA (prologue) - we start with an opposite phase - since we skip all waits
-  // i.e., we know that the buffer is indeed empty
-  PipelineState smem_pipe_write = cutlass::make_producer_start_state<MainloopPipeline>();
+  // For the DMA (prologue) - we start with an opposite phase - since we skip
+  // all waits i.e., we know that the buffer is indeed empty
+  PipelineState smem_pipe_write =
+      cutlass::make_producer_start_state<MainloopPipeline>();
   PipelineState smem_pipe_release;
   int K_TILE_MMAS = 1;
 
@@ -122,7 +122,7 @@ void pipeline_device(uint32_t const NumIterations)
 
   // DMA Prologue (Loads)
   CUTLASS_PRAGMA_UNROLL
-  for(int i = 0; i < k_pipe_tma_prologue; ++i) {
+  for (int i = 0; i < k_pipe_tma_prologue; ++i) {
     pipeline.producer_acquire(smem_pipe_write);
     // cp.async.bulk.tensor would typically happen here
     pipeline.producer_commit(smem_pipe_write, per_cta_bytes);
@@ -131,8 +131,7 @@ void pipeline_device(uint32_t const NumIterations)
   tma_k_iterations -= k_pipe_tma_prologue;
 
   // MMA Prologue (Compute) - modeling inflight MMAs
-  for (int iter = 0; iter < K_TILE_MMAS; ++iter)
-  {
+  for (int iter = 0; iter < K_TILE_MMAS; ++iter) {
     pipeline.consumer_wait(smem_pipe_read);
     warpgroup_arrive();
     // GMMA would typically happen here
@@ -143,8 +142,7 @@ void pipeline_device(uint32_t const NumIterations)
   mma_k_iterations -= K_TILE_MMAS;
 
   CUTLASS_PRAGMA_NO_UNROLL
-  for (int iter = 0; iter < mma_k_iterations; ++iter)
-  {
+  for (int iter = 0; iter < mma_k_iterations; ++iter) {
     pipeline.consumer_wait(smem_pipe_read);
 
     warpgroup_arrive();
@@ -172,8 +170,7 @@ void pipeline_device(uint32_t const NumIterations)
 /////////////////////////////////////////////////////
 
 /// Device NT GMMA + TMA specialized
-template<uint32_t Stages_, typename ClusterShape_>
-struct PipelineTest {
+template <uint32_t Stages_, typename ClusterShape_> struct PipelineTest {
 
   //
   // Data members
@@ -187,18 +184,17 @@ struct PipelineTest {
   //
 
   // Ctor
-  PipelineTest(){};
-
+  PipelineTest() {};
 
   // Run CuTe GEMM kernel
-  cudaError_t run(uint32_t const kNumIters,
-                  cudaStream_t stream = 0) {
+  cudaError_t run(uint32_t const kNumIters, cudaStream_t stream = 0) {
 
     float elapsed_ms = 0.0f;
     // Pipeline (multistage pipeline)
     [[maybe_unused]] auto num_stages = Int<Stages>{};
 
-    auto cluster_shape = Shape<Int<ClusterShape::kM>, Int<ClusterShape::kN>, _1>{};
+    auto cluster_shape =
+        Shape<Int<ClusterShape::kM>, Int<ClusterShape::kN>, _1>{};
 
     //
     // Configure and launch
@@ -207,7 +203,7 @@ struct PipelineTest {
     cudaEvent_t events[2];
     cudaError_t result;
 
-    for (cudaEvent_t & event : events) {
+    for (cudaEvent_t &event : events) {
       result = cudaEventCreate(&event);
       if (result != cudaSuccess) {
         std::cerr << "Error: Failed to create event.";
@@ -223,22 +219,24 @@ struct PipelineTest {
     }
 
     for (int iter = 0; iter < iterations; ++iter) {
-      int smem_size = int(sizeof(SharedStorage<Stages, decltype(cluster_shape)>));
+      int smem_size =
+          int(sizeof(SharedStorage<Stages, decltype(cluster_shape)>));
 
       result = cudaFuncSetAttribute(
-        pipeline_device<decltype(cluster_shape), Stages>,
-        cudaFuncAttributeMaxDynamicSharedMemorySize,
-        smem_size);
+          pipeline_device<decltype(cluster_shape), Stages>,
+          cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size);
 
       // Launch a single Cluster, with 128 thread per CTA
       dim3 dimCluster(size<0>(cluster_shape), size<1>(cluster_shape), 1);
       dim3 dimGrid(size<0>(cluster_shape), size<1>(cluster_shape), 1);
-      dim3 dimBlock(kBlockSize,1,1);
+      dim3 dimBlock(kBlockSize, 1, 1);
 
-      const void* kernel = (const void*)pipeline_device<decltype(cluster_shape), Stages>;
+      const void *kernel =
+          (const void *)pipeline_device<decltype(cluster_shape), Stages>;
       int iters = kNumIters;
-      void* kernel_params[] = {reinterpret_cast<void*>(&iters)};
-      cutlass::ClusterLauncher::launch(dimGrid, dimCluster, dimBlock, smem_size, stream, kernel, kernel_params);
+      void *kernel_params[] = {reinterpret_cast<void *>(&iters)};
+      cutlass::ClusterLauncher::launch(dimGrid, dimCluster, dimBlock, smem_size,
+                                       stream, kernel, kernel_params);
 
     } // profiling loop ends
 
@@ -263,7 +261,7 @@ struct PipelineTest {
       return result;
     }
 
-    for (cudaEvent_t & event : events) {
+    for (cudaEvent_t &event : events) {
       (void)cudaEventDestroy(event);
     }
 

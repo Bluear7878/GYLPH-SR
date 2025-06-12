@@ -16,48 +16,45 @@
 
 namespace fuzzer {
 
-long GetEpoch(const std::string &Path);
+long GetEpoch(const std::string& Path);
 
-Unit FileToVector(const std::string &Path, size_t MaxSize = 0,
-                  bool ExitOnError = true);
+Unit FileToVector(const std::string& Path, size_t MaxSize = 0, bool ExitOnError = true);
 
-std::string FileToString(const std::string &Path);
+std::string FileToString(const std::string& Path);
 
-void CopyFileToErr(const std::string &Path);
+void CopyFileToErr(const std::string& Path);
 
-void WriteToFile(const Unit &U, const std::string &Path);
+void WriteToFile(const Unit& U, const std::string& Path);
 
-void ReadDirToVectorOfUnits(const char *Path, std::vector<Unit> *V,
-                            long *Epoch, size_t MaxSize, bool ExitOnError);
+void ReadDirToVectorOfUnits(const char* Path, std::vector<Unit>* V, long* Epoch, size_t MaxSize, bool ExitOnError);
 
 // Returns "Dir/FileName" or equivalent for the current OS.
-std::string DirPlusFile(const std::string &DirPath,
-                        const std::string &FileName);
+std::string DirPlusFile(const std::string& DirPath,
+                        const std::string& FileName);
 
 // Returns the name of the dir, similar to the 'dirname' utility.
-std::string DirName(const std::string &FileName);
+std::string DirName(const std::string& FileName);
 
 void DupAndCloseStderr();
 
 void CloseStdout();
 
-void Printf(const char *Fmt, ...);
+void Printf(const char* Fmt, ...);
 
 // Platform specific functions:
-bool IsFile(const std::string &Path);
+bool IsFile(const std::string& Path);
 
-void ListFilesInDirRecursive(const std::string &Dir, long *Epoch,
-                             std::vector<std::string> *V, bool TopDir);
+void ListFilesInDirRecursive(const std::string& Dir, long* Epoch, std::vector<std::string>* V, bool TopDir);
 
 char GetSeparator();
 
-FILE* OpenFile(int Fd, const char *Mode);
+FILE* OpenFile(int Fd, const char* Mode);
 
 int CloseFile(int Fd);
 
 int DuplicateFile(int Fd);
 
-void RemoveFile(const std::string &Path);
+void RemoveFile(const std::string& Path);
 
 }  // namespace fuzzer
 

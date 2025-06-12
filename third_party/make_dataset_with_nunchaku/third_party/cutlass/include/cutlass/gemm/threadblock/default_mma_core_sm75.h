@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,38 +18,41 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Defines basic properties needed by CTA-level GEMMs assuming expectations about data
-      layout of the global memory fragments, data types, and internal tile sizes.
+    \brief Defines basic properties needed by CTA-level GEMMs assuming
+   expectations about data layout of the global memory fragments, data types,
+   and internal tile sizes.
 
-      Partial specializations for threadblock::Mma operations targeting TensorOp instructions.
+      Partial specializations for threadblock::Mma operations targeting TensorOp
+   instructions.
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/platform/platform.h"
 
-#include "cutlass/numeric_types.h"
 #include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/layout/tensor_op_multiplicand_sm75.h"
 #include "cutlass/transform/pitch_linear_thread_map.h"
 #include "cutlass/transform/threadblock/regular_tile_iterator_tensor_op.h"
 
-#include "cutlass/gemm/warp/default_mma_tensor_op.h"
 #include "cutlass/gemm/threadblock/default_mma_core.h"
+#include "cutlass/gemm/warp/default_mma_tensor_op.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -86,8 +89,8 @@ template <
     typename Operator_>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                       layout::ColumnMajor, ElementB_, layout::RowMajor,
-                      ElementC_, LayoutC_, arch::OpClassTensorOp, 2, Operator_
-                      > {
+                      ElementC_, LayoutC_, arch::OpClassTensorOp, 2,
+                      Operator_> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -100,18 +103,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<
-    Shape::kM / WarpShape::kM,
-    Shape::kN / WarpShape::kN,
-    Shape::kK / WarpShape::kK
-  >;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
-    !(Shape::kM % WarpShape::kM) &&
-    !(Shape::kN % WarpShape::kN),
-    "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size."
-  );
+      !(Shape::kM % WarpShape::kM) && !(Shape::kN % WarpShape::kN),
+      "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -129,13 +128,12 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   // Shared memory layouts
   //
 
-  using SmemLayoutA = 
-    layout::ColumnMajorTensorOpMultiplicandCongruous<
+  using SmemLayoutA = layout::ColumnMajorTensorOpMultiplicandCongruous<
       sizeof_bits<ElementA>::value, int(128 / sizeof(ElementA))>;
 
   // Shared memory layout
   using SmemLayoutB = layout::RowMajorTensorOpMultiplicandCongruous<
-    sizeof_bits<ElementB>::value, int(128 / sizeof(ElementB))>;
+      sizeof_bits<ElementB>::value, int(128 / sizeof(ElementB))>;
 
   //
   // Iterators to write to shared memory
@@ -143,37 +141,25 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// ThreadMap of iterator A
   using IteratorThreadMapA = transform::PitchLinearWarpRakedThreadMap<
-    layout::PitchLinearShape<Shape::kM, Shape::kK>,
-    kThreads,
-    layout::PitchLinearShape<8, 4>,
-    kAccessSizeInBits / sizeof_bits<ElementA>::value
-  >;
+      layout::PitchLinearShape<Shape::kM, Shape::kK>, kThreads,
+      layout::PitchLinearShape<8, 4>,
+      kAccessSizeInBits / sizeof_bits<ElementA>::value>;
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kM, Shape::kK>, 
-    ElementA, 
-    SmemLayoutA,
-    1,
-    IteratorThreadMapA
-  >;
+      MatrixShape<Shape::kM, Shape::kK>, ElementA, SmemLayoutA, 1,
+      IteratorThreadMapA>;
 
   /// ThreadMap of iterator B
   using IteratorThreadMapB = transform::PitchLinearWarpRakedThreadMap<
-    layout::PitchLinearShape<Shape::kN, Shape::kK>,
-    kThreads,
-    layout::PitchLinearShape<8, 4>,
-    kAccessSizeInBits / sizeof_bits<ElementB>::value
-  >;
+      layout::PitchLinearShape<Shape::kN, Shape::kK>, kThreads,
+      layout::PitchLinearShape<8, 4>,
+      kAccessSizeInBits / sizeof_bits<ElementB>::value>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kK, Shape::kN>, 
-    ElementB, 
-    SmemLayoutB,
-    0,
-    IteratorThreadMapB
-  >;
+      MatrixShape<Shape::kK, Shape::kN>, ElementB, SmemLayoutB, 0,
+      IteratorThreadMapB>;
 
   //
   // Warp-level matrix multiply operator
@@ -184,13 +170,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       WarpShape, InstructionShape, ElementA, SmemLayoutA, ElementB, SmemLayoutB,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
-  /// Policy used to define MmaPipelined 
-  using MmaPolicy = MmaPolicy<
-    MmaTensorOp,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK
-  >;
+  /// Policy used to define MmaPipelined
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,8 +204,8 @@ template <
     typename Operator_>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                       layout::RowMajor, ElementB_, layout::ColumnMajor,
-                      ElementC_, LayoutC_, arch::OpClassTensorOp, 2, Operator_
-                      > {
+                      ElementC_, LayoutC_, arch::OpClassTensorOp, 2,
+                      Operator_> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -236,18 +218,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<
-    Shape::kM / WarpShape::kM,
-    Shape::kN / WarpShape::kN,
-    Shape::kK / WarpShape::kK
-  >;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
-    !(Shape::kM % WarpShape::kM) &&
-    !(Shape::kN % WarpShape::kN),
-    "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size."
-  );
+      !(Shape::kM % WarpShape::kM) && !(Shape::kN % WarpShape::kN),
+      "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -261,7 +239,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   /// Default Operator
   using Operator = Operator_;
 
-  // Warp thread arrangement 
+  // Warp thread arrangement
   static int const kWarpThreadArrangementContiguousA =
       Shape::kK / (kAccessSizeInBits / sizeof_bits<ElementA>::value);
 
@@ -298,12 +276,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kM, Shape::kK>, 
-    ElementA, 
-    SmemLayoutA,
-    0,
-    IteratorThreadMapA
-  >;
+      MatrixShape<Shape::kM, Shape::kK>, ElementA, SmemLayoutA, 0,
+      IteratorThreadMapA>;
 
   /// ThreadMap of iterator B
   using IteratorThreadMapB = transform::PitchLinearWarpRakedThreadMap<
@@ -314,12 +288,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kK, Shape::kN>, 
-    ElementB, 
-    SmemLayoutB,
-    1,
-    IteratorThreadMapB
-  >;
+      MatrixShape<Shape::kK, Shape::kN>, ElementB, SmemLayoutB, 1,
+      IteratorThreadMapB>;
 
   //
   // Warp-level matrix multiply operator
@@ -330,13 +300,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       WarpShape, InstructionShape, ElementA, SmemLayoutA, ElementB, SmemLayoutB,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
-  /// Policy used to define MmaPipelined 
-  using MmaPolicy = MmaPolicy<
-    MmaTensorOp,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK
-  >;
+  /// Policy used to define MmaPipelined
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,8 +334,7 @@ template <
     typename Operator_>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                       layout::RowMajor, ElementB_, layout::RowMajor, ElementC_,
-                      LayoutC_, arch::OpClassTensorOp, 2, Operator_
-                      > {
+                      LayoutC_, arch::OpClassTensorOp, 2, Operator_> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -382,18 +347,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<
-    Shape::kM / WarpShape::kM,
-    Shape::kN / WarpShape::kN,
-    Shape::kK / WarpShape::kK
-  >;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
-    !(Shape::kM % WarpShape::kM) &&
-    !(Shape::kN % WarpShape::kN),
-    "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size."
-  );
+      !(Shape::kM % WarpShape::kM) && !(Shape::kN % WarpShape::kN),
+      "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -407,7 +368,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   /// Default Operator
   using Operator = Operator_;
 
-  // Warp thread arrangement 
+  // Warp thread arrangement
   static int const kWarpThreadArrangementContiguousA =
       Shape::kK / (kAccessSizeInBits / sizeof_bits<ElementA>::value);
 
@@ -438,29 +399,19 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kM, Shape::kK>, 
-    ElementA, 
-    SmemLayoutA,
-    0,
-    IteratorThreadMapA
-  >;
+      MatrixShape<Shape::kM, Shape::kK>, ElementA, SmemLayoutA, 0,
+      IteratorThreadMapA>;
 
   /// ThreadMap of iterator B
   using IteratorThreadMapB = transform::PitchLinearWarpRakedThreadMap<
-    layout::PitchLinearShape<Shape::kN, Shape::kK>,
-    kThreads,
-    layout::PitchLinearShape<8, 4>,
-    kAccessSizeInBits / sizeof_bits<ElementB>::value
-  >;
+      layout::PitchLinearShape<Shape::kN, Shape::kK>, kThreads,
+      layout::PitchLinearShape<8, 4>,
+      kAccessSizeInBits / sizeof_bits<ElementB>::value>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kK, Shape::kN>, 
-    ElementB, 
-    SmemLayoutB,
-    0,
-    IteratorThreadMapB
-  >;
+      MatrixShape<Shape::kK, Shape::kN>, ElementB, SmemLayoutB, 0,
+      IteratorThreadMapB>;
 
   //
   // Warp-level matrix multiply operator
@@ -471,13 +422,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       WarpShape, InstructionShape, ElementA, SmemLayoutA, ElementB, SmemLayoutB,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
-  /// Policy used to define MmaPipelined 
-  using MmaPolicy = MmaPolicy<
-    MmaTensorOp,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK
-  >;
+  /// Policy used to define MmaPipelined
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,8 +456,8 @@ template <
     typename Operator_>
 struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
                       layout::ColumnMajor, ElementB_, layout::ColumnMajor,
-                      ElementC_, LayoutC_, arch::OpClassTensorOp, 2, Operator_
-                      > {
+                      ElementC_, LayoutC_, arch::OpClassTensorOp, 2,
+                      Operator_> {
   using Shape = Shape_;
   using WarpShape = WarpShape_;
   using InstructionShape = InstructionShape_;
@@ -523,9 +470,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -542,9 +489,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static int const kAccessSizeInBits = 128;
 
   /// Default Operator
-  using Operator = Operator_; 
+  using Operator = Operator_;
 
-  // Warp thread arrangement 
+  // Warp thread arrangement
   static int const kWarpThreadArrangementContiguousB =
       Shape::kK / (kAccessSizeInBits / sizeof_bits<ElementA>::value);
 
@@ -599,8 +546,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                       MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -641,18 +588,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<
-    Shape::kM / WarpShape::kM,
-    Shape::kN / WarpShape::kN,
-    Shape::kK / WarpShape::kK
-  >;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
-    !(Shape::kM % WarpShape::kM) &&
-    !(Shape::kN % WarpShape::kN),
-    "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size."
-  );
+      !(Shape::kM % WarpShape::kM) && !(Shape::kN % WarpShape::kN),
+      "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -684,37 +627,25 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
 
   /// ThreadMap of iterator A
   using IteratorThreadMapA = transform::PitchLinearWarpRakedThreadMap<
-    layout::PitchLinearShape<Shape::kM, Shape::kK>,
-    kThreads,
-    layout::PitchLinearShape<8, 4>,
-    kAccessSizeInBits / sizeof_bits<ElementA>::value
-  >;
+      layout::PitchLinearShape<Shape::kM, Shape::kK>, kThreads,
+      layout::PitchLinearShape<8, 4>,
+      kAccessSizeInBits / sizeof_bits<ElementA>::value>;
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kM, Shape::kK>, 
-    half_t, 
-    SmemLayoutA,
-    1,
-    IteratorThreadMapA
-  >;
+      MatrixShape<Shape::kM, Shape::kK>, half_t, SmemLayoutA, 1,
+      IteratorThreadMapA>;
 
   /// ThreadMap of iterator B
   using IteratorThreadMapB = transform::PitchLinearWarpRakedThreadMap<
-    layout::PitchLinearShape<Shape::kN, Shape::kK>,
-    kThreads,
-    layout::PitchLinearShape<8, 4>,
-    kAccessSizeInBits / sizeof_bits<ElementB>::value
-  >;
+      layout::PitchLinearShape<Shape::kN, Shape::kK>, kThreads,
+      layout::PitchLinearShape<8, 4>,
+      kAccessSizeInBits / sizeof_bits<ElementB>::value>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kK, Shape::kN>, 
-    half_t, 
-    SmemLayoutB,
-    0,
-    IteratorThreadMapB
-  >;
+      MatrixShape<Shape::kK, Shape::kN>, half_t, SmemLayoutB, 0,
+      IteratorThreadMapB>;
 
   //
   // Warp-level matrix multiply operator
@@ -725,13 +656,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
       WarpShape, InstructionShape, half_t, SmemLayoutA, half_t, SmemLayoutB,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
-  /// Policy used to define MmaPipelined 
-  using MmaPolicy = MmaPolicy<
-    MmaTensorOp,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK
-  >;
+  /// Policy used to define MmaPipelined
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -769,18 +696,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<
-    Shape::kM / WarpShape::kM,
-    Shape::kN / WarpShape::kN,
-    Shape::kK / WarpShape::kK
-  >;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
-    !(Shape::kM % WarpShape::kM) &&
-    !(Shape::kN % WarpShape::kN),
-    "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size."
-  );
+      !(Shape::kM % WarpShape::kM) && !(Shape::kN % WarpShape::kN),
+      "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -794,7 +717,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   /// Default Operator
   using Operator = arch::OpMultiplyAdd;
 
-  // Warp thread arrangement 
+  // Warp thread arrangement
   static int const kWarpThreadArrangementContiguousA =
       Shape::kK / (kAccessSizeInBits / sizeof_bits<ElementA>::value);
 
@@ -832,12 +755,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kM, Shape::kK>, 
-    half_t, 
-    SmemLayoutA,
-    0,
-    IteratorThreadMapA
-  >;
+      MatrixShape<Shape::kM, Shape::kK>, half_t, SmemLayoutA, 0,
+      IteratorThreadMapA>;
 
   /// ThreadMap of iterator B
   using IteratorThreadMapB = transform::PitchLinearWarpRakedThreadMap<
@@ -848,12 +767,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kK, Shape::kN>, 
-    half_t, 
-    SmemLayoutB,
-    1,
-    IteratorThreadMapB
-  >;
+      MatrixShape<Shape::kK, Shape::kN>, half_t, SmemLayoutB, 1,
+      IteratorThreadMapB>;
 
   //
   // Warp-level matrix multiply operator
@@ -864,13 +779,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
       WarpShape, InstructionShape, half_t, SmemLayoutA, half_t, SmemLayoutB,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
-  /// Policy used to define MmaPipelined 
-  using MmaPolicy = MmaPolicy<
-    MmaTensorOp,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK
-  >;
+  /// Policy used to define MmaPipelined
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -908,18 +819,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<
-    Shape::kM / WarpShape::kM,
-    Shape::kN / WarpShape::kN,
-    Shape::kK / WarpShape::kK
-  >;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
-    !(Shape::kM % WarpShape::kM) &&
-    !(Shape::kN % WarpShape::kN),
-    "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size."
-  );
+      !(Shape::kM % WarpShape::kM) && !(Shape::kN % WarpShape::kN),
+      "Threadblock-scoped GEMM should be divisible by warp-scoped GEMM size.");
 
   /// Number of threads per warp
   static int const kWarpSize = warp::WarpSize<arch::OpClassTensorOp>::value;
@@ -933,7 +840,7 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   /// Default Operator
   using Operator = arch::OpMultiplyAdd;
 
-  // Warp thread arrangement 
+  // Warp thread arrangement
   static int const kWarpThreadArrangementContiguousA =
       Shape::kK / (kAccessSizeInBits / sizeof_bits<ElementA>::value);
 
@@ -944,12 +851,14 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   // Shared memory layouts
   //
 
-  using SmemLayoutA = layout::RowMajorTensorOpMultiplicandCrosswise<
-      sizeof_bits<half_t>::value, Shape::kK>;
+  using SmemLayoutA =
+      layout::RowMajorTensorOpMultiplicandCrosswise<sizeof_bits<half_t>::value,
+                                                    Shape::kK>;
 
   // Shared memory layout
-  using SmemLayoutB = layout::RowMajorTensorOpMultiplicandCongruous<
-      sizeof_bits<half_t>::value, int(128 / sizeof(half_t))>;
+  using SmemLayoutB =
+      layout::RowMajorTensorOpMultiplicandCongruous<sizeof_bits<half_t>::value,
+                                                    int(128 / sizeof(half_t))>;
 
   //
   // Iterators to write to shared memory
@@ -964,29 +873,19 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
 
   /// Shared memory iterator to A operand
   using SmemIteratorA = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kM, Shape::kK>, 
-    half_t,
-    SmemLayoutA,
-    0,
-    IteratorThreadMapA
-  >;
+      MatrixShape<Shape::kM, Shape::kK>, half_t, SmemLayoutA, 0,
+      IteratorThreadMapA>;
 
   /// ThreadMap of iterator B
   using IteratorThreadMapB = transform::PitchLinearWarpRakedThreadMap<
-    layout::PitchLinearShape<Shape::kN, Shape::kK>,
-    kThreads,
-    layout::PitchLinearShape<8, 4>,
-    kAccessSizeInBits / sizeof_bits<ElementB>::value
-  >;
+      layout::PitchLinearShape<Shape::kN, Shape::kK>, kThreads,
+      layout::PitchLinearShape<8, 4>,
+      kAccessSizeInBits / sizeof_bits<ElementB>::value>;
 
   /// Shared memory iterator to B operand
   using SmemIteratorB = transform::threadblock::RegularTileIterator<
-    MatrixShape<Shape::kK, Shape::kN>, 
-    half_t, 
-    SmemLayoutB,
-    0,
-    IteratorThreadMapB
-  >;
+      MatrixShape<Shape::kK, Shape::kN>, half_t, SmemLayoutB, 0,
+      IteratorThreadMapB>;
 
   //
   // Warp-level matrix multiply operator
@@ -997,13 +896,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
       WarpShape, InstructionShape, half_t, SmemLayoutA, half_t, SmemLayoutB,
       ElementC, LayoutC, Operator, WarpCount::kK>::Type;
 
-  /// Policy used to define MmaPipelined 
-  using MmaPolicy = MmaPolicy<
-    MmaTensorOp,
-    MatrixShape<0, 0>,
-    MatrixShape<0, 0>,
-    WarpCount::kK
-  >;
+  /// Policy used to define MmaPipelined
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1041,9 +936,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   using OperatorClass = arch::OpClassTensorOp;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1060,9 +955,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, float,
   static int const kAccessSizeInBits = 256;
 
   /// Default Operator
-  using Operator = arch::OpMultiplyAdd; 
+  using Operator = arch::OpMultiplyAdd;
 
-  // Warp thread arrangement 
+  // Warp thread arrangement
   static int const kWarpThreadArrangementContiguousB =
       Shape::kK / (kAccessSizeInBits / sizeof_bits<ElementA>::value);
 
@@ -1178,9 +1073,9 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
   static int const kInterleavedK = InterleavedK;
 
   /// Number of warps present
-  using WarpCount = GemmShape<Shape::kM / WarpShape::kM,
-                              Shape::kN / WarpShape::kN, 
-                              Shape::kK / WarpShape::kK>;
+  using WarpCount =
+      GemmShape<Shape::kM / WarpShape::kM, Shape::kN / WarpShape::kN,
+                Shape::kK / WarpShape::kK>;
 
   // Divisility requirements
   static_assert(
@@ -1268,8 +1163,8 @@ struct DefaultMmaCore<Shape_, WarpShape_, InstructionShape_, ElementA_,
       ElementC, LayoutC, Operator, WarpCount::kK, AccumulatorsInRowMajor>::Type;
 
   /// Policy used to define MmaPipelined
-  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>,
-                                       MatrixShape<0, 0>, WarpCount::kK>;
+  using MmaPolicy = MmaPolicy<MmaTensorOp, MatrixShape<0, 0>, MatrixShape<0, 0>,
+                              WarpCount::kK>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

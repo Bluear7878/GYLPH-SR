@@ -33,8 +33,8 @@ int main()
     json discarded = json(json::value_t::discarded);
 
     // output values and comparisons
-    std::cout << array_1 << " <=> " << array_2 << " := " << to_string(array_1 <=> array_2) << '\n'; // *NOPAD*
-    std::cout << object_1 << " <=> " << object_2 << " := " << to_string(object_1 <=> object_2) << '\n'; // *NOPAD*
-    std::cout << string << " <=> " << number << " := " << to_string(string <=> number) << '\n'; // *NOPAD*
-    std::cout << string << " <=> " << discarded << " := " << to_string(string <=> discarded) << '\n'; // *NOPAD*
+    std::cout << array_1 << " <=> " << array_2 << " := " << to_string(array_1 <= > array_2) << '\n';      // *NOPAD*
+    std::cout << object_1 << " <=> " << object_2 << " := " << to_string(object_1 <= > object_2) << '\n';  // *NOPAD*
+    std::cout << string << " <=> " << number << " := " << to_string(string <= > number) << '\n';          // *NOPAD*
+    std::cout << string << " <=> " << discarded << " := " << to_string(string <= > discarded) << '\n';    // *NOPAD*
 }

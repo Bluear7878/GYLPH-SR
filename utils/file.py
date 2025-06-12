@@ -1,7 +1,7 @@
 import os
 from typing import List, Tuple
-
 from urllib.parse import urlparse
+
 from torch.hub import download_url_to_file, get_dir
 
 
@@ -18,11 +18,11 @@ def load_file_list(file_list_path: str) -> List[str]:
 
 def list_image_files(
     img_dir: str,
-    exts: Tuple[str]=(".jpg", ".png", ".jpeg"),
-    follow_links: bool=False,
-    log_progress: bool=False,
-    log_every_n_files: int=10000,
-    max_size: int=-1
+    exts: Tuple[str] = (".jpg", ".png", ".jpeg"),
+    follow_links: bool = False,
+    log_progress: bool = False,
+    log_every_n_files: int = 10000,
+    max_size: int = -1,
 ) -> List[str]:
     files = []
     for dir_path, _, file_names in os.walk(img_dir, followlinks=follow_links):
@@ -64,7 +64,7 @@ def load_file_from_url(url, model_dir=None, progress=True, file_name=None):
     """
     if model_dir is None:  # use the pytorch hub_dir
         hub_dir = get_dir()
-        model_dir = os.path.join(hub_dir, 'checkpoints')
+        model_dir = os.path.join(hub_dir, "checkpoints")
 
     os.makedirs(model_dir, exist_ok=True)
 

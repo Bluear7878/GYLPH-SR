@@ -1,83 +1,90 @@
 # spdlog
 
-Very fast, header-only/compiled, C++ logging library. [![ci](https://github.com/gabime/spdlog/actions/workflows/ci.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/ci.yml)&nbsp; [![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true&branch=v1.x)](https://ci.appveyor.com/project/gabime/spdlog) [![Release](https://img.shields.io/github/release/gabime/spdlog.svg)](https://github.com/gabime/spdlog/releases/latest)
+Very fast, header-only/compiled, C++ logging library. [![ci](https://github.com/gabime/spdlog/actions/workflows/ci.yml/badge.svg)](https://github.com/gabime/spdlog/actions/workflows/ci.yml)  [![Build status](https://ci.appveyor.com/api/projects/status/d2jnxclg20vd0o50?svg=true&branch=v1.x)](https://ci.appveyor.com/project/gabime/spdlog) [![Release](https://img.shields.io/github/release/gabime/spdlog.svg)](https://github.com/gabime/spdlog/releases/latest)
 
 ## Install
+
 #### Header-only version
+
 Copy the include [folder](https://github.com/gabime/spdlog/tree/v1.x/include/spdlog) to your build tree and use a C++11 compiler.
 
 #### Compiled version (recommended - much faster compile times)
+
 ```console
 $ git clone https://github.com/gabime/spdlog.git
 $ cd spdlog && mkdir build && cd build
 $ cmake .. && make -j
 ```
+
 see example [CMakeLists.txt](https://github.com/gabime/spdlog/blob/v1.x/example/CMakeLists.txt) on how to use.
 
 ## Platforms
-* Linux, FreeBSD, OpenBSD, Solaris, AIX
-* Windows (msvc 2013+, cygwin)
-* macOS (clang 3.5+)
-* Android
+
+- Linux, FreeBSD, OpenBSD, Solaris, AIX
+- Windows (msvc 2013+, cygwin)
+- macOS (clang 3.5+)
+- Android
 
 ## Package managers:
-* Debian: `sudo apt install libspdlog-dev`
-* Homebrew: `brew install spdlog`
-* MacPorts: `sudo port install spdlog`
-* FreeBSD:  `pkg install spdlog`
-* Fedora: `dnf install spdlog`
-* Gentoo: `emerge dev-libs/spdlog`
-* Arch Linux: `pacman -S spdlog`
-* openSUSE: `sudo zypper in spdlog-devel`
-* vcpkg: `vcpkg install spdlog`
-* conan: `spdlog/[>=1.4.1]`
-* conda: `conda install -c conda-forge spdlog`
-* build2: ```depends: spdlog ^1.8.2```
 
+- Debian: `sudo apt install libspdlog-dev`
+- Homebrew: `brew install spdlog`
+- MacPorts: `sudo port install spdlog`
+- FreeBSD: `pkg install spdlog`
+- Fedora: `dnf install spdlog`
+- Gentoo: `emerge dev-libs/spdlog`
+- Arch Linux: `pacman -S spdlog`
+- openSUSE: `sudo zypper in spdlog-devel`
+- vcpkg: `vcpkg install spdlog`
+- conan: `spdlog/[>=1.4.1]`
+- conda: `conda install -c conda-forge spdlog`
+- build2: `depends: spdlog ^1.8.2`
 
 ## Features
-* Very fast (see [benchmarks](#benchmarks) below).
-* Headers only or compiled
-* Feature-rich formatting, using the excellent [fmt](https://github.com/fmtlib/fmt) library.
-* Asynchronous mode (optional)
-* [Custom](https://github.com/gabime/spdlog/wiki/3.-Custom-formatting) formatting.
-* Multi/Single threaded loggers.
-* Various log targets:
-  * Rotating log files.
-  * Daily log files.
-  * Console logging (colors supported).
-  * syslog.
-  * Windows event log.
-  * Windows debugger (```OutputDebugString(..)```).
-  * Log to Qt widgets ([example](#log-to-qt-with-nice-colors)).
-  * Easily [extendable](https://github.com/gabime/spdlog/wiki/4.-Sinks#implementing-your-own-sink) with custom log targets.
-* Log filtering - log levels can be modified at runtime as well as compile time.
-* Support for loading log levels from argv or environment var.
-* [Backtrace](#backtrace-support) support - store debug messages in a ring buffer and display them later on demand.
+
+- Very fast (see [benchmarks](#benchmarks) below).
+- Headers only or compiled
+- Feature-rich formatting, using the excellent [fmt](https://github.com/fmtlib/fmt) library.
+- Asynchronous mode (optional)
+- [Custom](https://github.com/gabime/spdlog/wiki/3.-Custom-formatting) formatting.
+- Multi/Single threaded loggers.
+- Various log targets:
+  - Rotating log files.
+  - Daily log files.
+  - Console logging (colors supported).
+  - syslog.
+  - Windows event log.
+  - Windows debugger (`OutputDebugString(..)`).
+  - Log to Qt widgets ([example](#log-to-qt-with-nice-colors)).
+  - Easily [extendable](https://github.com/gabime/spdlog/wiki/4.-Sinks#implementing-your-own-sink) with custom log targets.
+- Log filtering - log levels can be modified at runtime as well as compile time.
+- Support for loading log levels from argv or environment var.
+- [Backtrace](#backtrace-support) support - store debug messages in a ring buffer and display them later on demand.
 
 ## Usage samples
 
 #### Basic usage
+
 ```c++
 #include "spdlog/spdlog.h"
 
-int main() 
+int main()
 {
     spdlog::info("Welcome to spdlog!");
     spdlog::error("Some error message with arg: {}", 1);
-    
+
     spdlog::warn("Easy padding in numbers like {:08d}", 12);
     spdlog::critical("Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
     spdlog::info("Support for floats {:03.2f}", 1.23456);
     spdlog::info("Positional args are {1} {0}..", "too", "supported");
     spdlog::info("{:<30}", "left aligned");
-    
+
     spdlog::set_level(spdlog::level::debug); // Set global log level to debug
-    spdlog::debug("This message should be displayed..");    
-    
+    spdlog::debug("This message should be displayed..");
+
     // change log pattern
     spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
-    
+
     // Compile time log levels
     // Note that this does not change the current log level, it will only
     // remove (depending on SPDLOG_ACTIVE_LEVEL) the call on the release code.
@@ -86,27 +93,32 @@ int main()
 }
 
 ```
----
+
+______________________________________________________________________
+
 #### Create stdout/stderr logger object
+
 ```c++
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 void stdout_example()
 {
     // create a color multi-threaded logger
-    auto console = spdlog::stdout_color_mt("console");    
-    auto err_logger = spdlog::stderr_color_mt("stderr");    
+    auto console = spdlog::stdout_color_mt("console");
+    auto err_logger = spdlog::stderr_color_mt("stderr");
     spdlog::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name)");
 }
 ```
 
----
+______________________________________________________________________
+
 #### Basic file logger
+
 ```c++
 #include "spdlog/sinks/basic_file_sink.h"
 void basic_logfile_example()
 {
-    try 
+    try
     {
         auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
     }
@@ -116,8 +128,11 @@ void basic_logfile_example()
     }
 }
 ```
----
+
+______________________________________________________________________
+
 #### Rotating files
+
 ```c++
 #include "spdlog/sinks/rotating_file_sink.h"
 void rotating_example()
@@ -129,8 +144,10 @@ void rotating_example()
 }
 ```
 
----
+______________________________________________________________________
+
 #### Daily files
+
 ```c++
 
 #include "spdlog/sinks/daily_file_sink.h"
@@ -142,14 +159,16 @@ void daily_example()
 
 ```
 
----
+______________________________________________________________________
+
 #### Backtrace support
+
 ```c++
 // Debug messages can be stored in a ring buffer instead of being logged immediately.
 // This is useful to display debug logs only when needed (e.g. when an error happens).
 // When needed, call dump_backtrace() to dump them to your log.
 
-spdlog::enable_backtrace(32); // Store the latest 32 messages in a buffer. 
+spdlog::enable_backtrace(32); // Store the latest 32 messages in a buffer.
 // or my_logger->enable_backtrace(32)..
 for(int i = 0; i < 100; i++)
 {
@@ -160,8 +179,10 @@ spdlog::dump_backtrace(); // log them now! show the last 32 messages
 // or my_logger->dump_backtrace(32)..
 ```
 
----
+______________________________________________________________________
+
 #### Periodic flush
+
 ```c++
 // periodically flush all *registered* loggers every 3 seconds:
 // warning: only use if all your loggers are thread-safe ("_mt" loggers)
@@ -169,22 +190,26 @@ spdlog::flush_every(std::chrono::seconds(3));
 
 ```
 
----
+______________________________________________________________________
+
 #### Stopwatch
+
 ```c++
 // Stopwatch support for spdlog
 #include "spdlog/stopwatch.h"
 void stopwatch_example()
 {
-    spdlog::stopwatch sw;    
+    spdlog::stopwatch sw;
     spdlog::debug("Elapsed {}", sw);
-    spdlog::debug("Elapsed {:.3}", sw);       
+    spdlog::debug("Elapsed {:.3}", sw);
 }
 
 ```
 
----
+______________________________________________________________________
+
 #### Log binary data in hex
+
 ```c++
 // many types of std::container<char> types can be used.
 // ranges are supported too.
@@ -211,8 +236,10 @@ void binary_example()
 
 ```
 
----
+______________________________________________________________________
+
 #### Logger with multi sinks - each with a different format and log level
+
 ```c++
 
 // create a logger with 2 targets, with different log levels and formats.
@@ -233,8 +260,10 @@ void multi_sink_example()
 }
 ```
 
----
+______________________________________________________________________
+
 #### User-defined callbacks about log events
+
 ```c++
 
 // create a logger with a lambda function callback, the callback will be called
@@ -254,8 +283,10 @@ void callback_example()
 }
 ```
 
----
+______________________________________________________________________
+
 #### Asynchronous logging
+
 ```c++
 #include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -265,13 +296,15 @@ void async_example()
     // spdlog::init_thread_pool(8192, 1); // queue with 8k items and 1 backing thread.
     auto async_file = spdlog::basic_logger_mt<spdlog::async_factory>("async_file_logger", "logs/async_log.txt");
     // alternatively:
-    // auto async_file = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>("async_file_logger", "logs/async_log.txt");   
+    // auto async_file = spdlog::create_async<spdlog::sinks::basic_file_sink_mt>("async_file_logger", "logs/async_log.txt");
 }
 
 ```
 
----
+______________________________________________________________________
+
 #### Asynchronous logger with multi sinks
+
 ```c++
 #include "spdlog/async.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -287,9 +320,11 @@ void multi_sink_example2()
     spdlog::register_logger(logger);
 }
 ```
- 
----
+
+______________________________________________________________________
+
 #### User-defined types
+
 ```c++
 template<>
 struct fmt::formatter<my_type> : fmt::formatter<std::string>
@@ -307,9 +342,11 @@ void user_defined_example()
 
 ```
 
----
+______________________________________________________________________
+
 #### User-defined flags in the log pattern
-```c++ 
+
+```c++
 // Log patterns can contain custom flags.
 // the following example will add new flag '%*' - which will be bound to a <my_formatter_flag> instance.
 #include "spdlog/pattern_formatter.h"
@@ -329,7 +366,7 @@ public:
 };
 
 void custom_flags_example()
-{    
+{
     auto formatter = std::make_unique<spdlog::pattern_formatter>();
     formatter->add_flag<my_formatter_flag>('*').set_pattern("[%n] [%*] [%^%l%$] %v");
     spdlog::set_formatter(std::move(formatter));
@@ -337,8 +374,10 @@ void custom_flags_example()
 
 ```
 
----
+______________________________________________________________________
+
 #### Custom error handler
+
 ```c++
 void err_handler_example()
 {
@@ -349,8 +388,10 @@ void err_handler_example()
 
 ```
 
----
+______________________________________________________________________
+
 #### syslog
+
 ```c++
 #include "spdlog/sinks/syslog_sink.h"
 void syslog_example()
@@ -360,8 +401,11 @@ void syslog_example()
     syslog_logger->warn("This is warning that will end up in syslog.");
 }
 ```
----
+
+______________________________________________________________________
+
 #### Android example
+
 ```c++
 #include "spdlog/sinks/android_sink.h"
 void android_example()
@@ -372,7 +416,8 @@ void android_example()
 }
 ```
 
----
+______________________________________________________________________
+
 #### Load log levels from the env variable or argv
 
 ```c++
@@ -386,6 +431,7 @@ int main (int argc, char *argv[])
     // spdlog::cfg::load_argv_levels(argc, argv);
 }
 ```
+
 So then you can:
 
 ```console
@@ -393,11 +439,12 @@ $ export SPDLOG_LEVEL=info,mylogger=trace
 $ ./example
 ```
 
+______________________________________________________________________
 
----
 #### Log file open/close event handlers
+
 ```c++
-// You can get callbacks from spdlog before/after a log file has been opened or closed. 
+// You can get callbacks from spdlog before/after a log file has been opened or closed.
 // This is useful for cleanup procedures or for adding something to the start/end of the log file.
 void file_events_example()
 {
@@ -407,12 +454,14 @@ void file_events_example()
     handlers.after_open = [](spdlog::filename_t filename, std::FILE *fstream) { fputs("After opening\n", fstream); };
     handlers.before_close = [](spdlog::filename_t filename, std::FILE *fstream) { fputs("Before closing\n", fstream); };
     handlers.after_close = [](spdlog::filename_t filename) { spdlog::info("After closing {}", filename); };
-    auto my_logger = spdlog::basic_logger_st("some_logger", "logs/events-sample.txt", true, handlers);        
+    auto my_logger = spdlog::basic_logger_st("some_logger", "logs/events-sample.txt", true, handlers);
 }
 ```
 
----
+______________________________________________________________________
+
 #### Replace the Default Logger
+
 ```c++
 void replace_default_logger_example()
 {
@@ -422,8 +471,10 @@ void replace_default_logger_example()
 }
 ```
 
----
+______________________________________________________________________
+
 #### Log to Qt with nice colors
+
 ```c++
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/qt_sinks.h"
@@ -437,9 +488,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     logger->info("Some info message");
 }
 ```
----
+
+______________________________________________________________________
 
 #### Mapped Diagnostic Context
+
 ```c++
 // Mapped Diagnostic Context (MDC) is a map that stores key-value pairs (string values) in thread local storage.
 // Each thread maintains its own MDC, which loggers use to append diagnostic information to log outputs.
@@ -453,12 +506,15 @@ void mdc_example()
     // spdlog::set_pattern("[%H:%M:%S %z] [%^%L%$] [%&] %v");
 }
 ```
----
+
+______________________________________________________________________
+
 ## Benchmarks
 
 Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/bench.cpp) done in Ubuntu 64 bit, Intel i7-4770 CPU @ 3.40GHz
 
 #### Synchronous mode
+
 ```
 [info] **************************************************************
 [info] Single thread, 1,000,000 iterations
@@ -482,22 +538,24 @@ Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/ben
 [info] daily_mt         Elapsed: 0.61 secs        1,638,305/sec
 [info] null_mt          Elapsed: 0.16 secs        6,272,758/sec
 ```
+
 #### Asynchronous mode
+
 ```
 [info] -------------------------------------------------
 [info] Messages     : 1,000,000
 [info] Threads      : 10
 [info] Queue        : 8,192 slots
-[info] Queue memory : 8,192 x 272 = 2,176 KB 
+[info] Queue memory : 8,192 x 272 = 2,176 KB
 [info] -------------------------------------------------
-[info] 
+[info]
 [info] *********************************
 [info] Queue Overflow Policy: block
 [info] *********************************
 [info] Elapsed: 1.70784 secs     585,535/sec
 [info] Elapsed: 1.69805 secs     588,910/sec
 [info] Elapsed: 1.7026 secs      587,337/sec
-[info] 
+[info]
 [info] *********************************
 [info] Queue Overflow Policy: overrun
 [info] *********************************
@@ -508,10 +566,9 @@ Below are some [benchmarks](https://github.com/gabime/spdlog/blob/v1.x/bench/ben
 ```
 
 ## Documentation
+
 Documentation can be found in the [wiki](https://github.com/gabime/spdlog/wiki/1.-QuickStart) pages.
 
----
+______________________________________________________________________
 
 Thanks to [JetBrains](https://www.jetbrains.com/?from=spdlog) for donating product licenses to help develop **spdlog** <a href="https://www.jetbrains.com/?from=spdlog"><img src="logos/jetbrains-variant-4.svg" width="94" align="center" /></a>
-
-

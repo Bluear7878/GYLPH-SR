@@ -1,12 +1,12 @@
 /******************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  ******************************************************************************/
 
@@ -42,8 +43,8 @@
 namespace cutlass {
 
 __global__ void rmsnorm_twoPassAlgo_e8(float4 *output, const float4 *input,
-				       const float4 *weight,
-				       const int m, const int n, float epsilon) {
+                                       const float4 *weight, const int m,
+                                       const int n, float epsilon) {
   const int m_idx = blockIdx.x;
   const int tid = threadIdx.x;
   const int bdimx = blockDim.x;
@@ -100,26 +101,31 @@ __global__ void rmsnorm_twoPassAlgo_e8(float4 *output, const float4 *input,
     half2 *h3 = (half2 *)&tmp.z;
     half2 *h4 = (half2 *)&tmp.w;
 
-    h1->x = half(static_cast<float>(l1->x) * s_mean * static_cast<float>(g1->x));
-    h1->y = half(static_cast<float>(l1->y) * s_mean * static_cast<float>(g1->y));
-    h2->x = half(static_cast<float>(l2->x) * s_mean * static_cast<float>(g2->x));
-    h2->y = half(static_cast<float>(l2->y) * s_mean * static_cast<float>(g2->y));
-    h3->x = half(static_cast<float>(l3->x) * s_mean * static_cast<float>(g3->x));
-    h3->y = half(static_cast<float>(l3->y) * s_mean * static_cast<float>(g3->y));
-    h4->x = half(static_cast<float>(l4->x) * s_mean * static_cast<float>(g4->x));
-    h4->y = half(static_cast<float>(l4->y) * s_mean * static_cast<float>(g4->y));
+    h1->x =
+        half(static_cast<float>(l1->x) * s_mean * static_cast<float>(g1->x));
+    h1->y =
+        half(static_cast<float>(l1->y) * s_mean * static_cast<float>(g1->y));
+    h2->x =
+        half(static_cast<float>(l2->x) * s_mean * static_cast<float>(g2->x));
+    h2->y =
+        half(static_cast<float>(l2->y) * s_mean * static_cast<float>(g2->y));
+    h3->x =
+        half(static_cast<float>(l3->x) * s_mean * static_cast<float>(g3->x));
+    h3->y =
+        half(static_cast<float>(l3->y) * s_mean * static_cast<float>(g3->y));
+    h4->x =
+        half(static_cast<float>(l4->x) * s_mean * static_cast<float>(g4->x));
+    h4->y =
+        half(static_cast<float>(l4->y) * s_mean * static_cast<float>(g4->y));
 
     output[index] = tmp;
   }
 }
 
-template<typename T>
-__global__ void rmsnorm_twoPassAlgo_e1(T* output,
-				       const T* input,
-				       const T* weight,
-				       const int m, const int n,
-                                       float epsilon)
-{
+template <typename T>
+__global__ void rmsnorm_twoPassAlgo_e1(T *output, const T *input,
+                                       const T *weight, const int m,
+                                       const int n, float epsilon) {
   const int m_idx = blockIdx.x;
   const int tid = threadIdx.x;
   const int bdimx = blockDim.x;
@@ -129,14 +135,13 @@ __global__ void rmsnorm_twoPassAlgo_e1(T* output,
   input += offset;
   output += offset;
 
-  for (int index = tid ; index < n ; index += bdimx){
+  for (int index = tid; index < n; index += bdimx) {
     float local_val = static_cast<float>(input[index]);
     local_sums[0] += local_val * local_val;
   }
   if (blockDim.x <= 32) {
     warpReduceSum<float, 1>(local_sums);
-  }
-  else {
+  } else {
     blockReduceSum<float, 1>(local_sums);
   }
   if (threadIdx.x == 0) {
@@ -144,10 +149,11 @@ __global__ void rmsnorm_twoPassAlgo_e1(T* output,
   }
   __syncthreads();
 
-  for (int index = tid ; index < n ; index += bdimx){
+  for (int index = tid; index < n; index += bdimx) {
     const T weight_val = weight[index];
     const T local_val = input[index];
-    output[index] = T(static_cast<float>(local_val) * s_mean * static_cast<float>(weight_val));
+    output[index] = T(static_cast<float>(local_val) * s_mean *
+                      static_cast<float>(weight_val));
   }
 }
 
@@ -155,25 +161,26 @@ template <typename T>
 void rmsnorm(cutlass::MatrixCoord tensor_size,
              TensorRef<T, layout::RowMajor> ref_output,
              TensorRef<T, layout::RowMajor> ref_input,
-             TensorRef<T, layout::RowMajor> ref_weight,
-             cudaStream_t stream, float epsilon = 1e-5){
+             TensorRef<T, layout::RowMajor> ref_weight, cudaStream_t stream,
+             float epsilon = 1e-5) {
   const int m = tensor_size.row();
   const int n = tensor_size.column();
-  T* output = ref_output.data();
-  const T* input = ref_input.data();
-  const T* weight = ref_weight.data();
+  T *output = ref_output.data();
+  const T *input = ref_input.data();
+  const T *weight = ref_weight.data();
   dim3 grid(m);
 
   if (n % 8 == 0 && std::is_same<T, cutlass::half_t>::value) {
     dim3 block(min(1024, (n / 8 + 31) / 32 * 32));
 
     rmsnorm_twoPassAlgo_e8<<<grid, block, 0, stream>>>(
-        (float4 *)output, (const float4 *)input, (const float4 *)weight, m, n, epsilon);
+        (float4 *)output, (const float4 *)input, (const float4 *)weight, m, n,
+        epsilon);
   } else {
-    dim3 block(min(1024, ((n + 31)/32 + 31)/32*32));
+    dim3 block(min(1024, ((n + 31) / 32 + 31) / 32 * 32));
 
-    rmsnorm_twoPassAlgo_e1<<<grid, block, 0, stream>>>(
-        output, input, weight, m, n, epsilon);
+    rmsnorm_twoPassAlgo_e1<<<grid, block, 0, stream>>>(output, input, weight, m,
+                                                       n, epsilon);
   }
 
   auto result = cudaGetLastError();

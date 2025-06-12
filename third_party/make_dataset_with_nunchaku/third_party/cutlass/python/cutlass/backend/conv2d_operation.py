@@ -33,47 +33,25 @@
 import ctypes
 from typing import Union
 
-from cuda import cuda
-from cutlass_library import SubstituteTemplate
 import numpy as np
-
-from cutlass_library import (
-    ConvKindNames,
-    ConvKindTag,
-    DataTypeNames,
-    DataTypeSize,
-    DataTypeTag,
-    IteratorAlgorithmNames,
-    IteratorAlgorithmTag,
-    LayoutTag,
-    LayoutType,
-    MathOperation,
-    MathOperationTag,
-    OpcodeClass,
-    OpcodeClassNames,
-    OpcodeClassTag,
-    OperationKind,
-    ShortDataTypeNames,
-    ShortLayoutTypeNames,
-    SplitKMode,
-    StrideSupport,
-    StrideSupportTag,
-    SwizzlingFunctor,
-    SwizzlingFunctorTag,
-    get_complex_from_real,
-)
-
+from cuda import cuda
 from cutlass.backend.arguments import ArgumentBase
 from cutlass.backend.c_types import dim3_, get_conv2d_arguments
-from cutlass.backend.library import (
-    EmissionType,
-    TensorDescription,
-    TileDescription,
-)
+from cutlass.backend.library import (EmissionType, TensorDescription,
+                                     TileDescription)
 from cutlass.backend.memory_manager import device_mem_alloc
 from cutlass.backend.operation import ExecutableOperation, LaunchConfiguration
 from cutlass.backend.utils.device import to_device_ptr
 from cutlass.shape import GemmCoord
+from cutlass_library import (ConvKindNames, ConvKindTag, DataTypeNames,
+                             DataTypeSize, DataTypeTag, IteratorAlgorithmNames,
+                             IteratorAlgorithmTag, LayoutTag, LayoutType,
+                             MathOperation, MathOperationTag, OpcodeClass,
+                             OpcodeClassNames, OpcodeClassTag, OperationKind,
+                             ShortDataTypeNames, ShortLayoutTypeNames,
+                             SplitKMode, StrideSupport, StrideSupportTag,
+                             SubstituteTemplate, SwizzlingFunctor,
+                             SwizzlingFunctorTag, get_complex_from_real)
 
 
 class Conv2dArguments(ArgumentBase):
@@ -99,8 +77,17 @@ class Conv2dArguments(ArgumentBase):
     :type output_op: :class:`cutlass.backend.LinearCombinationFunctorArguments`
     """
 
-    def __init__(self, operation, problem_size, A, B, C, D,
-        split_k_mode=SplitKMode.Serial, **kwargs, ) -> None:
+    def __init__(
+        self,
+        operation,
+        problem_size,
+        A,
+        B,
+        C,
+        D,
+        split_k_mode=SplitKMode.Serial,
+        **kwargs,
+    ) -> None:
         self.operation = operation
         self.conv_kind = operation.conv_kind
         self.layout_A = operation.A.layout
@@ -147,7 +134,7 @@ class Conv2dArguments(ArgumentBase):
             int(to_device_ptr(self.ptr_D)),
             tc_numel,
             self.output_op,
-            int(self.split_k_mode)
+            int(self.split_k_mode),
         )
 
     def initialize(self):
@@ -156,12 +143,13 @@ class Conv2dArguments(ArgumentBase):
         self.get_arguments()
 
         # Allocate and initialize device workspace
-        device_workspace_size = self.operation.rt_module.get_workspace_size(self.c_arguments)
+        device_workspace_size = self.operation.rt_module.get_workspace_size(
+            self.c_arguments
+        )
         if device_workspace_size > 0:
             self.workspace_buffer = device_mem_alloc(device_workspace_size)
             workspace_ptr = self.workspace_buffer.ptr
-            err, = cuda.cuMemsetD32(
-                workspace_ptr, 0, device_workspace_size // 4)
+            (err,) = cuda.cuMemsetD32(workspace_ptr, 0, device_workspace_size // 4)
         else:
             workspace_ptr = None
 
@@ -174,7 +162,8 @@ class Conv2dArguments(ArgumentBase):
             self.semaphore = workspace_ptr
 
         params_ = self.operation.rt_module.get_args(
-            self.c_arguments, ctypes.c_void_p(int(self.semaphore)))
+            self.c_arguments, ctypes.c_void_p(int(self.semaphore))
+        )
         self.host_workspace = bytearray(params_.contents)
         self.device_workspace = None
 
@@ -317,9 +306,11 @@ extern "C" {
         super().__init__(operation)
         self.extra_funcs = {
             "get_grid_shape": dim3_,
-            "get_workspace_size": ctypes.c_uint64
+            "get_workspace_size": ctypes.c_uint64,
         }
-        self.argument_type, self.epilogue_type = get_conv2d_arguments(operation.epilogue_functor)
+        self.argument_type, self.epilogue_type = get_conv2d_arguments(
+            operation.epilogue_functor
+        )
         self.argtype = [ctypes.POINTER(self.argument_type), ctypes.c_void_p]
         self.conv_kind = operation.conv_kind
 
@@ -345,18 +336,19 @@ extern "C" {
             int(self.conv_kind),
             arguments.problem_size.ctype,
             tile_size.ctype,
-            arguments.split_k_slices
+            arguments.split_k_slices,
         )
 
         return LaunchConfiguration(
-            [grid.x, grid.y, grid.z], [self.threads, 1, 1],
-            self.shared_memory_capacity)
+            [grid.x, grid.y, grid.z], [self.threads, 1, 1], self.shared_memory_capacity
+        )
 
     def initialize(self):
-        err, = cuda.cuFuncSetAttribute(
+        (err,) = cuda.cuFuncSetAttribute(
             self.kernel,
             attrib=cuda.CUfunction_attribute.CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES,
-            value=self.shared_memory_capacity)
+            value=self.shared_memory_capacity,
+        )
         if err != cuda.CUresult.CUDA_SUCCESS:
             raise RuntimeError(f"CUDA Error: {err}")
 
@@ -402,6 +394,7 @@ class Conv2dOperation:
 
     :param swizzling_functor: threadblock swizzling functor
     """
+
     def __init__(
         self,
         conv_kind,
@@ -415,7 +408,7 @@ class Conv2dOperation:
         epilogue_functor,
         swizzling_functor=SwizzlingFunctor.Identity1,
         emission_type=EmissionType.Kernel,
-        **kwargs
+        **kwargs,
     ):
         self.operation_kind: OperationKind = OperationKind.Conv2d
         self.arch: int = arch
@@ -490,26 +483,35 @@ class Conv2dOperation:
                 "extended_name": self.extended_name(),
                 "threadblock": threadblock,
                 "layout": self.layout_name(),
-                "alignment": "%d" % self.A.alignment
+                "alignment": "%d" % self.A.alignment,
             },
         )
 
     def extended_name(self):
         """Append data types if they differ from compute type."""
-        if self.C.element != self.tile_description.math_instruction.element_accumulator and \
-                self.A.element != self.tile_description.math_instruction.element_accumulator:
+        if (
+            self.C.element != self.tile_description.math_instruction.element_accumulator
+            and self.A.element
+            != self.tile_description.math_instruction.element_accumulator
+        ):
             extended_name = "${element_c}_${core_name}_${element_a}"
-        elif self.C.element == self.tile_description.math_instruction.element_accumulator and  \
-                self.A.element != self.tile_description.math_instruction.element_accumulator:
+        elif (
+            self.C.element == self.tile_description.math_instruction.element_accumulator
+            and self.A.element
+            != self.tile_description.math_instruction.element_accumulator
+        ):
             extended_name = "${core_name}_${element_a}"
         else:
             extended_name = "${core_name}"
 
-        extended_name = SubstituteTemplate(extended_name, {
-            "element_a": DataTypeNames[self.A.element],
-            "element_c": DataTypeNames[self.C.element],
-            "core_name": self.core_name(),
-        })
+        extended_name = SubstituteTemplate(
+            extended_name,
+            {
+                "element_a": DataTypeNames[self.A.element],
+                "element_c": DataTypeNames[self.C.element],
+                "core_name": self.core_name(),
+            },
+        )
 
         return extended_name
 
@@ -523,10 +525,16 @@ class Conv2dOperation:
 
         if self.tile_description.math_instruction.opcode_class == OpcodeClass.TensorOp:
             inst_shape = "%dx%dx%d" % tuple(
-                self.tile_description.math_instruction.instruction_shape)
-            if self.tile_description.math_instruction.element_a != self.A.element and \
-                    self.tile_description.math_instruction.element_a != self.accumulator_type():
-                intermediate_type = DataTypeNames[self.tile_description.math_instruction.element_a]
+                self.tile_description.math_instruction.instruction_shape
+            )
+            if (
+                self.tile_description.math_instruction.element_a != self.A.element
+                and self.tile_description.math_instruction.element_a
+                != self.accumulator_type()
+            ):
+                intermediate_type = DataTypeNames[
+                    self.tile_description.math_instruction.element_a
+                ]
         else:
             inst_shape = ""
 
@@ -535,7 +543,7 @@ class Conv2dOperation:
             inst_shape,
             intermediate_type,
             ConvKindNames[self.conv_kind],
-            IteratorAlgorithmNames[self.iterator_algorithm]
+            IteratorAlgorithmNames[self.iterator_algorithm],
         )
 
     def is_complex(self):
@@ -543,7 +551,9 @@ class Conv2dOperation:
             MathOperation.multiply_add_complex,
             MathOperation.multiply_add_complex_gaussian,
         ]
-        return self.tile_description.math_instruction.math_operation in complex_operators
+        return (
+            self.tile_description.math_instruction.math_operation in complex_operators
+        )
 
     def accumulator_type(self):
         accum = self.tile_description.math_instruction.element_accumulator
@@ -562,9 +572,18 @@ class Conv2dOperation:
         :rtype: Conv2dOperation
         """
         return Conv2dOperation(
-            self.conv_kind, self.iterator_algorithm, self.arch, self.tile_description,
-            self.A, self.B, self.C, self.stride_support, self.epilogue_functor, self.swizzling_functor,
-            emission_type=EmissionType.Device)
+            self.conv_kind,
+            self.iterator_algorithm,
+            self.arch,
+            self.tile_description,
+            self.A,
+            self.B,
+            self.C,
+            self.stride_support,
+            self.epilogue_functor,
+            self.swizzling_functor,
+            emission_type=EmissionType.Device,
+        )
 
 
 ###################################################################################################
@@ -582,7 +601,7 @@ class EmitConv2dInstance:
             "cutlass/conv/kernel/default_conv2d_fprop.h",
             "cutlass/conv/kernel/default_conv2d_dgrad.h",
             "cutlass/conv/kernel/default_conv2d_wgrad.h",
-            "cutlass/conv/device/implicit_gemm_convolution.h"
+            "cutlass/conv/device/implicit_gemm_convolution.h",
         ]
         self.template = """
 // Conv2d${conv_kind_name} ${iterator_algorithm_name} kernel instance "${operation_name}"
@@ -646,11 +665,18 @@ using DeviceKernel =
 """
 
     def emit(self, operation):
-        warp_shape = [int(operation.tile_description.threadblock_shape[idx] /
-                          operation.tile_description.warp_count[idx]) for idx in range(3)]
+        warp_shape = [
+            int(
+                operation.tile_description.threadblock_shape[idx]
+                / operation.tile_description.warp_count[idx]
+            )
+            for idx in range(3)
+        ]
 
-        epilogue_vector_length = int(min(
-            operation.C.alignment * DataTypeSize[operation.C.element], 128) / DataTypeSize[operation.C.element])
+        epilogue_vector_length = int(
+            min(operation.C.alignment * DataTypeSize[operation.C.element], 128)
+            / DataTypeSize[operation.C.element]
+        )
 
         values = {
             "operation_name": operation.procedural_name(),
@@ -664,7 +690,9 @@ using DeviceKernel =
             "element_c": DataTypeTag[operation.C.element],
             "layout_c": LayoutTag[operation.C.layout],
             "element_accumulator": DataTypeTag[operation.accumulator_type()],
-            "opcode_class": OpcodeClassTag[operation.tile_description.math_instruction.opcode_class],
+            "opcode_class": OpcodeClassTag[
+                operation.tile_description.math_instruction.opcode_class
+            ],
             "arch": "cutlass::arch::Sm%d" % operation.arch,
             "threadblock_shape_m": str(operation.tile_description.threadblock_shape[0]),
             "threadblock_shape_n": str(operation.tile_description.threadblock_shape[1]),
@@ -672,17 +700,31 @@ using DeviceKernel =
             "warp_shape_m": str(warp_shape[0]),
             "warp_shape_n": str(warp_shape[1]),
             "warp_shape_k": str(warp_shape[2]),
-            "instruction_shape_m": str(operation.tile_description.math_instruction.instruction_shape[0]),
-            "instruction_shape_n": str(operation.tile_description.math_instruction.instruction_shape[1]),
-            "instruction_shape_k": str(operation.tile_description.math_instruction.instruction_shape[2]),
+            "instruction_shape_m": str(
+                operation.tile_description.math_instruction.instruction_shape[0]
+            ),
+            "instruction_shape_n": str(
+                operation.tile_description.math_instruction.instruction_shape[1]
+            ),
+            "instruction_shape_k": str(
+                operation.tile_description.math_instruction.instruction_shape[2]
+            ),
             "epilogue_vector_length": str(epilogue_vector_length),
             "epilogue_functor": operation.epilogue_functor.emit(),
             "swizzling_functor": SwizzlingFunctorTag[operation.swizzling_functor],
             "stages": str(operation.tile_description.stages),
             "iterator_algorithm": IteratorAlgorithmTag[operation.iterator_algorithm],
-            "iterator_algorithm_name": IteratorAlgorithmNames[operation.iterator_algorithm].capitalize(),
+            "iterator_algorithm_name": IteratorAlgorithmNames[
+                operation.iterator_algorithm
+            ].capitalize(),
             "stride_support": StrideSupportTag[operation.stride_support],
-            "math_operator": "cutlass::arch::OpMultiplyAddComplex" if operation.is_complex() else MathOperationTag[operation.tile_description.math_instruction.math_operation],
+            "math_operator": (
+                "cutlass::arch::OpMultiplyAddComplex"
+                if operation.is_complex()
+                else MathOperationTag[
+                    operation.tile_description.math_instruction.math_operation
+                ]
+            ),
             "align_a": str(operation.A.alignment),
             "align_b": str(operation.B.alignment),
         }

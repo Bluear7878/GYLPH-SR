@@ -3,8 +3,7 @@
 
 using json = nlohmann::json;
 
-namespace ns
-{
+namespace ns {
 // a simple struct to model a person
 struct person
 {
@@ -12,17 +11,16 @@ struct person
     std::string address;
     int age;
 };
-} // namespace ns
+}  // namespace ns
 
-namespace ns
-{
+namespace ns {
 void from_json(const json& j, person& p)
 {
     j.at("name").get_to(p.name);
     j.at("address").get_to(p.address);
     j.at("age").get_to(p.age);
 }
-} // namespace ns
+}  // namespace ns
 
 int main()
 {

@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,27 +18,29 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing warp-level matrix multiply-accumulate operations.
+    \brief Templates implementing warp-level matrix multiply-accumulate
+   operations.
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/matrix_shape.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/gemm/gemm.h"
+#include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/array_planar_complex.h"
 
@@ -50,10 +52,8 @@ namespace warp {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename TileIterator_>
-class TileIteratorPlanarComplex {
+template <typename TileIterator_> class TileIteratorPlanarComplex {
 public:
-
   /// Underlying iterator over real-valued tiles
   using TileIterator = TileIterator_;
 
@@ -76,31 +76,29 @@ public:
   using TensorCoord = typename TensorRef::TensorCoord;
 
   /// Planar complex fragment
-  using Fragment = ArrayPlanarComplex<Element, TileIterator::Fragment::kElements>;
+  using Fragment =
+      ArrayPlanarComplex<Element, TileIterator::Fragment::kElements>;
 
 public:
-
   /// Underlying tile iterator
   TileIterator tile_iterator_;
 
-  /// Offset (in units of bytes) to the imaginary part of the planar complex matrix
+  /// Offset (in units of bytes) to the imaginary part of the planar complex
+  /// matrix
   LongIndex imaginary_offset_;
 
 public:
-    /// Default ctor constructs null iterator
+  /// Default ctor constructs null iterator
   CUTLASS_HOST_DEVICE
-  TileIteratorPlanarComplex(): imaginary_offset_(0) { }
+  TileIteratorPlanarComplex() : imaginary_offset_(0) {}
 
   /// Constructor from TensorRef
   CUTLASS_DEVICE
-  TileIteratorPlanarComplex(
-    TensorRef const &ref, 
-    int lane_id,
-    LongIndex imaginary_offset
-  ):
-    tile_iterator_(ref, lane_id),
-    imaginary_offset_((imaginary_offset * sizeof_bits<Element>::value) / 8) { }
-
+  TileIteratorPlanarComplex(TensorRef const &ref, int lane_id,
+                            LongIndex imaginary_offset)
+      : tile_iterator_(ref, lane_id),
+        imaginary_offset_((imaginary_offset * sizeof_bits<Element>::value) /
+                          8) {}
 
   /// Adds a pointer offset to internal pointer(s) to advance through memory
   CUTLASS_DEVICE
@@ -111,7 +109,8 @@ public:
     return *this;
   }
 
-  /// Advances an iterator along logical dimensions of matrix in units of whole tiles
+  /// Advances an iterator along logical dimensions of matrix in units of whole
+  /// tiles
   CUTLASS_HOST_DEVICE
   TileIteratorPlanarComplex &add_tile_offset(TensorCoord const &tile_offset) {
 
@@ -122,7 +121,7 @@ public:
 
   /// Advances the iterator along the advance dimension
   CUTLASS_DEVICE
-  TileIteratorPlanarComplex & operator++() {
+  TileIteratorPlanarComplex &operator++() {
     ++tile_iterator_;
     return *this;
   }
@@ -133,21 +132,23 @@ public:
 
   /// Advances the iterator along the opposite of the advance dimension
   CUTLASS_HOST_DEVICE
-  TileIteratorPlanarComplex & operator--() {
+  TileIteratorPlanarComplex &operator--() {
     --tile_iterator_;
     return *this;
   }
 
-  ///< advances in units of whole tiles along the logical coordinate space of the tensor
+  ///< advances in units of whole tiles along the logical coordinate space of
+  ///< the tensor
   CUTLASS_DEVICE
-  TileIteratorPlanarComplex & operator+=(TensorCoord const &tile_offset) {
+  TileIteratorPlanarComplex &operator+=(TensorCoord const &tile_offset) {
     tile_iterator_.add_tile_offset(tile_offset);
     return *this;
   }
 
-  ///< advances in units of whole tiles along the logical coordinate space of the tensor
+  ///< advances in units of whole tiles along the logical coordinate space of
+  ///< the tensor
   CUTLASS_DEVICE
-  TileIteratorPlanarComplex & operator-=(TensorCoord const &tile_offset) {
+  TileIteratorPlanarComplex &operator-=(TensorCoord const &tile_offset) {
     tile_iterator_.add_tile_offset(-tile_offset);
     return *this;
   }
@@ -169,7 +170,8 @@ public:
       Index byte_offset) const {
 
     tile_iterator_.load_with_byte_offset(frag.real, byte_offset);
-    tile_iterator_.load_with_byte_offset(frag.imag, byte_offset + imaginary_offset_);
+    tile_iterator_.load_with_byte_offset(frag.imag,
+                                         byte_offset + imaginary_offset_);
   }
 
   /// Loads a fragment from memory with additional logical offset
@@ -180,10 +182,11 @@ public:
       /// loads a tile with a linear offset
       Index pointer_offset) const {
 
-    Index byte_offset = (pointer_offset * sizeof_bits<Element>::value)/8;
+    Index byte_offset = (pointer_offset * sizeof_bits<Element>::value) / 8;
 
     tile_iterator_.load_with_byte_offset(frag.real, byte_offset);
-    tile_iterator_.load_with_byte_offset(frag.imag, byte_offset + imaginary_offset_);
+    tile_iterator_.load_with_byte_offset(frag.imag,
+                                         byte_offset + imaginary_offset_);
   }
 
   /// Loads a fragment from memory with logical offset in units of whole tiles.
@@ -195,7 +198,8 @@ public:
       TensorCoord const &tile_offset) const {
 
     tile_iterator_.load_with_byte_offset(frag.real, tile_offset, 0);
-    tile_iterator_.load_with_byte_offset(frag.imag, tile_offset, imaginary_offset_);
+    tile_iterator_.load_with_byte_offset(frag.imag, tile_offset,
+                                         imaginary_offset_);
   }
 
   /// Loads a fragment from memory with logical offset in units of whole tiles.
@@ -208,10 +212,11 @@ public:
       /// loads a tile with a logical offset AND a pointer offset
       Index pointer_offset) const {
 
-    Index byte_offset = (pointer_offset * sizeof_bits<Element>::value)/8;
+    Index byte_offset = (pointer_offset * sizeof_bits<Element>::value) / 8;
 
     tile_iterator_.load_with_byte_offset(frag.real, tile_offset, byte_offset);
-    tile_iterator_.load_with_byte_offset(frag.real, tile_offset, byte_offset + imaginary_offset_);
+    tile_iterator_.load_with_byte_offset(frag.real, tile_offset,
+                                         byte_offset + imaginary_offset_);
   }
 
   /// Loads a fragment from memory with logical offset in units of whole tiles.
@@ -225,7 +230,8 @@ public:
       Index byte_offset) const {
 
     tile_iterator_.load_with_byte_offset(frag.real, tile_offset, byte_offset);
-    tile_iterator_.load_with_byte_offset(frag.imag, tile_offset, byte_offset + imaginary_offset_);
+    tile_iterator_.load_with_byte_offset(frag.imag, tile_offset,
+                                         byte_offset + imaginary_offset_);
   }
 
   /// Notify the iterator which k-group it is currently pointing to.

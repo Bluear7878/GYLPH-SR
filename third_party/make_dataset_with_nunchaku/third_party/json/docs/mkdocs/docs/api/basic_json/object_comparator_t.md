@@ -13,17 +13,19 @@ and [`default_object_comparator_t`](default_object_comparator_t.md) otherwise.
 
 ??? example
 
-    The example below demonstrates the used object comparator.
+````
+The example below demonstrates the used object comparator.
 
-    ```cpp
-    --8<-- "examples/object_comparator_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/object_comparator_t.output"
-    ```
+```cpp
+--8<-- "examples/object_comparator_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/object_comparator_t.output"
+```
+````
 
 ## Version history
 

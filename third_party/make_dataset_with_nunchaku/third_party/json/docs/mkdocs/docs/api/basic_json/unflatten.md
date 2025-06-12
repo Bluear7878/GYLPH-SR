@@ -8,9 +8,9 @@ The function restores the arbitrary nesting of a JSON value that has been flatte
 [`flatten()`](flatten.md) function. The JSON value must meet certain constraints:
 
 1. The value must be an object.
-2. The keys must be JSON pointers (see [RFC 6901](https://tools.ietf.org/html/rfc6901))
-3. The mapped values must be primitive JSON types.
-    
+1. The keys must be JSON pointers (see [RFC 6901](https://tools.ietf.org/html/rfc6901))
+1. The mapped values must be primitive JSON types.
+
 ## Return value
 
 the original JSON from a flattened version
@@ -40,17 +40,19 @@ their original type. Apart from this example, for a JSON value `j`, the followin
 
 ??? example
 
-    The following code shows how a flattened JSON object is unflattened into the original nested JSON object.
-    
-    ```cpp
-    --8<-- "examples/unflatten.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/unflatten.output"
-    ```
+````
+The following code shows how a flattened JSON object is unflattened into the original nested JSON object.
+
+```cpp
+--8<-- "examples/unflatten.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/unflatten.output"
+```
+````
 
 ## See also
 

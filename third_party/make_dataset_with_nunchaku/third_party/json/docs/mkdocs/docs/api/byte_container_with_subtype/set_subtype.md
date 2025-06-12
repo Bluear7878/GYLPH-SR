@@ -10,7 +10,7 @@ serialization.
 ## Parameters
 
 `subtype` (in)
-:   subtype to set
+: subtype to set
 
 ## Exception safety
 
@@ -24,17 +24,19 @@ Constant.
 
 ??? example
 
-    The example below demonstrates how a subtype can be set with `set_subtype`.
+````
+The example below demonstrates how a subtype can be set with `set_subtype`.
 
-    ```cpp
-    --8<-- "examples/byte_container_with_subtype__set_subtype.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/byte_container_with_subtype__set_subtype.output"
-    ```
+```cpp
+--8<-- "examples/byte_container_with_subtype__set_subtype.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/byte_container_with_subtype__set_subtype.output"
+```
+````
 
 ## Version history
 

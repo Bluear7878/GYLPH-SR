@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -34,15 +35,15 @@
 
 #pragma once
 
-#include "cutlass/cutlass.h"
-#include "cutlass/numeric_types.h"
 #include "cutlass/arch/arch.h"
 #include "cutlass/arch/mma.h"
 #include "cutlass/arch/wmma.h"
+#include "cutlass/cutlass.h"
+#include "cutlass/numeric_types.h"
 
-#include "cutlass/gemm/gemm.h"
 #include "cutlass/epilogue/thread/linear_combination.h"
 #include "cutlass/epilogue/thread/linear_combination_clamp.h"
+#include "cutlass/gemm/gemm.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -52,32 +53,17 @@ namespace device {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename OperatorClass,
-  typename ArchTag,
-  typename ElementA, 
-  typename ElementB, 
-  typename ElementC,
-  typename ElementAccumulator
->
+template <typename OperatorClass, typename ArchTag, typename ElementA,
+          typename ElementB, typename ElementC, typename ElementAccumulator>
 struct DefaultGemmConfiguration;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ArchTag,
-  typename ElementA, 
-  typename ElementB, 
-  typename ElementC, 
-  typename ElementAccumulator>
-struct DefaultGemmConfiguration<
-  arch::OpClassSimt, 
-  ArchTag,
-  ElementA, 
-  ElementB, 
-  ElementC, 
-  ElementAccumulator> {
-  
+template <typename ArchTag, typename ElementA, typename ElementB,
+          typename ElementC, typename ElementAccumulator>
+struct DefaultGemmConfiguration<arch::OpClassSimt, ArchTag, ElementA, ElementB,
+                                ElementC, ElementAccumulator> {
+
   static int const kAlignmentA = 1;
   static int const kAlignmentB = 1;
   using ThreadblockShape = GemmShape<128, 128, 8>;
@@ -85,23 +71,19 @@ struct DefaultGemmConfiguration<
   using InstructionShape = GemmShape<1, 1, 1>;
   static int const kStages = 2;
 
-  using EpilogueOutputOp = epilogue::thread::LinearCombination<
-    ElementC,
-    1,
-    ElementAccumulator,
-    ElementAccumulator
-  >;
+  using EpilogueOutputOp =
+      epilogue::thread::LinearCombination<ElementC, 1, ElementAccumulator,
+                                          ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ArchTag,
-  typename ElementC>
-struct DefaultGemmConfiguration<arch::OpClassSimt, ArchTag, int8_t, int8_t, ElementC, int32_t> {
-  
+template <typename ArchTag, typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassSimt, ArchTag, int8_t, int8_t,
+                                ElementC, int32_t> {
+
   static int const kAlignmentA = 4;
   static int const kAlignmentB = 4;
   using ThreadblockShape = GemmShape<128, 128, 32>;
@@ -109,62 +91,38 @@ struct DefaultGemmConfiguration<arch::OpClassSimt, ArchTag, int8_t, int8_t, Elem
   using InstructionShape = GemmShape<1, 1, 4>;
   static int const kStages = 2;
 
-  using EpilogueOutputOp = epilogue::thread::LinearCombinationClamp<
-    ElementC,
-    1,
-    int32_t,
-    float
-  >;
+  using EpilogueOutputOp =
+      epilogue::thread::LinearCombinationClamp<ElementC, 1, int32_t, float>;
 
   using Operator = arch::OpMultiplyAdd;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ArchTag,
-  typename ElementA, 
-  typename ElementB, 
-  typename ElementC, 
-  typename ElementAccumulator>
-struct DefaultGemmConfiguration<
-  arch::OpClassWmmaTensorOp, 
-  ArchTag,
-  ElementA, 
-  ElementB, 
-  ElementC, 
-  ElementAccumulator> {
-  
+template <typename ArchTag, typename ElementA, typename ElementB,
+          typename ElementC, typename ElementAccumulator>
+struct DefaultGemmConfiguration<arch::OpClassWmmaTensorOp, ArchTag, ElementA,
+                                ElementB, ElementC, ElementAccumulator> {
+
   static int const kAlignmentA = 128 / sizeof_bits<ElementA>::value;
   static int const kAlignmentB = 128 / sizeof_bits<ElementB>::value;
 
   static int const kStages = 2;
-  
+
   using EpilogueOutputOp = epilogue::thread::LinearCombination<
-    ElementC,
-    128 / sizeof_bits<ElementC>::value,
-    ElementAccumulator,
-    ElementAccumulator
-  >;
+      ElementC, 128 / sizeof_bits<ElementC>::value, ElementAccumulator,
+      ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ElementA, 
-  typename ElementB, 
-  typename ElementC, 
-  typename ElementAccumulator>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm70,
-  ElementA, 
-  ElementB, 
-  ElementC, 
-  ElementAccumulator> {
-  
+template <typename ElementA, typename ElementB, typename ElementC,
+          typename ElementAccumulator>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm70, ElementA,
+                                ElementB, ElementC, ElementAccumulator> {
+
   static int const kAlignmentA = 128 / sizeof_bits<ElementA>::value;
   static int const kAlignmentB = 128 / sizeof_bits<ElementB>::value;
 
@@ -172,31 +130,20 @@ struct DefaultGemmConfiguration<
   using WarpShape = GemmShape<64, 64, 32>;
   using InstructionShape = GemmShape<8, 8, 4>;
   static int const kStages = 2;
-  
+
   using EpilogueOutputOp = epilogue::thread::LinearCombination<
-    ElementC,
-    128 / sizeof_bits<ElementC>::value,
-    ElementAccumulator,
-    ElementAccumulator
-  >;
+      ElementC, 128 / sizeof_bits<ElementC>::value, ElementAccumulator,
+      ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <
-  typename ElementA, 
-  typename ElementB, 
-  typename ElementC, 
-  typename ElementAccumulator>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75,
-  ElementA, 
-  ElementB, 
-  ElementC, 
-  ElementAccumulator> {
+template <typename ElementA, typename ElementB, typename ElementC,
+          typename ElementAccumulator>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, ElementA,
+                                ElementB, ElementC, ElementAccumulator> {
 
   static int const kAlignmentA = 128 / sizeof_bits<ElementA>::value;
   static int const kAlignmentB = 128 / sizeof_bits<ElementA>::value;
@@ -206,11 +153,8 @@ struct DefaultGemmConfiguration<
   static int const kStages = 2;
 
   using EpilogueOutputOp = epilogue::thread::LinearCombination<
-    ElementC,
-    128 / sizeof_bits<ElementC>::value,
-    ElementAccumulator,
-    ElementAccumulator
-  >;
+      ElementC, 128 / sizeof_bits<ElementC>::value, ElementAccumulator,
+      ElementAccumulator>;
 
   using Operator = typename platform::conditional<
       (platform::is_same<ElementA, int8_t>::value ||
@@ -222,16 +166,10 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  int8_t, 
-  int8_t, 
-  ElementC, 
-  int32_t> {
-  
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, int8_t,
+                                int8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int8_t>::value;
 
@@ -248,19 +186,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  int8_t, 
-  uint8_t, 
-  ElementC, 
-  int32_t> {
-  
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, int8_t,
+                                uint8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint8_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<8, 8, 16>;
@@ -274,19 +206,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  uint8_t, 
-  int8_t, 
-  ElementC, 
-  int32_t> {
-  
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, uint8_t,
+                                int8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int8_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<8, 8, 16>;
@@ -300,19 +226,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  uint8_t, 
-  uint8_t, 
-  ElementC, 
-  int32_t> {
-  
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, uint8_t,
+                                uint8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint8_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<8, 8, 16>;
@@ -326,19 +246,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  int4b_t, 
-  int4b_t, 
-  ElementC, 
-  int32_t> {
-   
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, int4b_t,
+                                int4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int4b_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<8, 8, 32>;
@@ -352,19 +266,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  int4b_t, 
-  uint4b_t, 
-  ElementC, 
-  int32_t> {
-    
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, int4b_t,
+                                uint4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint4b_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<8, 8, 32>;
@@ -378,16 +286,10 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  uint4b_t, 
-  int4b_t, 
-  ElementC, 
-  int32_t> {
-  
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, uint4b_t,
+                                int4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int4b_t>::value;
 
@@ -404,19 +306,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  uint4b_t, 
-  uint4b_t, 
-  ElementC, 
-  int32_t> {
-   
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, uint4b_t,
+                                uint4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint4b_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<8, 8, 32>;
@@ -430,19 +326,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm75, 
-  uint1b_t, 
-  uint1b_t, 
-  ElementC, 
-  int32_t> {
-    
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm75, uint1b_t,
+                                uint1b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint1b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint1b_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 512>;
   using WarpShape = GemmShape<64, 64, 512>;
   using InstructionShape = GemmShape<8, 8, 128>;
@@ -463,7 +353,7 @@ struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, ElementA,
 
   static int const kAlignmentA = 128 / sizeof_bits<ElementA>::value;
   static int const kAlignmentB = 128 / sizeof_bits<ElementA>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<16, 8, 16>;
@@ -482,67 +372,54 @@ struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, ElementA,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-template <typename ElementC,
-          typename ElementAccumulator>
+template <typename ElementC, typename ElementAccumulator>
 struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, double,
                                 double, ElementC, ElementAccumulator> {
 
   static int const kAlignmentA = 1;
   static int const kAlignmentB = 1;
-  
+
   using ThreadblockShape = GemmShape<128, 128, 16>;
   using WarpShape = GemmShape<32, 64, 16>;
   using InstructionShape = GemmShape<8, 8, 4>;
   static int const kStages = 3;
 
-  using EpilogueOutputOp = epilogue::thread::LinearCombination<
-      ElementC, 1, ElementAccumulator,
-      ElementAccumulator>;
+  using EpilogueOutputOp =
+      epilogue::thread::LinearCombination<ElementC, 1, ElementAccumulator,
+                                          ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;
 };
 
-
 template <>
-struct DefaultGemmConfiguration<
-    arch::OpClassTensorOp, 
-    arch::Sm80, 
-    complex<double>,
-    complex<double>, 
-    complex<double>,
-    complex<double>
-  > {
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80,
+                                complex<double>, complex<double>,
+                                complex<double>, complex<double>> {
 
   static int const kAlignmentA = 1;
   static int const kAlignmentB = 1;
-  
+
   using ThreadblockShape = GemmShape<64, 64, 16>;
   using WarpShape = GemmShape<32, 32, 16>;
   using InstructionShape = GemmShape<8, 8, 4>;
   static int const kStages = 3;
 
-  using EpilogueOutputOp = epilogue::thread::LinearCombination<
-      complex<double>, 1, complex<double>,
-      complex<double>>;
+  using EpilogueOutputOp =
+      epilogue::thread::LinearCombination<complex<double>, 1, complex<double>,
+                                          complex<double>>;
 
   using Operator = arch::OpMultiplyAddComplex;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  int8_t, 
-  int8_t, 
-  ElementC, 
-  int32_t> {
-     
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, int8_t,
+                                int8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int8_t>::value;
- 
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<16, 8, 32>;
@@ -556,19 +433,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  int8_t, 
-  uint8_t, 
-  ElementC, 
-  int32_t> {
-      
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, int8_t,
+                                uint8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint8_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<16, 8, 32>;
@@ -582,19 +453,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  uint8_t, 
-  int8_t, 
-  ElementC, 
-  int32_t> {
-      
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, uint8_t,
+                                int8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int8_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<16, 8, 32>;
@@ -608,19 +473,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  uint8_t, 
-  uint8_t, 
-  ElementC, 
-  int32_t> {
-      
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, uint8_t,
+                                uint8_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint8_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint8_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<16, 8, 32>;
@@ -634,19 +493,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  int4b_t, 
-  int4b_t, 
-  ElementC, 
-  int32_t> {
-      
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, int4b_t,
+                                int4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int4b_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<16, 8, 64>;
@@ -660,19 +513,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  int4b_t, 
-  uint4b_t, 
-  ElementC, 
-  int32_t> {
-       
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, int4b_t,
+                                uint4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<int4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint4b_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<16, 8, 64>;
@@ -686,19 +533,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  uint4b_t, 
-  int4b_t, 
-  ElementC, 
-  int32_t> {
-       
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, uint4b_t,
+                                int4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<int4b_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<16, 8, 64>;
@@ -712,19 +553,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  uint4b_t, 
-  uint4b_t, 
-  ElementC, 
-  int32_t> {
-       
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, uint4b_t,
+                                uint4b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint4b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint4b_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 128>;
   using WarpShape = GemmShape<64, 64, 128>;
   using InstructionShape = GemmShape<16, 8, 64>;
@@ -738,19 +573,13 @@ struct DefaultGemmConfiguration<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template < 
-  typename ElementC>
-struct DefaultGemmConfiguration<
-  arch::OpClassTensorOp, 
-  arch::Sm80, 
-  uint1b_t, 
-  uint1b_t, 
-  ElementC, 
-  int32_t> {
-       
+template <typename ElementC>
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm80, uint1b_t,
+                                uint1b_t, ElementC, int32_t> {
+
   static int const kAlignmentA = 128 / sizeof_bits<uint1b_t>::value;
   static int const kAlignmentB = 128 / sizeof_bits<uint1b_t>::value;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 512>;
   using WarpShape = GemmShape<64, 64, 512>;
   using InstructionShape = GemmShape<16, 8, 256>;
@@ -763,47 +592,41 @@ struct DefaultGemmConfiguration<
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-template <typename ElementC,
-          typename ElementAccumulator>
+template <typename ElementC, typename ElementAccumulator>
 struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm90, double,
                                 double, ElementC, ElementAccumulator> {
 
   static int const kAlignmentA = 1;
   static int const kAlignmentB = 1;
-  
+
   using ThreadblockShape = GemmShape<128, 256, 64>;
   using WarpShape = GemmShape<64, 64, 64>;
   using InstructionShape = GemmShape<16, 8, 4>;
   static int const kStages = 3;
 
-  using EpilogueOutputOp = epilogue::thread::LinearCombination<
-      ElementC, 1, ElementAccumulator,
-      ElementAccumulator>;
+  using EpilogueOutputOp =
+      epilogue::thread::LinearCombination<ElementC, 1, ElementAccumulator,
+                                          ElementAccumulator>;
 
   using Operator = arch::OpMultiplyAdd;
 };
 
 template <>
-struct DefaultGemmConfiguration<
-    arch::OpClassTensorOp, 
-    arch::Sm90, 
-    complex<double>,
-    complex<double>, 
-    complex<double>,
-    complex<double>
-  > {
+struct DefaultGemmConfiguration<arch::OpClassTensorOp, arch::Sm90,
+                                complex<double>, complex<double>,
+                                complex<double>, complex<double>> {
 
   static int const kAlignmentA = 1;
   static int const kAlignmentB = 1;
-  
+
   using ThreadblockShape = GemmShape<64, 64, 16>;
   using WarpShape = GemmShape<32, 32, 16>;
   using InstructionShape = GemmShape<16, 8, 4>;
   static int const kStages = 3;
 
-  using EpilogueOutputOp = epilogue::thread::LinearCombination<
-      complex<double>, 1, complex<double>,
-      complex<double>>;
+  using EpilogueOutputOp =
+      epilogue::thread::LinearCombination<complex<double>, 1, complex<double>,
+                                          complex<double>>;
 
   using Operator = arch::OpMultiplyAddComplex;
 };

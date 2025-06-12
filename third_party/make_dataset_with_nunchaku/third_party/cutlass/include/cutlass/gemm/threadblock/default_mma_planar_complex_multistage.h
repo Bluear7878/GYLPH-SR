@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,27 +18,29 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief Template for a multistage GEMM kernel. Does not compute batching or support split-K.
+    \brief Template for a multistage GEMM kernel. Does not compute batching or
+   support split-K.
 */
 
 #pragma once
 
 #include "cutlass/arch/arch.h"
 #include "cutlass/cutlass.h"
-#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/default_mma.h"
+#include "cutlass/gemm/threadblock/default_mma_core_sm80.h"
 #include "cutlass/gemm/threadblock/mma_planar_complex_multistage.h"
 
 #include "cutlass/numeric_types.h"
@@ -86,51 +88,31 @@ template <
     /// Complex transformation on operand B
     ComplexTransform TransformB = ComplexTransform::kNone,
     /// Math operator tag (e.g. arch::OpMultiplyAdd)
-    typename Operator = arch::OpMultiplyAdd
->
+    typename Operator = arch::OpMultiplyAdd>
 struct DefaultMmaPlanarComplexMultistage {
 
-    // Construct a planar complex variant from the real-valued variant
-    using RealMmaMultistage = typename DefaultMma<
-        ElementA_,
-        LayoutA_,
-        kAlignmentA,
-        ElementB_,
-        LayoutB_,
-        kAlignmentB,
-        ElementAccumulator_,
-        LayoutC_,
-        OperatorClass_,
-        ArchTag_,
-        ThreadblockShape_,
-        WarpShape_,
-        InstructionShape_,
-        Stages,
-        Operator
-    >::ThreadblockMma;
+  // Construct a planar complex variant from the real-valued variant
+  using RealMmaMultistage =
+      typename DefaultMma<ElementA_, LayoutA_, kAlignmentA, ElementB_, LayoutB_,
+                          kAlignmentB, ElementAccumulator_, LayoutC_,
+                          OperatorClass_, ArchTag_, ThreadblockShape_,
+                          WarpShape_, InstructionShape_, Stages,
+                          Operator>::ThreadblockMma;
 
-    using ThreadblockMma = MmaPlanarComplexMultistage<
-      ThreadblockShape_,
-      typename RealMmaMultistage::IteratorA,
+  using ThreadblockMma = MmaPlanarComplexMultistage<
+      ThreadblockShape_, typename RealMmaMultistage::IteratorA,
       typename RealMmaMultistage::SmemIteratorA,
       cutlass::arch::CacheOperation::Global,
       typename RealMmaMultistage::IteratorB,
       typename RealMmaMultistage::SmemIteratorB,
-      cutlass::arch::CacheOperation::Global,
-      ElementAccumulator_,
-      LayoutC_,
-      typename RealMmaMultistage::Policy,
-      Stages,
-      TransformA,
-      TransformB
-    >;
+      cutlass::arch::CacheOperation::Global, ElementAccumulator_, LayoutC_,
+      typename RealMmaMultistage::Policy, Stages, TransformA, TransformB>;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}   // namespace threadblock
-}   // namespace gemm
-}   // namespace cutlass
-
+} // namespace threadblock
+} // namespace gemm
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

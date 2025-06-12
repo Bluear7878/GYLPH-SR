@@ -1,33 +1,36 @@
-import os
-from glob import glob
-import torch
 import argparse
+import os
+from concurrent.futures import ThreadPoolExecutor
+from glob import glob
 
+import lpips
 import numpy as np
 import PIL
-from PIL import Image
-from concurrent.futures import ThreadPoolExecutor
-
-import torch, torchvision.transforms.functional as TF
+import torch
 import torchmetrics.functional as TMF
-import lpips
+import torchvision.transforms.functional
+import torchvision.transforms.functional as TF
+from PIL import Image
 
 # type detection ####################################################################################################
 # ( list|path ) ----> list(PIL.Image.image)\
 
+
 def type_navi(hq, lq):
     """
-    input type : 
+    input type :
     1. file path : list
     2. PIL.Image.Jpeg : list
     3. PIL.Image.Png : list
     4. directory path : str
     """
-    if type(hq)==list and type(lq)==list:
+    if type(hq) == list and type(lq) == list:
         # list
         if len(hq) != len(lq):
-            raise ValueError(f"The number of incoming images is not equal. [(image1, image2) == ({len(hq)}, {len(lq)})]")
-        
+            raise ValueError(
+                f"The number of incoming images is not equal. [(image1, image2) == ({len(hq)}, {len(lq)})]"
+            )
+
         hq_path = []
         lq_path = []
         for h, l in zip(hq, lq):
@@ -38,7 +41,7 @@ def type_navi(hq, lq):
                 hq_path.append(h.convert("RGB"))
             if type(h) == PIL.JpegImagePlugin.JpegImageFile:
                 hq_path.append(h.convert("RGB"))
-            
+
             if type(l) == str:
                 if os.path.exists(l):
                     lq_path.append(Image.open(os.path.join(l)))
@@ -47,9 +50,9 @@ def type_navi(hq, lq):
             if type(l) == PIL.JpegImagePlugin.JpegImageFile:
                 lq_path.append(l.convert("RGB"))
         return hq_path, lq_path
-        
-    elif type(hq)==str and type(lq)==str:
-        # directory  
+
+    elif type(hq) == str and type(lq) == str:
+        # directory
         if os.path.exists(hq) and os.path.exists(lq):
             if os.path.isdir(hq) and os.path.isdir(lq):
                 hq_path = glob(os.path.join(hq, "*.jpg"))
@@ -64,10 +67,12 @@ def type_navi(hq, lq):
                 lq = [Image.open(i).convert("RGB") for i in sorted(lq_path)]
 
                 if len(hq_path) != len(lq_path):
-                    raise ValueError(f"The number of incoming images is not equal. [(image1, image2) == ({len(hq_path)}, {len(lq_path)})]")
-                    
+                    raise ValueError(
+                        f"The number of incoming images is not equal. [(image1, image2) == ({len(hq_path)}, {len(lq_path)})]"
+                    )
+
             return hq, lq
-    else :
+    else:
         raise TypeError("input is list or str(path)")
 
 
@@ -76,9 +81,11 @@ def type_navi(hq, lq):
 from math import ceil
 
 TARGET_MIN = 224
-def image_preprocessing(hq_imgs, lq_imgs,
-                        resize_filter=Image.LANCZOS,
-                        workers: int = 8):
+
+
+def image_preprocessing(
+    hq_imgs, lq_imgs, resize_filter=Image.LANCZOS, workers: int = 8
+):
     """
     return : (HQ_np_list, LQ_np_list)
         - shape = (H, W, 3), dtype = uint8, channel : RGB
@@ -95,8 +102,8 @@ def image_preprocessing(hq_imgs, lq_imgs,
         w, h = hi.size
         short = min(w, h)
         if short <= TARGET_MIN:
-            scale   = 225 / short
-            new_sz  = (ceil(w * scale), ceil(h * scale))
+            scale = 225 / short
+            new_sz = (ceil(w * scale), ceil(h * scale))
             hi = hi.resize(new_sz, resize_filter)
         lo = lo.resize(hi.size, resize_filter)
 
@@ -105,20 +112,22 @@ def image_preprocessing(hq_imgs, lq_imgs,
     with ThreadPoolExecutor(max_workers=workers) as pool:
         results = list(pool.map(process_pair, zip(hq_imgs, lq_imgs)))
 
-    HQ_np, LQ_np = map(list, zip(*results))   # unzip
+    HQ_np, LQ_np = map(list, zip(*results))  # unzip
     return HQ_np, LQ_np
 
 
 # list(PIL.Image.image) ----> list(tensor)
 def pil_to_01_tensor(pil):
-    t = TF.to_tensor(pil)          # [0,1] float32
+    t = TF.to_tensor(pil)  # [0,1] float32
     return t
+
 
 def match_size(src, ref):
     """src 를 ref 크기로 bicubic 리사이즈 (필요할 때만)"""
     if src.shape[-2:] != ref.shape[-2:]:
         src = TF.resize(src, ref.shape[-2:], antialias=True)
     return src
+
 
 @torch.no_grad()
 def pil2tensor(hr_pil, sr_pil):
@@ -132,57 +141,65 @@ def pil2tensor(hr_pil, sr_pil):
         sr = match_size(sr, hr)
 
         # 3. CPU ---> GPU
-        sr, hr = sr.unsqueeze(0).cuda(), hr.unsqueeze(0).cuda()   # (1,3,H,W)
-        hr_list.append(hr); sr_list.append(sr)
+        sr, hr = sr.unsqueeze(0).cuda(), hr.unsqueeze(0).cuda()  # (1,3,H,W)
+        hr_list.append(hr)
+        sr_list.append(sr)
 
     return hr_list, sr_list
 
 
 # PSNR SCORE ####################################################################################################
 def psnr(img1, img2):
-    li = [TMF.peak_signal_noise_ratio(im1, im2, data_range=1.0) for im1, im2 in zip(img1, img2)]
-    return float(sum(li)/len(li))
+    li = [
+        TMF.peak_signal_noise_ratio(im1, im2, data_range=1.0)
+        for im1, im2 in zip(img1, img2)
+    ]
+    return float(sum(li) / len(li))
+
 
 # SSIM SCORE ####################################################################################################
-def ssim(img1:list, img2:list) -> float:
-    li = [TMF.structural_similarity_index_measure(im1, im2, data_range=1.0).item() for im1, im2 in zip(img1, img2)]
-    return float(sum(li)/len(li))
+def ssim(img1: list, img2: list) -> float:
+    li = [
+        TMF.structural_similarity_index_measure(im1, im2, data_range=1.0).item()
+        for im1, im2 in zip(img1, img2)
+    ]
+    return float(sum(li) / len(li))
+
 
 # LPIPS SCORE ####################################################################################################
 def mlpips(img1, img2):
-    _lpips = lpips.LPIPS(net='vgg').eval().cuda()   # perceptual distance
-    li = [_lpips(sr*2-1, hr*2-1).mean().item() for sr, hr  in zip(img2, img1)]
-    return float(sum(li)/len(li))
+    _lpips = lpips.LPIPS(net="vgg").eval().cuda()  # perceptual distance
+    li = [_lpips(sr * 2 - 1, hr * 2 - 1).mean().item() for sr, hr in zip(img2, img1)]
+    return float(sum(li) / len(li))
 
+
+from io import BytesIO
 
 # MUSIQ SCORE ####################################################################################################
 import tensorflow as tf
 import tensorflow_hub as hub
-from io import BytesIO
 from tqdm import tqdm
 
 NAME_TO_HANDLE = {
     # Model trained on SPAQ dataset: https://github.com/h4nwei/SPAQ
-    'spaq': 'https://tfhub.dev/google/musiq/spaq/1',
-
+    "spaq": "https://tfhub.dev/google/musiq/spaq/1",
     # Model trained on KonIQ-10K dataset: http://database.mmsp-kn.de/koniq-10k-database.html
-    'koniq': 'https://tfhub.dev/google/musiq/koniq-10k/1',
-
+    "koniq": "https://tfhub.dev/google/musiq/koniq-10k/1",
     # Model trained on PaQ2PiQ dataset: https://github.com/baidut/PaQ-2-PiQ
-    'paq2piq': 'https://tfhub.dev/google/musiq/paq2piq/1',
-
+    "paq2piq": "https://tfhub.dev/google/musiq/paq2piq/1",
     # Model trained on AVA dataset: https://ieeexplore.ieee.org/document/6247954
-    'ava': 'https://tfhub.dev/google/musiq/ava/1',
+    "ava": "https://tfhub.dev/google/musiq/ava/1",
 }
 
-def MUSIQ_SCORE(resolution:list):
+
+def MUSIQ_SCORE(resolution: list):
     byte_io = BytesIO()
-    model = hub.load(NAME_TO_HANDLE['koniq'])
-    predict_fn = model.signatures['serving_default']
+    model = hub.load(NAME_TO_HANDLE["koniq"])
+    predict_fn = model.signatures["serving_default"]
 
     scores = []
     for image in tqdm(resolution):
-        image.save(byte_io, format='JPEG')  # save type to JPEG
+        image.save(byte_io, format="JPEG")  # save type to JPEG
         byte_io.seek(0)  # BytesIO start position
 
         image_bytes = byte_io.getvalue()
@@ -190,22 +207,24 @@ def MUSIQ_SCORE(resolution:list):
 
         scores.append(prediction)
 
-    return sum(scores)/len(scores)
+    return sum(scores) / len(scores)
 
+
+import argparse
+import json
+import os
 # OCR #####################################################################################################
 import re
-from difflib import SequenceMatcher
-from nltk.metrics import edit_distance
 import sys
 from collections import Counter
-import os
-import json
-import argparse
+from difflib import SequenceMatcher
+
+from nltk.metrics import edit_distance
 
 
 def preprocess(text):
     """Remove punctuation, lowercase, and strip whitespace."""
-    text = re.sub(r'[^\w\s]', '', text)
+    text = re.sub(r"[^\w\s]", "", text)
     return text.lower().strip()
 
 
@@ -254,10 +273,11 @@ def calculate_pos_neg(ground_truth_labels, predicted_labels):
                 else:
                     total_fn += 1  # GT word has no sufficiently similar prediction
             else:
-                total_fn += 1      # No matching prediction at all
+                total_fn += 1  # No matching prediction at all
 
-    assert (total_tp + total_fp + total_fn) == total_gt_words, (
-        "Sum of TP, FP, FN does not equal the number of GT words")
+    assert (
+        total_tp + total_fp + total_fn
+    ) == total_gt_words, "Sum of TP, FP, FN does not equal the number of GT words"
     return total_tp, total_fp, total_fn, total_gt_words
 
 
@@ -272,12 +292,15 @@ def calculate_ned(ground_truth_labels, predicted_labels):
     return sum(neds) / len(neds) * 100 if neds else 0
 
 
-def calculate_image_metrics(ground_truth_labels, predicted_labels,
-                            total_tp, total_fp, total_fn, total_gt_words):
+def calculate_image_metrics(
+    ground_truth_labels, predicted_labels, total_tp, total_fp, total_fn, total_gt_words
+):
     """Return precision, recall, F1, accuracy, and NED."""
     precision = (total_tp / (total_tp + total_fp)) * 100 if total_tp + total_fp else 0
     recall = (total_tp / (total_tp + total_fn)) * 100 if total_tp + total_fn else 0
-    f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) else 0
+    f1_score = (
+        (2 * precision * recall) / (precision + recall) if (precision + recall) else 0
+    )
     accuracy = (total_tp / total_gt_words) * 100 if total_gt_words else 0
     ned = calculate_ned(ground_truth_labels, predicted_labels)
     return {
@@ -295,7 +318,7 @@ def calculate_image_metrics(ground_truth_labels, predicted_labels,
 def parse_input(file_path):
     """Parse a result text file containing image, prediction, and ground truth."""
     images, gts, preds = [], [], []
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         lines = [line.strip() for line in f if line.strip()]
     i = 0
     while i < len(lines):
@@ -321,30 +344,32 @@ def perform_OCR(input_folder):
     all_results = []
     for fname in os.listdir(input_folder):
         file_path = os.path.join(input_folder, fname)
-        if not os.path.isfile(file_path) or not fname.endswith('.txt'):
+        if not os.path.isfile(file_path) or not fname.endswith(".txt"):
             continue
         gts, preds = parse_input(file_path)
-        all_results.append({'file': fname, 'ground_truth': gts, 'predicted': preds})
+        all_results.append({"file": fname, "ground_truth": gts, "predicted": preds})
 
     metrics_results = []
     for result in all_results:
         total_tp, total_fp, total_fn, total_gt_words = calculate_pos_neg(
-            result['ground_truth'], result['predicted'])
+            result["ground_truth"], result["predicted"]
+        )
         metrics = calculate_image_metrics(
-            ground_truth_labels=result['ground_truth'],
-            predicted_labels=result['predicted'],
+            ground_truth_labels=result["ground_truth"],
+            predicted_labels=result["predicted"],
             total_tp=total_tp,
             total_fp=total_fp,
             total_fn=total_fn,
-            total_gt_words=total_gt_words)
-        metrics['file'] = result['file']
+            total_gt_words=total_gt_words,
+        )
+        metrics["file"] = result["file"]
         metrics_results.append(metrics)
     return metrics_results
 
 
+from CLIP_IQA.demo.clipiqa_custom import CLIP_IQA_SCORE
 # Quality metrics -------------------------------------------------------------
 from MANIQA.predict_many_image import MANIQA_SCORE
-from CLIP_IQA.demo.clipiqa_custom import CLIP_IQA_SCORE
 
 
 def six_guys(original, resolution, save_path=None):
@@ -372,12 +397,12 @@ def six_guys(original, resolution, save_path=None):
 
     # Append OCR metrics for each text file
     for entry in perform_OCR(resolution):
-        metrics[entry['file']] = {
-            "precision": entry['precision'],
-            "recall": entry['recall'],
-            "f1_score": entry['f1_score'],
-            "accuracy": entry['accuracy'],
-            "ned": entry['ned'],
+        metrics[entry["file"]] = {
+            "precision": entry["precision"],
+            "recall": entry["recall"],
+            "f1_score": entry["f1_score"],
+            "accuracy": entry["accuracy"],
+            "ned": entry["ned"],
         }
 
     # Optionally save results
@@ -394,12 +419,15 @@ def six_guys(original, resolution, save_path=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ori_dir', required=True,
-                        help='Directory with original images')
-    parser.add_argument('--sr_dir', required=True,
-                        help='Directory with super‑resolved images')
-    parser.add_argument('--res_path', default=None,
-                        help='Save path (without extension) for JSON')
+    parser.add_argument(
+        "--ori_dir", required=True, help="Directory with original images"
+    )
+    parser.add_argument(
+        "--sr_dir", required=True, help="Directory with super‑resolved images"
+    )
+    parser.add_argument(
+        "--res_path", default=None, help="Save path (without extension) for JSON"
+    )
     args = parser.parse_args()
     six_guys(args.ori_dir, args.sr_dir, args.res_path)
 

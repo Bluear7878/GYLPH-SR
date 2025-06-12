@@ -18,17 +18,19 @@ The actual comparator used depends on [`object_t`](object_t.md) and can be obtai
 
 ??? example
 
-    The example below demonstrates the default comparator.
+````
+The example below demonstrates the default comparator.
 
-    ```cpp
-    --8<-- "examples/default_object_comparator_t.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/default_object_comparator_t.output"
-    ```
+```cpp
+--8<-- "examples/default_object_comparator_t.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/default_object_comparator_t.output"
+```
+````
 
 ## Version history
 

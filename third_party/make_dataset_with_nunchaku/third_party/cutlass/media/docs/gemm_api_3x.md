@@ -11,10 +11,10 @@ CUTLASS 3.0 has GEMM APIs corresponding to the following levels
 in order of highest to the lowest level.
 
 1. Device
-2. Kernel
-3. Collective
-4. Tiled MMA and Copy
-5. Atom
+1. Kernel
+1. Collective
+1. Tiled MMA and Copy
+1. Atom
 
 This document will cover the first three levels in detail:
 Device, Kernel, and Collective.
@@ -69,7 +69,7 @@ The code does not actually express them as explicit `for` loops.
 Instead, the parallelization scheme over tiles
 is implied by CUDA grid launch semantics.
 However, for persistent kernels,
-these three loops are expressed in the source code 
+these three loops are expressed in the source code
 as a single `while` loop that queries the
 [work tile scheduler](/include/cutlass/gemm/kernel/sm90_tile_scheduler.hpp)
 for problem tiles on which to compute.
@@ -88,13 +88,13 @@ CUTLASS expresses the above loop nest
 with the following components which are specialized for
 data type, layout, and math instruction.
 
-| API level            | API Class and/or function names                   |
-| ---                  | ---                                               |
-| Device               | `cutlass::gemm::device::GemmUniversalAdapter`     |
-| Kernel               | `cutlass::gemm::kernel::GemmUniversal`            |
-| Collective           | `cutlass::gemm::collective::CollectiveMma` <br /> `cutlass::epilogue::collective::DefaultEpilogue` <br /> `cutlass::epilogue::collective::Epilogue`        <br /> |
+| API level | API Class and/or function names |
+| --- | --- |
+| Device | `cutlass::gemm::device::GemmUniversalAdapter` |
+| Kernel | `cutlass::gemm::kernel::GemmUniversal` |
+| Collective | `cutlass::gemm::collective::CollectiveMma` <br /> `cutlass::epilogue::collective::DefaultEpilogue` <br /> `cutlass::epilogue::collective::Epilogue` <br /> |
 | Tiled (MMA and Copy) | `cute::TiledMma` and `cute::TiledCopy` <br /> `cute::gemm()` and `cute::copy()` |
-| Atom                 | `cute::Mma_Atom` and `cute::Copy_Atom` |
+| Atom | `cute::Mma_Atom` and `cute::Copy_Atom` |
 
 In CUTLASS 3.0, we assemble kernels
 by first composing a collective mainloop and collective epilogue
@@ -104,13 +104,13 @@ to form a GEMM handle to that kernel.
 
 The following sections describe these components
 in the order a user should instantiate them
-in order to assemble a kernel.  This order is
+in order to assemble a kernel. This order is
 
 1. assemble the required collective mainloop and epilogues,
 
-2. compose them together to build a kernel type, and
+1. compose them together to build a kernel type, and
 
-3. wrap up the kernel with a device layer adapter.
+1. wrap up the kernel with a device layer adapter.
 
 This order is also reflected in the [CUTLASS 3.0 Hopper kernel examples](/examples/48_hopper_warp_specialized_gemm) as seen in the excerpt below.
 
@@ -156,16 +156,16 @@ that can cooperate by leveraging hardware features
 for accelerated communication and synchronization.
 These hardware features include
 
-* asynchronous array copy
+- asynchronous array copy
   (e.g., from global memory to shared memory);
 
-* MMA instructions
+- MMA instructions
   for small tiles that live in shared memory;
 
-* synchronization operations for clusters,
+- synchronization operations for clusters,
   thread blocks, and/or warps; and/or
 
-* hardware acceleration (such as barriers)
+- hardware acceleration (such as barriers)
   for ensuring that data dependencies
   between asynchronous operations are met.
 
@@ -237,7 +237,7 @@ struct CollectiveMma {
 ```
 
 - `DispatchPolicy` is the most important type for a collective, and is
-[covered in more detail below](#collective-dispatch-policies).
+  [covered in more detail below](#collective-dispatch-policies).
 
 - `StrideA` and `StrideB` are instances of type `cute::Stride` that represent the global memory layout of A and B tensors. These strides are required to be rank-3, representing the modes `[outer, inner, batch]`. Each of the 3 ranks can be a multi-modal hierarchical stride; this would apply if implementing a tensor contraction.
 
@@ -246,11 +246,11 @@ struct CollectiveMma {
 - `GmemTiledCopyA` and `GmemTiledCopyB` are instances of `cute::TiledCopy` types. Both tiled operation types are [covered in more detail below](#tiled-mma-and-copy).
 
 - `SmemLayoutAtomA` and `SmemLayoutAtomB` are instances of type `cute::Layout` and represent the smallest
-layout that will get tiled over the entire collective's shared memory. This layout does _not_ include the
-pipeline mode, and therefore, both are expected to be rank 2 layouts of shape [`outer`, `inner`].
+  layout that will get tiled over the entire collective's shared memory. This layout does _not_ include the
+  pipeline mode, and therefore, both are expected to be rank 2 layouts of shape \[`outer`, `inner`\].
 
 - `SmemCopyAtomA` and `SmemCopyAtomB` are `Copy_Atom`s to be used for moving data from shared memory
-into register memory.
+  into register memory.
 
 Notice that CUTLASS 3.0 mainloops do not accept a dedicated accumulator element type.
 We obtain the accumulator type from the `typename TiledMma::ValTypeC`. Note also that
@@ -306,13 +306,13 @@ struct KernelTmaWarpSpecializedCooperative { };
 ```
 
 - A single kernel schedule can support multiple mainloop implementations. For example,
-`KernelMultistage` can be composed with many different mainloop implementations across GPU
-architectures such as `MainloopSm70TwoStage`, `MainloopSm80CpAsyncUnpredicated`, and many more.
+  `KernelMultistage` can be composed with many different mainloop implementations across GPU
+  architectures such as `MainloopSm70TwoStage`, `MainloopSm80CpAsyncUnpredicated`, and many more.
 
 - A single mainloop can be composed with multiple
-possible kernel schedules. For example, the `MainloopSm90TmaGmmaWarpSpecialized` can be
-composed with any of the `KernelTmaWarpSpecialized`, `KernelTmaWarpSpecializedPingpong` or `KernelTmaWarpSpecializedCooperative`
-kernel schedules.
+  possible kernel schedules. For example, the `MainloopSm90TmaGmmaWarpSpecialized` can be
+  composed with any of the `KernelTmaWarpSpecialized`, `KernelTmaWarpSpecializedPingpong` or `KernelTmaWarpSpecializedCooperative`
+  kernel schedules.
 
 As [discussed in the CUTLASS 3.0 design documentation](cutlass_3x_design.md), adopting tag
 dispatch policies for our core vocabulary types allows us to maintain a single type name for
@@ -375,7 +375,7 @@ given set of parameters, or let's the user override this with a specific kernel 
 
 Note that collective builders are still in beta, and their functionality
 does not map onto the full design space that the primary expert `CollectiveMma` API
-allows for. We expect their supported mainloop types to expand in future releases, but 
+allows for. We expect their supported mainloop types to expand in future releases, but
 with 3.0, only SM90 tensorop kernels are supported through the builder API. The builder API
 may also change in the future as we adopt user feedback.
 
@@ -386,7 +386,7 @@ parameterize kernels conveniently with the collective builder, please see exampl
 ### Epilogue
 
 The collective epilogue implements element-wise operations
-involving the output matrix.  Users can provide a custom
+involving the output matrix. Users can provide a custom
 epilogue, or use one of the standard epilogues.
 These live in the directory
 [include/cutlass/epilogue/collective/](/include/cutlass/epilogue/collective/),
@@ -421,8 +421,8 @@ The entry point API for CUTLASS 3.0 kernel is the class
 `GemmUniversal` is a stateless universal device kernel
 that implements GEMM as the composition of two parts:
 
-* a collective mainloop, and
-* a collective epilogue
+- a collective mainloop, and
+- a collective epilogue
 
 ```cpp
 namespace cutlass::gemm::kernel {
@@ -461,7 +461,7 @@ for both CUTLASS 3.0 and 2.x interfaces
 and across a broad range of kernel schedules.
 If `GemmUniversal`'s first template argument is a `cute::Shape`,
 then `GemmUniversal` assumes that the remaining template arguments
-implement the 3.0 APIs.  Otherwise, `GemmUniversal` assumes that
+implement the 3.0 APIs. Otherwise, `GemmUniversal` assumes that
 the remaining template arguments implement the 2.x APIs.
 Starting with CUTLASS 3.0, the problem shape has been promoted
 to a top-level template API for the GEMM kernel.
@@ -475,7 +475,7 @@ The *collective epilogue* addresses any operations after the MMA,
 such as applying the `beta * C` part of `C := beta * C + alpha * A * B`.
 We will explain *collective* in more detail below.
 
-Specializations of `kernel::GemmUniversal` for 3.0 APIs live in 
+Specializations of `kernel::GemmUniversal` for 3.0 APIs live in
 any of various `gemm_*.hpp` files in the directory
 [include/cutlass/gemm/kernel/](/include/cutlass/gemm/kernel/).
 Specializations for 2.x APIs can be found in the header file
@@ -484,7 +484,7 @@ Specializations for 2.x APIs can be found in the header file
 CUTLASS 3.x implements various embodiments of `kernel::GemmUniversal`.
 Each kernel layer schedule is specialized
 for a GEMM scheduling algorithm and GPU architecture.
-Specializations of `kernel::GemmUniversal` for 3.0 APIs live in 
+Specializations of `kernel::GemmUniversal` for 3.0 APIs live in
 any of various `include/cutlass/gemm/kernel/{arch_tag}*.hpp` files in the directory
 [include/cutlass/gemm/kernel/](/include/cutlass/gemm/kernel/).
 Which specialization to dispatch to is decided through the dispatch policy's `Schedule` type.
@@ -525,7 +525,7 @@ class GemmUniversal<
 ## Device API
 
 The Device API is a universal, kernel-agnostic host interface
-for kernel launch and managing the lifetime of 
+for kernel launch and managing the lifetime of
 reusable host-side parameters.
 
 This API is how users' host-side .cu code
@@ -540,7 +540,7 @@ This class lives in the header file
 which is parameterized on the `cutlass::gemm::kernel` type.
 
 ```c++
-/*! 
+/*!
   GemmUniversalAdapter is a stateful, reusable GEMM handle built around a kernel
   of type cutlass::gemm::kernel::*
 
@@ -584,11 +584,11 @@ Specifically, `GemmUniversalAdapter` has a template parameter
 `GemmKernel`, which is the GEMM kernel type.
 Valid template arguments for `GemmKernel` are
 
-* `cutlass::gemm::kernel::GemmUniversal`,
+- `cutlass::gemm::kernel::GemmUniversal`,
   implementing CUTLASS 3.x API kernels;
-* `cutlass::gemm::kernel::GemmUniversal`,
+- `cutlass::gemm::kernel::GemmUniversal`,
   implementing CUTLASS 2.x API kernels; or
-* Any valid CUTLASS 2.x `kernel` layer GEMM that
+- Any valid CUTLASS 2.x `kernel` layer GEMM that
   was previously composable with the `device::GemmUniversalAdapter`.
 
 `GemmUniversalAdapter` presents a single
@@ -599,7 +599,7 @@ on either the 2.x API implementing kernel layer GEMMs, or on the 3.x API
 implementing kernel layer GEMMs. The metafunction [`cutlass::gemm::detail::IsCutlass3GemmKernel`](cutlass_3x_backwards_compatibility.md#kernel-api-design-differences)
 is what `GemmUniversalAdapter` uses to distinguish between 2.x and 3.x kernels.
 
-`GemmUniversalAdapter` sets up and launches the kernel, using the 
+`GemmUniversalAdapter` sets up and launches the kernel, using the
 CUDA extended launch API for threadblock cluster support if required.
 Note, `GemmUniversalAdapter` does *not* specify the grid shape.
 The kernel controls the grid shape
@@ -611,7 +611,7 @@ thus factoring out kernel launch from the actual kernel.
 ## Tiled MMA and Copy
 
 The Tiled MMA or Copy are tilings of MMA atoms resp. Copy atoms
-across threads and data, with possible permutations applied to the 
+across threads and data, with possible permutations applied to the
 resulting tiling. This layer is most analogous to the warp level
 tiling of MMA instructions in CUTLASS 2.x. However, it views the tiling
 from the perspective of all threads participating in the operation
@@ -665,11 +665,11 @@ whatever GPU architectures were enabled.
 For more information about Atoms,
 please refer to CuTe's tutorial, e.g., the sections on
 
-* [algorithms](./cute/04_algorithms.md) like `gemm` and `copy`,
+- [algorithms](./cute/04_algorithms.md) like `gemm` and `copy`,
 
-* [MMA Atoms](./cute/0t_mma_atom.md#cute-mma-atoms), and
+- [MMA Atoms](./cute/0t_mma_atom.md#cute-mma-atoms), and
 
-* [a GEMM example](./cute/0x_gemm_tutorial.md).
+- [a GEMM example](./cute/0x_gemm_tutorial.md).
 
 # Copyright
 

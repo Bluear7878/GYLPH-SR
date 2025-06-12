@@ -7,7 +7,7 @@ const_reference front() const;
 
 Returns a reference to the first element in the container. For a JSON container `#!cpp c`, the expression
 `#!cpp c.front()` is equivalent to `#!cpp *c.begin()`.
-    
+
 ## Return value
 
 In case of a structured type (array or object), a reference to the first element is returned. In case of number, string,
@@ -30,23 +30,27 @@ Constant.
 
 !!! info "Precondition"
 
-    The array or object must not be empty. Calling `front` on an empty array or object yields undefined behavior.
+```
+The array or object must not be empty. Calling `front` on an empty array or object yields undefined behavior.
+```
 
 ## Examples
 
 ??? example
 
-    The following code shows an example for `front()`.
-     
-    ```cpp
-    --8<-- "examples/front.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/front.output"
-    ```
+````
+The following code shows an example for `front()`.
+
+```cpp
+--8<-- "examples/front.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/front.output"
+```
+````
 
 ## See also
 

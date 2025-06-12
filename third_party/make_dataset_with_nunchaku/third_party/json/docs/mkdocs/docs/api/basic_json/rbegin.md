@@ -25,17 +25,19 @@ Constant.
 
 ??? example
 
-    The following code shows an example for `rbegin()`.
-    
-    ```cpp
-    --8<-- "examples/rbegin.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/rbegin.output"
-    ```
+````
+The following code shows an example for `rbegin()`.
+
+```cpp
+--8<-- "examples/rbegin.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/rbegin.output"
+```
+````
 
 ## Version history
 

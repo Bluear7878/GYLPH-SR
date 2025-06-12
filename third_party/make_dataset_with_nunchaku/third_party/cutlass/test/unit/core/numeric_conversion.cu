@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -49,9 +50,8 @@ namespace kernel {
 
 /// Simple conversion function
 template <typename Destination, typename Source, int Count>
-__global__ void convert(
-  cutlass::Array<Destination, Count> *destination,
-  cutlass::Array<Source, Count> const *source) {
+__global__ void convert(cutlass::Array<Destination, Count> *destination,
+                        cutlass::Array<Source, Count> const *source) {
 
   cutlass::NumericArrayConverter<Destination, Source, Count> convert;
 
@@ -67,7 +67,8 @@ void run_test(const char dest_name[], const char source_name[]) {
   dim3 grid(1, 1);
   dim3 block(1, 1);
 
-  cutlass::HostTensor<Destination, cutlass::layout::RowMajor> destination({1, kN});
+  cutlass::HostTensor<Destination, cutlass::layout::RowMajor> destination(
+      {1, kN});
   cutlass::HostTensor<Source, cutlass::layout::RowMajor> source({1, kN});
   auto source_ref = source.host_ref();
   auto destination_ref = destination.host_ref();
@@ -78,28 +79,31 @@ void run_test(const char dest_name[], const char source_name[]) {
 
   source.sync_device();
 
-  convert<Destination, Source, kN><<< grid, block >>>(
-    reinterpret_cast<cutlass::Array<Destination, kN> *>(destination.device_data()),
-    reinterpret_cast<cutlass::Array<Source, kN> const *>(source.device_data())
-  );
+  convert<Destination, Source, kN>
+      <<<grid, block>>>(reinterpret_cast<cutlass::Array<Destination, kN> *>(
+                            destination.device_data()),
+                        reinterpret_cast<cutlass::Array<Source, kN> const *>(
+                            source.device_data()));
 
   destination.sync_host();
 
   for (int i = 0; i < kN; ++i) {
-    EXPECT_TRUE(float(destination_ref.at({0, i})) == float(source_ref.at({0, i})))
-      << "Destination type: " << dest_name << " "<< float(destination_ref.at({0, i}))
-      << ", Source type: " << source_name << " " << float(source_ref.at({0, i}))
-      << ", Count: " << Count;
+    EXPECT_TRUE(float(destination_ref.at({0, i})) ==
+                float(source_ref.at({0, i})))
+        << "Destination type: " << dest_name << " "
+        << float(destination_ref.at({0, i})) << ", Source type: " << source_name
+        << " " << float(source_ref.at({0, i})) << ", Count: " << Count;
   }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Destination, typename Source, typename ScaleFactor, int Count>
+template <typename Destination, typename Source, typename ScaleFactor,
+          int Count>
 __global__ void convert_with_scale_factor(
-  cutlass::Array<Destination, Count> *destination,
-  cutlass::Array<Source, Count> const *source,
-  cutlass::Array<ScaleFactor, Count> const *scale_factor) {
+    cutlass::Array<Destination, Count> *destination,
+    cutlass::Array<Source, Count> const *source,
+    cutlass::Array<ScaleFactor, Count> const *scale_factor) {
 
   cutlass::NumericArrayConverter<Destination, Source, Count> convert;
 
@@ -108,20 +112,23 @@ __global__ void convert_with_scale_factor(
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <typename Destination, typename Source, typename ScaleFactor,  int Count, int Range = 4>
-void run_test_with_scalefactor(const char dest_name[], const char source_name[], const char scale_factor_name[]) {
+template <typename Destination, typename Source, typename ScaleFactor,
+          int Count, int Range = 4>
+void run_test_with_scalefactor(const char dest_name[], const char source_name[],
+                               const char scale_factor_name[]) {
   const int kN = Count;
 
   dim3 grid(1, 1);
   dim3 block(1, 1);
 
-  cutlass::HostTensor<Destination, cutlass::layout::RowMajor> destination({1, kN});
+  cutlass::HostTensor<Destination, cutlass::layout::RowMajor> destination(
+      {1, kN});
   cutlass::HostTensor<Source, cutlass::layout::RowMajor> source({1, kN});
-  cutlass::HostTensor<ScaleFactor, cutlass::layout::RowMajor> scale_factor({1, kN});
+  cutlass::HostTensor<ScaleFactor, cutlass::layout::RowMajor> scale_factor(
+      {1, kN});
   auto source_ref = source.host_ref();
   auto destination_ref = destination.host_ref();
   auto scale_factor_ref = scale_factor.host_ref();
-
 
   for (int i = 0; i < kN; ++i) {
     source_ref.at({0, i}) = Source(i % Range);
@@ -134,20 +141,24 @@ void run_test_with_scalefactor(const char dest_name[], const char source_name[],
   source.sync_device();
   scale_factor.sync_device();
 
-  convert_with_scale_factor<Destination, Source, ScaleFactor, kN><<< grid, block >>>(
-    reinterpret_cast<cutlass::Array<Destination, kN> *>(destination.device_data()),
-    reinterpret_cast<cutlass::Array<Source, kN> const *>(source.device_data()),
-    reinterpret_cast<cutlass::Array<ScaleFactor, kN> const *>(scale_factor.device_data())
-  );
+  convert_with_scale_factor<Destination, Source, ScaleFactor, kN>
+      <<<grid, block>>>(
+          reinterpret_cast<cutlass::Array<Destination, kN> *>(
+              destination.device_data()),
+          reinterpret_cast<cutlass::Array<Source, kN> const *>(
+              source.device_data()),
+          reinterpret_cast<cutlass::Array<ScaleFactor, kN> const *>(
+              scale_factor.device_data()));
 
   destination.sync_host();
 
   for (int i = 0; i < kN; ++i) {
-    float ref = float(source_ref.at({0, i})) / float(scale_factor_ref.at({0, i}));
+    float ref =
+        float(source_ref.at({0, i})) / float(scale_factor_ref.at({0, i}));
     EXPECT_TRUE(float(destination_ref.at({0, i})) == ref)
-      << "Destination type: " << dest_name << " "<< float(destination_ref.at({0, i}))
-      << ", Source type: " << source_name << " " << float(source_ref.at({0, i}))
-      << ", Count: " << Count;
+        << "Destination type: " << dest_name << " "
+        << float(destination_ref.at({0, i})) << ", Source type: " << source_name
+        << " " << float(source_ref.at({0, i})) << ", Count: " << Count;
   }
 }
 
@@ -186,7 +197,7 @@ TEST(NumericConversion, f32x8_to_f16x8_rn) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-TEST(NumericConversion, f16_to_f32_rn) {  
+TEST(NumericConversion, f16_to_f32_rn) {
   int const kN = 1;
   using Source = cutlass::half_t;
   const char source_name[] = "half_t";
@@ -508,5 +519,3 @@ TEST(NumericConversion, int_to_fe4m3_t_array_32) {
   const char dest_name[] = "float_e4m3_t";
   test::core::kernel::run_test<Destination, Source, kN>(dest_name, source_name);
 }
-
-

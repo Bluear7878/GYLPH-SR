@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,18 +18,19 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *                                                                                                  
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
+ *
  **************************************************************************************************/
 
-/* \file 
+/* \file
   \brief Boost-style constant definitions for floating-point types.
 */
 
@@ -111,7 +112,6 @@ template <typename T> CUTLASS_HOST_DEVICE T pi_minus_three();
 /// Returns 4 - pi, approximately 0.858...
 template <typename T> CUTLASS_HOST_DEVICE T four_minus_pi();
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 // Specialization for double
@@ -122,8 +122,9 @@ template <> CUTLASS_HOST_DEVICE double one<double>() {
   return reinterpret_cast<double const &>(bits);
 }
 
-/// Returns 1, the multiplicative identity element  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> one< complex<double> >() {
+/// Returns 1, the multiplicative identity element  (specialization for
+/// complex<double>)
+template <> CUTLASS_HOST_DEVICE complex<double> one<complex<double>>() {
   return complex<double>(one<double>(), double());
 }
 
@@ -133,8 +134,9 @@ template <> CUTLASS_HOST_DEVICE double zero<double>() {
   return reinterpret_cast<double const &>(bits);
 }
 
-/// Returns 0, the additive identity element  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> zero< complex<double> >() {
+/// Returns 0, the additive identity element  (specialization for
+/// complex<double>)
+template <> CUTLASS_HOST_DEVICE complex<double> zero<complex<double>>() {
   return complex<double>(zero<double>(), double());
 }
 
@@ -145,7 +147,7 @@ template <> CUTLASS_HOST_DEVICE double two<double>() {
 }
 
 /// Returns 2  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> two< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> two<complex<double>>() {
   return complex<double>(two<double>(), double());
 }
 
@@ -156,7 +158,7 @@ template <> CUTLASS_HOST_DEVICE double pi<double>() {
 }
 
 /// Returns pi, approximately 3.141  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> pi< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> pi<complex<double>>() {
   return complex<double>(pi<double>(), double());
 }
 
@@ -167,7 +169,7 @@ template <> CUTLASS_HOST_DEVICE double two_pi<double>() {
 }
 
 /// Returns 2 * pi  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> two_pi< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> two_pi<complex<double>>() {
   return complex<double>(two_pi<double>(), double());
 }
 
@@ -178,7 +180,7 @@ template <> CUTLASS_HOST_DEVICE double half_pi<double>() {
 }
 
 /// Returns pi / 2  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> half_pi< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> half_pi<complex<double>>() {
   return complex<double>(half_pi<double>(), double());
 }
 
@@ -189,7 +191,7 @@ template <> CUTLASS_HOST_DEVICE double root_pi<double>() {
 }
 
 /// Returns sqrt(pi)  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> root_pi< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> root_pi<complex<double>>() {
   return complex<double>(root_pi<double>(), double());
 }
 
@@ -200,7 +202,8 @@ template <> CUTLASS_HOST_DEVICE double root_half_pi<double>() {
 }
 
 /// Returns sqrt(pi / 2)  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> root_half_pi< complex<double> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<double> root_half_pi<complex<double>>() {
   return complex<double>(root_half_pi<double>(), double());
 }
 
@@ -211,7 +214,7 @@ template <> CUTLASS_HOST_DEVICE double root_two_pi<double>() {
 }
 
 /// Returns sqrt(2 * pi)  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> root_two_pi< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> root_two_pi<complex<double>>() {
   return complex<double>(root_two_pi<double>(), double());
 }
 
@@ -222,7 +225,8 @@ template <> CUTLASS_HOST_DEVICE double root_ln_four<double>() {
 }
 
 /// Returns sqrt(ln(4))  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> root_ln_four< complex<double> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<double> root_ln_four<complex<double>>() {
   return complex<double>(root_ln_four<double>(), double());
 }
 
@@ -233,7 +237,7 @@ template <> CUTLASS_HOST_DEVICE double e<double>() {
 }
 
 /// Returns e, approximately 2.718...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> e< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> e<complex<double>>() {
   return complex<double>(e<double>(), double());
 }
 
@@ -244,7 +248,7 @@ template <> CUTLASS_HOST_DEVICE double half<double>() {
 }
 
 /// Returns (1/2)  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> half< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> half<complex<double>>() {
   return complex<double>(half<double>(), double());
 }
 
@@ -254,8 +258,9 @@ template <> CUTLASS_HOST_DEVICE double root_two<double>() {
   return reinterpret_cast<double const &>(bits);
 }
 
-/// Returns sqrt(2), approximately 1.414...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> root_two< complex<double> >() {
+/// Returns sqrt(2), approximately 1.414...  (specialization for
+/// complex<double>)
+template <> CUTLASS_HOST_DEVICE complex<double> root_two<complex<double>>() {
   return complex<double>(root_two<double>(), double());
 }
 
@@ -265,8 +270,10 @@ template <> CUTLASS_HOST_DEVICE double half_root_two<double>() {
   return reinterpret_cast<double const &>(bits);
 }
 
-/// Returns sqrt(2)/2, approximately 0.707...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> half_root_two< complex<double> >() {
+/// Returns sqrt(2)/2, approximately 0.707...  (specialization for
+/// complex<double>)
+template <>
+CUTLASS_HOST_DEVICE complex<double> half_root_two<complex<double>>() {
   return complex<double>(half_root_two<double>(), double());
 }
 
@@ -277,7 +284,7 @@ template <> CUTLASS_HOST_DEVICE double ln_two<double>() {
 }
 
 /// Returns ln(2), approximately 0.693...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> ln_two< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> ln_two<complex<double>>() {
   return complex<double>(ln_two<double>(), double());
 }
 
@@ -287,8 +294,9 @@ template <> CUTLASS_HOST_DEVICE double ln_ln_two<double>() {
   return reinterpret_cast<double const &>(bits);
 }
 
-/// Returns ln(ln(2)), approximately -0.3665...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> ln_ln_two< complex<double> >() {
+/// Returns ln(ln(2)), approximately -0.3665...  (specialization for
+/// complex<double>)
+template <> CUTLASS_HOST_DEVICE complex<double> ln_ln_two<complex<double>>() {
   return complex<double>(ln_ln_two<double>(), double());
 }
 
@@ -299,7 +307,7 @@ template <> CUTLASS_HOST_DEVICE double third<double>() {
 }
 
 /// Returns 1/3, approximately 0.333...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> third< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> third<complex<double>>() {
   return complex<double>(third<double>(), double());
 }
 
@@ -310,7 +318,7 @@ template <> CUTLASS_HOST_DEVICE double twothirds<double>() {
 }
 
 /// Returns 2/3, approximately 0.666...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> twothirds< complex<double> >() {
+template <> CUTLASS_HOST_DEVICE complex<double> twothirds<complex<double>>() {
   return complex<double>(twothirds<double>(), double());
 }
 
@@ -320,8 +328,10 @@ template <> CUTLASS_HOST_DEVICE double pi_minus_three<double>() {
   return reinterpret_cast<double const &>(bits);
 }
 
-/// Returns pi - 3, approximately 0.1416...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> pi_minus_three< complex<double> >() {
+/// Returns pi - 3, approximately 0.1416...  (specialization for
+/// complex<double>)
+template <>
+CUTLASS_HOST_DEVICE complex<double> pi_minus_three<complex<double>>() {
   return complex<double>(pi_minus_three<double>(), double());
 }
 
@@ -332,7 +342,8 @@ template <> CUTLASS_HOST_DEVICE double four_minus_pi<double>() {
 }
 
 /// Returns 4 - pi, approximately 0.858...  (specialization for complex<double>)
-template <> CUTLASS_HOST_DEVICE complex<double> four_minus_pi< complex<double> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<double> four_minus_pi<complex<double>>() {
   return complex<double>(four_minus_pi<double>(), double());
 }
 
@@ -346,8 +357,9 @@ template <> CUTLASS_HOST_DEVICE float one<float>() {
   return reinterpret_cast<float const &>(bits);
 }
 
-/// Returns 1, the multiplicative identity element  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> one< complex<float> >() {
+/// Returns 1, the multiplicative identity element  (specialization for
+/// complex<float>)
+template <> CUTLASS_HOST_DEVICE complex<float> one<complex<float>>() {
   return complex<float>(one<float>(), float());
 }
 
@@ -357,8 +369,9 @@ template <> CUTLASS_HOST_DEVICE float zero<float>() {
   return reinterpret_cast<float const &>(bits);
 }
 
-/// Returns 0, the additive identity element  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> zero< complex<float> >() {
+/// Returns 0, the additive identity element  (specialization for
+/// complex<float>)
+template <> CUTLASS_HOST_DEVICE complex<float> zero<complex<float>>() {
   return complex<float>(zero<float>(), float());
 }
 
@@ -369,7 +382,7 @@ template <> CUTLASS_HOST_DEVICE float two<float>() {
 }
 
 /// Returns 2  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> two< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> two<complex<float>>() {
   return complex<float>(two<float>(), float());
 }
 
@@ -380,7 +393,7 @@ template <> CUTLASS_HOST_DEVICE float pi<float>() {
 }
 
 /// Returns pi, approximately 3.141  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> pi<complex<float>>() {
   return complex<float>(pi<float>(), float());
 }
 
@@ -391,7 +404,7 @@ template <> CUTLASS_HOST_DEVICE float two_pi<float>() {
 }
 
 /// Returns 2 * pi  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> two_pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> two_pi<complex<float>>() {
   return complex<float>(two_pi<float>(), float());
 }
 
@@ -402,7 +415,7 @@ template <> CUTLASS_HOST_DEVICE float half_pi<float>() {
 }
 
 /// Returns pi / 2  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> half_pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> half_pi<complex<float>>() {
   return complex<float>(half_pi<float>(), float());
 }
 
@@ -413,7 +426,7 @@ template <> CUTLASS_HOST_DEVICE float root_pi<float>() {
 }
 
 /// Returns sqrt(pi)  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> root_pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> root_pi<complex<float>>() {
   return complex<float>(root_pi<float>(), float());
 }
 
@@ -424,7 +437,7 @@ template <> CUTLASS_HOST_DEVICE float root_half_pi<float>() {
 }
 
 /// Returns sqrt(pi / 2)  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> root_half_pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> root_half_pi<complex<float>>() {
   return complex<float>(root_half_pi<float>(), float());
 }
 
@@ -435,7 +448,7 @@ template <> CUTLASS_HOST_DEVICE float root_two_pi<float>() {
 }
 
 /// Returns sqrt(2 * pi)  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> root_two_pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> root_two_pi<complex<float>>() {
   return complex<float>(root_two_pi<float>(), float());
 }
 
@@ -446,7 +459,7 @@ template <> CUTLASS_HOST_DEVICE float root_ln_four<float>() {
 }
 
 /// Returns sqrt(ln(4))  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> root_ln_four< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> root_ln_four<complex<float>>() {
   return complex<float>(root_ln_four<float>(), float());
 }
 
@@ -457,7 +470,7 @@ template <> CUTLASS_HOST_DEVICE float e<float>() {
 }
 
 /// Returns e, approximately 2.718...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> e< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> e<complex<float>>() {
   return complex<float>(e<float>(), float());
 }
 
@@ -468,7 +481,7 @@ template <> CUTLASS_HOST_DEVICE float half<float>() {
 }
 
 /// Returns (1/2)  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> half< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> half<complex<float>>() {
   return complex<float>(half<float>(), float());
 }
 
@@ -479,7 +492,7 @@ template <> CUTLASS_HOST_DEVICE float root_two<float>() {
 }
 
 /// Returns sqrt(2), approximately 1.414...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> root_two< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> root_two<complex<float>>() {
   return complex<float>(root_two<float>(), float());
 }
 
@@ -489,8 +502,9 @@ template <> CUTLASS_HOST_DEVICE float half_root_two<float>() {
   return reinterpret_cast<float const &>(bits);
 }
 
-/// Returns sqrt(2)/2, approximately 0.707...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> half_root_two< complex<float> >() {
+/// Returns sqrt(2)/2, approximately 0.707...  (specialization for
+/// complex<float>)
+template <> CUTLASS_HOST_DEVICE complex<float> half_root_two<complex<float>>() {
   return complex<float>(half_root_two<float>(), float());
 }
 
@@ -501,7 +515,7 @@ template <> CUTLASS_HOST_DEVICE float ln_two<float>() {
 }
 
 /// Returns ln(2), approximately 0.693...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> ln_two< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> ln_two<complex<float>>() {
   return complex<float>(ln_two<float>(), float());
 }
 
@@ -511,8 +525,9 @@ template <> CUTLASS_HOST_DEVICE float ln_ln_two<float>() {
   return reinterpret_cast<float const &>(bits);
 }
 
-/// Returns ln(ln(2)), approximately -0.3665...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> ln_ln_two< complex<float> >() {
+/// Returns ln(ln(2)), approximately -0.3665...  (specialization for
+/// complex<float>)
+template <> CUTLASS_HOST_DEVICE complex<float> ln_ln_two<complex<float>>() {
   return complex<float>(ln_ln_two<float>(), float());
 }
 
@@ -523,7 +538,7 @@ template <> CUTLASS_HOST_DEVICE float third<float>() {
 }
 
 /// Returns 1/3, approximately 0.333...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> third< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> third<complex<float>>() {
   return complex<float>(third<float>(), float());
 }
 
@@ -534,7 +549,7 @@ template <> CUTLASS_HOST_DEVICE float twothirds<float>() {
 }
 
 /// Returns 2/3, approximately 0.666...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> twothirds< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> twothirds<complex<float>>() {
   return complex<float>(twothirds<float>(), float());
 }
 
@@ -545,7 +560,8 @@ template <> CUTLASS_HOST_DEVICE float pi_minus_three<float>() {
 }
 
 /// Returns pi - 3, approximately 0.1416...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> pi_minus_three< complex<float> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<float> pi_minus_three<complex<float>>() {
   return complex<float>(pi_minus_three<float>(), float());
 }
 
@@ -556,7 +572,7 @@ template <> CUTLASS_HOST_DEVICE float four_minus_pi<float>() {
 }
 
 /// Returns 4 - pi, approximately 0.858...  (specialization for complex<float>)
-template <> CUTLASS_HOST_DEVICE complex<float> four_minus_pi< complex<float> >() {
+template <> CUTLASS_HOST_DEVICE complex<float> four_minus_pi<complex<float>>() {
   return complex<float>(four_minus_pi<float>(), float());
 }
 
@@ -564,14 +580,16 @@ template <> CUTLASS_HOST_DEVICE complex<float> four_minus_pi< complex<float> >()
 
 // Specialization for tfloat32_t
 
-/// Returns 1, the multiplicative identity element  (specialization for tfloat32_t)
+/// Returns 1, the multiplicative identity element  (specialization for
+/// tfloat32_t)
 template <> CUTLASS_HOST_DEVICE tfloat32_t one<tfloat32_t>() {
   uint32_t bits = 0x3f801000u;
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns 1, the multiplicative identity element  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> one< complex<tfloat32_t> >() {
+/// Returns 1, the multiplicative identity element  (specialization for
+/// complex<tfloat32_t>)
+template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> one<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(one<tfloat32_t>(), tfloat32_t());
 }
 
@@ -581,8 +599,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t zero<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns 0, the additive identity element  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> zero< complex<tfloat32_t> >() {
+/// Returns 0, the additive identity element  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> zero<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(zero<tfloat32_t>(), tfloat32_t());
 }
 
@@ -593,7 +613,7 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t two<tfloat32_t>() {
 }
 
 /// Returns 2  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> two< complex<tfloat32_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> two<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(two<tfloat32_t>(), tfloat32_t());
 }
 
@@ -604,7 +624,7 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t pi<tfloat32_t>() {
 }
 
 /// Returns pi, approximately 3.141  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> pi< complex<tfloat32_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -615,7 +635,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t two_pi<tfloat32_t>() {
 }
 
 /// Returns 2 * pi  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> two_pi< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> two_pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(two_pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -626,7 +647,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t half_pi<tfloat32_t>() {
 }
 
 /// Returns pi / 2  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> half_pi< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> half_pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(half_pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -637,7 +659,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t root_pi<tfloat32_t>() {
 }
 
 /// Returns sqrt(pi)  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> root_pi< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> root_pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(root_pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -648,7 +671,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t root_half_pi<tfloat32_t>() {
 }
 
 /// Returns sqrt(pi / 2)  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> root_half_pi< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> root_half_pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(root_half_pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -659,7 +683,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t root_two_pi<tfloat32_t>() {
 }
 
 /// Returns sqrt(2 * pi)  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> root_two_pi< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> root_two_pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(root_two_pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -670,7 +695,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t root_ln_four<tfloat32_t>() {
 }
 
 /// Returns sqrt(ln(4))  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> root_ln_four< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> root_ln_four<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(root_ln_four<tfloat32_t>(), tfloat32_t());
 }
 
@@ -681,7 +707,7 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t e<tfloat32_t>() {
 }
 
 /// Returns e, approximately 2.718...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> e< complex<tfloat32_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> e<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(e<tfloat32_t>(), tfloat32_t());
 }
 
@@ -692,7 +718,8 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t half<tfloat32_t>() {
 }
 
 /// Returns (1/2)  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> half< complex<tfloat32_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> half<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(half<tfloat32_t>(), tfloat32_t());
 }
 
@@ -702,8 +729,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t root_two<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns sqrt(2), approximately 1.414...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> root_two< complex<tfloat32_t> >() {
+/// Returns sqrt(2), approximately 1.414...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> root_two<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(root_two<tfloat32_t>(), tfloat32_t());
 }
 
@@ -713,8 +742,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t half_root_two<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns sqrt(2)/2, approximately 0.707...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> half_root_two< complex<tfloat32_t> >() {
+/// Returns sqrt(2)/2, approximately 0.707...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> half_root_two<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(half_root_two<tfloat32_t>(), tfloat32_t());
 }
 
@@ -724,8 +755,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t ln_two<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns ln(2), approximately 0.693...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> ln_two< complex<tfloat32_t> >() {
+/// Returns ln(2), approximately 0.693...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> ln_two<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(ln_two<tfloat32_t>(), tfloat32_t());
 }
 
@@ -735,8 +768,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t ln_ln_two<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns ln(ln(2)), approximately -0.3665...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> ln_ln_two< complex<tfloat32_t> >() {
+/// Returns ln(ln(2)), approximately -0.3665...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> ln_ln_two<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(ln_ln_two<tfloat32_t>(), tfloat32_t());
 }
 
@@ -746,8 +781,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t third<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns 1/3, approximately 0.333...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> third< complex<tfloat32_t> >() {
+/// Returns 1/3, approximately 0.333...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> third<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(third<tfloat32_t>(), tfloat32_t());
 }
 
@@ -757,8 +794,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t twothirds<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns 2/3, approximately 0.666...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> twothirds< complex<tfloat32_t> >() {
+/// Returns 2/3, approximately 0.666...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> twothirds<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(twothirds<tfloat32_t>(), tfloat32_t());
 }
 
@@ -768,8 +807,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t pi_minus_three<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns pi - 3, approximately 0.1416...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> pi_minus_three< complex<tfloat32_t> >() {
+/// Returns pi - 3, approximately 0.1416...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> pi_minus_three<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(pi_minus_three<tfloat32_t>(), tfloat32_t());
 }
 
@@ -779,8 +820,10 @@ template <> CUTLASS_HOST_DEVICE tfloat32_t four_minus_pi<tfloat32_t>() {
   return reinterpret_cast<tfloat32_t const &>(bits);
 }
 
-/// Returns 4 - pi, approximately 0.858...  (specialization for complex<tfloat32_t>)
-template <> CUTLASS_HOST_DEVICE complex<tfloat32_t> four_minus_pi< complex<tfloat32_t> >() {
+/// Returns 4 - pi, approximately 0.858...  (specialization for
+/// complex<tfloat32_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<tfloat32_t> four_minus_pi<complex<tfloat32_t>>() {
   return complex<tfloat32_t>(four_minus_pi<tfloat32_t>(), tfloat32_t());
 }
 
@@ -794,8 +837,9 @@ template <> CUTLASS_HOST_DEVICE half_t one<half_t>() {
   return reinterpret_cast<half_t const &>(bits);
 }
 
-/// Returns 1, the multiplicative identity element  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> one< complex<half_t> >() {
+/// Returns 1, the multiplicative identity element  (specialization for
+/// complex<half_t>)
+template <> CUTLASS_HOST_DEVICE complex<half_t> one<complex<half_t>>() {
   return complex<half_t>(one<half_t>(), half_t());
 }
 
@@ -805,8 +849,9 @@ template <> CUTLASS_HOST_DEVICE half_t zero<half_t>() {
   return reinterpret_cast<half_t const &>(bits);
 }
 
-/// Returns 0, the additive identity element  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> zero< complex<half_t> >() {
+/// Returns 0, the additive identity element  (specialization for
+/// complex<half_t>)
+template <> CUTLASS_HOST_DEVICE complex<half_t> zero<complex<half_t>>() {
   return complex<half_t>(zero<half_t>(), half_t());
 }
 
@@ -817,7 +862,7 @@ template <> CUTLASS_HOST_DEVICE half_t two<half_t>() {
 }
 
 /// Returns 2  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> two< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> two<complex<half_t>>() {
   return complex<half_t>(two<half_t>(), half_t());
 }
 
@@ -828,7 +873,7 @@ template <> CUTLASS_HOST_DEVICE half_t pi<half_t>() {
 }
 
 /// Returns pi, approximately 3.141  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> pi< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> pi<complex<half_t>>() {
   return complex<half_t>(pi<half_t>(), half_t());
 }
 
@@ -839,7 +884,7 @@ template <> CUTLASS_HOST_DEVICE half_t two_pi<half_t>() {
 }
 
 /// Returns 2 * pi  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> two_pi< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> two_pi<complex<half_t>>() {
   return complex<half_t>(two_pi<half_t>(), half_t());
 }
 
@@ -850,7 +895,7 @@ template <> CUTLASS_HOST_DEVICE half_t half_pi<half_t>() {
 }
 
 /// Returns pi / 2  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> half_pi< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> half_pi<complex<half_t>>() {
   return complex<half_t>(half_pi<half_t>(), half_t());
 }
 
@@ -861,7 +906,7 @@ template <> CUTLASS_HOST_DEVICE half_t root_pi<half_t>() {
 }
 
 /// Returns sqrt(pi)  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> root_pi< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> root_pi<complex<half_t>>() {
   return complex<half_t>(root_pi<half_t>(), half_t());
 }
 
@@ -872,7 +917,8 @@ template <> CUTLASS_HOST_DEVICE half_t root_half_pi<half_t>() {
 }
 
 /// Returns sqrt(pi / 2)  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> root_half_pi< complex<half_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<half_t> root_half_pi<complex<half_t>>() {
   return complex<half_t>(root_half_pi<half_t>(), half_t());
 }
 
@@ -883,7 +929,7 @@ template <> CUTLASS_HOST_DEVICE half_t root_two_pi<half_t>() {
 }
 
 /// Returns sqrt(2 * pi)  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> root_two_pi< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> root_two_pi<complex<half_t>>() {
   return complex<half_t>(root_two_pi<half_t>(), half_t());
 }
 
@@ -894,7 +940,8 @@ template <> CUTLASS_HOST_DEVICE half_t root_ln_four<half_t>() {
 }
 
 /// Returns sqrt(ln(4))  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> root_ln_four< complex<half_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<half_t> root_ln_four<complex<half_t>>() {
   return complex<half_t>(root_ln_four<half_t>(), half_t());
 }
 
@@ -905,7 +952,7 @@ template <> CUTLASS_HOST_DEVICE half_t e<half_t>() {
 }
 
 /// Returns e, approximately 2.718...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> e< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> e<complex<half_t>>() {
   return complex<half_t>(e<half_t>(), half_t());
 }
 
@@ -916,7 +963,7 @@ template <> CUTLASS_HOST_DEVICE half_t half<half_t>() {
 }
 
 /// Returns (1/2)  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> half< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> half<complex<half_t>>() {
   return complex<half_t>(half<half_t>(), half_t());
 }
 
@@ -926,8 +973,9 @@ template <> CUTLASS_HOST_DEVICE half_t root_two<half_t>() {
   return reinterpret_cast<half_t const &>(bits);
 }
 
-/// Returns sqrt(2), approximately 1.414...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> root_two< complex<half_t> >() {
+/// Returns sqrt(2), approximately 1.414...  (specialization for
+/// complex<half_t>)
+template <> CUTLASS_HOST_DEVICE complex<half_t> root_two<complex<half_t>>() {
   return complex<half_t>(root_two<half_t>(), half_t());
 }
 
@@ -937,8 +985,10 @@ template <> CUTLASS_HOST_DEVICE half_t half_root_two<half_t>() {
   return reinterpret_cast<half_t const &>(bits);
 }
 
-/// Returns sqrt(2)/2, approximately 0.707...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> half_root_two< complex<half_t> >() {
+/// Returns sqrt(2)/2, approximately 0.707...  (specialization for
+/// complex<half_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<half_t> half_root_two<complex<half_t>>() {
   return complex<half_t>(half_root_two<half_t>(), half_t());
 }
 
@@ -949,7 +999,7 @@ template <> CUTLASS_HOST_DEVICE half_t ln_two<half_t>() {
 }
 
 /// Returns ln(2), approximately 0.693...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> ln_two< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> ln_two<complex<half_t>>() {
   return complex<half_t>(ln_two<half_t>(), half_t());
 }
 
@@ -959,8 +1009,9 @@ template <> CUTLASS_HOST_DEVICE half_t ln_ln_two<half_t>() {
   return reinterpret_cast<half_t const &>(bits);
 }
 
-/// Returns ln(ln(2)), approximately -0.3665...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> ln_ln_two< complex<half_t> >() {
+/// Returns ln(ln(2)), approximately -0.3665...  (specialization for
+/// complex<half_t>)
+template <> CUTLASS_HOST_DEVICE complex<half_t> ln_ln_two<complex<half_t>>() {
   return complex<half_t>(ln_ln_two<half_t>(), half_t());
 }
 
@@ -971,7 +1022,7 @@ template <> CUTLASS_HOST_DEVICE half_t third<half_t>() {
 }
 
 /// Returns 1/3, approximately 0.333...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> third< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> third<complex<half_t>>() {
   return complex<half_t>(third<half_t>(), half_t());
 }
 
@@ -982,7 +1033,7 @@ template <> CUTLASS_HOST_DEVICE half_t twothirds<half_t>() {
 }
 
 /// Returns 2/3, approximately 0.666...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> twothirds< complex<half_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<half_t> twothirds<complex<half_t>>() {
   return complex<half_t>(twothirds<half_t>(), half_t());
 }
 
@@ -992,8 +1043,10 @@ template <> CUTLASS_HOST_DEVICE half_t pi_minus_three<half_t>() {
   return reinterpret_cast<half_t const &>(bits);
 }
 
-/// Returns pi - 3, approximately 0.1416...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> pi_minus_three< complex<half_t> >() {
+/// Returns pi - 3, approximately 0.1416...  (specialization for
+/// complex<half_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<half_t> pi_minus_three<complex<half_t>>() {
   return complex<half_t>(pi_minus_three<half_t>(), half_t());
 }
 
@@ -1004,7 +1057,8 @@ template <> CUTLASS_HOST_DEVICE half_t four_minus_pi<half_t>() {
 }
 
 /// Returns 4 - pi, approximately 0.858...  (specialization for complex<half_t>)
-template <> CUTLASS_HOST_DEVICE complex<half_t> four_minus_pi< complex<half_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<half_t> four_minus_pi<complex<half_t>>() {
   return complex<half_t>(four_minus_pi<half_t>(), half_t());
 }
 
@@ -1012,14 +1066,16 @@ template <> CUTLASS_HOST_DEVICE complex<half_t> four_minus_pi< complex<half_t> >
 
 // Specialization for bfloat16_t
 
-/// Returns 1, the multiplicative identity element  (specialization for bfloat16_t)
+/// Returns 1, the multiplicative identity element  (specialization for
+/// bfloat16_t)
 template <> CUTLASS_HOST_DEVICE bfloat16_t one<bfloat16_t>() {
   uint16_t bits = 0x3f80u;
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns 1, the multiplicative identity element  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> one< complex<bfloat16_t> >() {
+/// Returns 1, the multiplicative identity element  (specialization for
+/// complex<bfloat16_t>)
+template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> one<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(one<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1029,8 +1085,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t zero<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns 0, the additive identity element  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> zero< complex<bfloat16_t> >() {
+/// Returns 0, the additive identity element  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> zero<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(zero<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1041,7 +1099,7 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t two<bfloat16_t>() {
 }
 
 /// Returns 2  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> two< complex<bfloat16_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> two<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(two<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1052,7 +1110,7 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t pi<bfloat16_t>() {
 }
 
 /// Returns pi, approximately 3.141  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> pi< complex<bfloat16_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(pi<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1063,7 +1121,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t two_pi<bfloat16_t>() {
 }
 
 /// Returns 2 * pi  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> two_pi< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> two_pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(two_pi<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1074,7 +1133,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t half_pi<bfloat16_t>() {
 }
 
 /// Returns pi / 2  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> half_pi< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> half_pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(half_pi<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1085,7 +1145,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t root_pi<bfloat16_t>() {
 }
 
 /// Returns sqrt(pi)  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> root_pi< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> root_pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(root_pi<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1096,7 +1157,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t root_half_pi<bfloat16_t>() {
 }
 
 /// Returns sqrt(pi / 2)  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> root_half_pi< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> root_half_pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(root_half_pi<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1107,7 +1169,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t root_two_pi<bfloat16_t>() {
 }
 
 /// Returns sqrt(2 * pi)  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> root_two_pi< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> root_two_pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(root_two_pi<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1118,7 +1181,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t root_ln_four<bfloat16_t>() {
 }
 
 /// Returns sqrt(ln(4))  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> root_ln_four< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> root_ln_four<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(root_ln_four<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1129,7 +1193,7 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t e<bfloat16_t>() {
 }
 
 /// Returns e, approximately 2.718...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> e< complex<bfloat16_t> >() {
+template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> e<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(e<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1140,7 +1204,8 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t half<bfloat16_t>() {
 }
 
 /// Returns (1/2)  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> half< complex<bfloat16_t> >() {
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> half<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(half<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1150,8 +1215,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t root_two<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns sqrt(2), approximately 1.414...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> root_two< complex<bfloat16_t> >() {
+/// Returns sqrt(2), approximately 1.414...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> root_two<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(root_two<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1161,8 +1228,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t half_root_two<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns sqrt(2)/2, approximately 0.707...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> half_root_two< complex<bfloat16_t> >() {
+/// Returns sqrt(2)/2, approximately 0.707...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> half_root_two<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(half_root_two<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1172,8 +1241,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t ln_two<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns ln(2), approximately 0.693...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> ln_two< complex<bfloat16_t> >() {
+/// Returns ln(2), approximately 0.693...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> ln_two<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(ln_two<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1183,8 +1254,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t ln_ln_two<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns ln(ln(2)), approximately -0.3665...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> ln_ln_two< complex<bfloat16_t> >() {
+/// Returns ln(ln(2)), approximately -0.3665...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> ln_ln_two<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(ln_ln_two<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1194,8 +1267,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t third<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns 1/3, approximately 0.333...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> third< complex<bfloat16_t> >() {
+/// Returns 1/3, approximately 0.333...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> third<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(third<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1205,8 +1280,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t twothirds<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns 2/3, approximately 0.666...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> twothirds< complex<bfloat16_t> >() {
+/// Returns 2/3, approximately 0.666...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> twothirds<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(twothirds<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1216,8 +1293,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t pi_minus_three<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns pi - 3, approximately 0.1416...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> pi_minus_three< complex<bfloat16_t> >() {
+/// Returns pi - 3, approximately 0.1416...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> pi_minus_three<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(pi_minus_three<bfloat16_t>(), bfloat16_t());
 }
 
@@ -1227,8 +1306,10 @@ template <> CUTLASS_HOST_DEVICE bfloat16_t four_minus_pi<bfloat16_t>() {
   return reinterpret_cast<bfloat16_t const &>(bits);
 }
 
-/// Returns 4 - pi, approximately 0.858...  (specialization for complex<bfloat16_t>)
-template <> CUTLASS_HOST_DEVICE complex<bfloat16_t> four_minus_pi< complex<bfloat16_t> >() {
+/// Returns 4 - pi, approximately 0.858...  (specialization for
+/// complex<bfloat16_t>)
+template <>
+CUTLASS_HOST_DEVICE complex<bfloat16_t> four_minus_pi<complex<bfloat16_t>>() {
   return complex<bfloat16_t>(four_minus_pi<bfloat16_t>(), bfloat16_t());
 }
 ///////////////////////////////////////////////////////////////////////////////////

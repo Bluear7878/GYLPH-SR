@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,26 +18,28 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief 
-      Default kernel-level Rank 2k  definitions combine threadblock-scoped matrix multiply-add with
-      the appropriate threadblock-scoped epilogue.
-  
-      Note, CUTLASS epilogues universally target row-major outputs. Column-major outputs are
-      accommodated by exchanging A and B operands and assuming transposed layouts.
+    \brief
+      Default kernel-level Rank 2k  definitions combine threadblock-scoped
+   matrix multiply-add with the appropriate threadblock-scoped epilogue.
 
-  
+      Note, CUTLASS epilogues universally target row-major outputs. Column-major
+   outputs are accommodated by exchanging A and B operands and assuming
+   transposed layouts.
+
+
 */
 
 #pragma once
@@ -47,9 +49,9 @@
 #include "cutlass/complex.h"
 #include "cutlass/layout/matrix.h"
 
-#include "cutlass/gemm/kernel/rank_2k_universal.h"
 #include "cutlass/gemm/kernel/default_rank_2k.h"
 #include "cutlass/gemm/kernel/default_rank_2k_complex.h"
+#include "cutlass/gemm/kernel/rank_2k_universal.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -108,8 +110,7 @@ template <
     /// Blas3 computation mode (symmetric/hermitian)
     BlasMode BlasMode_ = BlasMode::kSymmetric,
     ///
-    typename Enable = void
-    >
+    typename Enable = void>
 struct DefaultRank2KUniversal;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,65 +161,29 @@ template <
     /// Operation performed by Rank2k
     typename Operator>
 struct DefaultRank2KUniversal<
-  ElementA,
-  LayoutA,
-  ComplexTransform::kNone,   // transform A
-  kAlignmentA,
-  ElementB,
-  LayoutB,
-  ComplexTransform::kNone,   // transform B
-  kAlignmentB,
-  ElementC,
-  LayoutC,
-  FillModeC,
-  ElementAccumulator,
-  OperatorClass,
-  ArchTag,
-  ThreadblockShape,
-  WarpShape,
-  InstructionShape,
-  EpilogueOutputOp,
-  ThreadblockSwizzle,
-  Stages,
-  SplitKSerial,
-  Operator,
-  BlasMode::kSymmetric,
-  typename std::enable_if< ! cutlass::is_complex<ElementAccumulator>::value>::type
-> {
+    ElementA, LayoutA,
+    ComplexTransform::kNone, // transform A
+    kAlignmentA, ElementB, LayoutB,
+    ComplexTransform::kNone, // transform B
+    kAlignmentB, ElementC, LayoutC, FillModeC, ElementAccumulator,
+    OperatorClass, ArchTag, ThreadblockShape, WarpShape, InstructionShape,
+    EpilogueOutputOp, ThreadblockSwizzle, Stages, SplitKSerial, Operator,
+    BlasMode::kSymmetric,
+    typename std::enable_if<
+        !cutlass::is_complex<ElementAccumulator>::value>::type> {
 
   using DefaultRank2Kkernel = typename kernel::DefaultRank2K<
-    ElementA,
-    LayoutA,
-    kAlignmentA,
-    ElementB,
-    LayoutB,
-    kAlignmentB,
-    ElementC,
-    LayoutC,
-    FillModeC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    SplitKSerial,
-    Operator,
-    BlasMode::kSymmetric
-  >::Rank2Kkernel;
+      ElementA, LayoutA, kAlignmentA, ElementB, LayoutB, kAlignmentB, ElementC,
+      LayoutC, FillModeC, ElementAccumulator, OperatorClass, ArchTag,
+      ThreadblockShape, WarpShape, InstructionShape, EpilogueOutputOp,
+      ThreadblockSwizzle, Stages, SplitKSerial, Operator,
+      BlasMode::kSymmetric>::Rank2Kkernel;
 
-    /// Define the kernel in terms of the default kernel
+  /// Define the kernel in terms of the default kernel
   using Rank2Kkernel = kernel::Rank2KUniversal<
-    typename DefaultRank2Kkernel::Mma1,
-    typename DefaultRank2Kkernel::Mma2,
-    typename DefaultRank2Kkernel::Epilogue, 
-    ThreadblockSwizzle,
-    FillModeC,
-    BlasMode::kSymmetric
-  >;
+      typename DefaultRank2Kkernel::Mma1, typename DefaultRank2Kkernel::Mma2,
+      typename DefaultRank2Kkernel::Epilogue, ThreadblockSwizzle, FillModeC,
+      BlasMode::kSymmetric>;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,73 +239,33 @@ template <
     /// Operation performed by SYRK
     typename Operator,
     // BlasMode
-    BlasMode kBlasMode
-  >
+    BlasMode kBlasMode>
 
 struct DefaultRank2KUniversal<
-  ElementA,
-  LayoutA,
-  TransformA,   
-  kAlignmentA,
-  ElementB,
-  LayoutB,
-  TransformB,  
-  kAlignmentB,
-  ElementC,
-  LayoutC,
-  FillModeC,
-  ElementAccumulator,
-  OperatorClass,
-  ArchTag,
-  ThreadblockShape,
-  WarpShape,
-  InstructionShape,
-  EpilogueOutputOp,
-  ThreadblockSwizzle,
-  Stages,
-  SplitKSerial,
-  Operator,
-  kBlasMode,
-  typename std::enable_if<cutlass::is_complex<ElementAccumulator>::value>::type
-> {
+    ElementA, LayoutA, TransformA, kAlignmentA, ElementB, LayoutB, TransformB,
+    kAlignmentB, ElementC, LayoutC, FillModeC, ElementAccumulator,
+    OperatorClass, ArchTag, ThreadblockShape, WarpShape, InstructionShape,
+    EpilogueOutputOp, ThreadblockSwizzle, Stages, SplitKSerial, Operator,
+    kBlasMode,
+    typename std::enable_if<
+        cutlass::is_complex<ElementAccumulator>::value>::type> {
 
   using DefaultRank2Kkernel = typename kernel::DefaultRank2KComplex<
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    FillModeC,
-    ElementAccumulator,
-    OperatorClass,
-    ArchTag,
-    ThreadblockShape,
-    WarpShape,
-    InstructionShape,
-    EpilogueOutputOp,
-    ThreadblockSwizzle,
-    Stages,
-    TransformA,
-    TransformB,
-    Operator,
-    SplitKSerial,
-    kBlasMode
-  >::Rank2Kkernel;
+      ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC, FillModeC,
+      ElementAccumulator, OperatorClass, ArchTag, ThreadblockShape, WarpShape,
+      InstructionShape, EpilogueOutputOp, ThreadblockSwizzle, Stages,
+      TransformA, TransformB, Operator, SplitKSerial, kBlasMode>::Rank2Kkernel;
 
-    /// Define the kernel in terms of the default kernel
-  using Rank2Kkernel = kernel::Rank2KUniversal<
-    typename DefaultRank2Kkernel::Mma1,
-    typename DefaultRank2Kkernel::Mma2,
-    typename DefaultRank2Kkernel::Epilogue, 
-    ThreadblockSwizzle,
-    FillModeC,
-    kBlasMode
-  >;
+  /// Define the kernel in terms of the default kernel
+  using Rank2Kkernel =
+      kernel::Rank2KUniversal<typename DefaultRank2Kkernel::Mma1,
+                              typename DefaultRank2Kkernel::Mma2,
+                              typename DefaultRank2Kkernel::Epilogue,
+                              ThreadblockSwizzle, FillModeC, kBlasMode>;
 };
 
-}  // namespace kernel
-}  // namespace gemm
-}  // namespace cutlass
+} // namespace kernel
+} // namespace gemm
+} // namespace cutlass
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

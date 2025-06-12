@@ -1,10 +1,10 @@
 #include <iostream>
-#include <optional>
 #include <nlohmann/json.hpp>
+#include <optional>
 
 // partial specialization (see https://json.nlohmann.me/features/arbitrary_types/)
 NLOHMANN_JSON_NAMESPACE_BEGIN
-template <typename T>
+template<typename T>
 struct adl_serializer<std::optional<T>>
 {
     static void to_json(json& j, const std::optional<T>& opt)

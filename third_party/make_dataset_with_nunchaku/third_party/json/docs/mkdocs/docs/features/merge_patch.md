@@ -7,14 +7,16 @@ Instead of using [JSON Pointer](json_pointer.md) to specify values to be manipul
 
 ??? example
 
-    The following code shows how a JSON Merge Patch is applied to a JSON document.
+````
+The following code shows how a JSON Merge Patch is applied to a JSON document.
 
-    ```cpp
-    --8<-- "examples/merge_patch.cpp"
-    ```
-    
-    Output:
+```cpp
+--8<-- "examples/merge_patch.cpp"
+```
 
-    ```json
-    --8<-- "examples/merge_patch.output"
-    ```
+Output:
+
+```json
+--8<-- "examples/merge_patch.output"
+```
+````

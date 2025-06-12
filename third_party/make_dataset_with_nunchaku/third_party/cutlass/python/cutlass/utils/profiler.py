@@ -37,9 +37,8 @@ Profiler based on the cuda events
 import re
 import subprocess
 
-from cuda import cuda, cudart
 import numpy as np
-
+from cuda import cuda, cudart
 from cutlass import CUTLASS_PATH
 from cutlass.backend.library import DataTypeSize
 from cutlass.op.op import OperationBase
@@ -84,7 +83,14 @@ class GpuTimer:
 
 
 class CUDAEventProfiler:
-    def __init__(self, op: OperationBase, warmup_iterations: int=500, iterations: int=500, *args, **kwargs) -> None:
+    def __init__(
+        self,
+        op: OperationBase,
+        warmup_iterations: int = 500,
+        iterations: int = 500,
+        *args,
+        **kwargs,
+    ) -> None:
         self.arguments = op.run(*args, **kwargs)
         self.operation = op.operation
         self.warmup_iterations = warmup_iterations
@@ -131,10 +137,12 @@ class CUDAEventProfiler:
 
         batch_count = self.arguments.batch_count
 
-        cmd = f"{profiler_path} --kernels={kernel_name} --verification-providers={verification_providers} " \
-              f"--providers={provider} --m={problem_size.m()} --n={problem_size.n()} --k={problem_size.k()} " \
-              f"--batch_count={batch_count} --alpha={alpha} --beta={beta} "\
-              f"--warmup-iterations={self.warmup_iterations} --profiling-iterations={self.iterations}"
+        cmd = (
+            f"{profiler_path} --kernels={kernel_name} --verification-providers={verification_providers} "
+            f"--providers={provider} --m={problem_size.m()} --n={problem_size.n()} --k={problem_size.k()} "
+            f"--batch_count={batch_count} --alpha={alpha} --beta={beta} "
+            f"--warmup-iterations={self.warmup_iterations} --profiling-iterations={self.iterations}"
+        )
 
         result = subprocess.getoutput(cmd)
 
@@ -182,4 +190,3 @@ class CUDAEventProfiler:
             flops_ += m * n * batch_count * 2
 
         return flops_
-

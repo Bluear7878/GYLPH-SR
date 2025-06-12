@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
@@ -44,8 +45,8 @@
 #include "cutlass/epilogue/threadblock/default_epilogue_simt.h"
 
 #include "cutlass/util/host_tensor.h"
-#include "cutlass/util/tensor_view_io.h"
 #include "cutlass/util/reference/host/tensor_fill.h"
+#include "cutlass/util/tensor_view_io.h"
 
 #include "testbed.h"
 
@@ -69,7 +70,7 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i32_32x64_32x64x8) {
   using ElementCompute = float;
 
   int const kElementsPerAccess = 1;
-  
+
   using Shape = cutlass::gemm::GemmShape<32, 64, 32>;
   using WarpShape = cutlass::gemm::GemmShape<32, 64, 32>;
   using ElementC = ElementAccumulator;
@@ -78,41 +79,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i32_32x64_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-      cutlass::MatrixShape<4, 8>,
-      cutlass::layout::RowMajorInterleaved<2>,
-      cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -148,41 +132,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i32_32x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -218,41 +185,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i32_64x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -288,41 +238,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i32_128x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -358,41 +291,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i32_128x64_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -434,41 +350,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_f32_i32_32x64_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -504,41 +403,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_f32_i32_32x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -574,41 +456,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_f32_i32_64x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -644,41 +509,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_f32_i32_128x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -714,41 +562,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_f32_i32_128x64_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -790,41 +621,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i8_i32_32x64_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -860,41 +674,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i8_i32_32x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -930,41 +727,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i8_i32_64x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -1000,41 +780,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i8_i32_128x128_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue
@@ -1070,41 +833,24 @@ TEST(SM61_Epilogue_threadblock_epilogue, simt_i8_i32_128x64_32x64x8) {
   using LayoutC = cutlass::layout::RowMajor;
 
   using WarpMmaSimt = cutlass::gemm::warp::MmaSimt<
-    WarpShape,
-    ElementA,
-    LayoutA,
-    ElementB,
-    LayoutB,
-    ElementC,
-    LayoutC,
-    cutlass::gemm::warp::MmaSimtPolicy<
-    cutlass::MatrixShape<4, 8>,
-    cutlass::layout::RowMajorInterleaved<2>,
-    cutlass::gemm::GemmShape<4, 4, 1>
-    >
-  >;
+      WarpShape, ElementA, LayoutA, ElementB, LayoutB, ElementC, LayoutC,
+      cutlass::gemm::warp::MmaSimtPolicy<
+          cutlass::MatrixShape<4, 8>, cutlass::layout::RowMajorInterleaved<2>,
+          cutlass::gemm::GemmShape<4, 4, 1>>>;
 
   //
   // Output operator
   //
 
   using OutputOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    kElementsPerAccess,
-    ElementAccumulator,
-    ElementCompute
-  >;
+      ElementOutput, kElementsPerAccess, ElementAccumulator, ElementCompute>;
 
   //
   // Define the epilogue
   //
 
   using Epilogue = typename cutlass::epilogue::threadblock::DefaultEpilogueSimt<
-    Shape,
-    WarpMmaSimt,
-    OutputOp,
-    kElementsPerAccess
-  >::Epilogue;
+      Shape, WarpMmaSimt, OutputOp, kElementsPerAccess>::Epilogue;
 
   //
   // Instantiate epilogue

@@ -22,17 +22,19 @@ Constant.
 
 ??? example
 
-    The example below demonstrates how `has_subtype` can check whether a subtype was set.
+````
+The example below demonstrates how `has_subtype` can check whether a subtype was set.
 
-    ```cpp
-    --8<-- "examples/byte_container_with_subtype__has_subtype.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/byte_container_with_subtype__has_subtype.output"
-    ```
+```cpp
+--8<-- "examples/byte_container_with_subtype__has_subtype.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/byte_container_with_subtype__has_subtype.output"
+```
+````
 
 ## Version history
 

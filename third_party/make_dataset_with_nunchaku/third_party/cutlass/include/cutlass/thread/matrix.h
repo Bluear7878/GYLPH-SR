@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,24 +18,25 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Defines a matrix object intended for storing data in registers and operations within
-      a CUDA thread.
+    \brief Defines a matrix object intended for storing data in registers and
+   operations within a CUDA thread.
 */
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/matrix_coord.h"
 
 namespace cutlass {
@@ -44,19 +45,13 @@ namespace thread {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Per-thread matrix object storing a packed matrix
-template <
-  typename Element,
-  int Rows,
-  int Columns,
-  typename Layout = layout::RowMajor
->
+template <typename Element, int Rows, int Columns,
+          typename Layout = layout::RowMajor>
 class Matrix : public Array<Element, Rows * Columns> {
 public:
-  
   // Verify layout refers to a rank=2 matrix.
-  static_assert(
-    Layout::kRank == 2,
-    "Layout type must refer to a rank=2 matrix");
+  static_assert(Layout::kRank == 2,
+                "Layout type must refer to a rank=2 matrix");
 
   /// Base type
   using Base = Array<Element, Rows * Columns>;
@@ -107,40 +102,30 @@ public:
   using Diagonal = Vector<Element, __NV_STD_MIN(kRows, kColumns)>;
 
 private:
-
-
 public:
-
   //
   // Methods
   //
 
   /// Returns the size of the object
   CUTLASS_HOST_DEVICE
-  static MatrixCoord extent() {
-    return make_Coord(kRows, kColumns);
-  }
+  static MatrixCoord extent() { return make_Coord(kRows, kColumns); }
 
   /// Returns the layout object
   CUTLASS_HOST_DEVICE
-  static Layout layout() {
-    return Layout::packed(extent());
-  }
+  static Layout layout() { return Layout::packed(extent()); }
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  Matrix() { }
+  Matrix() {}
 
   /// Ctor
   CUTLASS_HOST_DEVICE
-  Matrix(Diagonal const &diag) {
-  }
+  Matrix(Diagonal const &diag) {}
 
   /// Returns a TensorRef pointing to the first element of the tensor.
   CUTLASS_HOST_DEVICE
-  TensorRef ref() {
-    return TensorRef(this->data(), layout());
-  }
+  TensorRef ref() { return TensorRef(this->data(), layout()); }
 
   /// Returns a TensorRef pointing to the first element of the tensor.
   CUTLASS_HOST_DEVICE
@@ -150,9 +135,7 @@ public:
 
   /// Returns a TensorRef pointing to the first element of the tensor.
   CUTLASS_HOST_DEVICE
-  TensorView view() {
-    return TensorView(ref(), extent());
-  }
+  TensorView view() { return TensorView(ref(), extent()); }
 
   /// Returns a TensorView to const data
   CUTLASS_HOST_DEVICE
@@ -162,34 +145,24 @@ public:
 
   /// Returns a reference to the element at a given Coord
   CUTLASS_HOST_DEVICE
-  Reference at(MatrixCoord const& coord) const {
+  Reference at(MatrixCoord const &coord) const {
     typename Base::size_type offset_(layout().offset(coord));
     return Base::at(offset_);
   }
 
   /// Returns the number of scalar elements needed to store tensor.
   CUTLASS_HOST_DEVICE
-  LongIndex capacity() const {
-    return LongIndex(Base::size());
-  }
+  LongIndex capacity() const { return LongIndex(Base::size()); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// Column vector defined as a matrix with exactly one column
-template <
-  typename Element,
-  int Rows,
-  typename Layout = layout::ColumnMajor
->
+template <typename Element, int Rows, typename Layout = layout::ColumnMajor>
 using ColumnVector = Matrix<Element, Rows, 1, Layout>;
 
 /// Row vector defined as a matrix with exactly one row
-template <
-  typename Element,
-  int Columns,
-  typename Layout = layout::RowMajor
->
+template <typename Element, int Columns, typename Layout = layout::RowMajor>
 using RowVector = Matrix<Element, 1, Columns, Layout>;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

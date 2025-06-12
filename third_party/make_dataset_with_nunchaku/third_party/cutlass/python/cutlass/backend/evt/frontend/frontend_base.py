@@ -36,38 +36,27 @@ Base class for Python EVT Frontend
 
 from typing import Union
 
-from cutlass_library import DataType
-from cutlass.backend.evt.ir import (
-    ComputeNode,
-    DAGIR,
-    LayoutNode,
-    LoadNode,
-    StoreNode,
-)
-from cutlass.backend.evt.passes import (
-    EVTGraphDrawer,
-    EVTPassManager,
-    GetSmemSize,
-    PassDAG2Tree,
-    PassGetArgumentType,
-    PassGetImpl,
-    PassFixElementD,
-    PassLayoutManipulateElimination,
-    PassPreprocessRed,
-    PassShapeTypePropagation,
-)
+from cutlass.backend.evt.ir import (DAGIR, ComputeNode, LayoutNode, LoadNode,
+                                    StoreNode)
+from cutlass.backend.evt.passes import (EVTGraphDrawer, EVTPassManager,
+                                        GetSmemSize, PassDAG2Tree,
+                                        PassFixElementD, PassGetArgumentType,
+                                        PassGetImpl,
+                                        PassLayoutManipulateElimination,
+                                        PassPreprocessRed,
+                                        PassShapeTypePropagation)
 from cutlass.backend.utils import device_cc
 from cutlass.epilogue.evt_ops import permute, reshape
 from cutlass.utils.datatypes import library_type
+from cutlass_library import DataType
 
 
 class EVTFrontendBase:
-    layout_fns = {
-        "permute": permute,
-        "reshape": reshape
-    }
+    layout_fns = {"permute": permute, "reshape": reshape}
 
-    def __init__(self, element_compute=DataType.f32, cc=None, additional_passes=[], **kwargs) -> None:
+    def __init__(
+        self, element_compute=DataType.f32, cc=None, additional_passes=[], **kwargs
+    ) -> None:
         self.cc = cc if cc else device_cc()
         self.element_compute = library_type(element_compute)
         self.dag_ir = DAGIR(self.element_compute, self.cc)
@@ -83,8 +72,10 @@ class EVTFrontendBase:
                 PassLayoutManipulateElimination,
                 PassGetImpl,
                 PassDAG2Tree,
-                PassFixElementD
-            ] + additional_passes)
+                PassFixElementD,
+            ]
+            + additional_passes,
+        )
 
         if self.cc == 80:
             self._epilogue_stages = 1
@@ -99,9 +90,10 @@ class EVTFrontendBase:
     def epilogue_stages(self, stages):
         self._epilogue_stages = stages
 
-
     def parse(self, *args, **kwargs):
-        raise NotImplementedError(f"The 'parse' function must be overloaded in frontend class")
+        raise NotImplementedError(
+            f"The 'parse' function must be overloaded in frontend class"
+        )
 
     def trace(self, *args, **kwargs):
         # Parse the input
@@ -148,7 +140,8 @@ class EVTFrontendBase:
         if not isinstance(meta, StoreNode):
             raise ValueError(
                 f"Only StoreNodes can be marked as output. "
-                f"Got {type(meta).__name__}: {node_name}")
+                f"Got {type(meta).__name__}: {node_name}"
+            )
         meta.is_output = True
 
     # Add node with specific type
@@ -170,13 +163,20 @@ class EVTFrontendBase:
         # Special logics for accumulator
         if name == "accum":
             if load_node.tensor.rank == 2:
-                new_shape = tuple([1, ] + list(load_node.tensor.shape))
+                new_shape = tuple(
+                    [
+                        1,
+                    ]
+                    + list(load_node.tensor.shape)
+                )
                 load_node.tensor.broadcast(new_shape)
             elif load_node.tensor.rank < 2 or load_node.tensor.rank > 3:
-                raise ValueError(f"Expect example inputs for 'accum' be a rank-2 or rank-3 tensor. Got {load_node.tensor.shape}.")
+                raise ValueError(
+                    f"Expect example inputs for 'accum' be a rank-2 or rank-3 tensor. Got {load_node.tensor.shape}."
+                )
         self.add_node(load_node)
 
-    def add_imm(self, value: Union[float,int]):
+    def add_imm(self, value: Union[float, int]):
         """
         Add an immediate scalar value to DAG IR
         :param value: the value of the immediate scalar
@@ -187,7 +187,7 @@ class EVTFrontendBase:
         except:
             raise ValueError(f"{type(value).__name__} cannot be converted to float.")
 
-        name = f"imm_{value}".replace('.', '_')
+        name = f"imm_{value}".replace(".", "_")
         load_node = LoadNode(name)
         load_node.tensor = {"tensor": value, "is_constant": True}
         self.add_node(load_node)
@@ -205,9 +205,11 @@ class EVTFrontendBase:
             name = f"compute_{self.compute_cnt}"
             self.compute_cnt += 1
         compute_node = ComputeNode(
-            name=name, fn=op,
+            name=name,
+            fn=op,
             element_output=self.element_compute,
-            element_compute=self.element_compute)
+            element_compute=self.element_compute,
+        )
         self.add_node(compute_node)
         return compute_node.name
 

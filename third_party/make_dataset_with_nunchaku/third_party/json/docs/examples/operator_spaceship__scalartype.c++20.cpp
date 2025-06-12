@@ -33,8 +33,8 @@ int main()
 
     // output values and comparisons
     std::cout << std::boolalpha << std::fixed;
-    std::cout << boolean << " <=> " << true << " := " << to_string(boolean <=> true) << '\n'; // *NOPAD*
-    std::cout << number << " <=> " << 17.0 << " := " << to_string(number <=> 17.0) << '\n'; // *NOPAD*
-    std::cout << number << " <=> " << nan << " := " << to_string(number <=> nan) << '\n'; // *NOPAD*
-    std::cout << string << " <=> " << 17 << " := " << to_string(string <=> 17) << '\n'; // *NOPAD*
+    std::cout << boolean << " <=> " << true << " := " << to_string(boolean <= > true) << '\n';  // *NOPAD*
+    std::cout << number << " <=> " << 17.0 << " := " << to_string(number <= > 17.0) << '\n';    // *NOPAD*
+    std::cout << number << " <=> " << nan << " := " << to_string(number <= > nan) << '\n';      // *NOPAD*
+    std::cout << string << " <=> " << 17 << " := " << to_string(string <= > 17) << '\n';        // *NOPAD*
 }

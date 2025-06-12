@@ -33,13 +33,13 @@
 from math import prod
 from typing import Union
 
-from cuda import cuda, cudart
-import numpy as np
-
 import cutlass
+import numpy as np
+from cuda import cuda, cudart
 from cutlass.backend.frontend import CupyFrontend, NumpyFrontend, TorchFrontend
 from cutlass.backend.memory_manager import DevicePtrWrapper
-from cutlass.utils.datatypes import is_cupy_tensor, is_numpy_tensor, is_torch_tensor
+from cutlass.utils.datatypes import (is_cupy_tensor, is_numpy_tensor,
+                                     is_torch_tensor)
 
 
 class ArgumentBase:
@@ -124,12 +124,14 @@ class ArgumentBase:
         if not cutlass.use_rmm:
             for name, buf in self.buffers.items():
                 if isinstance(buf, DevicePtrWrapper):
-                    err, = cudart.cudaFree(buf.ptr)
+                    (err,) = cudart.cudaFree(buf.ptr)
                     if err != cudart.cudaError_t.cudaSuccess:
                         raise RuntimeError(f"cudaFree failed with error {err}")
 
-            if hasattr(self, "workspace_buffer") and isinstance(self.workspace_buffer, DevicePtrWrapper):
-                err, = cudart.cudaFree(self.workspace_buffer.ptr)
+            if hasattr(self, "workspace_buffer") and isinstance(
+                self.workspace_buffer, DevicePtrWrapper
+            ):
+                (err,) = cudart.cudaFree(self.workspace_buffer.ptr)
                 if err != cudart.cudaError_t.cudaSuccess:
                     raise RuntimeError(f"cudaFree failed with error {err}")
                 del self.workspace_buffer

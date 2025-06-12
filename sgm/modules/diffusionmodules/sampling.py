@@ -2,22 +2,18 @@
     Partially ported from https://github.com/crowsonkb/k-diffusion/blob/master/k_diffusion/sampling.py
 """
 
-
 from typing import Dict, Union
 
 import torch
+from k_diffusion.sampling import BrownianTreeNoiseSampler, get_sigmas_karras
 from omegaconf import ListConfig, OmegaConf
 from tqdm import tqdm
 
-from ...modules.diffusionmodules.sampling_utils import (
-    get_ancestral_step,
-    linear_multistep_coeff,
-    to_d,
-    to_neg_log_sigma,
-    to_sigma,
-)
+from ...modules.diffusionmodules.sampling_utils import (get_ancestral_step,
+                                                        linear_multistep_coeff,
+                                                        to_d, to_neg_log_sigma,
+                                                        to_sigma)
 from ...util import append_dims, default, instantiate_from_config
-from k_diffusion.sampling import get_sigmas_karras, BrownianTreeNoiseSampler
 
 DEFAULT_GUIDER = {"target": "sgm.modules.diffusionmodules.guiders.IdentityGuider"}
 
@@ -369,17 +365,26 @@ class DPMPP2MSampler(BaseDiffusionSampler):
 
 
 class SubstepSampler(EulerAncestralSampler):
-    def __init__(self, s_churn=0.0, s_tmin=0.0, s_tmax=float("inf"), s_noise=1.0, restore_cfg=4.0,
-            restore_cfg_s_tmin=0.05, eta=1., n_sample_steps=4, *args, **kwargs):
+    def __init__(
+        self,
+        s_churn=0.0,
+        s_tmin=0.0,
+        s_tmax=float("inf"),
+        s_noise=1.0,
+        restore_cfg=4.0,
+        restore_cfg_s_tmin=0.05,
+        eta=1.0,
+        n_sample_steps=4,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.n_sample_steps = n_sample_steps
         self.steps_subset = [0, 100, 200, 300, 1000]
 
     def prepare_sampling_loop(self, x, cond, uc=None, num_steps=None):
         sigmas = self.discretization(1000, device=self.device)
-        sigmas = sigmas[
-            self.steps_subset[: self.num_steps] + self.steps_subset[-1:]
-        ]
+        sigmas = sigmas[self.steps_subset[: self.num_steps] + self.steps_subset[-1:]]
         print(sigmas)
         # uc = cond
         x *= torch.sqrt(1.0 + sigmas[0] ** 2.0)
@@ -388,11 +393,23 @@ class SubstepSampler(EulerAncestralSampler):
         return x, s_in, sigmas, num_sigmas, cond, uc
 
     def denoise(self, x, denoiser, sigma, cond, uc, control_scale=1.0):
-        denoised = denoiser(*self.guider.prepare_inputs(x, sigma, cond, uc), control_scale)
+        denoised = denoiser(
+            *self.guider.prepare_inputs(x, sigma, cond, uc), control_scale
+        )
         denoised = self.guider(denoised, sigma)
         return denoised
 
-    def __call__(self, denoiser, x, cond, uc=None, num_steps=None, control_scale=1.0, *args, **kwargs):
+    def __call__(
+        self,
+        denoiser,
+        x,
+        cond,
+        uc=None,
+        num_steps=None,
+        control_scale=1.0,
+        *args,
+        **kwargs,
+    ):
         x, s_in, sigmas, num_sigmas, cond, uc = self.prepare_sampling_loop(
             x, cond, uc, num_steps
         )
@@ -412,7 +429,9 @@ class SubstepSampler(EulerAncestralSampler):
 
     def sampler_step(self, sigma, next_sigma, denoiser, x, cond, uc, control_scale=1.0):
         sigma_down, sigma_up = get_ancestral_step(sigma, next_sigma, eta=self.eta)
-        denoised = self.denoise(x, denoiser, sigma, cond, uc, control_scale=control_scale)
+        denoised = self.denoise(
+            x, denoiser, sigma, cond, uc, control_scale=control_scale
+        )
         x = self.ancestral_euler_step(x, denoised, sigma, sigma_down)
         x = self.ancestral_step(x, sigma, next_sigma, sigma_up)
 
@@ -420,21 +439,33 @@ class SubstepSampler(EulerAncestralSampler):
 
 
 class RestoreDPMPP2MSampler(DPMPP2MSampler):
-    def __init__(self, s_churn=0.0, s_tmin=0.0, s_tmax=float("inf"), s_noise=1.0, restore_cfg=4.0,
-            restore_cfg_s_tmin=0.05, eta=1., *args, **kwargs):
+    def __init__(
+        self,
+        s_churn=0.0,
+        s_tmin=0.0,
+        s_tmax=float("inf"),
+        s_noise=1.0,
+        restore_cfg=4.0,
+        restore_cfg_s_tmin=0.05,
+        eta=1.0,
+        *args,
+        **kwargs,
+    ):
         self.s_noise = s_noise
         self.eta = eta
         super().__init__(*args, **kwargs)
 
     def denoise(self, x, denoiser, sigma, cond, uc, control_scale=1.0):
-        denoised = denoiser(*self.guider.prepare_inputs(x, sigma, cond, uc), control_scale)
+        denoised = denoiser(
+            *self.guider.prepare_inputs(x, sigma, cond, uc), control_scale
+        )
         denoised = self.guider(denoised, sigma)
         return denoised
 
     def get_mult(self, h, r, t, t_next, previous_sigma):
         eta_h = self.eta * h
         mult1 = to_sigma(t_next) / to_sigma(t) * (-eta_h).exp()
-        mult2 = (-h -eta_h).expm1()
+        mult2 = (-h - eta_h).expm1()
 
         if previous_sigma is not None:
             mult3 = 1 + 1 / (2 * r)
@@ -442,7 +473,6 @@ class RestoreDPMPP2MSampler(DPMPP2MSampler):
             return mult1, mult2, mult3, mult4
         else:
             return mult1, mult2
-
 
     def sampler_step(
         self,
@@ -457,7 +487,9 @@ class RestoreDPMPP2MSampler(DPMPP2MSampler):
         eps_noise=None,
         control_scale=1.0,
     ):
-        denoised = self.denoise(x, denoiser, sigma, cond, uc, control_scale=control_scale)
+        denoised = self.denoise(
+            x, denoiser, sigma, cond, uc, control_scale=control_scale
+        )
 
         h, r, t, t_next = self.get_variables(sigma, next_sigma, previous_sigma)
         eta_h = self.eta * h
@@ -479,16 +511,26 @@ class RestoreDPMPP2MSampler(DPMPP2MSampler):
                 append_dims(next_sigma, x.ndim) > 0.0, x_advanced, x_standard
             )
             if self.eta:
-                x = x + eps_noise * next_sigma * (-2 * eta_h).expm1().neg().sqrt() * self.s_noise
+                x = (
+                    x
+                    + eps_noise
+                    * next_sigma
+                    * (-2 * eta_h).expm1().neg().sqrt()
+                    * self.s_noise
+                )
 
         return x, denoised
 
-    def __call__(self, denoiser, x, cond, uc=None, num_steps=None, control_scale=1.0, **kwargs):
+    def __call__(
+        self, denoiser, x, cond, uc=None, num_steps=None, control_scale=1.0, **kwargs
+    ):
         x, s_in, sigmas, num_sigmas, cond, uc = self.prepare_sampling_loop(
             x, cond, uc, num_steps
         )
         sigmas_min, sigmas_max = sigmas[-2].cpu(), sigmas[0].cpu()
-        sigmas_new = get_sigmas_karras(self.num_steps, sigmas_min, sigmas_max, device=x.device)
+        sigmas_new = get_sigmas_karras(
+            self.num_steps, sigmas_min, sigmas_max, device=x.device
+        )
         sigmas = sigmas_new
 
         noise_sampler = BrownianTreeNoiseSampler(x, sigmas_min, sigmas_max)
@@ -519,16 +561,24 @@ def to_d_center(denoised, x_center, x):
     b = denoised.shape[0]
     v_center = (denoised - x_center).view(b, -1)
     v_denoise = (x - denoised).view(b, -1)
-    d_center = v_center - v_denoise * (v_center * v_denoise).sum(dim=1).view(b, 1) / \
-                (v_denoise * v_denoise).sum(dim=1).view(b, 1)
+    d_center = v_center - v_denoise * (v_center * v_denoise).sum(dim=1).view(b, 1) / (
+        v_denoise * v_denoise
+    ).sum(dim=1).view(b, 1)
     d_center = d_center / d_center.view(x.shape[0], -1).norm(dim=1).view(-1, 1)
     return d_center.view(denoised.shape)
 
 
 class RestoreEDMSampler(SingleStepDiffusionSampler):
     def __init__(
-        self, s_churn=0.0, s_tmin=0.0, s_tmax=float("inf"), s_noise=1.0, restore_cfg=4.0,
-            restore_cfg_s_tmin=0.05, *args, **kwargs
+        self,
+        s_churn=0.0,
+        s_tmin=0.0,
+        s_tmax=float("inf"),
+        s_noise=1.0,
+        restore_cfg=4.0,
+        restore_cfg_s_tmin=0.05,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -541,12 +591,27 @@ class RestoreEDMSampler(SingleStepDiffusionSampler):
         self.sigma_max = 14.6146
 
     def denoise(self, x, denoiser, sigma, cond, uc, control_scale=1.0):
-        denoised = denoiser(*self.guider.prepare_inputs(x, sigma, cond, uc), control_scale)
+        denoised = denoiser(
+            *self.guider.prepare_inputs(x, sigma, cond, uc), control_scale
+        )
         denoised = self.guider(denoised, sigma)
         return denoised
 
-    def sampler_step(self, sigma, next_sigma, denoiser, x, cond, uc=None, gamma=0.0, x_center=None, eps_noise=None,
-                     control_scale=1.0, use_linear_control_scale=False, control_scale_start=0.0):
+    def sampler_step(
+        self,
+        sigma,
+        next_sigma,
+        denoiser,
+        x,
+        cond,
+        uc=None,
+        gamma=0.0,
+        x_center=None,
+        eps_noise=None,
+        control_scale=1.0,
+        use_linear_control_scale=False,
+        control_scale_start=0.0,
+    ):
         sigma_hat = sigma * (gamma + 1.0)
         if gamma > 0:
             if eps_noise is not None:
@@ -556,21 +621,37 @@ class RestoreEDMSampler(SingleStepDiffusionSampler):
             x = x + eps * append_dims(sigma_hat**2 - sigma**2, x.ndim) ** 0.5
 
         if use_linear_control_scale:
-            control_scale = (sigma[0].item() / self.sigma_max) * (control_scale_start - control_scale) + control_scale
+            control_scale = (sigma[0].item() / self.sigma_max) * (
+                control_scale_start - control_scale
+            ) + control_scale
 
-        denoised = self.denoise(x, denoiser, sigma_hat, cond, uc, control_scale=control_scale)
+        denoised = self.denoise(
+            x, denoiser, sigma_hat, cond, uc, control_scale=control_scale
+        )
 
         if (next_sigma[0] > self.restore_cfg_s_tmin) and (self.restore_cfg > 0):
-            d_center = (denoised - x_center)
-            denoised = denoised - d_center * ((sigma.view(-1, 1, 1, 1) / self.sigma_max) ** self.restore_cfg)
+            d_center = denoised - x_center
+            denoised = denoised - d_center * (
+                (sigma.view(-1, 1, 1, 1) / self.sigma_max) ** self.restore_cfg
+            )
 
         d = to_d(x, sigma_hat, denoised)
         dt = append_dims(next_sigma - sigma_hat, x.ndim)
         x = self.euler_step(x, d, dt)
         return x
 
-    def __call__(self, denoiser, x, cond, uc=None, num_steps=None, x_center=None, control_scale=1.0,
-                 use_linear_control_scale=False, control_scale_start=0.0):
+    def __call__(
+        self,
+        denoiser,
+        x,
+        cond,
+        uc=None,
+        num_steps=None,
+        x_center=None,
+        control_scale=1.0,
+        use_linear_control_scale=False,
+        control_scale_start=0.0,
+    ):
         x, s_in, sigmas, num_sigmas, cond, uc = self.prepare_sampling_loop(
             x, cond, uc, num_steps
         )
@@ -595,24 +676,29 @@ class RestoreEDMSampler(SingleStepDiffusionSampler):
                 control_scale_start=control_scale_start,
             )
         return x
-    
+
     def init_loop(self, x, cond, uc=None, num_steps=None):
- 
+
         x, s_in, sigmas, num_sigmas, cond, uc = self.prepare_sampling_loop(
             x, cond, uc, num_steps
         )
         return x, s_in, sigmas, num_sigmas, cond, uc
 
-    def step(self,
-             x,  
-             i,  
-             s_in, sigmas,  
-             denoiser, cond, uc,
-             x_center=None,
-             control_scale=1.0,
-             use_linear_control_scale=False,
-             control_scale_start=0.0):
- 
+    def step(
+        self,
+        x,
+        i,
+        s_in,
+        sigmas,
+        denoiser,
+        cond,
+        uc,
+        x_center=None,
+        control_scale=1.0,
+        use_linear_control_scale=False,
+        control_scale_start=0.0,
+    ):
+
         gamma = (
             min(self.s_churn / (len(sigmas) - 1), 2**0.5 - 1)
             if self.s_tmin <= sigmas[i] <= self.s_tmax
@@ -644,17 +730,29 @@ class TiledRestoreEDMSampler(RestoreEDMSampler):
         self.tile_stride = tile_stride
         self.tile_weights = gaussian_weights(self.tile_size, self.tile_size, 1)
 
-    def __call__(self, denoiser, x, cond, uc=None, num_steps=None, x_center=None, control_scale=1.0,
-                 use_linear_control_scale=False, control_scale_start=0.0):
+    def __call__(
+        self,
+        denoiser,
+        x,
+        cond,
+        uc=None,
+        num_steps=None,
+        x_center=None,
+        control_scale=1.0,
+        use_linear_control_scale=False,
+        control_scale_start=0.0,
+    ):
         use_local_prompt = isinstance(cond, list)
         b, _, h, w = x.shape
         latent_tiles_iterator = _sliding_windows(h, w, self.tile_size, self.tile_stride)
         tile_weights = self.tile_weights.repeat(b, 1, 1, 1)
         if not use_local_prompt:
-            LQ_latent = cond['control']
+            LQ_latent = cond["control"]
         else:
-            assert len(cond) == len(latent_tiles_iterator), "Number of local prompts should be equal to number of tiles"
-            LQ_latent = cond[0]['control']
+            assert len(cond) == len(
+                latent_tiles_iterator
+            ), "Number of local prompts should be equal to number of tiles"
+            LQ_latent = cond[0]["control"]
         clean_LQ_latent = x_center
         x, s_in, sigmas, num_sigmas, cond, uc = self.prepare_sampling_loop(
             x, cond, uc, num_steps
@@ -677,8 +775,8 @@ class TiledRestoreEDMSampler(RestoreEDMSampler):
                     _cond = cond[j]
                 else:
                     _cond = cond
-                _cond['control'] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
-                uc['control'] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
+                _cond["control"] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
+                uc["control"] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
                 _x = self.sampler_step(
                     s_in * sigmas[i],
                     s_in * sigmas[i + 1],
@@ -707,21 +805,27 @@ class TiledRestoreDPMPP2MSampler(RestoreDPMPP2MSampler):
         self.tile_stride = tile_stride
         self.tile_weights = gaussian_weights(self.tile_size, self.tile_size, 1)
 
-    def __call__(self, denoiser, x, cond, uc=None, num_steps=None, control_scale=1.0, **kwargs):
+    def __call__(
+        self, denoiser, x, cond, uc=None, num_steps=None, control_scale=1.0, **kwargs
+    ):
         use_local_prompt = isinstance(cond, list)
         b, _, h, w = x.shape
         latent_tiles_iterator = _sliding_windows(h, w, self.tile_size, self.tile_stride)
         tile_weights = self.tile_weights.repeat(b, 1, 1, 1)
         if not use_local_prompt:
-            LQ_latent = cond['control']
+            LQ_latent = cond["control"]
         else:
-            assert len(cond) == len(latent_tiles_iterator), "Number of local prompts should be equal to number of tiles"
-            LQ_latent = cond[0]['control']
+            assert len(cond) == len(
+                latent_tiles_iterator
+            ), "Number of local prompts should be equal to number of tiles"
+            LQ_latent = cond[0]["control"]
         x, s_in, sigmas, num_sigmas, cond, uc = self.prepare_sampling_loop(
             x, cond, uc, num_steps
         )
         sigmas_min, sigmas_max = sigmas[-2].cpu(), sigmas[0].cpu()
-        sigmas_new = get_sigmas_karras(self.num_steps, sigmas_min, sigmas_max, device=x.device)
+        sigmas_new = get_sigmas_karras(
+            self.num_steps, sigmas_min, sigmas_max, device=x.device
+        )
         sigmas = sigmas_new
 
         noise_sampler = BrownianTreeNoiseSampler(x, sigmas_min, sigmas_max)
@@ -746,8 +850,8 @@ class TiledRestoreDPMPP2MSampler(RestoreDPMPP2MSampler):
                     _cond = cond[j]
                 else:
                     _cond = cond
-                _cond['control'] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
-                uc['control'] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
+                _cond["control"] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
+                uc["control"] = LQ_latent[:, :, hi:hi_end, wi:wi_end]
                 _x, _old_denoised = self.sampler_step(
                     old_denoised_tile,
                     None if i == 0 else s_in * sigmas[i - 1],
@@ -761,7 +865,9 @@ class TiledRestoreDPMPP2MSampler(RestoreDPMPP2MSampler):
                     control_scale=control_scale,
                 )
                 x_next[:, :, hi:hi_end, wi:wi_end] += _x * tile_weights
-                old_denoised_next[:, :, hi:hi_end, wi:wi_end] += _old_denoised * tile_weights
+                old_denoised_next[:, :, hi:hi_end, wi:wi_end] += (
+                    _old_denoised * tile_weights
+                )
                 count[:, :, hi:hi_end, wi:wi_end] += tile_weights
             old_denoised_next /= count
             x_next /= count
@@ -772,22 +878,37 @@ class TiledRestoreDPMPP2MSampler(RestoreDPMPP2MSampler):
 
 def gaussian_weights(tile_width, tile_height, nbatches):
     """Generates a gaussian mask of weights for tile contributions"""
-    from numpy import pi, exp, sqrt
     import numpy as np
+    from numpy import exp, pi, sqrt
 
     latent_width = tile_width
     latent_height = tile_height
 
     var = 0.01
-    midpoint = (latent_width - 1) / 2  # -1 because index goes from 0 to latent_width - 1
-    x_probs = [exp(-(x - midpoint) * (x - midpoint) / (latent_width * latent_width) / (2 * var)) / sqrt(2 * pi * var)
-               for x in range(latent_width)]
+    midpoint = (
+        latent_width - 1
+    ) / 2  # -1 because index goes from 0 to latent_width - 1
+    x_probs = [
+        exp(
+            -(x - midpoint) * (x - midpoint) / (latent_width * latent_width) / (2 * var)
+        )
+        / sqrt(2 * pi * var)
+        for x in range(latent_width)
+    ]
     midpoint = latent_height / 2
-    y_probs = [exp(-(y - midpoint) * (y - midpoint) / (latent_height * latent_height) / (2 * var)) / sqrt(2 * pi * var)
-               for y in range(latent_height)]
+    y_probs = [
+        exp(
+            -(y - midpoint)
+            * (y - midpoint)
+            / (latent_height * latent_height)
+            / (2 * var)
+        )
+        / sqrt(2 * pi * var)
+        for y in range(latent_height)
+    ]
 
     weights = np.outer(y_probs, x_probs)
-    return torch.tile(torch.tensor(weights, device='cuda'), (nbatches, 4, 1, 1))
+    return torch.tile(torch.tensor(weights, device="cuda"), (nbatches, 4, 1, 1))
 
 
 def _sliding_windows(h: int, w: int, tile_size: int, tile_stride: int):

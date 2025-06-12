@@ -11,7 +11,7 @@ Append an unescaped token at the end of the reference pointer.
 ## Parameters
 
 `token` (in)
-:   token to add
+: token to add
 
 ## Complexity
 
@@ -21,17 +21,19 @@ Amortized constant.
 
 ??? example
 
-    The example shows the result of `push_back` for different JSON Pointers.
-     
-    ```cpp
-    --8<-- "examples/json_pointer__push_back.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/json_pointer__push_back.output"
-    ```
+````
+The example shows the result of `push_back` for different JSON Pointers.
+
+```cpp
+--8<-- "examples/json_pointer__push_back.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/json_pointer__push_back.output"
+```
+````
 
 ## Version history
 

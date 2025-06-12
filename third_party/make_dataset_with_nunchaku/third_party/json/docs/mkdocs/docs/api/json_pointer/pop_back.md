@@ -18,17 +18,19 @@ Constant.
 
 ??? example
 
-    The example shows the usage of `pop_back`.
-     
-    ```cpp
-    --8<-- "examples/json_pointer__pop_back.cpp"
-    ```
-    
-    Output:
-    
-    ```json
-    --8<-- "examples/json_pointer__pop_back.output"
-    ```
+````
+The example shows the usage of `pop_back`.
+
+```cpp
+--8<-- "examples/json_pointer__pop_back.cpp"
+```
+
+Output:
+
+```json
+--8<-- "examples/json_pointer__pop_back.output"
+```
+````
 
 ## Version history
 

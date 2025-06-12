@@ -1,6 +1,6 @@
 import pytest
-
 from nunchaku.utils import get_precision, is_turing
+
 from .utils import run_test
 
 
@@ -8,12 +8,31 @@ from .utils import run_test
 @pytest.mark.parametrize(
     "height,width,num_inference_steps,attention_impl,cpu_offload,expected_lpips",
     [
-        (1024, 1024, 50, "flashattn2", False, 0.139 if get_precision() == "int4" else 0.146),
-        (2048, 512, 25, "nunchaku-fp16", False, 0.168 if get_precision() == "int4" else 0.133),
+        (
+            1024,
+            1024,
+            50,
+            "flashattn2",
+            False,
+            0.139 if get_precision() == "int4" else 0.146,
+        ),
+        (
+            2048,
+            512,
+            25,
+            "nunchaku-fp16",
+            False,
+            0.168 if get_precision() == "int4" else 0.133,
+        ),
     ],
 )
 def test_flux_dev(
-    height: int, width: int, num_inference_steps: int, attention_impl: str, cpu_offload: bool, expected_lpips: float
+    height: int,
+    width: int,
+    num_inference_steps: int,
+    attention_impl: str,
+    cpu_offload: bool,
+    expected_lpips: float,
 ):
     run_test(
         precision=get_precision(),

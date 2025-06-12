@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,14 +18,15 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /* \file
@@ -42,10 +43,13 @@
 namespace cutlass {
 namespace library {
 
-// note: init methods for the same op-class may be split into multiple to parallelize compilation
+// note: init methods for the same op-class may be split into multiple to
+// parallelize compilation
 void initialize_gemm_reference_operations_int4(Manifest &manifest);
-void initialize_gemm_reference_operations_int8_interleaved_32(Manifest &manifest);
-void initialize_gemm_reference_operations_int8_interleaved_64(Manifest &manifest);
+void initialize_gemm_reference_operations_int8_interleaved_32(
+    Manifest &manifest);
+void initialize_gemm_reference_operations_int8_interleaved_64(
+    Manifest &manifest);
 void initialize_gemm_reference_operations_int8_canonical(Manifest &manifest);
 void initialize_gemm_reference_operations_e4m3a_e4m3out(Manifest &manifest);
 void initialize_gemm_reference_operations_e5m2a_e4m3out(Manifest &manifest);
@@ -84,7 +88,6 @@ void initialize_reference_operations(Manifest &manifest) {
   initialize_gemm_reference_operations_fp32out(manifest);
   initialize_gemm_reference_operations_fp_other(manifest);
   initialize_gemm_reference_operations_fp_mixed_input(manifest);
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,4 +96,3 @@ void initialize_reference_operations(Manifest &manifest) {
 } // namespace cutlass
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-

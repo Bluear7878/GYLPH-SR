@@ -79,9 +79,9 @@ struct GemmWithReductionReference {
   GemmWithReductionReference() { }
 
   ElementCompute operator()(
-    ElementAccumulator d_y, 
+    ElementAccumulator d_y,
     ElementT t) {
-    
+
     return binary_op(ElementCompute(d_y), ElementCompute(t));
   }
 };
@@ -132,7 +132,7 @@ struct TestbedGemmWithReduction {
   /// Helper to initialize a tensor view
   template <typename Element, typename Layout>
   bool initialize_tensor(
-    cutlass::TensorView<Element, Layout> view, 
+    cutlass::TensorView<Element, Layout> view,
     cutlass::Distribution::Kind dist_kind,
     uint64_t seed) {
 
@@ -158,11 +158,11 @@ struct TestbedGemmWithReduction {
 
       cutlass::reference::host::TensorFillRandomUniform(
         view, seed, scope_max, scope_min, 0);
-    } 
+    }
     else if (dist_kind == cutlass::Distribution::Identity) {
 
       cutlass::reference::host::TensorFillIdentity(view);
-    } 
+    }
     else if (dist_kind == cutlass::Distribution::Gaussian) {
 
       cutlass::reference::host::TensorFillRandomGaussian(view, seed, 0, 0.5);
@@ -176,7 +176,7 @@ struct TestbedGemmWithReduction {
 
         }
       }
-    } 
+    }
     else {
       EXPECT_TRUE(false) << "Not implemented";
       return false;
@@ -197,7 +197,7 @@ struct TestbedGemmWithReduction {
     tensor_D.resize(problem_size.mn());
 
     tensor_Reduction.resize({
-      problem_size.m(), 
+      problem_size.m(),
       (problem_size.n() - 1 + Gemm::ThreadblockShape::kN) / Gemm::ThreadblockShape::kN
     });
 
@@ -234,8 +234,8 @@ struct TestbedGemmWithReduction {
 
   /// Compares computed reference with device reference and outputs to a file if incorrect
   bool compare_reference(
-    cutlass::gemm::GemmCoord problem_size, 
-    ElementAccumulator alpha, 
+    cutlass::gemm::GemmCoord problem_size,
+    ElementAccumulator alpha,
     ElementAccumulator beta) {
 
     tensor_Reduction.sync_host();
@@ -244,7 +244,7 @@ struct TestbedGemmWithReduction {
     EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_A.host_view()), 0);
     EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_B.host_view()), 0);
     EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_C.host_view()), 0);
-    
+
     EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_D.host_view()), 0);
     EXPECT_GT(cutlass::reference::host::TensorNorm(reference_D.host_view()), 0);
     EXPECT_GT(cutlass::reference::host::TensorNorm(tensor_Reduction.host_view()), 0);
@@ -269,7 +269,7 @@ struct TestbedGemmWithReduction {
       EXPECT_TRUE(false) << " mismatched reference";
       passed = false;
     }
-    
+
     if (!passed) {
 
       /*
@@ -279,11 +279,11 @@ struct TestbedGemmWithReduction {
         << problem_size.m() << "x"
         << problem_size.n() << "x"
         << problem_size.k() << "_"
-        << Gemm::ThreadblockShape::kM << "x"  
-        << Gemm::ThreadblockShape::kN << "x"  
+        << Gemm::ThreadblockShape::kM << "x"
+        << Gemm::ThreadblockShape::kN << "x"
         << Gemm::ThreadblockShape::kK << "_"
-        << Gemm::WarpShape::kM << "x"  
-        << Gemm::WarpShape::kN << "x"  
+        << Gemm::WarpShape::kM << "x"
+        << Gemm::WarpShape::kN << "x"
         << Gemm::WarpShape::kK << ".txt";
 
       std::ofstream file(fname.str());
@@ -292,10 +292,10 @@ struct TestbedGemmWithReduction {
       std::ofstream file("testbed_universal_errors_sm70.txt");
 
       file
-        << "problem: " << problem_size 
+        << "problem: " << problem_size
         << ", alpha: " << alpha << ", beta: " << beta << "\n\n";
 
-      file 
+      file
         << "A =\n" << tensor_A.host_view()
         << "\nB =\n" << tensor_B.host_view()
         << "\nC =\n" << tensor_C.host_view()
@@ -311,8 +311,8 @@ struct TestbedGemmWithReduction {
 
   /// Verifies the result is a GEMM
   bool verify(
-    cutlass::gemm::GemmCoord problem_size, 
-    ElementAccumulator alpha, 
+    cutlass::gemm::GemmCoord problem_size,
+    ElementAccumulator alpha,
     ElementAccumulator beta) {
 
     //
@@ -322,18 +322,18 @@ struct TestbedGemmWithReduction {
     cutlass::reference::host::GemmComplex<
         typename Gemm::ElementA, typename Gemm::LayoutA,
         typename Gemm::ElementB, typename Gemm::LayoutB,
-        ElementAccumulator, typename Gemm::LayoutC, 
+        ElementAccumulator, typename Gemm::LayoutC,
         ElementAccumulator, ElementAccumulator
     >(
       problem_size,
-      alpha, 
+      alpha,
       tensor_A.host_ref(),
       Gemm::kTransformA,
       tensor_B.host_ref(),
       Gemm::kTransformB,
-      beta, 
-      tensor_C_ref.host_ref(), 
-      reference_d_Y.host_ref(), 
+      beta,
+      tensor_C_ref.host_ref(),
+      reference_d_Y.host_ref(),
       ElementAccumulator(0)
     );
 
@@ -341,7 +341,7 @@ struct TestbedGemmWithReduction {
 
     ReferenceOp reference_op;
 
-    // compute backwards 
+    // compute backwards
     for (int m = 0; m < problem_size.m(); ++m) {
       ElementAccumulator reduced_value = ElementAccumulator();
       for (int n = 0; n < problem_size.n(); ++n) {
@@ -388,9 +388,9 @@ struct TestbedGemmWithReduction {
   /// Executes one test
   bool run(
     cutlass::gemm::GemmUniversalMode mode,
-    cutlass::gemm::GemmCoord problem_size, 
+    cutlass::gemm::GemmCoord problem_size,
     int batch_count = 1,
-    ElementAccumulator alpha = ElementAccumulator(1), 
+    ElementAccumulator alpha = ElementAccumulator(1),
     ElementAccumulator beta = ElementAccumulator(0)) {
 
     // Waive test if insufficient CUDA device
@@ -493,7 +493,7 @@ struct TestbedGemmWithReduction {
       status = gemm_op();
       EXPECT_TRUE(status == cutlass::Status::kSuccess) << to_string(status);
     }
-    
+
 
     cudaError_t result = cudaEventRecord(events[0]);
     EXPECT_EQ(result, cudaSuccess);
@@ -559,20 +559,20 @@ bool TestGemmWithReduction(
   cutlass::gemm::GemmCoord const & problem_size,
   cutlass::gemm::GemmUniversalMode mode,
   int batch_count = 1,
-  double alpha = 1.0, 
+  double alpha = 1.0,
   double beta = 2.0) {
 
   bool passed = true;
 
   TestbedGemmWithReduction<Gemm, ReferenceOp> testbed;
-  
+
   using ElementAccumulator = typename Gemm::ElementAccumulator;
 
   passed = testbed.run(
     mode,
-    problem_size, 
+    problem_size,
     batch_count,
-    cutlass::from_real<ElementAccumulator>(alpha), 
+    cutlass::from_real<ElementAccumulator>(alpha),
     cutlass::from_real<ElementAccumulator>(beta)
   );
 

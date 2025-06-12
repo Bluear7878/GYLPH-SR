@@ -36,17 +36,9 @@ Common data types and string names/tags for them
 
 import enum
 
-from cutlass_library import (
-    ComplexTransform,
-    DataType,
-    DataTypeSize,
-    EpilogueScheduleType,
-    KernelScheduleType,
-    MathOperation,
-    OpcodeClass,
-    TileSchedulerType
-)
-
+from cutlass_library import (ComplexTransform, DataType, DataTypeSize,
+                             EpilogueScheduleType, KernelScheduleType,
+                             MathOperation, OpcodeClass, TileSchedulerType)
 
 # The following block implements enum.auto() for Python 3.5 variants that don't include it such
 # as the default 3.5.2 on Ubuntu 16.04.
@@ -84,13 +76,9 @@ class DataTypeSizeBytes:
         """
         bits = DataTypeSize[datatype]
         if bits < 8:
-            raise Exception(
-                f"Data type {datatype} is less than one byte in size."
-            )
+            raise Exception(f"Data type {datatype} is less than one byte in size.")
         elif bits % 8 != 0:
-            raise Exception(
-                f"Data type datatype is not an integer number of bytes."
-            )
+            raise Exception(f"Data type datatype is not an integer number of bytes.")
         return bits // 8
 
 
@@ -177,7 +165,9 @@ def op_tag(op) -> str:
     elif isinstance(op, FunctionalOp):
         return FunctionalOpTag[op]
     else:
-        raise Exception(f"Unexpected op type {op}. Must be one of ActivationOp or FunctionalOp.")
+        raise Exception(
+            f"Unexpected op type {op}. Must be one of ActivationOp or FunctionalOp."
+        )
 
 
 class FloatRoundStyle(enum.Enum):
@@ -251,7 +241,7 @@ class TileDescription:
         cluster_shape=[1, 1, 1],
         kernel_schedule: KernelScheduleType = None,
         epilogue_schedule: EpilogueScheduleType = None,
-        tile_scheduler: TileSchedulerType = None
+        tile_scheduler: TileSchedulerType = None,
     ):
         """
         :param threadblock_shape: shape of a threadblock tyle
@@ -271,9 +261,12 @@ class TileDescription:
         :param tile_scheduler: type of tile scheduler to use (only available for SM90+)
         :type tile_scheduler: cutlass_library.TileSchedulerType
         """
-        if ((kernel_schedule is None and epilogue_schedule is not None) or
-            (kernel_schedule is not None and epilogue_schedule is None)):
-            raise Exception("Kernel and epilogue schedule must either both be Auto or neither be Auto.")
+        if (kernel_schedule is None and epilogue_schedule is not None) or (
+            kernel_schedule is not None and epilogue_schedule is None
+        ):
+            raise Exception(
+                "Kernel and epilogue schedule must either both be Auto or neither be Auto."
+            )
 
         self.threadblock_shape = threadblock_shape
         self.cluster_shape = cluster_shape
@@ -297,7 +290,7 @@ class TileDescription:
             "instruction_shape": None,
             "kernel_schedule": None,
             "epilogue_schedule": None,
-            "tile_scheduler": None
+            "tile_scheduler": None,
         }
         for key in attrs.keys():
             if key in td.keys():
@@ -311,7 +304,7 @@ class TileDescription:
             self.math_instruction.element_b,
             self.math_instruction.element_accumulator,
             self.math_instruction.opcode_class,
-            self.math_instruction.math_operation
+            self.math_instruction.math_operation,
         )
 
         # Remove the instruction shape
@@ -349,7 +342,7 @@ class TileDescription:
             self.threadblock_shape[0],
             self.threadblock_shape[1],
             self.threadblock_shape[2],
-            emit_stages
+            emit_stages,
         )
 
         return name
@@ -361,7 +354,12 @@ class TileDescription:
         :return: name identifying the tile description
         :rtype: int
         """
-        return "%dx%d_%dx%d" % (self.threadblock_shape[0], self.threadblock_shape[1], self.threadblock_shape[2], self.stages)
+        return "%dx%d_%dx%d" % (
+            self.threadblock_shape[0],
+            self.threadblock_shape[1],
+            self.threadblock_shape[2],
+            self.stages,
+        )
 
     def __str__(self):
         """
@@ -398,7 +396,9 @@ class TileDescription:
 
 
 class TensorDescription:
-    def __init__(self, element, layout, alignment=1, complex_transform=ComplexTransform.none):
+    def __init__(
+        self, element, layout, alignment=1, complex_transform=ComplexTransform.none
+    ):
         self.element = element
         self.layout = layout
         if element != DataType.void:
@@ -430,7 +430,9 @@ def CalculateSmemUsagePerStage(operation):
             + stage_barrier_bytes
         )
     else:
-        raise Exception("Unsupported operation kind {}.".format(operation.operation_kind))
+        raise Exception(
+            "Unsupported operation kind {}.".format(operation.operation_kind)
+        )
 
 
 def CalculateSmemUsage(operation):
@@ -471,9 +473,7 @@ def api_version(arch, opclass, dtype):
     :return: API version to be used in code emission
     :rtype: ApiVersion
     """
-    if (arch >= 90 and
-        opclass == OpcodeClass.TensorOp and
-        (dtype != DataType.f64)):
+    if arch >= 90 and opclass == OpcodeClass.TensorOp and (dtype != DataType.f64):
         return ApiVersion.v3x
     else:
         return ApiVersion.v2x

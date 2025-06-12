@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,28 +18,30 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing warp-level matrix multiply-accumulate operations.
+    \brief Templates implementing warp-level matrix multiply-accumulate
+   operations.
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
 #include "cutlass/complex.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/matrix_shape.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/gemm/gemm.h"
+#include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
 
 #include "cutlass/array_planar_complex.h"
 #include "cutlass/gemm/warp/tile_iterator_planar_complex.h"
@@ -53,30 +55,33 @@ namespace warp {
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <
-  /// Underlying real-valued warp-level matrix multiply
-  typename Operator_,
-  /// Transformation applied to A operand (typically folded into math instruction)
-  ComplexTransform TransformA = ComplexTransform::kNone,
-  /// Transformation applied to B operand (typically folded into math instruction)
-  ComplexTransform TransformB = ComplexTransform::kNone
->
+    /// Underlying real-valued warp-level matrix multiply
+    typename Operator_,
+    /// Transformation applied to A operand (typically folded into math
+    /// instruction)
+    ComplexTransform TransformA = ComplexTransform::kNone,
+    /// Transformation applied to B operand (typically folded into math
+    /// instruction)
+    ComplexTransform TransformB = ComplexTransform::kNone>
 class MmaPlanarComplex {
 public:
-
   /// Underlying real-valued warp-level matrix multiply
   using Operator = Operator_;
 
   /// Shape of warp-level matrix multipy
   using Shape = typename Operator::Shape;
 
-  /// Transformation applied to A operand (typically folded into math instruction)
+  /// Transformation applied to A operand (typically folded into math
+  /// instruction)
   static ComplexTransform const kTransformA = TransformA;
 
-  /// Transformation applied to B operand (typically folded into math instruction)
+  /// Transformation applied to B operand (typically folded into math
+  /// instruction)
   static ComplexTransform const kTransformB = TransformB;
 
   /// Fragment of elements
-  using FragmentA = ArrayPlanarComplex<typename Operator::ElementA, Operator::FragmentA::kElements>;
+  using FragmentA = ArrayPlanarComplex<typename Operator::ElementA,
+                                       Operator::FragmentA::kElements>;
 
   /// Iterator into planar complex
   using IteratorA = TileIteratorPlanarComplex<typename Operator::IteratorA>;
@@ -84,7 +89,8 @@ public:
   /// Layout in memory of the A operand
   using LayoutA = typename Operator::LayoutA;
 
-  using FragmentB = ArrayPlanarComplex<typename Operator::ElementB, Operator::FragmentB::kElements>;
+  using FragmentB = ArrayPlanarComplex<typename Operator::ElementB,
+                                       Operator::FragmentB::kElements>;
 
   /// Iterator into planar complex
   using IteratorB = TileIteratorPlanarComplex<typename Operator::IteratorB>;
@@ -96,18 +102,17 @@ public:
   using IteratorC = TileIteratorPlanarComplex<typename Operator::IteratorC>;
 
   /// Accumulator fragment
-  using FragmentC = ArrayPlanarComplex<typename Operator::ElementC, Operator::FragmentC::kElements>;
+  using FragmentC = ArrayPlanarComplex<typename Operator::ElementC,
+                                       Operator::FragmentC::kElements>;
 
   /// Layout of accumulator fragment in memory
   using LayoutC = typename Operator::LayoutC;
 
 private:
-
-    /// Number of mma operations performed
-  using MmaIterations = MatrixShape<
-    Operator::Shape::kM / Operator::Policy::Operator::Shape::kM,
-    Operator::Shape::kN / Operator::Policy::Operator::Shape::kN
-  >;
+  /// Number of mma operations performed
+  using MmaIterations =
+      MatrixShape<Operator::Shape::kM / Operator::Policy::Operator::Shape::kM,
+                  Operator::Shape::kN / Operator::Policy::Operator::Shape::kN>;
 
 public:
   /// Ctor
@@ -116,11 +121,8 @@ public:
 
   /// Performs a warp-level matrix multiply-accumulate operation
   CUTLASS_DEVICE
-  void operator()(
-    FragmentC &D, 
-    FragmentA const &A_in, 
-    FragmentB const &B_in, 
-    FragmentC const &C) const {
+  void operator()(FragmentC &D, FragmentA const &A_in, FragmentB const &B_in,
+                  FragmentC const &C) const {
 
     D.real = C.real;
     D.imag = C.imag;
@@ -136,8 +138,7 @@ public:
 
     if (kTransformA == ComplexTransform::kConjugate) {
       frag_A.imag = neg_A(frag_A.imag);
-    }
-    else {
+    } else {
       frag_A.imag = frag_A.imag;
     }
 
@@ -147,8 +148,7 @@ public:
     if (kTransformB == ComplexTransform::kConjugate) {
       negate<typename FragmentB::ArrayReal> neg;
       frag_B.imag = neg(frag_B.imag);
-    }
-    else {
+    } else {
       frag_B.imag = frag_B.imag;
     }
 

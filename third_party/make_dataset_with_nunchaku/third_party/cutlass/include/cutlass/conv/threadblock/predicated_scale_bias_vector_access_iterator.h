@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,19 +18,21 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 
 /*! \file
-    \brief Templates calculating the address and predicates to the load of scale and bias vectors.
+    \brief Templates calculating the address and predicates to the load of scale
+   and bias vectors.
 
     This iterator uses masks to guard out-of-bounds accesses.
 
@@ -42,6 +44,7 @@
 #pragma once
 
 #include "cutlass/array.h"
+#include "cutlass/conv/threadblock/conv2d_params.h"
 #include "cutlass/coord.h"
 #include "cutlass/cutlass.h"
 #include "cutlass/layout/matrix.h"
@@ -50,7 +53,6 @@
 #include "cutlass/predicate_vector.h"
 #include "cutlass/tensor_ref.h"
 #include "cutlass/tensor_view.h"
-#include "cutlass/conv/threadblock/conv2d_params.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,9 +64,7 @@ namespace threadblock {
 
 /// PredicatedScaleBiasVectorAccessIterator
 ///
-template <typename ThreadblockShape,
-          typename Element,
-          typename Layout>
+template <typename ThreadblockShape, typename Element, typename Layout>
 class PredicatedScaleBiasVectorAccessIterator;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,11 +72,9 @@ class PredicatedScaleBiasVectorAccessIterator;
 /// Specialization of PredicatedTileAccessIterator for fprop pitch-linear data.
 ///
 template <typename ThreadblockShape_, typename Element_>
-class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
-                                              Element_,
+class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_, Element_,
                                               layout::PitchLinear> {
- public:
-
+public:
   using ThreadblockShape = ThreadblockShape_;
   using Element = Element_;
   using Layout = layout::PitchLinear;
@@ -92,17 +90,18 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
   using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   static int const kElementsPerAccess = 128 / sizeof_bits<Element>::value;
-  static int const kThreads = ThreadblockShape::kContiguous / kElementsPerAccess;
+  static int const kThreads =
+      ThreadblockShape::kContiguous / kElementsPerAccess;
 
   using AccessType = AlignedArray<Element, kElementsPerAccess>;
 
   using Params = PredicatedScaleBiasVectorAccessIteratorParams;
 
- private:
+private:
   /// Internal pointer type permits fast address arithmetic
   using BytePointer = char *;
 
- private:
+private:
   //
   // Data members
   //
@@ -119,7 +118,7 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
 
   TensorCoord thread_offset_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -136,10 +135,8 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
       int thread_id,
       /// Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : params_(params),
-        problem_size_trs(problem_size.R * problem_size.S),
-        problem_size_c(problem_size.C),
-        filter_trs_(0) {
+      : params_(params), problem_size_trs(problem_size.R * problem_size.S),
+        problem_size_c(problem_size.C), filter_trs_(0) {
     pointer_ = (thread_id < kThreads)
                    ? reinterpret_cast<BytePointer>(
                          const_cast<NonConstPointer>(scale_pointer))
@@ -172,8 +169,7 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
       TensorCoord const &threadblock_offset)
       : params_(params),
         problem_size_trs(problem_size.T * problem_size.R * problem_size.S),
-        problem_size_c(problem_size.C),
-        filter_trs_(0) {
+        problem_size_c(problem_size.C), filter_trs_(0) {
     pointer_ = (thread_id < kThreads)
                    ? reinterpret_cast<BytePointer>(
                          const_cast<NonConstPointer>(scale_pointer))
@@ -227,13 +223,14 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
   CUTLASS_HOST_DEVICE
   void set_iteration_index(int index) {}
 
-  /// Advances an iterator along logical dimensions of matrix in units of whole threadblock tiles
+  /// Advances an iterator along logical dimensions of matrix in units of whole
+  /// threadblock tiles
   CUTLASS_DEVICE
-  void add_tile_offset(
-      TensorCoord const &tile_offset) {
+  void add_tile_offset(TensorCoord const &tile_offset) {
     thread_offset_ =
         thread_offset_ +
-        TensorCoord(ThreadblockShape::kContiguous * tile_offset.contiguous(), 0);
+        TensorCoord(ThreadblockShape::kContiguous * tile_offset.contiguous(),
+                    0);
   }
 
   /// Returns a pointer
@@ -247,9 +244,7 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
 
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
-  PredicatedScaleBiasVectorAccessIterator &operator++() {
-    return *this;
-  }
+  PredicatedScaleBiasVectorAccessIterator &operator++() { return *this; }
 
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
@@ -278,14 +273,15 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
 #if defined(_MSC_VER) || (__CUDACC_VER_MAJOR__ < 11)
     enabled = threadIdx.x < kThreads * 2;
 #else
-    asm volatile(
-        "{\n"
-        "  .reg .u32 tid_reg;\n"
-        "  .reg .pred p;\n"
-        "  mov.u32 tid_reg, %%tid.x;\n"
-        "  setp.lt.u32 p, tid_reg, %1;\n"
-        "  selp.u32 %0, 1, 0, p;\n"
-        "}\n" : "+r"(enabled) :"n"(kThreads * 2));
+    asm volatile("{\n"
+                 "  .reg .u32 tid_reg;\n"
+                 "  .reg .pred p;\n"
+                 "  mov.u32 tid_reg, %%tid.x;\n"
+                 "  setp.lt.u32 p, tid_reg, %1;\n"
+                 "  selp.u32 %0, 1, 0, p;\n"
+                 "}\n"
+                 : "+r"(enabled)
+                 : "n"(kThreads * 2));
 #endif
 
     return ((thread_offset_.contiguous() < problem_size_c) && enabled);
@@ -301,13 +297,10 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
 ///            WriteableContiguousTileIteratorConcept |
 ///            MaskedTileIteratorConcept
 ///
-template <typename ThreadblockShape_,
-          typename Element_>
-class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
-                                        Element_,
-                                        layout::RowMajor> {
- public:
-
+template <typename ThreadblockShape_, typename Element_>
+class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_, Element_,
+                                              layout::RowMajor> {
+public:
   using ThreadblockShape = ThreadblockShape_;
   using Element = Element_;
   using Layout = layout::RowMajor;
@@ -323,16 +316,16 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
   using NonConstPointer = typename platform::remove_const<Element>::type *;
 
   using UnderlyingIterator = PredicatedScaleBiasVectorAccessIterator<
-      layout::PitchLinearShape<ThreadblockShape::kColumn, ThreadblockShape::kRow>,
-      Element,
-      layout::PitchLinear>;
+      layout::PitchLinearShape<ThreadblockShape::kColumn,
+                               ThreadblockShape::kRow>,
+      Element, layout::PitchLinear>;
 
   using AccessType = typename UnderlyingIterator::AccessType;
   static int const kElementsPerAccess = UnderlyingIterator::kElementsPerAccess;
 
   using Params = PredicatedScaleBiasVectorAccessIteratorParams;
 
- private:
+private:
   //
   // Data members
   //
@@ -340,7 +333,7 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
   /// Underlying pitch-linear tile iterator
   UnderlyingIterator iterator_;
 
- public:
+public:
   /// Constructs a TileIterator from its precomputed state, threadblock offset,
   /// and thread ID
   CUTLASS_HOST_DEVICE
@@ -357,8 +350,7 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
       int thread_id,
       ///< Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : iterator_(params, problem_size, scale_pointer, bias_pointer,
-                  thread_id,
+      : iterator_(params, problem_size, scale_pointer, bias_pointer, thread_id,
                   layout::PitchLinearCoord(threadblock_offset.column(),
                                            threadblock_offset.row())) {}
 
@@ -376,19 +368,18 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
       int thread_id,
       ///< Initial offset of threadblock
       TensorCoord const &threadblock_offset)
-      : iterator_(params, problem_size, scale_pointer, bias_pointer,
-                  thread_id,
+      : iterator_(params, problem_size, scale_pointer, bias_pointer, thread_id,
                   layout::PitchLinearCoord(threadblock_offset.column(),
                                            threadblock_offset.row())) {}
 
   /// Construct a PredicatedTileAccessIterator with zero threadblock offset
   CUTLASS_HOST_DEVICE
   PredicatedScaleBiasVectorAccessIterator(
-      Params const &params,                   ///< Precomputed parameters object
-      Conv2dProblemSize const &problem_size,  ///< Extent of tensor
-      ConstPointer scale_pointer,  ///< Pointer to the start of the scale vector
-      ConstPointer bias_pointer,   ///< Pointer to the start of the bias vector
-      int thread_id                ///< ID of each participating thread
+      Params const &params,                  ///< Precomputed parameters object
+      Conv2dProblemSize const &problem_size, ///< Extent of tensor
+      ConstPointer scale_pointer, ///< Pointer to the start of the scale vector
+      ConstPointer bias_pointer,  ///< Pointer to the start of the bias vector
+      int thread_id               ///< ID of each participating thread
       )
       : PredicatedScaleBiasVectorAccessIterator(params, problem_size,
                                                 scale_pointer, bias_pointer,
@@ -396,11 +387,11 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
 
   CUTLASS_HOST_DEVICE
   PredicatedScaleBiasVectorAccessIterator(
-      Params const &params,                   ///< Precomputed parameters object
-      Conv3dProblemSize const &problem_size,  ///< Extent of tensor
-      ConstPointer scale_pointer,  ///< Pointer to the start of the scale vector
-      ConstPointer bias_pointer,   ///< Pointer to the start of the bias vector
-      int thread_id                ///< ID of each participating thread
+      Params const &params,                  ///< Precomputed parameters object
+      Conv3dProblemSize const &problem_size, ///< Extent of tensor
+      ConstPointer scale_pointer, ///< Pointer to the start of the scale vector
+      ConstPointer bias_pointer,  ///< Pointer to the start of the bias vector
+      int thread_id               ///< ID of each participating thread
       )
       : PredicatedScaleBiasVectorAccessIterator(params, problem_size,
                                                 scale_pointer, bias_pointer,
@@ -450,21 +441,17 @@ class PredicatedScaleBiasVectorAccessIterator<ThreadblockShape_,
 
   /// Increment and return an instance to self.
   CUTLASS_HOST_DEVICE
-  void advance() {
-    iterator_.advance();
-  }
+  void advance() { iterator_.advance(); }
 
   /// Returns whether access is valid or not
   CUTLASS_HOST_DEVICE
-  bool valid() {
-    return iterator_.valid();
-  }
+  bool valid() { return iterator_.valid(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}  // namespace threadblock
-}  // namespace conv 
-}  // namespace cutlass
+} // namespace threadblock
+} // namespace conv
+} // namespace cutlass
 
 ////////////////////////////////////////////////////////////////////////////////

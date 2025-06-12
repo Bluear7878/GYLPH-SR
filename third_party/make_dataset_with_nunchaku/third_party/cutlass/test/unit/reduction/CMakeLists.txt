@@ -39,7 +39,7 @@ add_custom_target(
   )
 
 add_custom_target(
-  test_unit_reduction 
+  test_unit_reduction
   DEPENDS
   test_unit_reduction_thread
   test_unit_reduction_kernel

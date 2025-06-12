@@ -1,15 +1,20 @@
-import os, json, cv2, random, gc, torch
-import numpy as np
+import gc
+import json
+import os
+import random
 from glob import glob
-from PIL import Image
-from tqdm import tqdm
 from itertools import islice
+
+import cv2
+import numpy as np
+import torch
 import torchvision.transforms as T
-from diffusers import FluxControlNetModel
-from diffusers import FluxPipeline
+from diffusers import FluxControlNetModel, FluxPipeline
 from nunchaku import NunchakuFluxTransformer2dModel
 from nunchaku.caching.diffusers_adapters import apply_cache_on_pipe
 from nunchaku.utils import get_precision
+from PIL import Image
+from tqdm import tqdm
 
 # List of augmentation keywords to diversify prompt conditions.
 # These keywords add various photographic styles and effects to enrich the training data.
@@ -56,16 +61,15 @@ AUG_KEYWORDS = [
 
 # File paths for prompt metadata and dataset saving
 PROMPT_META = "./prompt_bank/prompts_meta.jsonl"
-SAVE_ROOT   = "./train_dataset"
-HQ_DIR      = f"{SAVE_ROOT}/hq"
-META_OUT    = f"{SAVE_ROOT}/metadata.jsonl"
+SAVE_ROOT = "./train_dataset"
+HQ_DIR = f"{SAVE_ROOT}/hq"
+META_OUT = f"{SAVE_ROOT}/metadata.jsonl"
 os.makedirs(HQ_DIR, exist_ok=True)  # Ensure directory exists to save generated images
 meta_dir = os.path.dirname(META_OUT)  # Base directory for relative paths in metadata
 
 # Load pretrained ControlNet model for upscaling task with half precision (bfloat16) for memory efficiency
 controlnet = FluxControlNetModel.from_pretrained(
-    "jasperai/Flux.1-dev-Controlnet-Upscaler",
-    torch_dtype=torch.bfloat16
+    "jasperai/Flux.1-dev-Controlnet-Upscaler", torch_dtype=torch.bfloat16
 )
 
 # Dynamically get precision string for loading transformer weights accordingly (bf16 or fp16)
@@ -82,7 +86,7 @@ pipe = FluxPipeline.from_pretrained(
     "black-forest-labs/FLUX.1-dev",
     transformer=transformer,
     controlnet=controlnet,
-    torch_dtype=torch.bfloat16
+    torch_dtype=torch.bfloat16,
 ).to("cuda")
 
 # Load and apply LoRA parameters to the transformer to improve realism with adjustable strength
@@ -93,15 +97,18 @@ pipe.transformer.set_lora_strength(0.8)
 # apply_cache_on_pipe(pipe, residual_diff_threshold_multi=0.01)
 
 # Define image preprocessing pipeline converting PIL image to normalized tensor for potential use
-to_tensor = T.Compose([
-    T.Resize(512, interpolation=T.InterpolationMode.LANCZOS),
-    T.ToTensor(),
-    T.Normalize(0.5, 0.5)
-])
+to_tensor = T.Compose(
+    [
+        T.Resize(512, interpolation=T.InterpolationMode.LANCZOS),
+        T.ToTensor(),
+        T.Normalize(0.5, 0.5),
+    ]
+)
 
 # Batch size and inference step count for generation
 BATCH_SIZE = 1
 STEPS = 50
+
 
 def chunk(it, n):
     """
@@ -110,11 +117,13 @@ def chunk(it, n):
     """
     it = iter(it)
     for first in it:
-        yield [first, *list(islice(it, n-1))]
+        yield [first, *list(islice(it, n - 1))]
+
 
 # Main processing: open prompt metadata input and output metadata file
-with open(PROMPT_META, "r", encoding="utf-8") as f_in, \
-     open(META_OUT, "w", encoding="utf-8") as f_out:
+with open(PROMPT_META, "r", encoding="utf-8") as f_in, open(
+    META_OUT, "w", encoding="utf-8"
+) as f_out:
 
     # Load all prompt records from jsonl file into memory
     raw_lines = [json.loads(ln) for ln in f_in]

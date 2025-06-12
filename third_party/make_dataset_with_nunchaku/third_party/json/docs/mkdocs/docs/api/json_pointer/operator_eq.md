@@ -29,24 +29,24 @@ class json_pointer {
 
 1. Compares two JSON pointers for equality by comparing their reference tokens.
 
-2. Compares a JSON pointer and a string or a string and a JSON pointer for equality by converting the string to a JSON
+1. Compares a JSON pointer and a string or a string and a JSON pointer for equality by converting the string to a JSON
    pointer and comparing the JSON pointers according to 1.
 
 ## Template parameters
 
 `RefStringTypeLhs`, `RefStringTypeRhs`
-:   the string type of the left-hand side or right-hand side JSON pointer, respectively
+: the string type of the left-hand side or right-hand side JSON pointer, respectively
 
 `StringType`
-:   the string type derived from the `json_pointer` operand ([`json_pointer::string_t`](string_t.md))
+: the string type derived from the `json_pointer` operand ([`json_pointer::string_t`](string_t.md))
 
 ## Parameters
 
 `lhs` (in)
-:   first value to consider
+: first value to consider
 
 `rhs` (in)
-:   second value to consider
+: second value to consider
 
 ## Return value
 
@@ -55,12 +55,12 @@ whether the values `lhs`/`*this` and `rhs` are equal
 ## Exception safety
 
 1. No-throw guarantee: this function never throws exceptions.
-2. Strong exception safety: if an exception occurs, the original value stays intact.
+1. Strong exception safety: if an exception occurs, the original value stays intact.
 
 ## Exceptions
 
 1. (none)
-2. The function can throw the following exceptions:
+1. The function can throw the following exceptions:
    - Throws [parse_error.107](../../home/exceptions.md#jsonexceptionparse_error107) if the given JSON pointer `s` is
      nonempty and does not begin with a slash (`/`); see example below.
    - Throws [parse_error.108](../../home/exceptions.md#jsonexceptionparse_error108) if a tilde (`~`) in the given JSON
@@ -75,39 +75,45 @@ tokens.
 
 !!! warning "Deprecation"
 
-    Overload 2 is deprecated and will be removed in a future major version release.
+```
+Overload 2 is deprecated and will be removed in a future major version release.
+```
 
 ## Examples
 
 ??? example "Example: (1) Comparing JSON pointers"
 
-    The example demonstrates comparing JSON pointers.
-        
-    ```cpp
-    --8<-- "examples/json_pointer__operator__equal.cpp"
-    ```
-    
-    Output:
-    
-    ```
-    --8<-- "examples/json_pointer__operator__equal.output"
-    ```
+````
+The example demonstrates comparing JSON pointers.
+
+```cpp
+--8<-- "examples/json_pointer__operator__equal.cpp"
+```
+
+Output:
+
+```
+--8<-- "examples/json_pointer__operator__equal.output"
+```
+````
 
 ??? example "Example: (2) Comparing JSON pointers and strings"
 
-    The example demonstrates comparing JSON pointers and strings, and when doing so may raise an exception.
-        
-    ```cpp
-    --8<-- "examples/json_pointer__operator__equal_stringtype.cpp"
-    ```
-    
-    Output:
-    
-    ```
-    --8<-- "examples/json_pointer__operator__equal_stringtype.output"
-    ```
+````
+The example demonstrates comparing JSON pointers and strings, and when doing so may raise an exception.
+
+```cpp
+--8<-- "examples/json_pointer__operator__equal_stringtype.cpp"
+```
+
+Output:
+
+```
+--8<-- "examples/json_pointer__operator__equal_stringtype.output"
+```
+````
 
 ## Version history
 
 1. Added in version 2.1.0. Added C++20 member functions in version 3.11.2.
-2. Added for backward compatibility and deprecated in version 3.11.2.
+1. Added for backward compatibility and deprecated in version 3.11.2.

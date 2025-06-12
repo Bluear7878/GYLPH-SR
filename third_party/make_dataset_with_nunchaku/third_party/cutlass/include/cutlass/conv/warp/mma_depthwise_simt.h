@@ -1,12 +1,12 @@
 /***************************************************************************************************
- * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2017 - 2023 NVIDIA CORPORATION & AFFILIATES. All rights
+ *reserved. SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
@@ -18,39 +18,40 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *POSSIBILITY OF SUCH DAMAGE.
  *
  **************************************************************************************************/
 /*! \file
-    \brief Templates implementing warp-level matrix multiply-accumulate operations.
+    \brief Templates implementing warp-level matrix multiply-accumulate
+   operations.
 */
 
 #pragma once
 
-#include "cutlass/cutlass.h"
 #include "cutlass/array.h"
-#include "cutlass/numeric_types.h"
-#include "cutlass/matrix_shape.h"
+#include "cutlass/cutlass.h"
 #include "cutlass/gemm/gemm.h"
 #include "cutlass/gemm/warp/mma.h"
+#include "cutlass/matrix_shape.h"
+#include "cutlass/numeric_types.h"
 
-#include "cutlass/gemm/thread/mma.h"
 #include "cutlass/conv/convolution.h"
 #include "cutlass/conv/thread/depthwise_mma.h"
+#include "cutlass/gemm/thread/mma.h"
 
-
-#include "cutlass/gemm/warp/mma_simt_tile_iterator.h"
 #include "cutlass/gemm/warp/mma_simt_policy.h"
+#include "cutlass/gemm/warp/mma_simt_tile_iterator.h"
 
-#include "cutlass/gemm/warp/mma_simt.h"
 #include "cutlass/conv/warp/mma_depthwise_simt_tile_iterator.h"
+#include "cutlass/gemm/warp/mma_simt.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,7 +61,8 @@ namespace warp {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Structure to compute the matrix product targeting CUDA cores and SIMT math instructions.
+/// Structure to compute the matrix product targeting CUDA cores and SIMT math
+/// instructions.
 template <
     /// Size of the Gemm problem - concept: gemm::GemmShape<>
     typename Shape_,
@@ -87,11 +89,13 @@ template <
     /// Used for partial specialization
     typename Enable = bool>
 class MmaDepthwiseSimt
-    : public cutlass::gemm::warp::
-          MmaSimt<Shape_, ElementA_, LayoutA_, ElementB_, LayoutB_, ElementC_, LayoutC_, Policy_> {
-  using Base = cutlass::gemm::warp::
-      MmaSimt<Shape_, ElementA_, LayoutA_, ElementB_, LayoutB_, ElementC_, LayoutC_, Policy_>;
-      
+    : public cutlass::gemm::warp::MmaSimt<Shape_, ElementA_, LayoutA_,
+                                          ElementB_, LayoutB_, ElementC_,
+                                          LayoutC_, Policy_> {
+  using Base =
+      cutlass::gemm::warp::MmaSimt<Shape_, ElementA_, LayoutA_, ElementB_,
+                                   LayoutB_, ElementC_, LayoutC_, Policy_>;
+
 public:
   /// Shape of warp-level matrix operation (concept: GemmShape)
   using Shape = Shape_;
@@ -130,17 +134,11 @@ public:
   static ComplexTransform const kTransformB = TransformB;
 
 public:
-
   /// Iterates over the B operand in memory
   using IteratorB = cutlass::conv::warp::DepthwiseMmaSimtTileIterator<
-    MatrixShape<Policy::LaneMmaShape::kK, Shape::kN>,
-    cutlass::gemm::Operand::kB,
-    ElementB,
-    LayoutB,
-    Policy,
-    PartitionsK,
-    Shape::kK
-  >;
+      MatrixShape<Policy::LaneMmaShape::kK, Shape::kN>,
+      cutlass::gemm::Operand::kB, ElementB, LayoutB, Policy, PartitionsK,
+      Shape::kK>;
 
   /// Storage for B tile
   using FragmentB = typename IteratorB::Fragment;
@@ -149,25 +147,28 @@ public:
   using TransformedFragmentB = FragmentB;
 
 public:
-
   //
   // Methods
   //
 
   /// Ctor
   CUTLASS_DEVICE
-  MmaDepthwiseSimt():Base() {}
+  MmaDepthwiseSimt() : Base() {}
 };
 
-/// Structure to compute the matrix product targeting CUDA cores and SIMT math instructions.
+/// Structure to compute the matrix product targeting CUDA cores and SIMT math
+/// instructions.
 template <
     /// Size of the Gemm problem - concept: gemm::GemmShape<>
     typename Shape_,
-    /// Shape of filter shape per threadblock - concept: gemm::GemmShape<Depth, Height, Width>
+    /// Shape of filter shape per threadblock - concept: gemm::GemmShape<Depth,
+    /// Height, Width>
     typename FilterShape_,
-    /// Shape of the output tile computed by thread- concept: conv::TensorNHWCShape<>
+    /// Shape of the output tile computed by thread- concept:
+    /// conv::TensorNHWCShape<>
     typename ThreadOutputShape_,
-    /// Shape of the output tile computed by threadblock - concept: conv::TensorNHWCShape<>
+    /// Shape of the output tile computed by threadblock - concept:
+    /// conv::TensorNHWCShape<>
     typename ThreadBlockOutputShape_,
     /// Data type of A elements
     typename ElementA_,
@@ -186,11 +187,11 @@ template <
     /// Iterator algo type
     conv::IteratorAlgorithm IteratorAlgorithm_ = IteratorAlgorithm::kAnalytic,
     /// Stride ( MatrixShape<Height, Width> )
-    typename StrideShape_ = cutlass::MatrixShape<-1, -1>,   
+    typename StrideShape_ = cutlass::MatrixShape<-1, -1>,
     /// Dilation ( MatrixShape<Height, Width> )
-    typename DilationShape_ =  cutlass::MatrixShape<-1, -1>,
+    typename DilationShape_ = cutlass::MatrixShape<-1, -1>,
     /// Activation Shape loaded by threadblock
-    typename ActivationShape_ = cutlass::conv::TensorNHWCShape<-1,-1,-1,-1>,
+    typename ActivationShape_ = cutlass::conv::TensorNHWCShape<-1, -1, -1, -1>,
     /// Number of partitions along K dimension
     int PartitionsK = 1,
     /// Complex transformation on operand A
@@ -200,17 +201,20 @@ template <
     /// Used for partial specialization
     typename Enable = bool>
 class MmaDepthwiseDirectConvSimt {
- public:
+public:
   /// Shape of warp-level matrix operation (concept: GemmShape)
   using Shape = Shape_;
 
-  /// Shape of filter shape per threadblock - concept: gemm::GemmShape<Depth, Height, Width>
+  /// Shape of filter shape per threadblock - concept: gemm::GemmShape<Depth,
+  /// Height, Width>
   using FilterShape = FilterShape_;
 
-  /// Shape of the output tile computed by thread- concept: conv::TensorNHWCShape<>
+  /// Shape of the output tile computed by thread- concept:
+  /// conv::TensorNHWCShape<>
   using ThreadOutputShape = ThreadOutputShape_;
 
-  /// Shape of the output tile computed by threadblock - concept: conv::TensorNHWCShape<>
+  /// Shape of the output tile computed by threadblock - concept:
+  /// conv::TensorNHWCShape<>
   using ThreadBlockOutputShape = ThreadBlockOutputShape_;
 
   /// Data type of multiplicand A
@@ -238,11 +242,11 @@ class MmaDepthwiseDirectConvSimt {
   static conv::IteratorAlgorithm const IteratorAlgorithm = IteratorAlgorithm_;
 
   /// Stride ( MatrixShape<Height, Width> )
-  using StrideShape = StrideShape_; 
+  using StrideShape = StrideShape_;
 
   /// Dilation ( MatrixShape<Height, Width> )
   using DilationShape = DilationShape_;
-  
+
   /// Activation Shape loaded by threadblock
   using ActivationShape = ActivationShape_;
 
@@ -258,53 +262,43 @@ class MmaDepthwiseDirectConvSimt {
   /// Complex transform on B operand
   static ComplexTransform const kTransformB = TransformB;
 
-  static constexpr bool use_dp4a = (platform::is_same< layout::ColumnMajorInterleaved<4>, LayoutA>::value || 
-                                    platform::is_same< layout::RowMajorInterleaved<4>, LayoutA >::value) && 
-                                    platform::is_same< ElementA, int8_t >::value && 
-                                    platform::is_same< ElementB, int8_t >::value;
+  static constexpr bool use_dp4a =
+      (platform::is_same<layout::ColumnMajorInterleaved<4>, LayoutA>::value ||
+       platform::is_same<layout::RowMajorInterleaved<4>, LayoutA>::value) &&
+      platform::is_same<ElementA, int8_t>::value &&
+      platform::is_same<ElementB, int8_t>::value;
 
-  using dp4a_type = typename platform::conditional< use_dp4a , int8_t, bool >::type;
+  using dp4a_type =
+      typename platform::conditional<use_dp4a, int8_t, bool>::type;
 
   /// Thread-level matrix multiply accumulate operator
-  using ThreadMma = cutlass::conv::thread::DepthwiseDirectConvElementwiseInnerProduct<
-    cutlass::gemm::GemmShape<
-      Shape::kM / Policy::WarpShape::kRow,    // number of output pixels proccessed per thread
-      Shape::kN / Policy::WarpShape::kColumn, // number of channels proccessed per thread
-      1>,
-    ElementA,
-    ElementB,
-    ElementC,
-    arch::OpMultiplyAdd,
-    dp4a_type
-  >;
+  using ThreadMma =
+      cutlass::conv::thread::DepthwiseDirectConvElementwiseInnerProduct<
+          cutlass::gemm::GemmShape<
+              Shape::kM / Policy::WarpShape::kRow,    // number of output pixels
+                                                      // proccessed per thread
+              Shape::kN / Policy::WarpShape::kColumn, // number of channels
+                                                      // proccessed per thread
+              1>,
+          ElementA, ElementB, ElementC, arch::OpMultiplyAdd, dp4a_type>;
 
   /// Underlying matrix multiply operator (concept: arch::Mma)
   using ArchMmaOperator = typename ThreadMma::ArchMmaOperator;
 
-  /// Indicates math operator 
+  /// Indicates math operator
   using MathOperator = typename ArchMmaOperator::Operator;
-  
+
   /// Shape of the underlying instruction
-  using InstructionShape = cutlass::gemm::GemmShape<1,1,use_dp4a ? 4 : 1>;
+  using InstructionShape = cutlass::gemm::GemmShape<1, 1, use_dp4a ? 4 : 1>;
 
 public:
-
   /// Iterates over the A operand in memory
   using IteratorA = cutlass::conv::warp::DepthwiseDirect2dConvSimtTileIterator<
-    MatrixShape<Shape::kM, Shape::kN>, // <output tile=(P*Q), output channels> per warp
-    FilterShape,
-    ThreadOutputShape,
-    ThreadBlockOutputShape,
-    cutlass::gemm::Operand::kA,
-    ElementA,
-    Policy,
-    IteratorAlgorithm,
-    StrideShape,
-    DilationShape,
-    ActivationShape,
-    PartitionsK,
-    Shape::kK
-  >;
+      MatrixShape<Shape::kM, Shape::kN>, // <output tile=(P*Q), output channels>
+                                         // per warp
+      FilterShape, ThreadOutputShape, ThreadBlockOutputShape,
+      cutlass::gemm::Operand::kA, ElementA, Policy, IteratorAlgorithm,
+      StrideShape, DilationShape, ActivationShape, PartitionsK, Shape::kK>;
 
   /// Storage for A tile
   using FragmentA = typename IteratorA::Fragment;
@@ -314,14 +308,8 @@ public:
 
   /// Iterates over the B operand in memory
   using IteratorB = cutlass::gemm::warp::MmaSimtTileIterator<
-    MatrixShape<1, Shape::kN>,
-    cutlass::gemm::Operand::kB,
-    ElementB,
-    LayoutB,
-    Policy,
-    PartitionsK,
-    Shape::kK
-  >;
+      MatrixShape<1, Shape::kN>, cutlass::gemm::Operand::kB, ElementB, LayoutB,
+      Policy, PartitionsK, Shape::kK>;
 
   /// Storage for B tile
   using FragmentB = typename IteratorB::Fragment;
@@ -331,18 +319,13 @@ public:
 
   /// Iterates over the C operand in memory
   using IteratorC = cutlass::gemm::warp::MmaSimtTileIterator<
-    MatrixShape<Shape::kM, Shape::kN>,
-    cutlass::gemm::Operand::kC,
-    ElementC,
-    LayoutC,
-    Policy
-  >;
+      MatrixShape<Shape::kM, Shape::kN>, cutlass::gemm::Operand::kC, ElementC,
+      LayoutC, Policy>;
 
   /// Storage for C tile
   using FragmentC = typename ThreadMma::FragmentC;
 
 public:
-
   //
   // Methods
   //
@@ -353,11 +336,8 @@ public:
 
   /// Performs a warp-level matrix multiply-accumulate operation
   CUTLASS_DEVICE
-  void operator()(
-    FragmentC &d, 
-    FragmentA a, 
-    FragmentB b, 
-    FragmentC const &c, int group_idx = 0) const {
+  void operator()(FragmentC &d, FragmentA a, FragmentB b, FragmentC const &c,
+                  int group_idx = 0) const {
 
     ThreadMma mma;
 

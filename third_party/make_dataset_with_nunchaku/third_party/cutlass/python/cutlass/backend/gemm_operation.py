@@ -34,71 +34,38 @@ import copy
 import ctypes
 import enum
 
-from cuda import cuda, cudart
-from cutlass_library import SubstituteTemplate
 import numpy as np
-
-from cutlass_library import (
-    ComplexTransformTag,
-    DataType,
-    DataTypeNames,
-    DataTypeSize,
-    DataTypeTag,
-    EpilogueScheduleSuffixes,
-    EpilogueScheduleTag,
-    EpilogueScheduleType,
-    GemmKind,
-    GemmKindNames,
-    GemmUniversalMode,
-    KernelScheduleSuffixes,
-    KernelScheduleTag,
-    KernelScheduleType,
-    LayoutTag,
-    LayoutType,
-    MathOperation,
-    MathOperationTag,
-    OpcodeClass,
-    OpcodeClassNames,
-    OpcodeClassTag,
-    OperationKind,
-    ShortComplexLayoutNames,
-    ShortDataTypeNames,
-    ShortLayoutTypeNames,
-    SwizzlingFunctor,
-    SwizzlingFunctorTag,
-    TileSchedulerSuffixes,
-    TileSchedulerTag,
-    TileSchedulerType,
-    get_complex_from_real
-)
+from cuda import cuda, cudart
 from cutlass.backend.arguments import ArgumentBase
-from cutlass.backend.c_types import (
-    GemmCoord_,
-    GemmCoordBatched_,
-    GenericMainloopArguments3x_,
-    StrideBatched_,
-    dim3_,
-    get_gemm_arguments,
-    get_gemm_arguments_3x,
-    get_gemm_arguments_streamk,
-    get_gemm_grouped_arguments,
-    get_mainloop_arguments_3x
-)
-from cutlass.backend.library import (
-    ApiVersion,
-    EmissionType,
-    SchedulerMode,
-    SchedulerModeTag,
-    TensorDescription,
-    TileDescription,
-    api_version,
-)
+from cutlass.backend.c_types import (GemmCoord_, GemmCoordBatched_,
+                                     GenericMainloopArguments3x_,
+                                     StrideBatched_, dim3_, get_gemm_arguments,
+                                     get_gemm_arguments_3x,
+                                     get_gemm_arguments_streamk,
+                                     get_gemm_grouped_arguments,
+                                     get_mainloop_arguments_3x)
+from cutlass.backend.library import (ApiVersion, EmissionType, SchedulerMode,
+                                     SchedulerModeTag, TensorDescription,
+                                     TileDescription, api_version)
 from cutlass.backend.memory_manager import device_mem_alloc, todevice
 from cutlass.backend.operation import ExecutableOperation, LaunchConfiguration
 from cutlass.backend.type_hint import GemmOperation, Tensor
 from cutlass.backend.utils.device import device_sm_count
 from cutlass.shape import GemmCoord, MatrixCoord
-
+from cutlass_library import (ComplexTransformTag, DataType, DataTypeNames,
+                             DataTypeSize, DataTypeTag,
+                             EpilogueScheduleSuffixes, EpilogueScheduleTag,
+                             EpilogueScheduleType, GemmKind, GemmKindNames,
+                             GemmUniversalMode, KernelScheduleSuffixes,
+                             KernelScheduleTag, KernelScheduleType, LayoutTag,
+                             LayoutType, MathOperation, MathOperationTag,
+                             OpcodeClass, OpcodeClassNames, OpcodeClassTag,
+                             OperationKind, ShortComplexLayoutNames,
+                             ShortDataTypeNames, ShortLayoutTypeNames,
+                             SubstituteTemplate, SwizzlingFunctor,
+                             SwizzlingFunctorTag, TileSchedulerSuffixes,
+                             TileSchedulerTag, TileSchedulerType,
+                             get_complex_from_real)
 
 ################################################################################
 #
@@ -165,7 +132,17 @@ class GemmArguments2x(ArgumentBase):
     :type output_op: :class:`cutlass.backend.LinearCombinationFunctorArguments`
     """
 
-    def __init__(self, operation, problem_size, A, B, C, D, gemm_mode=GemmUniversalMode.Gemm, **kwargs):
+    def __init__(
+        self,
+        operation,
+        problem_size,
+        A,
+        B,
+        C,
+        D,
+        gemm_mode=GemmUniversalMode.Gemm,
+        **kwargs,
+    ):
         self.operation = operation
 
         self.layout_A = operation.A.layout
@@ -176,7 +153,10 @@ class GemmArguments2x(ArgumentBase):
         self.element_B = operation.B.element
         self.element_C = operation.C.element
 
-        if operation.C.layout in [LayoutType.RowMajorInterleaved32, LayoutType.ColumnMajorInterleaved32]:
+        if operation.C.layout in [
+            LayoutType.RowMajorInterleaved32,
+            LayoutType.ColumnMajorInterleaved32,
+        ]:
             raise Exception("Interleaved layout not currently supported")
 
         if hasattr(self.operation.epilogue_functor, "visitor") and operation.arch != 90:
@@ -185,7 +165,9 @@ class GemmArguments2x(ArgumentBase):
             super().__init__(A, B, C, D, **kwargs)
 
         if operation.switched:
-            self.problem_size = GemmCoord(problem_size.n, problem_size.m, problem_size.k)
+            self.problem_size = GemmCoord(
+                problem_size.n, problem_size.m, problem_size.k
+            )
             self.ptr_A, self.ptr_B = self.ptr_B, self.ptr_A
         else:
             self.problem_size = problem_size
@@ -202,10 +184,18 @@ class GemmArguments2x(ArgumentBase):
         if self.bias:
             self.ldc = 0
 
-        if "output_op" in kwargs.keys() and gemm_mode != GemmUniversalMode.GemmSplitKParallel:
+        if (
+            "output_op" in kwargs.keys()
+            and gemm_mode != GemmUniversalMode.GemmSplitKParallel
+        ):
             self.output_op = kwargs["output_op"]
         else:
-            if self.operation.epilogue_functor.element_epilogue in [DataType.s8, DataType.s32, DataType.u8, DataType.u32]:
+            if self.operation.epilogue_functor.element_epilogue in [
+                DataType.s8,
+                DataType.s32,
+                DataType.u8,
+                DataType.u32,
+            ]:
                 dtype = int
             else:
                 dtype = float
@@ -276,9 +266,8 @@ class GemmArguments2x(ArgumentBase):
     def get_arguments(self):
         problem_size_ = self.problem_size.ctype
         grid_tiled_shape_ = GemmCoord(
-            self.grid_tiled_shape.x,
-            self.grid_tiled_shape.y,
-            self.grid_tiled_shape.z ).ctype
+            self.grid_tiled_shape.x, self.grid_tiled_shape.y, self.grid_tiled_shape.z
+        ).ctype
 
         if self.gemm_mode == GemmUniversalMode.Array:
             arguments = self.operation.argument_type(
@@ -293,15 +282,28 @@ class GemmArguments2x(ArgumentBase):
                 int(self.ptr_B_array_buffer.ptr),
                 int(self.ptr_C_array_buffer.ptr),
                 int(self.ptr_D_array_buffer.ptr),
-                0, 0, 0,
-                self.lda, self.ldb, self.ldc, self.ldd,
-                self.lda, self.ldb, self.ldc, self.ldd,
-                0, 0, 0
+                0,
+                0,
+                0,
+                self.lda,
+                self.ldb,
+                self.ldc,
+                self.ldd,
+                self.lda,
+                self.ldb,
+                self.ldc,
+                self.ldd,
+                0,
+                0,
+                0,
             )
         else:
             arguments = self.operation.argument_type(
                 # Arguments from UniversalArgumentsBase
-                self.gemm_mode, problem_size_, self.batch_count, self.batched_stride_D,
+                self.gemm_mode,
+                problem_size_,
+                self.batch_count,
+                self.batched_stride_D,
                 # Remaining arguments
                 self.output_op,
                 int(self.ptr_A),
@@ -311,9 +313,17 @@ class GemmArguments2x(ArgumentBase):
                 self.batched_stride_A,
                 self.batched_stride_B,
                 self.batched_stride_C,
-                self.lda, self.ldb, self.ldc, self.ldd,
-                self.lda, self.ldb, self.ldc, self.ldd,
-                0, 0, 0
+                self.lda,
+                self.ldb,
+                self.ldc,
+                self.ldd,
+                self.lda,
+                self.ldb,
+                self.ldc,
+                self.ldd,
+                0,
+                0,
+                0,
             )
 
         self.arguments = arguments, grid_tiled_shape_, self.gemm_k_size
@@ -327,13 +337,15 @@ class GemmArguments2x(ArgumentBase):
         if device_workspace_size > 0:
             self.workspace_buffer = device_mem_alloc(device_workspace_size)
             workspace_ptr = self.workspace_buffer.ptr
-            err, = cuda.cuMemsetD32(
-                workspace_ptr, 0, device_workspace_size // 4)
+            (err,) = cuda.cuMemsetD32(workspace_ptr, 0, device_workspace_size // 4)
         else:
             workspace_ptr = None
 
         device_workspace = 0
-        if workspace_ptr is not None and self.gemm_mode == GemmUniversalMode.GemmSplitKParallel:
+        if (
+            workspace_ptr is not None
+            and self.gemm_mode == GemmUniversalMode.GemmSplitKParallel
+        ):
             # In GEMM splik-K parallel, the D pointer is redirected to the workspace
             self.ptr_D = cuda.CUdeviceptr(workspace_ptr)
         elif workspace_ptr is not None and self.gemm_mode == GemmUniversalMode.Gemm:
@@ -343,7 +355,8 @@ class GemmArguments2x(ArgumentBase):
 
         arguments, grid_tiled_shape, gemm_k_size = self.arguments
         res_arg = self.operation.rt_module.get_args(
-            ctypes.byref(arguments), ctypes.c_void_p(int(device_workspace)))
+            ctypes.byref(arguments), ctypes.c_void_p(int(device_workspace))
+        )
         host_workspace = bytearray(res_arg.contents)
 
         device_workspace = None
@@ -389,7 +402,17 @@ class GemmArguments2xStreamK(GemmArguments2x):
     :type output_op: :class:`cutlass.backend.LinearCombinationFunctorArguments`
     """
 
-    def __init__(self, operation, problem_size, A, B, C, D, gemm_mode=GemmUniversalMode.Gemm, **kwargs):
+    def __init__(
+        self,
+        operation,
+        problem_size,
+        A,
+        B,
+        C,
+        D,
+        gemm_mode=GemmUniversalMode.Gemm,
+        **kwargs,
+    ):
         if gemm_mode not in [GemmUniversalMode.Gemm, GemmUniversalMode.Batched]:
             raise Exception(f"Unsupported GEMM mode {gemm_mode}.")
 
@@ -414,8 +437,14 @@ class GemmArguments2xStreamK(GemmArguments2x):
             batch_stride_B,
             batch_stride_C,
             batch_stride_D,
-            self.lda, self.ldb, self.ldc, self.ldd,  # strides
-            self.lda, self.ldb, self.ldc, self.ldd,
+            self.lda,
+            self.ldb,
+            self.ldc,
+            self.ldd,  # strides
+            self.lda,
+            self.ldb,
+            self.ldc,
+            self.ldd,
             -1,  # avail_sms
         )
         return arguments
@@ -423,21 +452,21 @@ class GemmArguments2xStreamK(GemmArguments2x):
     def initialize(self):
         # Get the host and device workspace
         device_workspace_size = self.operation.rt_module.get_device_workspace_size(
-            self,
-            device_sm_count(),
-            self.operation.rt_module.occupancy
+            self, device_sm_count(), self.operation.rt_module.occupancy
         )
 
         if device_workspace_size > 0:
             self.workspace_buffer = device_mem_alloc(device_workspace_size)
             workspace_ptr = self.workspace_buffer.ptr
-            err, = cuda.cuMemsetD32(
-                workspace_ptr, 0, device_workspace_size // 4)
+            (err,) = cuda.cuMemsetD32(workspace_ptr, 0, device_workspace_size // 4)
         else:
             workspace_ptr = None
 
         device_workspace = 0
-        if workspace_ptr is not None and self.gemm_mode == GemmUniversalMode.GemmSplitKParallel:
+        if (
+            workspace_ptr is not None
+            and self.gemm_mode == GemmUniversalMode.GemmSplitKParallel
+        ):
             # In GEMM splik-K parallel, the D pointer is redirected to the workspace
             self.ptr_D = cuda.CUdeviceptr(workspace_ptr)
         elif workspace_ptr is not None and self.gemm_mode == GemmUniversalMode.Gemm:
@@ -449,14 +478,14 @@ class GemmArguments2xStreamK(GemmArguments2x):
             ctypes.byref(arguments),
             ctypes.c_void_p(int(device_workspace)),
             device_sm_count(),
-            self.operation.rt_module.occupancy
+            self.operation.rt_module.occupancy,
         )
         host_workspace = bytearray(res_arg.contents)
 
         grid = self.operation.rt_module.get_grid_shape(
             ctypes.byref(arguments),
             device_sm_count(),
-            self.operation.rt_module.occupancy
+            self.operation.rt_module.occupancy,
         )
 
         device_workspace = None
@@ -466,7 +495,7 @@ class GemmArguments2xStreamK(GemmArguments2x):
         self.launch_config = LaunchConfiguration(
             [grid.m, grid.n, grid.k],
             [self.operation.rt_module.threads, 1, 1],
-            self.operation.rt_module.shared_memory_capacity
+            self.operation.rt_module.shared_memory_capacity,
         )
 
 
@@ -501,7 +530,17 @@ class GemmArguments3x(GemmArguments2x):
     :type output_op: :class:`cutlass.backend.LinearCombinationFunctorArguments`
     """
 
-    def __init__(self, operation, problem_size, A, B, C, D, gemm_mode=GemmUniversalMode.Gemm, **kwargs):
+    def __init__(
+        self,
+        operation,
+        problem_size,
+        A,
+        B,
+        C,
+        D,
+        gemm_mode=GemmUniversalMode.Gemm,
+        **kwargs,
+    ):
         if gemm_mode not in [GemmUniversalMode.Gemm, GemmUniversalMode.Batched]:
             raise Exception(f"Unsupported GEMM mode {gemm_mode}.")
 
@@ -531,11 +570,13 @@ class GemmArguments3x(GemmArguments2x):
             stride_A,
             int(self.ptr_B),
             stride_B,
-            4 # mma_promotion_interval
+            4,  # mma_promotion_interval
         )
 
         # Set of mainloop arguments needed for this kernel
-        mainloop = self.operation.rt_module.mainloop_args.from_generic_mainloop_args(generic_args)
+        mainloop = self.operation.rt_module.mainloop_args.from_generic_mainloop_args(
+            generic_args
+        )
 
         epilogue = self.operation.rt_module.epilogue_args(
             self.output_op,
@@ -564,13 +605,15 @@ class GemmArguments3x(GemmArguments2x):
         if device_workspace_size > 0:
             self.workspace_buffer = device_mem_alloc(device_workspace_size)
             workspace_ptr = self.workspace_buffer.ptr
-            err, = cuda.cuMemsetD32(
-                workspace_ptr, 0, device_workspace_size // 4)
+            (err,) = cuda.cuMemsetD32(workspace_ptr, 0, device_workspace_size // 4)
         else:
             workspace_ptr = None
 
         device_workspace = 0
-        if workspace_ptr is not None and self.gemm_mode == GemmUniversalMode.GemmSplitKParallel:
+        if (
+            workspace_ptr is not None
+            and self.gemm_mode == GemmUniversalMode.GemmSplitKParallel
+        ):
             # In GEMM splik-K parallel, the D pointer is redirected to the workspace
             self.ptr_D = cuda.CUdeviceptr(workspace_ptr)
         elif workspace_ptr is not None and self.gemm_mode == GemmUniversalMode.Gemm:
@@ -600,7 +643,9 @@ class GemmArguments3x(GemmArguments2x):
         )
 
 
-def GemmArguments(operation, problem_size, A, B, C, D, gemm_mode=GemmUniversalMode.Gemm, **kwargs):
+def GemmArguments(
+    operation, problem_size, A, B, C, D, gemm_mode=GemmUniversalMode.Gemm, **kwargs
+):
     """
     Argument wrapper for GEMM in CUTLASS 2 or 3. It returns either 2x arguments
     or 3x arguments depending on the `arch` field specified in `operation`.
@@ -635,7 +680,9 @@ def GemmArguments(operation, problem_size, A, B, C, D, gemm_mode=GemmUniversalMo
             raise Exception("Stream K is currently only supported in CUTLASS 2.x")
         ArgClass = GemmArguments2xStreamK
     else:
-        ArgClass = GemmArguments3x if operation.api == ApiVersion.v3x else GemmArguments2x
+        ArgClass = (
+            GemmArguments3x if operation.api == ApiVersion.v3x else GemmArguments2x
+        )
     return ArgClass(operation, problem_size, A, B, C, D, gemm_mode, **kwargs)
 
 
@@ -710,13 +757,19 @@ class GemmGroupedArguments:
             temp_argument = GemmArguments2x(
                 operation=operation,
                 problem_size=GemmCoord(M, N, K),
-                A=A[idx], B=B[idx], C=C[idx], D=D[idx])
+                A=A[idx],
+                B=B[idx],
+                C=C[idx],
+                D=D[idx],
+            )
             self.gemm_arguments.append(temp_argument)
 
             problem_size_host.append(
-                [temp_argument.problem_size.m,
-                 temp_argument.problem_size.n,
-                 temp_argument.problem_size.k]
+                [
+                    temp_argument.problem_size.m,
+                    temp_argument.problem_size.n,
+                    temp_argument.problem_size.k,
+                ]
             )
 
             self.ptr_A_host.append(int(temp_argument.ptr_A))
@@ -736,7 +789,7 @@ class GemmGroupedArguments:
                 self.operation.rt_module.get_tiled_shape(
                     temp_argument.problem_size.ctype,
                     self.threadblock_shape.ctype,
-                    temp_argument.batch_count
+                    temp_argument.batch_count,
                 )
             )
             self.total_tiles += grid.x * grid.y * grid.z
@@ -765,7 +818,9 @@ class GemmGroupedArguments:
             self.output_op = self.operation.epilogue_type(1.0, 0.0)
 
         # Get host problem size
-        self.host_problem_size_ptr = np.array(problem_size_host, dtype=np.int32).__array_interface__["data"][0]
+        self.host_problem_size_ptr = np.array(
+            problem_size_host, dtype=np.int32
+        ).__array_interface__["data"][0]
 
         self.arguments = self.get_arguments()
 
@@ -798,14 +853,15 @@ class GemmGroupedArguments:
         if device_workspace_size > 0:
             self.workspace_buffer = device_mem_alloc(device_workspace_size)
             workspace_ptr = self.workspace_buffer.ptr
-            err, = cuda.cuMemsetD32(
-                workspace_ptr, 0, device_workspace_size // 4)
+            (err,) = cuda.cuMemsetD32(workspace_ptr, 0, device_workspace_size // 4)
         else:
             workspace_ptr = None
 
         if self.operation.precompute_mode == SchedulerMode.Host:
             device_workspace_ptr = self.operation.rt_module.host_precompute(
-                self, self.operation.rt_module.get_workspace_size(self),)
+                self,
+                self.operation.rt_module.get_workspace_size(self),
+            )
         else:
             device_workspace_ptr = 0
 
@@ -823,7 +879,7 @@ class GemmGroupedArguments:
         self.launch_config = launch_config
 
     def sync(self):
-        err, = cudart.cudaDeviceSynchronize()
+        (err,) = cudart.cudaDeviceSynchronize()
         if err != cuda.CUresult.CUDA_SUCCESS:
             raise RuntimeError("CUDA Error %s" % str(err))
         for arg in self.gemm_arguments:
@@ -862,7 +918,8 @@ ${operation_name}(${operation_name}${operation_suffix}::Params params) {
         self.operation = operation
         threadblock_shape = operation.tile_description.threadblock_shape
         self.threadblock_shape = GemmCoord(
-            threadblock_shape[0], threadblock_shape[1], threadblock_shape[2])
+            threadblock_shape[0], threadblock_shape[1], threadblock_shape[2]
+        )
         self.threadblock_swizzle = operation.swizzling_functor
 
         # Threads per threadblock
@@ -881,10 +938,11 @@ ${operation_name}(${operation_name}${operation_suffix}::Params params) {
         return 0
 
     def initialize(self):
-        err, = cuda.cuFuncSetAttribute(
+        (err,) = cuda.cuFuncSetAttribute(
             self.kernel,
             attrib=cuda.CUfunction_attribute.CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES,
-            value=self.shared_memory_capacity)
+            value=self.shared_memory_capacity,
+        )
         if err != cuda.CUresult.CUDA_SUCCESS:
             raise RuntimeError(
                 f"CUDA error on call to cuFuncSetAttribute: {cuda.cuGetErrorString(err)[1]}"
@@ -950,29 +1008,47 @@ extern "C" {
             "get_tiled_shape": GemmCoord_,
             "get_grid_shape": dim3_,
         }
-        self.emitter = EmitGemmUniversalInstance(
-            "_type", operation.direct_store)
+        self.emitter = EmitGemmUniversalInstance("_type", operation.direct_store)
 
-        self.argument_type, self.epilogue_type = get_gemm_arguments(operation.epilogue_functor)
+        self.argument_type, self.epilogue_type = get_gemm_arguments(
+            operation.epilogue_functor
+        )
         self.argtype = [
             ctypes.POINTER(self.argument_type),
-            ctypes.POINTER(GemmCoord_), ctypes.c_int, ctypes.c_void_p
+            ctypes.POINTER(GemmCoord_),
+            ctypes.c_int,
+            ctypes.c_void_p,
         ]
 
     def plan(self, arguments):
         grid = self.get_tiled_shape(
             arguments.problem_size.ctype,
             self.threadblock_shape.ctype,
-            arguments.batch_count
+            arguments.batch_count,
         )
 
         gemm_k_size = arguments.problem_size.k
-        if arguments.gemm_mode in [GemmUniversalMode.Gemm, GemmUniversalMode.GemmSplitKParallel]:
-            alignk = max(max(128 // DataTypeSize[self.operation.A.element],
-                         128 // DataTypeSize[self.operation.B.element]), 1)
+        if arguments.gemm_mode in [
+            GemmUniversalMode.Gemm,
+            GemmUniversalMode.GemmSplitKParallel,
+        ]:
+            alignk = max(
+                max(
+                    128 // DataTypeSize[self.operation.A.element],
+                    128 // DataTypeSize[self.operation.B.element],
+                ),
+                1,
+            )
 
-            gemm_k_size = (((arguments.problem_size.k + arguments.batch_count - 1) //
-                           arguments.batch_count + alignk - 1) // alignk) * alignk
+            gemm_k_size = (
+                (
+                    (arguments.problem_size.k + arguments.batch_count - 1)
+                    // arguments.batch_count
+                    + alignk
+                    - 1
+                )
+                // alignk
+            ) * alignk
 
             if gemm_k_size:
                 grid_z = (arguments.problem_size.k + gemm_k_size - 1) // gemm_k_size
@@ -982,18 +1058,25 @@ extern "C" {
         grid = self.get_grid_shape(grid)
         arguments.gemm_k_size = gemm_k_size
         return LaunchConfiguration(
-            [grid.x, grid.y, grid.z],
-            [self.threads, 1, 1],
-            self.shared_memory_capacity)
+            [grid.x, grid.y, grid.z], [self.threads, 1, 1], self.shared_memory_capacity
+        )
 
     def get_device_workspace_size(self, arguments: GemmArguments):
         workspace_bytes = 0
         if arguments.gemm_mode == GemmUniversalMode.GemmSplitKParallel:
-            workspace_bytes = (DataTypeSize[arguments.operation.C.element]
-             * arguments.batched_stride_D * arguments.grid_tiled_shape.z // 8)
-        elif (arguments.gemm_mode == GemmUniversalMode.Gemm and
-            arguments.split_k_slices > 1):
-            workspace_bytes = 4 * arguments.grid_tiled_shape.x * arguments.grid_tiled_shape.y
+            workspace_bytes = (
+                DataTypeSize[arguments.operation.C.element]
+                * arguments.batched_stride_D
+                * arguments.grid_tiled_shape.z
+                // 8
+            )
+        elif (
+            arguments.gemm_mode == GemmUniversalMode.Gemm
+            and arguments.split_k_slices > 1
+        ):
+            workspace_bytes = (
+                4 * arguments.grid_tiled_shape.x * arguments.grid_tiled_shape.y
+            )
 
         return workspace_bytes
 
@@ -1052,23 +1135,35 @@ extern "C" {
             "get_kernel_workspace_size": ctypes.c_uint64,
         }
         self._occupancy = None
-        self.argument_type, self.epilogue_type  = get_gemm_arguments_streamk(operation.epilogue_functor)
+        self.argument_type, self.epilogue_type = get_gemm_arguments_streamk(
+            operation.epilogue_functor
+        )
 
     @property
     def occupancy(self):
         if self._occupancy is None:
-            err, self._occupancy = cuda.cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
-                self.kernel, self.threads, self.shared_memory_capacity,
-                cuda.CUoccupancy_flags.CU_OCCUPANCY_DISABLE_CACHING_OVERRIDE)
+            err, self._occupancy = (
+                cuda.cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags(
+                    self.kernel,
+                    self.threads,
+                    self.shared_memory_capacity,
+                    cuda.CUoccupancy_flags.CU_OCCUPANCY_DISABLE_CACHING_OVERRIDE,
+                )
+            )
 
             if err != cuda.CUresult.CUDA_SUCCESS:
                 raise RuntimeError(
                     "CUDA error on call to cuOccupancyMaxActiveBlocksPerMultiprocessorWithFlags: "
-                    f"{cuda.cuGetErrorString(err)[1]}")
+                    f"{cuda.cuGetErrorString(err)[1]}"
+                )
         return self._occupancy
 
-    def get_device_workspace_size(self, arguments: GemmArguments2xStreamK, device_sms: int, sm_occupancy: int):
-        return self.get_kernel_workspace_size(ctypes.byref(arguments.get_arguments()), device_sms, sm_occupancy)
+    def get_device_workspace_size(
+        self, arguments: GemmArguments2xStreamK, device_sms: int, sm_occupancy: int
+    ):
+        return self.get_kernel_workspace_size(
+            ctypes.byref(arguments.get_arguments()), device_sms, sm_occupancy
+        )
 
 
 ################################################################################
@@ -1153,7 +1248,7 @@ extern "C" {
             "get_grid_shape": dim3_,
             "get_block_shape": dim3_,
             "get_persistent_tiled_blk_shape_mnl": ctypes.c_uint64,
-            "get_kernel_workspace_size": ctypes.c_uint64
+            "get_kernel_workspace_size": ctypes.c_uint64,
         }
         self.emitter = EmitGemmUniversalInstance3x("_type")
         self.mainloop_args = get_mainloop_arguments_3x(
@@ -1161,9 +1256,11 @@ extern "C" {
             operation.A.element,
             operation.B.element,
             operation.A.alignment,
-            operation.B.alignment
+            operation.B.alignment,
         )
-        self.argument_type, self.epilogue_args, self.epilogue_type, self.hw_info = get_gemm_arguments_3x(self.mainloop_args, operation.epilogue_functor)
+        self.argument_type, self.epilogue_args, self.epilogue_type, self.hw_info = (
+            get_gemm_arguments_3x(self.mainloop_args, operation.epilogue_functor)
+        )
 
     def get_device_workspace_size(self, arguments: GemmArguments3x):
         return self.get_kernel_workspace_size(ctypes.byref(arguments.get_arguments()))
@@ -1184,7 +1281,7 @@ class EmitGemmUniversalInstance3x:
             "cutlass/gemm/kernel/gemm_universal.hpp",
             "cutlass/epilogue/collective/collective_builder.hpp",
             "cutlass/epilogue/collective/default_epilogue.hpp",
-            "cutlass/epilogue/thread/linear_combination.h"
+            "cutlass/epilogue/thread/linear_combination.h",
         ]
         self.gemm_template_kernel = """
 using namespace cute;
@@ -1268,16 +1365,22 @@ struct ${operation_name}${operation_suffix} :
   public ${operation_name}_base { };
 """
 
-        self.gemm_template_device = self.gemm_template_kernel + """
+        self.gemm_template_device = (
+            self.gemm_template_kernel
+            + """
 
 // Define device-level operator
 using DeviceKernel = cutlass::gemm::device::GemmUniversalAdapter<${operation_name}${operation_suffix}>;
 """
+        )
 
     def emit(self, operation):
         # Support built-in epilogue functors or user-defined functions
 
-        if operation.tile_description.stages is None or operation.tile_description.stages == 0:
+        if (
+            operation.tile_description.stages is None
+            or operation.tile_description.stages == 0
+        ):
             stage_count_type = "cutlass::gemm::collective::StageCountAutoCarveout<sizeof(typename CollectiveEpilogue::SharedStorage)>"
         else:
             stage_count_type = "_" + str(operation.tile_description.stages)
@@ -1309,8 +1412,12 @@ using DeviceKernel = cutlass::gemm::device::GemmUniversalAdapter<${operation_nam
             "element_d": DataTypeTag[operation.epilogue_functor.element_output],
             "layout_d": LayoutTag[operation.C.layout],
             "element_accumulator": DataTypeTag[operation.accumulator_type()],
-            "element_epilogue": DataTypeTag[operation.epilogue_functor.element_epilogue],
-            "opcode_class": OpcodeClassTag[operation.tile_description.math_instruction.opcode_class],
+            "element_epilogue": DataTypeTag[
+                operation.epilogue_functor.element_epilogue
+            ],
+            "opcode_class": OpcodeClassTag[
+                operation.tile_description.math_instruction.opcode_class
+            ],
             "arch": "cutlass::arch::Sm%d" % operation.arch,
             "threadblock_shape_m": str(operation.tile_description.threadblock_shape[0]),
             "threadblock_shape_n": str(operation.tile_description.threadblock_shape[1]),
@@ -1325,7 +1432,7 @@ using DeviceKernel = cutlass::gemm::device::GemmUniversalAdapter<${operation_nam
             "stage_count_type": stage_count_type,
             "kernel_schedule": KernelScheduleTag[kschedule],
             "epilogue_schedule": EpilogueScheduleTag[eschedule],
-            "tile_scheduler": TileSchedulerTag[tschedule]
+            "tile_scheduler": TileSchedulerTag[tschedule],
         }
         if hasattr(operation.epilogue_functor, "visitor"):
             callback_name, callback_decl = operation.epilogue_functor.emit(operation)
@@ -1424,18 +1531,22 @@ ${operation_name}(${operation_name}${operation_suffix}::Params params) {
             "get_grid_shape": dim3_,
         }
         self.emitter = EmitGemmGroupedInstance("_type")
-        self.argument_type, self.epilogue_type = get_gemm_grouped_arguments(operation.epilogue_functor)
-        self.argtype = [ctypes.POINTER(self.argument_type), ctypes.c_int, ctypes.c_void_p]
+        self.argument_type, self.epilogue_type = get_gemm_grouped_arguments(
+            operation.epilogue_functor
+        )
+        self.argtype = [
+            ctypes.POINTER(self.argument_type),
+            ctypes.c_int,
+            ctypes.c_void_p,
+        ]
 
     def host_precompute(self, arguments, workspace_bytes):
-        self.precompute.argtype = [
-            self.argtype[0], ctypes.c_int, ctypes.c_longlong]
+        self.precompute.argtype = [self.argtype[0], ctypes.c_int, ctypes.c_longlong]
         self.precompute.restype = ctypes.POINTER(ctypes.c_byte * workspace_bytes)
 
         problem_info = self.precompute(
-            ctypes.byref(arguments.arguments),
-            arguments.total_tiles,
-            workspace_bytes)
+            ctypes.byref(arguments.arguments), arguments.total_tiles, workspace_bytes
+        )
         problem_info_array = bytearray(problem_info.contents)
 
         # copy to device memory
@@ -1468,10 +1579,19 @@ class GemmOperationBase:
     """
 
     def __init__(
-        self, gemm_kind, arch, tile_description: TileDescription,
-        A: TensorDescription, B: TensorDescription, C: TensorDescription,
-        epilogue_functor, swizzling_functor=SwizzlingFunctor.Identity1,
-        api=ApiVersion.v2x, emission_type=EmissionType.Kernel, **kwargs):
+        self,
+        gemm_kind,
+        arch,
+        tile_description: TileDescription,
+        A: TensorDescription,
+        B: TensorDescription,
+        C: TensorDescription,
+        epilogue_functor,
+        swizzling_functor=SwizzlingFunctor.Identity1,
+        api=ApiVersion.v2x,
+        emission_type=EmissionType.Kernel,
+        **kwargs,
+    ):
         self.operation_kind: OperationKind = OperationKind.Gemm
         self.arch: int = arch
         self.tile_description: TileDescription = tile_description
@@ -1484,9 +1604,11 @@ class GemmOperationBase:
         # Optionally swap the TensorDescriptions for operands A and B and transpose their
         # layouts. This is needed to mimic the transpose performed by device::GemmUniversal.
         # The code below uses deep copy to avoid overwritting the original TensorDescription
-        self.switched = (self.api != ApiVersion.v3x and
-                         self.emission_type == EmissionType.Kernel and
-                         C.layout == LayoutType.ColumnMajor)
+        self.switched = (
+            self.api != ApiVersion.v3x
+            and self.emission_type == EmissionType.Kernel
+            and C.layout == LayoutType.ColumnMajor
+        )
 
         self.A, self.B, self.C = GemmOperationBase.get_operands(A, B, C, self.switched)
 
@@ -1499,7 +1621,9 @@ class GemmOperationBase:
             self.direct_store = False
 
     @staticmethod
-    def get_operands(A: TensorDescription, B: TensorDescription, C: TensorDescription, swap: bool):
+    def get_operands(
+        A: TensorDescription, B: TensorDescription, C: TensorDescription, swap: bool
+    ):
         """
         Makes copies of A, B, and C, and possibly transposes their order. If ``swap`` is set,
         A and B are swapped, and the layout of A, B, and C are transposed.
@@ -1532,7 +1656,9 @@ class GemmOperationBase:
         Configure and launch the cuda kernel with input arguments
         """
         if self.emission_type == EmissionType.Device:
-            raise Exception('Running a kernel via PyCUTLASS is only enabled with emission type "Kernel"')
+            raise Exception(
+                'Running a kernel via PyCUTLASS is only enabled with emission type "Kernel"'
+            )
 
         err = self.rt_module.run(
             arguments.host_workspace,
@@ -1551,7 +1677,9 @@ class GemmOperationBase:
             MathOperation.multiply_add_complex_gaussian,
             MathOperation.multiply_add_complex_fast_f32,
         ]
-        return self.tile_description.math_instruction.math_operation in complex_operators
+        return (
+            self.tile_description.math_instruction.math_operation in complex_operators
+        )
 
     def is_planar_complex(self):
         return self.gemm_kind in (GemmKind.PlanarComplex, GemmKind.PlanarComplexArray)
@@ -1565,7 +1693,10 @@ class GemmOperationBase:
         return accum
 
     def short_math_name(self):
-        if self.tile_description.math_instruction.math_operation == MathOperation.multiply_add_complex_gaussian:
+        if (
+            self.tile_description.math_instruction.math_operation
+            == MathOperation.multiply_add_complex_gaussian
+        ):
             return "g%s" % ShortDataTypeNames[self.accumulator_type()]
         return ShortDataTypeNames[self.accumulator_type()]
 
@@ -1580,47 +1711,77 @@ class GemmOperationBase:
             MathOperation.xor_popc: "xor",
         }
 
-        if (self.tile_description.math_instruction.opcode_class == OpcodeClass.TensorOp or
-            self.tile_description.math_instruction.opcode_class == OpcodeClass.WmmaTensorOp):
+        if (
+            self.tile_description.math_instruction.opcode_class == OpcodeClass.TensorOp
+            or self.tile_description.math_instruction.opcode_class
+            == OpcodeClass.WmmaTensorOp
+        ):
             math_op = self.tile_description.math_instruction.math_operation
-            math_op_string = math_operations_map[math_op] if math_op in math_operations_map.keys() else ""
+            math_op_string = (
+                math_operations_map[math_op]
+                if math_op in math_operations_map.keys()
+                else ""
+            )
 
             if self.tile_description.math_instruction.instruction_shape is not None:
                 if self.api == ApiVersion.v3x and self.arch >= 90:
                     inst_shape = "%dx%dx%d" % tuple(
-                        self.tile_description.math_instruction.instruction_shape)
+                        self.tile_description.math_instruction.instruction_shape
+                    )
                 else:
                     inst_shape = "%d%d%d" % tuple(
-                        self.tile_description.math_instruction.instruction_shape)
+                        self.tile_description.math_instruction.instruction_shape
+                    )
             else:
                 inst_shape = "Default"
             inst_shape += math_op_string
 
-            if (self.tile_description.math_instruction.element_a != self.A.element and
-                self.tile_description.math_instruction.element_a != self.tile_description.math_instruction.element_accumulator):
-                intermediate_type = DataTypeNames[self.tile_description.math_instruction.element_a]
+            if (
+                self.tile_description.math_instruction.element_a != self.A.element
+                and self.tile_description.math_instruction.element_a
+                != self.tile_description.math_instruction.element_accumulator
+            ):
+                intermediate_type = DataTypeNames[
+                    self.tile_description.math_instruction.element_a
+                ]
 
-        return "%s%s%s%s" % (self.short_math_name(), inst_shape, intermediate_type, GemmKindNames[self.gemm_kind])
+        return "%s%s%s%s" % (
+            self.short_math_name(),
+            inst_shape,
+            intermediate_type,
+            GemmKindNames[self.gemm_kind],
+        )
 
     def extended_name(self):
         """Append data types if they differ from compute type."""
         if self.is_complex():
             extended_name = "${core_name}"
         else:
-            if (self.C.element != self.tile_description.math_instruction.element_accumulator and
-                self.A.element != self.tile_description.math_instruction.element_accumulator):
+            if (
+                self.C.element
+                != self.tile_description.math_instruction.element_accumulator
+                and self.A.element
+                != self.tile_description.math_instruction.element_accumulator
+            ):
                 extended_name = "${element_c}_${core_name}_${element_a}"
-            elif (self.C.element == self.tile_description.math_instruction.element_accumulator and
-                self.A.element != self.tile_description.math_instruction.element_accumulator):
+            elif (
+                self.C.element
+                == self.tile_description.math_instruction.element_accumulator
+                and self.A.element
+                != self.tile_description.math_instruction.element_accumulator
+            ):
                 extended_name = "${core_name}_${element_a}"
             else:
                 extended_name = "${core_name}"
 
-        extended_name = SubstituteTemplate(extended_name, {
-            "element_a": DataTypeNames[self.A.element],
-            "element_c": DataTypeNames[self.C.element],
-            "core_name": self.core_name(),
-        })
+        extended_name = SubstituteTemplate(
+            extended_name,
+            {
+                "element_a": DataTypeNames[self.A.element],
+                "element_c": DataTypeNames[self.C.element],
+                "core_name": self.core_name(),
+            },
+        )
 
         return extended_name
 
@@ -1629,19 +1790,25 @@ class GemmOperationBase:
         extended_name = "{core_name}_{element_a}_{element_b}_{element_acc}_{element_c}_{element_d}".format(
             element_a=DataTypeNames[self.A.element],
             element_b=DataTypeNames[self.B.element],
-            element_acc=DataTypeNames[self.tile_description.math_instruction.element_accumulator],
+            element_acc=DataTypeNames[
+                self.tile_description.math_instruction.element_accumulator
+            ],
             element_c=DataTypeNames[self.C.element],
             element_d=DataTypeNames[self.epilogue_functor.element_output],
-            core_name=self.core_name())
+            core_name=self.core_name(),
+        )
         return extended_name
 
     def layout_name(self):
         if self.is_complex() or self.is_planar_complex():
             return "%s%s" % (
                 ShortComplexLayoutNames[(self.A.layout, self.A.complex_transform)],
-                ShortComplexLayoutNames[(self.B.layout, self.B.complex_transform)]
+                ShortComplexLayoutNames[(self.B.layout, self.B.complex_transform)],
             )
-        return "%s%s" % (ShortLayoutTypeNames[self.A.layout], ShortLayoutTypeNames[self.B.layout])
+        return "%s%s" % (
+            ShortLayoutTypeNames[self.A.layout],
+            ShortLayoutTypeNames[self.B.layout],
+        )
 
     # Generates a short string representing the ABC layout tags (e.g. ntn or tnn)
     def layout_name_3x(self):
@@ -1649,12 +1816,14 @@ class GemmOperationBase:
             return "{}{}{}".format(
                 ShortComplexLayoutNames[(self.A.layout, self.A.complex_transform)],
                 ShortComplexLayoutNames[(self.B.layout, self.B.complex_transform)],
-                ShortComplexLayoutNames[(self.C.layout, self.C.complex_transform)])
+                ShortComplexLayoutNames[(self.C.layout, self.C.complex_transform)],
+            )
         else:
             return "{}{}{}".format(
                 ShortLayoutTypeNames[self.A.layout],
                 ShortLayoutTypeNames[self.B.layout],
-                ShortLayoutTypeNames[self.C.layout])
+                ShortLayoutTypeNames[self.C.layout],
+            )
 
     # Generates a short string representing underlying kernel schedule type
     def kernel_schedule_name_3x(self):
@@ -1672,7 +1841,9 @@ class GemmOperationBase:
 
     def procedural_name(self):
         """The full procedural name indicates architecture, extended name, tile size, and layout."""
-        opcode_class_name = OpcodeClassNames[self.tile_description.math_instruction.opcode_class]
+        opcode_class_name = OpcodeClassNames[
+            self.tile_description.math_instruction.opcode_class
+        ]
         if self.api == ApiVersion.v3x and self.arch >= 90:
             kernel_name_template = "cutlass{p}_sm{ar}_{op}_{ex}_{tbm}x{tbn}x{tbk}_{cm}x{cn}x{ck}_{l}_{s}_align{al}{k}{e}"
             return kernel_name_template.format(
@@ -1690,7 +1861,7 @@ class GemmOperationBase:
                 s=self.layout_name_3x(),
                 al=str(self.A.alignment),
                 k=self.kernel_schedule_name_3x(),
-                e=self.epilogue_schedule_name_3x()
+                e=self.epilogue_schedule_name_3x(),
             )
         else:
             threadblock = self.tile_description.procedural_name_2x()
@@ -1700,7 +1871,7 @@ class GemmOperationBase:
                 ex=self.extended_name(),
                 tb=threadblock,
                 l=self.layout_name(),
-                a=str(self.A.alignment)
+                a=str(self.A.alignment),
             )
 
     def configuration_name(self):
@@ -1709,15 +1880,37 @@ class GemmOperationBase:
 
 
 class GemmOperationUniversal(GemmOperationBase):
-    def __init__(self, arch, tile_description: TileDescription, A: TensorDescription, B, C,
-        epilogue_functor, swizzling_functor=SwizzlingFunctor.Identity1, **kwargs):
-        api = api_version(arch, tile_description.math_instruction.opcode_class, A.element)
-        super(GemmOperationUniversal, self).__init__(GemmKind.Universal, arch, tile_description,
-                                                     A, B, C, epilogue_functor, swizzling_functor,
-                                                     api=api, **kwargs, )
+    def __init__(
+        self,
+        arch,
+        tile_description: TileDescription,
+        A: TensorDescription,
+        B,
+        C,
+        epilogue_functor,
+        swizzling_functor=SwizzlingFunctor.Identity1,
+        **kwargs,
+    ):
+        api = api_version(
+            arch, tile_description.math_instruction.opcode_class, A.element
+        )
+        super(GemmOperationUniversal, self).__init__(
+            GemmKind.Universal,
+            arch,
+            tile_description,
+            A,
+            B,
+            C,
+            epilogue_functor,
+            swizzling_functor,
+            api=api,
+            **kwargs,
+        )
         if api == ApiVersion.v3x:
             if swizzling_functor == SwizzlingFunctor.StreamK:
-                raise Exception("Stream K swizzle functor is currently only supported for CUTLASS 2.x kernels")
+                raise Exception(
+                    "Stream K swizzle functor is currently only supported for CUTLASS 2.x kernels"
+                )
             self.rt_module = GemmRTUniversal3x(self)
         else:
             if swizzling_functor == SwizzlingFunctor.StreamK:
@@ -1737,17 +1930,45 @@ class GemmOperationUniversal(GemmOperationBase):
         :rtype: GemmUniversalOperation
         """
         A, B, C = GemmOperationBase.get_operands(self.A, self.B, self.C, self.switched)
-        return GemmOperationUniversal(self.arch, self.tile_description, A, B, C,
-                                      self.epilogue_functor, self.swizzling_functor,
-                                      emission_type=EmissionType.Device, direct_store=self.direct_store)
+        return GemmOperationUniversal(
+            self.arch,
+            self.tile_description,
+            A,
+            B,
+            C,
+            self.epilogue_functor,
+            self.swizzling_functor,
+            emission_type=EmissionType.Device,
+            direct_store=self.direct_store,
+        )
 
 
 class GemmOperationGrouped(GemmOperationBase):
-    def __init__(self, arch, tile_description: TileDescription, A: TensorDescription, B, C,
-        epilogue_functor, swizzling_functor=SwizzlingFunctor.Identity1, **kwargs):
-        super(GemmOperationGrouped, self).__init__(GemmKind.Grouped, arch, tile_description,
-                                                   A, B, C, epilogue_functor, swizzling_functor, **kwargs)
-        assert "precompute_mode" in kwargs.keys(), "missing keyword arguement 'precompute_mode'."
+    def __init__(
+        self,
+        arch,
+        tile_description: TileDescription,
+        A: TensorDescription,
+        B,
+        C,
+        epilogue_functor,
+        swizzling_functor=SwizzlingFunctor.Identity1,
+        **kwargs,
+    ):
+        super(GemmOperationGrouped, self).__init__(
+            GemmKind.Grouped,
+            arch,
+            tile_description,
+            A,
+            B,
+            C,
+            epilogue_functor,
+            swizzling_functor,
+            **kwargs,
+        )
+        assert (
+            "precompute_mode" in kwargs.keys()
+        ), "missing keyword arguement 'precompute_mode'."
         self.precompute_mode = kwargs["precompute_mode"]
         self.rt_module = GemmRTGrouped(self)
         self.argument_type = self.rt_module.argument_type
@@ -1764,9 +1985,17 @@ class GemmOperationGrouped(GemmOperationBase):
         """
         A, B, C = GemmOperationBase.get_operands(self.A, self.B, self.C, self.switched)
         return GemmOperationGrouped(
-            self.arch, self.tile_description, A, B, C, self.epilogue_functor,
-            self.swizzling_functor, emission_type=EmissionType.Device,
-            direct_store=self.direct_store, precompute_mode=self.precompute_mode, )
+            self.arch,
+            self.tile_description,
+            A,
+            B,
+            C,
+            self.epilogue_functor,
+            self.swizzling_functor,
+            emission_type=EmissionType.Device,
+            direct_store=self.direct_store,
+            precompute_mode=self.precompute_mode,
+        )
 
 
 ###################################################################################################
@@ -1779,11 +2008,7 @@ class GemmOperationGrouped(GemmOperationBase):
 class EmitGemmUniversalInstance:
     """Responsible for emitting a CUTLASS template definition"""
 
-    def __init__(
-        self,
-        operation_suffix="",
-        direct_store=False
-    ):
+    def __init__(self, operation_suffix="", direct_store=False):
         self.operation_suffix = operation_suffix
         self.direct_store = direct_store
         self.includes = [
@@ -1945,8 +2170,11 @@ ${compile_guard_end}
 
         warp_shape = [threadblock_shape[idx] // warp_count[idx] for idx in range(3)]
 
-        instance_layout_A, instance_layout_B, instance_layout_C = \
-            (operation.A.layout, operation.B.layout, operation.C.layout)
+        instance_layout_A, instance_layout_B, instance_layout_C = (
+            operation.A.layout,
+            operation.B.layout,
+            operation.C.layout,
+        )
 
         if operation.emission_type == EmissionType.Kernel:
             if self.direct_store:
@@ -1966,7 +2194,9 @@ ${compile_guard_end}
             "element_c": DataTypeTag[operation.C.element],
             "layout_c": LayoutTag[instance_layout_C],
             "element_accumulator": DataTypeTag[operation.accumulator_type()],
-            "opcode_class": OpcodeClassTag[operation.tile_description.math_instruction.opcode_class],
+            "opcode_class": OpcodeClassTag[
+                operation.tile_description.math_instruction.opcode_class
+            ],
             "arch": "cutlass::arch::Sm%d" % operation.arch,
             "threadblock_shape_m": str(operation.tile_description.threadblock_shape[0]),
             "threadblock_shape_n": str(operation.tile_description.threadblock_shape[1]),
@@ -1974,28 +2204,38 @@ ${compile_guard_end}
             "warp_shape_m": str(warp_shape[0]),
             "warp_shape_n": str(warp_shape[1]),
             "warp_shape_k": str(warp_shape[2]),
-            "instruction_shape_m": str(operation.tile_description.math_instruction.instruction_shape[0]),
-            "instruction_shape_n": str(operation.tile_description.math_instruction.instruction_shape[1]),
-            "instruction_shape_k": str(operation.tile_description.math_instruction.instruction_shape[2]),
+            "instruction_shape_m": str(
+                operation.tile_description.math_instruction.instruction_shape[0]
+            ),
+            "instruction_shape_n": str(
+                operation.tile_description.math_instruction.instruction_shape[1]
+            ),
+            "instruction_shape_k": str(
+                operation.tile_description.math_instruction.instruction_shape[2]
+            ),
             "swizzling_functor": SwizzlingFunctorTag[operation.swizzling_functor],
             "stages": str(operation.tile_description.stages),
             "align_a": str(operation.A.alignment),
             "align_b": str(operation.B.alignment),
             "transform_a": ComplexTransformTag[operation.A.complex_transform],
             "transform_b": ComplexTransformTag[operation.B.complex_transform],
-            "math_operation": MathOperationTag[operation.tile_description.math_instruction.math_operation],
+            "math_operation": MathOperationTag[
+                operation.tile_description.math_instruction.math_operation
+            ],
         }
 
         if hasattr(operation.epilogue_functor, "visitor"):
             self.includes += [
                 "cutlass/epilogue/threadblock/fusion/visitors.hpp",
-                "cutlass/gemm/kernel/default_gemm_universal_with_visitor.h"
+                "cutlass/gemm/kernel/default_gemm_universal_with_visitor.h",
             ]
             callback_name, callback_decl = operation.epilogue_functor.emit(operation)
             values["callback_name"] = callback_name
             values["callback_decl"] = callback_decl
             values["align_c"] = str(operation.C.alignment)
-            values["element_epilogue"] = DataTypeTag[operation.epilogue_functor.element_epilogue]
+            values["element_epilogue"] = DataTypeTag[
+                operation.epilogue_functor.element_epilogue
+            ]
             if hasattr(operation.epilogue_functor, "epilogue_stages"):
                 epilogue_stages = operation.epilogue_functor.epilogue_stages
             else:
@@ -2067,8 +2307,11 @@ ${compile_guard_end}
 
         warp_shape = [threadblock_shape[idx] // warp_count[idx] for idx in range(3)]
 
-        instance_layout_A, instance_layout_B, instance_layout_C = \
-            (operation.A.layout, operation.B.layout, operation.C.layout)
+        instance_layout_A, instance_layout_B, instance_layout_C = (
+            operation.A.layout,
+            operation.B.layout,
+            operation.C.layout,
+        )
 
         # Support built-in epilogue functors or user-defined functions
         epilogue_functor = operation.epilogue_functor.emit()
@@ -2083,7 +2326,9 @@ ${compile_guard_end}
             "element_c": DataTypeTag[operation.C.element],
             "layout_c": LayoutTag[instance_layout_C],
             "element_accumulator": DataTypeTag[operation.accumulator_type()],
-            "opcode_class": OpcodeClassTag[operation.tile_description.math_instruction.opcode_class],
+            "opcode_class": OpcodeClassTag[
+                operation.tile_description.math_instruction.opcode_class
+            ],
             "arch": "cutlass::arch::Sm%d" % operation.arch,
             "threadblock_shape_m": str(operation.tile_description.threadblock_shape[0]),
             "threadblock_shape_n": str(operation.tile_description.threadblock_shape[1]),
@@ -2091,9 +2336,15 @@ ${compile_guard_end}
             "warp_shape_m": str(warp_shape[0]),
             "warp_shape_n": str(warp_shape[1]),
             "warp_shape_k": str(warp_shape[2]),
-            "instruction_shape_m": str(operation.tile_description.math_instruction.instruction_shape[0]),
-            "instruction_shape_n": str(operation.tile_description.math_instruction.instruction_shape[1]),
-            "instruction_shape_k": str(operation.tile_description.math_instruction.instruction_shape[2]),
+            "instruction_shape_m": str(
+                operation.tile_description.math_instruction.instruction_shape[0]
+            ),
+            "instruction_shape_n": str(
+                operation.tile_description.math_instruction.instruction_shape[1]
+            ),
+            "instruction_shape_k": str(
+                operation.tile_description.math_instruction.instruction_shape[2]
+            ),
             "epilogue_functor": epilogue_functor,
             "swizzling_functor": SwizzlingFunctorTag[operation.swizzling_functor],
             "stages": str(operation.tile_description.stages),
@@ -2102,7 +2353,9 @@ ${compile_guard_end}
             "transform_a": ComplexTransformTag[operation.A.complex_transform],
             "transform_b": ComplexTransformTag[operation.B.complex_transform],
             "precompute_mode": SchedulerModeTag[operation.precompute_mode],
-            "math_operation": MathOperationTag[operation.tile_description.math_instruction.math_operation],
+            "math_operation": MathOperationTag[
+                operation.tile_description.math_instruction.math_operation
+            ],
         }
 
         if operation.emission_type == EmissionType.Kernel:
