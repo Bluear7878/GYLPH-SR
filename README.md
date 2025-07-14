@@ -210,8 +210,8 @@ In real-world applications, image super-resolution (SR) underpins tasks such as 
 
 ## Installation
 ```
-conda create -n GYLPH python=3.8 -y
-conda activate GYLPH
+conda create -n GLYPH python=3.8 -y
+conda activate GLYPH
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
@@ -235,22 +235,54 @@ Edit Custom Path for Checkpoints
 ```
 [CKPT_PTH.py] -> LLAVA_CLIP_PATH, LLAVA_MODEL_PATH, FINE_TUNED_LLAVA_MODEL_PATH, SDXL_CLIP1_PATH, SDXL_CLIP2_CKPT_PTH
 ```
+[LLAVA_CLIP_PATH](https://huggingface.co/openai/clip-vit-large-patch14-336), 
+[LLAVA_MODEL_PATH](https://huggingface.co/liuhaotian/llava-v1.5-13b), 
+[FINE_TUNED_LLAVA_MODEL_PATH](https://drive.google.com/drive/folders/1hrZ5jRbVLcRSFpbL-uPxe9iLddylAFgk),
+[SDXL_CLIP1_PATH](https://huggingface.co/openai/clip-vit-large-patch14), 
+[SDXL_CLIP2_PATH](https://huggingface.co/laion/CLIP-ViT-bigG-14-laion2B-39B-b160k)
 
 ## Running model
 ### Test model
 ```
 python run_GLYPH_SR.py
 ```
-
-Edit Custom Path : `img_path`, `save_dir`, `GLYPH_pretrained_ckpt`, `VLM_pretrained_ckpt`
+| Custom Path | Description |
+|----------------|-------------|
+|`img_path` | Directory of a low-resolution input image|
+| `output path` | Directory where the super-resolved image will be saved (e.g., ./results) |
+| `GYLPH_pretrained_ckpt` | Path to final GLYPH-SR model checkpoint  |
+| `VLM_pretrained_ckpt` | Path to fine-tuned llava model |
 
 ### Train model
 ```
 python train_GLYPH_SR.py
 ```
-Edit Custom Path : `hq_meta_path`, `neg_meta_path`, `val_hp_meta_path`, `val_hq_meta_path`
+| Custom Path | Description |
+|----------------|-------------|
+|`hq_meta_path` | Metadata file path for high-quality (HQ) training data|
+|`neg_meta_path`| Metadata file path for training data that includes negative samples|
+|`val_hp_meta_path` | Metadata file path for high-quality (HQ) validation data|
+|`val_neg_meta_path` | Metadata file path for validation data that includes negative samples.|
+
+Using `dataset_generator/make_dataset_Neg_HQ.py`
 
 ### Evaluate model
 ```
 python metric/delta_metric.py --ori_dir [original image path] --sr_dir [SR image path] --res_path "./all_score"
+```
+
+```
+"PSNR": 22.56453514099121,
+"SSIM": 0.5951710708439351,
+"LPIPS": 0.37014138232916594,
+"MANIQA": 0.643279870781116,
+"MUSIQA": 69.59551072120667,
+"CLIP_IQA": 0.813690185546875,
+"[OCR_model]_[dataset].txt": {
+    "precision": 88.71794871794872,
+    "recall": 73.61702127659574,
+    "f1_score": 80.46511627906976,
+    "accuracy": 67.31517509727627,
+    "ned": 63.20335941808172
+}
 ```
