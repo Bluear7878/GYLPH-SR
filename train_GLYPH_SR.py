@@ -1,42 +1,19 @@
 #!/usr/bin/env python3
-"""
-python3 train_GLYPH_SR.py \
-    --hq_meta_path /home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl \
-    --neg_meta_path /home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl \
-    --val_hq_meta_path /home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl \
-    --val_neg_meta_path /home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl \
-"""
+"""Train the text-control branch using the four-partition metadata (see docs/training.md)."""
 import argparse
 import os
 from dataclasses import dataclass, fields
 
-import pytorch_lightning as pl
-import torch
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from pytorch_lightning.loggers import TensorBoardLogger
-
-from GLYPHSR.ControlNet import load_TS_ControlNet
-from GLYPHSR.dataloader import make_hqlq_dataloader
-from GLYPHSR.util import *
-from sgm.util import instantiate_from_config
-
-# Default device
-SR_DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+from pathlib import Path
 
 
 @dataclass
 class TrainConfig:
     # Data paths
-    hq_meta_path: str = "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl"
-    neg_meta_path: str = (
-        "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl"
-    )
-    val_hq_meta_path: str = (
-        "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_HQ.jsonl"
-    )
-    val_neg_meta_path: str = (
-        "/home/delta1/Texture/GYLPH-SR/train_sample/metadata_with_neg.jsonl"
-    )
+    hq_meta_path: str = None
+    neg_meta_path: str = None
+    val_hq_meta_path: str = None
+    val_neg_meta_path: str = None
 
     # Model & ControlNet
     yaml_file: str = "./model_configs/juggernautXL.yaml"
@@ -121,7 +98,7 @@ class TrainConfig:
     )
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="Train GLYPH-SR Text-SR ControlNet")
     for field in fields(TrainConfig):
         arg_name = f"--{field.name}"
@@ -143,13 +120,26 @@ def parse_args():
                 default=default,
                 help=f"{field.name}, default={default}",
             )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main():
     # Load config
     args = parse_args()
     cfg = TrainConfig(**vars(args))
+
+    for field in ("hq_meta_path", "neg_meta_path", "val_hq_meta_path", "val_neg_meta_path", "yaml_file"):
+        value = getattr(cfg, field)
+        if not value or not Path(value).is_file():
+            raise FileNotFoundError(f"--{field} must name an existing file: {value}")
+    if cfg.sign != "Q":
+        raise ValueError("The released paper configuration uses --sign Q.")
+
+    import pytorch_lightning as pl
+    from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+    from pytorch_lightning.loggers import TensorBoardLogger
+    from GLYPHSR.ControlNet import load_TS_ControlNet
+    from GLYPHSR.dataloader import make_hqlq_dataloader
 
     # Ensure directories exist
     os.makedirs(cfg.log_dir, exist_ok=True)
@@ -175,7 +165,8 @@ def main():
 
     # Load ControlNet-based SR model
     model, _ = load_TS_ControlNet(
-        cfg_path=cfg.yaml_file, args=cfg, device=SR_DEVICE, sign=cfg.sign
+        cfg_path=cfg.yaml_file, args=cfg, device="cuda:0", sign=cfg.sign,
+        pretrained=cfg.pretrained_ckpt or None
     )
 
     # Setup logging and callbacks

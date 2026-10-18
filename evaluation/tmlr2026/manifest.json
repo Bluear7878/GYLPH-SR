@@ -1,0 +1,67 @@
+{
+  "kind": "recorded_matched_review_results",
+  "recorded_date": "2026-09-09",
+  "release_packaged_date": "2026-10-18",
+  "source_commit": "e64a5cc3abe3550a0f56ebab16a58091a286051a",
+  "scope": "Existing matched review aggregates, paired statistics, analysis plan and selected manuscript tables. No new experiments or numeric recomputation. Raw per-image predictions/images are not bundled.",
+  "files": [
+    {
+      "path": "evaluation/tmlr2026/aggregates.json",
+      "bytes": 444400,
+      "sha256": "385d3f45d2efb0da26ae0e3b1d13d4128f0765aefdfb865875e43aedbc5974eb",
+      "source": "rebuttal/results/additional_review_20260907/analysis_fp32_control/aggregates.json"
+    },
+    {
+      "path": "evaluation/tmlr2026/statistics.json",
+      "bytes": 1060889,
+      "sha256": "9916fe82058a547b21221db0ba96a5fd8fcf8b14442a772c7dbca1993bc82aee",
+      "source": "rebuttal/results/additional_review_20260907/analysis_fp32_control/statistics.json"
+    },
+    {
+      "path": "evaluation/tmlr2026/analysis_plan.json",
+      "bytes": 1297740,
+      "sha256": "7196d38f0a58c534cf63e36c4c1b2a7a414149feb833184889637e0e51e982e4",
+      "source": "rebuttal/manifests/additional_review_20260907/control_fp32_20260909/analysis_plan.json",
+      "source_sha256": "3f36a370a96d0c92993cca3f5f1c3cddfddfded545d3594c034dda62f1a7c19f",
+      "transformation": "Removed the original checkout prefix from three provenance paths; numerical values and analysis settings unchanged."
+    },
+    {
+      "path": "evaluation/tmlr2026/tables/main_ocr.tex",
+      "bytes": 2027,
+      "sha256": "b849faa82f1b87da9b8b2bad19165fecf9202fe785c50003fce3a9d88675b808",
+      "source": "rebuttal/overleaf/generated/additional_review_20260909/main_ocr.tex"
+    },
+    {
+      "path": "evaluation/tmlr2026/tables/main_f1.tex",
+      "bytes": 1984,
+      "sha256": "fd09d97d9727415cac1e7d35968f89e0344c718f23bdb3695295fbee9341746e",
+      "source": "rebuttal/overleaf/generated/additional_review_20260909/main_f1.tex"
+    },
+    {
+      "path": "evaluation/tmlr2026/tables/main_cer.tex",
+      "bytes": 2032,
+      "sha256": "f43b5d432539a7b45dd7b4d33825f6d7b1c9696173010a7420504f789a89f078",
+      "source": "rebuttal/overleaf/generated/additional_review_20260909/main_cer.tex"
+    },
+    {
+      "path": "evaluation/tmlr2026/tables/main_exact_accuracy.tex",
+      "bytes": 1911,
+      "sha256": "a9cec0fef82e725eb25698e063c80e6ef28005aec528156d29a0c013b785f525",
+      "source": "rebuttal/overleaf/generated/additional_review_20260909/main_exact_accuracy.tex"
+    },
+    {
+      "path": "evaluation/tmlr2026/tables/main_iqa.tex",
+      "bytes": 2209,
+      "sha256": "376fd497076cd10465a75f859ff9f7a40978750c77f8f02d63c22fd197bfecb6",
+      "source": "rebuttal/overleaf/generated/additional_review_20260909/main_iqa.tex"
+    },
+    {
+      "path": "evaluation/tmlr2026/tables/statistics_main_all_datasets_scales_endpoints.tex",
+      "bytes": 8829,
+      "sha256": "c221879ce04bcea11e37663613638132d7af49020f84dfa3c263db60b77d7ac7",
+      "source": "rebuttal/overleaf/generated/additional_review_20260909/statistics_main_all_datasets_scales_endpoints.tex"
+    }
+  ],
+  "raw_metrics_sha256": "92446a142ab2caff946de629b2d76d613e27618bdd8f5d63a862b92cb2439849",
+  "metric_boundary": "*_f1 are legacy word-matching scores; *_strict_f1 are corrected exact-word scores. No hypothetical camera-ready values are included."
+}

@@ -8,36 +8,21 @@ import argparse
 import copy
 import json
 import os
-from dataclasses import dataclass, fields
+from dataclasses import asdict, dataclass, fields
 
-import torch
-import yaml
-from omegaconf import OmegaConf
-from peft import PeftModel
-from PIL import Image
-from transformers import BitsAndBytesConfig
+from pathlib import Path
 
-from GLYPHSR.ControlNet import load_TS_ControlNet
-from GLYPHSR.OCR import generate_ocr_text, get_img_describe, get_text_position
-from GLYPHSR.util import PIL2Tensor, Tensor2PIL, degrade_image
-from llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
-from llava.conversation import conv_templates
-from llava.mm_utils import process_images
-from llava.model.builder import load_pretrained_model
-from sgm.util import instantiate_from_config
-
-# Default device assignments for different model components
-SR_MODEL_CUDA = "cuda:0"
-OCR_CUDA = "cuda:1"
-VLM_CUDA = "cuda:2"
+from CKPT_PTH import FINE_TUNED_LLAVA_MODEL_PATH, LLAVA_MODEL_PATH
 
 
 @dataclass
 class Config:
     # Paths and I/O
-    img_path: str = (
-        "/home/delta1/Texture/GYLPH-SR/data_sample/83c09301d9bb9764_warm_color_tones.png"
-    )
+    img_path: str = None  # Required input image
+    sr_device: str = "cuda:0"
+    ocr_device: str = "cuda:1"
+    vlm_device: str = "cuda:2"
+    llava_model_path: str = LLAVA_MODEL_PATH
     save_dir: str = "./results"  # Output directory
     meta_filename: str = "metadata.jsonl"
     hq_meta_filename: str = "metadata_HQ.jsonl"
@@ -58,12 +43,8 @@ class Config:
     s_stage2: float = 1.0
     num_samples: int = 1
     down_factor: int = 1
-    GYLPH_pretrained_ckpt: str = (
-        "/home/delta1/Texture/TEXIR/checkpoints/best/smg/cp2.ckpt"
-    )
-    VLM_pretrained_ckpt: str = (
-        "/home/delta1/TEXTURE-Diffusion-Based-Super-Resolution-Model-for-Enhanced-TEXT-Clarity/CKPT_PTH/Llava-next"
-    )
+    GYLPH_pretrained_ckpt: str = os.environ.get("GLYPH_TS_CKPT", "./checkpoints/TS-ControlNet_cp.ckpt")
+    VLM_pretrained_ckpt: str = FINE_TUNED_LLAVA_MODEL_PATH
 
     # Prompts
     a_prompt: str = (
@@ -116,7 +97,7 @@ class Config:
     mask_prob: float = 0.3
 
 
-def parse_args():
+def parse_args(argv=None):
     """
     Parse command-line arguments into a Config instance.
     """
@@ -141,7 +122,23 @@ def parse_args():
                 required=required,
                 help=f"type={arg_type.__name__}, default={default}",
             )
-    return parser.parse_args()
+    return parser.parse_args(argv)
+
+
+def validate_inputs(cfg):
+    for field in ("img_path", "yaml_file", "prompt_yaml_file", "GYLPH_pretrained_ckpt"):
+        value = getattr(cfg, field)
+        if not value or not Path(value).is_file():
+            raise FileNotFoundError(f"--{field} must name an existing file: {value}")
+    adapter = Path(cfg.VLM_pretrained_ckpt)
+    if not (adapter / "adapter_config.json").is_file():
+        raise FileNotFoundError(f"OCR adapter_config.json not found in {adapter}")
+    if not any((adapter / name).is_file() for name in ("adapter_model.safetensors", "adapter_model.bin")):
+        raise FileNotFoundError(f"OCR adapter weights not found in {adapter}")
+    if cfg.sign != "Q":
+        raise ValueError("The released paper configuration uses --sign Q.")
+    if cfg.upscale < 1 or cfg.down_factor < 1:
+        raise ValueError("upscale and down_factor must be positive integers")
 
 
 def main():
@@ -149,6 +146,21 @@ def main():
     args = parse_args()
     # Convert Namespace to Config object
     cfg = Config(**vars(args))
+
+    validate_inputs(cfg)
+
+    # Import the model stack only after parsing/validation so --help works on CPU.
+    import torch
+    import yaml
+    from peft import PeftModel
+    from PIL import Image
+    from GLYPHSR.ControlNet import load_TS_ControlNet
+    from GLYPHSR.OCR import generate_ocr_text, get_img_describe, get_text_position
+    from GLYPHSR.util import PIL2Tensor, Tensor2PIL, degrade_image
+    from llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
+    from llava.conversation import conv_templates
+    from llava.mm_utils import process_images
+    from llava.model.builder import load_pretrained_model
 
     # Ensure save directory exists
     os.makedirs(cfg.save_dir, exist_ok=True)
@@ -175,14 +187,14 @@ def main():
     GLYPH_SR_model, _ = load_TS_ControlNet(
         cfg_path=cfg_path,
         args=cfg,
-        device=SR_MODEL_CUDA,
+        device=cfg.sr_device,
         sign=cfg.sign,
         pretrained=GYLPH_pretrained_ckpt,
     )
     GLYPH_SR_model.eval()
 
     # Load language-vision model
-    MODEL_PATH = "lmms-lab/llama3-llava-next-8b"
+    MODEL_PATH = cfg.llava_model_path
     conv_template = "llava_llama_3"
 
     tokenizer, VLM_model, image_processor, max_length = load_pretrained_model(
@@ -191,14 +203,14 @@ def main():
     # Load OCR model
     OCR_model = (
         PeftModel.from_pretrained(
-            copy.deepcopy(VLM_model), cfg.VLM_pretrained_ckpt, device_map=OCR_CUDA
+            copy.deepcopy(VLM_model), cfg.VLM_pretrained_ckpt, device_map=cfg.ocr_device
         )
         .eval()
-        .to(OCR_CUDA)
+        .to(cfg.ocr_device)
     )
-    VLM_model.eval().to(VLM_CUDA)
+    VLM_model.eval().to(cfg.vlm_device)
 
-    image = Image.open(cfg.img_path)
+    image = Image.open(cfg.img_path).convert("RGB")
 
     # Apply degradation as needed
     if cfg.down_factor > 1:
@@ -208,7 +220,7 @@ def main():
 
     # Prepare image tensor for VLM
     img_proc = process_images([degraded], image_processor, VLM_model.config)
-    img_proc = [t.to(dtype=torch.float16, device=VLM_CUDA) for t in img_proc]
+    img_proc = [t.to(dtype=torch.float16, device=cfg.vlm_device) for t in img_proc]
 
     # Generate image caption
     caption = get_img_describe(
@@ -219,25 +231,27 @@ def main():
         prompt=img_prompt,
         conv_templates=conv_templates,
         image_token_index=IMAGE_TOKEN_INDEX,
-        device=VLM_CUDA,
+        device=cfg.vlm_device,
     )
+
+    ocr_img_proc = [t.to(dtype=torch.float16, device=cfg.ocr_device) for t in img_proc]
 
     # OCR text prediction
     pred_text, _ = generate_ocr_text(
         ocr_prompt,
-        img_proc,
+        ocr_img_proc,
         [degraded.size],
         OCR_model,
         tokenizer,
         conv_templates,
         conv_template,
         IMAGE_TOKEN_INDEX,
-        OCR_CUDA,
+        cfg.ocr_device,
     )
 
     # Get text locations
     text_loc = get_text_position(
-        img_proc,
+        ocr_img_proc,
         pred_text,
         degraded,
         OCR_model,
@@ -247,12 +261,12 @@ def main():
         default_image_token=DEFAULT_IMAGE_TOKEN,
         max_new_tokens=128,
         image_token_index=IMAGE_TOKEN_INDEX,
-        device=OCR_CUDA,
+        device=cfg.ocr_device,
     )
 
     # Prepare low-quality tensor for SR
     LQ_img, h0, w0 = PIL2Tensor(degraded, upscale=cfg.upscale, min_size=cfg.min_size)
-    LQ_img = LQ_img.unsqueeze(0).to(SR_MODEL_CUDA)[:, :3, :, :]
+    LQ_img = LQ_img.unsqueeze(0).to(cfg.sr_device)[:, :3, :, :]
 
     # Combine prompts
     a_text = cfg.a_text_prompt + cfg.a_prompt
@@ -307,6 +321,8 @@ def main():
         "caption": caption,
         "pred_text": pred_text,
         "text_loc": text_loc,
+        "settings": asdict(cfg),
+        "ts_checkpoint_load_report": GLYPH_SR_model._ts_checkpoint_load_report,
     }
     with open(meta_path, "a", encoding="utf-8") as mf:
         mf.write(json.dumps(metadata, ensure_ascii=False) + "\n")

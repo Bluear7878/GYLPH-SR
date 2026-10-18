@@ -1,0 +1,39 @@
+{
+  "scope": "Recorded paper configuration; full_model TS loading; hashes from recovered review artifacts, not re-downloaded during this release update.",
+  "llava_base": {
+    "model_id": "lmms-lab/llama3-llava-next-8b",
+    "revision": "6d6dcb8d7948364bebef9c11aba6b0e6c8835391"
+  },
+  "assets": [
+    {
+      "path": "juggernautXL_v8Rundiffusion.safetensors",
+      "url": "https://huggingface.co/RunDiffusion/Juggernaut-XL-v8/resolve/5c38059bf38387bed17f70e5c1e5c00544caf41e/juggernautXL_v8Rundiffusion.safetensors",
+      "bytes": 7105348592,
+      "sha256": "aeb7e9e6897a1e58b10494bd989d001e3d4bc9b634633cd7b559838f612c2867"
+    },
+    {
+      "path": "SUPIR-v0Q.ckpt",
+      "url": "https://weights.replicate.delivery/default/SUPIR-v0Q.ckpt",
+      "bytes": 5329810432,
+      "sha256": "d7f418398bb024d0d3c779c4ee4e9f171eb072306093f5bcfb2bf096aa2738f8"
+    },
+    {
+      "path": "Llava-next_FT/adapter_config.json",
+      "url": "https://drive.google.com/file/d/1AvgzyFtdx0Q0K3O21qYaFLl1fb1m08JG/view",
+      "bytes": 739,
+      "sha256": "c02f2836a879c4f49828aa8c9d74026a373c50f73ed4c20c784288e5881effc8"
+    },
+    {
+      "path": "Llava-next_FT/adapter_model.safetensors",
+      "url": "https://drive.google.com/file/d/1m7PIIE-_uScY085a48xKLy-10AdzsvEj/view",
+      "bytes": 2125007368,
+      "sha256": "26aab9a2a7387d769297b7652db327e40b961a78ad170a0736c7ebdee80f61af"
+    },
+    {
+      "path": "TS-ControlNet_cp.ckpt",
+      "url": "https://drive.google.com/file/d/121NK-KAOzrKPgQ8XGIf57TQ3HqLFM3yb/view",
+      "bytes": 19923474471,
+      "sha256": "c59999b4571fe151b49893f94bcb1d2928113b3ffe84212079fa8c1fb768d060"
+    }
+  ]
+}

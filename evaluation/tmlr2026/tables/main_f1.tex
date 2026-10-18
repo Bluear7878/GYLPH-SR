@@ -1,0 +1,31 @@
+\begin{table}[H]
+\centering
+\caption{Legacy submitted matching scores, retained for continuity and distinct from conventional exact-word F1. Three inference seeds; seed mean and sample standard deviation. The image sets are identical to the main repeatability comparison.}
+\label{tab:ar-main-f1}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Dataset & Scale & Method & OpenOCR & GOT-OCR2 & LLaVA \\
+\midrule
+SVT & $\times4$ & GLYPH-SR & 65.67$\pm$0.97 & 67.28$\pm$0.71 & 74.27$\pm$0.87 \\
+SVT & $\times4$ & PASD & 13.22$\pm$0.89 & 11.01$\pm$0.93 & 27.04$\pm$0.91 \\
+SVT & $\times4$ & ResShift-v3 & 55.85$\pm$1.08 & 59.99$\pm$0.17 & 74.44$\pm$0.57 \\
+SVT & $\times8$ & GLYPH-SR & 36.38$\pm$0.39 & 39.29$\pm$0.75 & 45.64$\pm$0.75 \\
+SVT & $\times8$ & PASD & 6.90$\pm$1.01 & 5.87$\pm$0.94 & 13.73$\pm$1.31 \\
+SVT & $\times8$ & ResShift-v3 & 14.94$\pm$0.57 & 16.32$\pm$0.11 & 31.08$\pm$0.91 \\
+SCUT-CTW1500 & $\times4$ & GLYPH-SR & 41.62$\pm$0.20 & 36.77$\pm$0.36 & 52.75$\pm$0.24 \\
+SCUT-CTW1500 & $\times4$ & PASD & 19.15$\pm$0.33 & 14.66$\pm$0.37 & 35.41$\pm$0.25 \\
+SCUT-CTW1500 & $\times4$ & ResShift-v3 & 31.41$\pm$0.15 & 25.29$\pm$0.58 & 48.67$\pm$0.11 \\
+SCUT-CTW1500 & $\times8$ & GLYPH-SR & 8.65$\pm$0.02 & 8.60$\pm$0.19 & 20.05$\pm$0.55 \\
+SCUT-CTW1500 & $\times8$ & PASD & 3.68$\pm$0.19 & 3.50$\pm$0.04 & 14.43$\pm$0.22 \\
+SCUT-CTW1500 & $\times8$ & ResShift-v3 & 5.36$\pm$0.17 & 4.30$\pm$0.29 & 18.05$\pm$0.62 \\
+CUTE80 & $\times4$ & GLYPH-SR & 76.74$\pm$0.30 & 60.31$\pm$1.99 & 91.18$\pm$0.53 \\
+CUTE80 & $\times4$ & PASD & 54.93$\pm$1.25 & 39.36$\pm$1.82 & 77.89$\pm$1.82 \\
+CUTE80 & $\times4$ & ResShift-v3 & 78.86$\pm$0.87 & 57.61$\pm$1.37 & 91.94$\pm$0.35 \\
+CUTE80 & $\times8$ & GLYPH-SR & 66.49$\pm$0.91 & 51.58$\pm$1.37 & 83.09$\pm$0.67 \\
+CUTE80 & $\times8$ & PASD & 50.72$\pm$1.00 & 36.45$\pm$2.63 & 72.34$\pm$1.59 \\
+CUTE80 & $\times8$ & ResShift-v3 & 60.83$\pm$0.57 & 50.15$\pm$0.00 & 80.65$\pm$0.16 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -537,7 +537,7 @@ class FrozenOpenCLIPEmbedder2(AbstractEmbModel):
         # )
 
         model, _, preprocess = open_clip.create_model_and_transforms(
-            arch, device=torch.device("cpu"), pretrained="laion2b_s39b_b160k"
+            arch, device=torch.device("cpu"), pretrained=SDXL_CLIP2_CKPT_PTH or version
         )
 
         del model.visual

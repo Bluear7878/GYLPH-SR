@@ -1,0 +1,31 @@
+\begin{table}[H]
+\centering
+\caption{Matched main comparisons over diffusion seeds 1234, 2345, and 3456. Values are seed mean and sample standard deviation. Each seed uses all 80 CUTE80, 350 SVT, and 500 SCUT-CTW1500 images; SVT OCR uses its 349 annotated images. OCR uses corrected exact-word $F_1$ (0--100).}
+\label{tab:ar-main-ocr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Dataset & Scale & Method & OpenOCR $F_1$ & GOT-OCR2 $F_1$ & LLaVA $F_1$ \\
+\midrule
+SVT & $\times4$ & GLYPH-SR & 25.50$\pm$0.66 & 11.35$\pm$3.83 & 7.27$\pm$0.34 \\
+SVT & $\times4$ & PASD & 10.10$\pm$0.79 & 7.34$\pm$0.50 & 1.31$\pm$0.03 \\
+SVT & $\times4$ & ResShift-v3 & 28.77$\pm$0.74 & 31.36$\pm$10.35 & 6.60$\pm$0.19 \\
+SVT & $\times8$ & GLYPH-SR & 13.75$\pm$0.23 & 8.19$\pm$4.30 & 3.56$\pm$0.02 \\
+SVT & $\times8$ & PASD & 5.62$\pm$0.94 & 3.93$\pm$0.64 & 0.68$\pm$0.07 \\
+SVT & $\times8$ & ResShift-v3 & 8.41$\pm$0.40 & 8.57$\pm$1.97 & 1.54$\pm$0.06 \\
+SCUT-CTW1500 & $\times4$ & GLYPH-SR & 29.54$\pm$0.35 & 21.02$\pm$5.22 & 14.06$\pm$0.52 \\
+SCUT-CTW1500 & $\times4$ & PASD & 17.15$\pm$0.29 & 12.96$\pm$0.32 & 7.16$\pm$0.22 \\
+SCUT-CTW1500 & $\times4$ & ResShift-v3 & 23.75$\pm$0.06 & 16.59$\pm$2.80 & 10.05$\pm$0.03 \\
+SCUT-CTW1500 & $\times8$ & GLYPH-SR & 6.48$\pm$0.01 & 4.75$\pm$1.34 & 3.38$\pm$0.03 \\
+SCUT-CTW1500 & $\times8$ & PASD & 3.52$\pm$0.18 & 3.17$\pm$0.04 & 2.36$\pm$0.03 \\
+SCUT-CTW1500 & $\times8$ & ResShift-v3 & 4.19$\pm$0.15 & 2.95$\pm$0.83 & 2.25$\pm$0.09 \\
+CUTE80 & $\times4$ & GLYPH-SR & 48.54$\pm$0.58 & 41.88$\pm$0.59 & 11.55$\pm$0.65 \\
+CUTE80 & $\times4$ & PASD & 43.03$\pm$0.79 & 29.84$\pm$1.68 & 8.28$\pm$0.32 \\
+CUTE80 & $\times4$ & ResShift-v3 & 54.31$\pm$1.44 & 45.02$\pm$1.12 & 14.17$\pm$0.58 \\
+CUTE80 & $\times8$ & GLYPH-SR & 38.77$\pm$0.71 & 18.88$\pm$12.47 & 10.33$\pm$0.16 \\
+CUTE80 & $\times8$ & PASD & 40.84$\pm$0.79 & 27.93$\pm$2.56 & 7.65$\pm$0.55 \\
+CUTE80 & $\times8$ & ResShift-v3 & 41.40$\pm$0.48 & 39.21$\pm$0.49 & 10.98$\pm$0.55 \\
+\bottomrule
+\end{tabular}
+\end{table}

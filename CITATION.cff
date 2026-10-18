@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use GLYPH-SR, please cite the paper below."
+type: software
+title: GLYPH-SR
+repository-code: "https://github.com/Bluear7878/GYLPH-SR"
+authors: &authors
+  - family-names: Sung
+    given-names: Mingyu
+  - family-names: Ham
+    given-names: Seungjae
+  - family-names: Kim
+    given-names: Kangwoo
+  - family-names: Kim
+    given-names: Il-Min
+  - family-names: Yun
+    given-names: Sangseok
+  - family-names: Kang
+    given-names: Jae-Mo
+preferred-citation:
+  type: article
+  title: "A Bi-Objective Framework for Scene Text Super-Resolution: Balancing Legibility and Fidelity"
+  authors: *authors
+  journal: Transactions on Machine Learning Research
+  year: 2026
+  url: "https://openreview.net/forum?id=9CnYnByhvB"

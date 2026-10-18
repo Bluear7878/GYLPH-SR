@@ -2,3 +2,15 @@ dataset/
 LLM_FT/
 
 *.ipynb
+
+# Local runtime artifacts
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+checkpoints/
+results/
+lightning_logs/
+*.ckpt
+*.safetensors
+.env

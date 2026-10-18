@@ -14,6 +14,7 @@ from diffusers.models.controlnet import ControlNetOutput
 from omegaconf import OmegaConf
 
 from GLYPHSR.SR_model import *
+from GLYPHSR.checkpoint import load_TS_pretrained_model
 from sgm.models.diffusion import DiffusionEngine
 from sgm.modules.diffusionmodules.denoiser import *
 from sgm.util import instantiate_from_config
@@ -133,17 +134,6 @@ def load_state_dict(ckpt_path, location="cpu"):
     return sd
 
 
-# Load pretrained weights into model, move to device, and free memory
-def load_TS_pretrained_model(model, ckpt_path, device, strict=False):
-    state_dict = torch.load(ckpt_path, map_location="cpu")
-    model.model.load_state_dict(state_dict, strict=strict)
-    del state_dict
-    torch.cuda.empty_cache()
-
-    model.to(device)
-    return model
-
-
 # Build TS ControlNet with configs, scheduler, and optional pretrained weights
 def load_TS_ControlNet(
     cfg_path,
@@ -157,6 +147,11 @@ def load_TS_ControlNet(
     pretrained=None,
 ):
     cfg = OmegaConf.load(cfg_path)
+    # Resolve and check local paths before allocating the diffusion/VLM stack.
+    for key in ("SDXL_CKPT", "SUPIR_CKPT", "SUPIR_CKPT_Q" if sign is not None else "SUPIR_CKPT"):
+        path = cfg.get(key)
+        if path is not None and not os.path.isfile(path):
+            raise FileNotFoundError(f"{key} checkpoint not found: {path}; see docs/checkpoints.md")
 
     SR_backbone = instantiate_from_config(cfg.model).cpu()
 

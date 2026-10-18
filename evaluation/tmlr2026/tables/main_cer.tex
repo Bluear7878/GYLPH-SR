@@ -1,0 +1,31 @@
+\begin{table}[H]
+\centering
+\caption{Character error rates; insertion errors can yield CER above 100\%. Three inference seeds; seed mean and sample standard deviation. The image sets are identical to the main repeatability comparison.}
+\label{tab:ar-main-cer}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Dataset & Scale & Method & OpenOCR & GOT-OCR2 & LLaVA \\
+\midrule
+SVT & $\times4$ & GLYPH-SR & 209.70$\pm$0.39 & 675.50$\pm$52.26 & 1097.14$\pm$42.27 \\
+SVT & $\times4$ & PASD & 88.16$\pm$0.33 & 298.79$\pm$122.83 & 1702.44$\pm$28.73 \\
+SVT & $\times4$ & ResShift-v3 & 99.62$\pm$1.06 & 87.27$\pm$27.08 & 1225.49$\pm$21.42 \\
+SVT & $\times8$ & GLYPH-SR & 199.88$\pm$2.85 & 400.15$\pm$122.46 & 1153.83$\pm$30.19 \\
+SVT & $\times8$ & PASD & 92.05$\pm$0.14 & 209.53$\pm$28.46 & 1539.77$\pm$22.27 \\
+SVT & $\times8$ & ResShift-v3 & 92.10$\pm$1.22 & 598.18$\pm$118.19 & 1653.66$\pm$14.95 \\
+SCUT-CTW1500 & $\times4$ & GLYPH-SR & 68.22$\pm$0.32 & 92.00$\pm$29.18 & 295.68$\pm$12.44 \\
+SCUT-CTW1500 & $\times4$ & PASD & 82.12$\pm$0.25 & 86.32$\pm$0.16 & 349.94$\pm$10.32 \\
+SCUT-CTW1500 & $\times4$ & ResShift-v3 & 70.17$\pm$0.14 & 110.03$\pm$22.83 & 386.58$\pm$3.85 \\
+SCUT-CTW1500 & $\times8$ & GLYPH-SR & 91.09$\pm$0.15 & 108.22$\pm$16.86 & 406.08$\pm$14.52 \\
+SCUT-CTW1500 & $\times8$ & PASD & 95.55$\pm$0.11 & 100.64$\pm$9.72 & 410.43$\pm$1.59 \\
+SCUT-CTW1500 & $\times8$ & ResShift-v3 & 87.64$\pm$0.38 & 122.69$\pm$26.62 & 566.20$\pm$2.39 \\
+CUTE80 & $\times4$ & GLYPH-SR & 82.00$\pm$1.27 & 157.07$\pm$165.38 & 1021.17$\pm$66.67 \\
+CUTE80 & $\times4$ & PASD & 52.04$\pm$0.60 & 68.29$\pm$1.59 & 1052.61$\pm$12.92 \\
+CUTE80 & $\times4$ & ResShift-v3 & 56.60$\pm$1.41 & 342.86$\pm$0.79 & 795.99$\pm$36.06 \\
+CUTE80 & $\times8$ & GLYPH-SR & 90.19$\pm$2.47 & 340.28$\pm$276.10 & 942.86$\pm$49.11 \\
+CUTE80 & $\times8$ & PASD & 57.58$\pm$0.96 & 70.38$\pm$1.76 & 1021.06$\pm$67.68 \\
+CUTE80 & $\times8$ & ResShift-v3 & 55.47$\pm$1.07 & 257.00$\pm$171.52 & 813.69$\pm$52.48 \\
+\bottomrule
+\end{tabular}
+\end{table}
