@@ -9,11 +9,16 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 
+from glyph_sr._vendor.sgm.modules.diffusionmodules.guiders import LinearCFG
+from glyph_sr._vendor.sgm.modules.diffusionmodules.loss import StandardDiffusionLoss
+from glyph_sr._vendor.sgm.modules.diffusionmodules.sampling import RestoreEDMSampler
+from glyph_sr._vendor.sgm.modules.diffusionmodules.wrappers import OPENAIUNETWRAPPER, OpenAIWrapper
+from glyph_sr._vendor.sgm.util import get_obj_from_str
 from glyph_sr.config import RuntimeConfig
 from glyph_sr.models.controlnet import TextControlNet, _residual_mean, _tree_to, load_controlnet
 from glyph_sr.models.diffusion import DiffusionRestorer
 from glyph_sr.models.layers import ZeroSFT
-from utils.tilevae import GroupNormParam, VAEHook
+from glyph_sr.models.vae import GroupNormParam, VAEHook
 
 
 class TinyUNet(nn.Module):
@@ -82,6 +87,44 @@ def sampling_model():
 
 
 class ModelTests(unittest.TestCase):
+    def test_vendored_sampler_defaults_resolve_with_canonical_import_paths(self):
+        sampler = RestoreEDMSampler(
+            discretization_config={
+                "target": "glyph_sr._vendor.sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization"
+            },
+            num_steps=4,
+            device="cpu",
+        )
+        self.assertEqual(
+            type(sampler.guider).__module__, "glyph_sr._vendor.sgm.modules.diffusionmodules.guiders"
+        )
+        self.assertEqual(
+            type(LinearCFG(4).dyn_thresh).__module__,
+            "glyph_sr._vendor.sgm.modules.diffusionmodules.sampling_utils",
+        )
+        self.assertIs(get_obj_from_str(OPENAIUNETWRAPPER), OpenAIWrapper)
+
+    def test_retained_diffusion_losses_preserve_weighted_batch_values(self):
+        sampler_config = {
+            "target": "glyph_sr._vendor.sgm.modules.diffusionmodules.sigma_sampling.DiscreteSampling",
+            "params": {
+                "discretization_config": {
+                    "target": "glyph_sr._vendor.sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization"
+                },
+                "num_idx": 4,
+            },
+        }
+        values = torch.tensor([1.0, 2.0, 3.0, 4.0, -1.0, -2.0, -3.0, -4.0]).reshape(2, 1, 2, 2)
+        weights = torch.tensor([2.0, 3.0]).reshape(2, 1, 1, 1)
+        for loss_type, expected in (("l2", [15.0, 22.5]), ("l1", [5.0, 7.5])):
+            with self.subTest(loss=loss_type):
+                loss = StandardDiffusionLoss(sampler_config, type=loss_type)
+                torch.testing.assert_close(
+                    loss.get_loss(values, torch.zeros_like(values), weights), torch.tensor(expected)
+                )
+        with self.assertRaisesRegex(ValueError, "l1 and l2"):
+            StandardDiffusionLoss(sampler_config, type="lpips")
+
     def test_loader_applies_precision_and_optional_runtime_settings(self):
         model = nn.Module()
         model.model = nn.Module()
@@ -108,7 +151,9 @@ class ModelTests(unittest.TestCase):
                 "model:\n  target: tests.TinyRestorer\n  params: {}\n"
                 "SDXL_CKPT: null\nSUPIR_CKPT: null\n"
             )
-            with patch("sgm.util.instantiate_from_config", side_effect=instantiate):
+            with patch(
+                "glyph_sr._vendor.sgm.util.instantiate_from_config", side_effect=instantiate
+            ):
                 result, trainable = load_controlnet(path, args, device="cpu")
         self.assertIs(result, model)
         self.assertEqual(captured, {"ae_dtype": "fp32", "diffusion_dtype": "bf16"})
@@ -117,14 +162,6 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(
             list(trainable), list(model.model.diffusion_model.project_modules.parameters())
         )
-
-    def test_loader_rejects_legacy_half_loading_before_reading_configuration(self):
-        with patch("omegaconf.OmegaConf.load") as read_config:
-            with self.assertRaisesRegex(ValueError, "loading_half_params=True is unsupported"):
-                load_controlnet(
-                    "missing.yaml", SimpleNamespace(loading_half_params=True), device="cpu"
-                )
-        read_config.assert_not_called()
 
     def test_tiled_vae_uses_the_input_device_and_restores_the_module_device(self):
         original = nn.Parameter(torch.zeros(1))

@@ -48,25 +48,21 @@ runtime = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["glyph_sr*", "GLYPHSR*", "llava*", "sgm*", "utils*", "tools*", "dataset_generater*"]
-
-[tool.setuptools]
-py-modules = ["CKPT_PTH", "run_GLYPH_SR", "train_GLYPH_SR"]
+include = ["glyph_sr*"]
 
 [tool.setuptools.package-data]
 glyph_sr = ["configs/*.yaml"]
 
 [tool.setuptools.data-files]
 "share/glyph_sr" = ["THIRD_PARTY_NOTICES.md", "CITATION.cff"]
-"share/glyph_sr/evaluation/tmlr2026" = ["evaluation/tmlr2026/*.json", "evaluation/tmlr2026/*.csv"]
-"share/glyph_sr/evaluation/tmlr2026/tables" = ["evaluation/tmlr2026/tables/*.tex"]
+"share/glyph_sr/docs/results" = ["docs/results/*.json"]
 "share/glyph_sr/docs" = ["docs/checkpoints.json"]
 "share/glyph_sr/licenses" = ["licenses/*"]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 100
-extend-exclude = ["llava", "sgm", "third_party"]
+extend-exclude = ["glyph_sr/_vendor"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]

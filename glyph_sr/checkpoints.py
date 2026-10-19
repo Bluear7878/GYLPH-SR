@@ -119,6 +119,3 @@ def load_ts_checkpoint(model, ckpt_path, device, strict=False):
     model._ts_checkpoint_load_report = _assign_ts_checkpoint(model, ckpt_path, strict)
     model.to(device)
     return model
-
-
-load_TS_pretrained_model = load_ts_checkpoint

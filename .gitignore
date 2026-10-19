@@ -1,5 +1,7 @@
-dataset/
-LLM_FT/
+/data/
+/dataset/
+/datasets/
+/LLM_FT/
 
 *.ipynb
 
@@ -8,9 +10,9 @@ __pycache__/
 *.py[cod]
 .venv/
 .pytest_cache/
-checkpoints/
-results/
-lightning_logs/
+/checkpoints/
+/results/
+/lightning_logs/
 *.ckpt
 *.safetensors
 .env

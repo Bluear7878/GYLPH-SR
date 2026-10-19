@@ -7,7 +7,7 @@ from copy import deepcopy
 import torch
 from torch import nn
 
-from glyph_sr.checkpoints import get_state_dict, load_state_dict, load_ts_checkpoint
+from glyph_sr.checkpoints import load_state_dict, load_ts_checkpoint
 
 
 def _is_residual_output(obj):
@@ -125,13 +125,9 @@ def load_controlnet(
     pretrained=None,
 ):
     """Build the released frozen restorer and trainable text projections."""
-    from glyph_sr.config import _reject_legacy_half_loading
-
-    _reject_legacy_half_loading(getattr(args, "loading_half_params", False))
-
     from omegaconf import OmegaConf
 
-    from sgm.util import instantiate_from_config
+    from glyph_sr._vendor.sgm.util import instantiate_from_config
 
     cfg = OmegaConf.load(cfg_path)
     # Resolve and check local paths before allocating the diffusion/VLM stack.
@@ -143,7 +139,9 @@ def load_controlnet(
     for key in checkpoint_keys:
         path = cfg.get(key)
         if path is not None and not os.path.isfile(path):
-            raise FileNotFoundError(f"{key} checkpoint not found: {path}; see docs/checkpoints.md")
+            raise FileNotFoundError(
+                f"{key} checkpoint not found: {path}; see docs/guide.md#checkpoints"
+            )
 
     if pretrained is not None and not os.path.isfile(pretrained):
         raise FileNotFoundError(f"TS checkpoint not found: {pretrained}")
@@ -176,13 +174,13 @@ def load_controlnet(
 
     if loss_fn_config is None:
         loss_fn_config = {
-            "target": "sgm.modules.diffusionmodules.loss.StandardDiffusionLoss",
+            "target": "glyph_sr._vendor.sgm.modules.diffusionmodules.loss.StandardDiffusionLoss",
             "params": {
                 "sigma_sampler_config": {
-                    "target": "sgm.modules.diffusionmodules.sigma_sampling.DiscreteSampling",
+                    "target": "glyph_sr._vendor.sgm.modules.diffusionmodules.sigma_sampling.DiscreteSampling",
                     "params": {
                         "discretization_config": {
-                            "target": "sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization"
+                            "target": "glyph_sr._vendor.sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization"
                         },
                         "num_idx": 1000,
                         "do_append_zero": False,
@@ -198,7 +196,7 @@ def load_controlnet(
         "params": {"weight_decay": 1e-4},
     }
     scheduler_config = {
-        "target": "sgm.lr_scheduler.LambdaWarmUpCosineScheduler",
+        "target": "glyph_sr._vendor.sgm.lr_scheduler.LambdaWarmUpCosineScheduler",
         "params": {
             "warm_up_steps": warm_up_steps,
             "lr_min": 0.1,
@@ -220,28 +218,28 @@ def load_controlnet(
     model.upscale = 2
     model.min_size = 256
     model.val_sample_kwargs = {
-        "num_steps": args.edm_steps,
-        "restoration_scale": args.s_stage1,
+        "num_steps": args.steps,
+        "restoration_scale": args.restoration_scale,
         "s_churn": args.s_churn,
         "s_noise": args.s_noise,
-        "cfg_scale": args.s_cfg,
-        "control_scale": args.s_stage2,
+        "cfg_scale": args.cfg_scale,
+        "control_scale": args.control_scale,
         "seed": args.seed,
         "num_samples": args.num_samples,
-        "p_p": args.a_prompt,
-        "n_p": args.n_prompt,
+        "p_p": args.positive_image_prompt,
+        "n_p": args.negative_image_prompt,
         "color_fix_type": args.color_fix_type,
-        "use_linear_CFG": args.linear_CFG,
-        "use_linear_control_scale": args.linear_s_stage2,
-        "cfg_scale_start": args.spt_linear_CFG,
-        "control_scale_start": args.spt_linear_s_stage2,
+        "use_linear_CFG": args.linear_cfg,
+        "use_linear_control_scale": args.linear_control_scale,
+        "cfg_scale_start": args.cfg_scale_start,
+        "control_scale_start": args.control_scale_start,
     }
 
     if pretrained is not None:
         model = load_ts_checkpoint(model, pretrained, device=device, strict=False)
         print(f"Loaded {pretrained} to {model.__class__.__name__}")
 
-    if getattr(args, "use_tile_vae", False):
+    if getattr(args, "tile_vae", False):
         model.init_tile_vae(
             encoder_tile_size=getattr(args, "encoder_tile_size", 512),
             decoder_tile_size=getattr(args, "decoder_tile_size", 64),
@@ -250,16 +248,4 @@ def load_controlnet(
     return model, trainable
 
 
-ProjectTSControlNet = TextControlNet
-load_TS_ControlNet = load_controlnet
-load_TS_pretrained_model = load_ts_checkpoint
-
-__all__ = [
-    "TextControlNet",
-    "ProjectTSControlNet",
-    "load_controlnet",
-    "load_TS_ControlNet",
-    "get_state_dict",
-    "load_state_dict",
-    "load_TS_pretrained_model",
-]
+__all__ = ["TextControlNet", "load_controlnet"]

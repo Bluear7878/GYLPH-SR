@@ -5,7 +5,7 @@ from contextlib import nullcontext
 from itertools import islice
 from pathlib import Path
 
-from glyph_sr.data.io import load_metadata, write_record
+from glyph_sr.data import load_metadata, write_record
 
 # The style list is the original augmentation recipe, in its original order.
 AUGMENTATION_STYLES = (

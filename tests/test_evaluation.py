@@ -7,11 +7,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from glyph_sr.evaluation.ocr import (
+from glyph_sr.evaluation import (
     aggregate_counts,
     corrected_word_counts,
     legacy_counts,
-    main,
+    score,
 )
 
 
@@ -54,7 +54,7 @@ class EvaluationTests(unittest.TestCase):
             )
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(
-                    main(
+                    score(
                         [
                             "--input",
                             str(source),
@@ -89,4 +89,4 @@ class EvaluationTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.score()

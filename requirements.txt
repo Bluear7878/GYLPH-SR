@@ -1,2 +1,0 @@
-# Runtime environment; install matching PyTorch/xformers wheels first.
--e .[runtime]

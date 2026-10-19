@@ -36,8 +36,8 @@ class RestorationPipeline:
         import yaml
         from peft import PeftModel
 
-        from llava.constants import DEFAULT_IMAGE_TOKEN
-        from llava.model.builder import load_pretrained_model
+        from glyph_sr._vendor.llava.constants import DEFAULT_IMAGE_TOKEN
+        from glyph_sr._vendor.llava.model.builder import load_pretrained_model
 
         from .models.controlnet import load_controlnet
 
@@ -73,9 +73,9 @@ class RestorationPipeline:
 
     def restore(self, image):
         """Return every generated image and the automatic LR-derived cue metadata."""
-        from llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
-        from llava.conversation import conv_templates
-        from llava.mm_utils import process_images
+        from glyph_sr._vendor.llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
+        from glyph_sr._vendor.llava.conversation import conv_templates
+        from glyph_sr._vendor.llava.mm_utils import process_images
 
         from .guidance import describe_image, describe_text_locations, generate_ocr_text
         from .images import degrade_image, pil_to_tensor, tensor_to_pil

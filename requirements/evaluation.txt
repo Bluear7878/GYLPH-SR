@@ -1,3 +1,0 @@
-# The JSONL OCR scorer requires only RapidFuzz beyond the standard library.
-RapidFuzz==3.14.5
-# Perceptual evaluation is a separate environment; see docs/evaluation.md.

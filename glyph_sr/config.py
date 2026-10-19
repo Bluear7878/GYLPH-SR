@@ -2,56 +2,9 @@
 
 import argparse
 import os
-from dataclasses import InitVar, dataclass, fields
+from dataclasses import dataclass, fields
 
 from .paths import FINE_TUNED_LLAVA_MODEL_PATH, LLAVA_MODEL_PATH, resource_path
-
-# Old model-loader attribute names remain an internal compatibility contract.
-_ALIASES = {
-    "img_path": "input_path",
-    "save_dir": "output_dir",
-    "meta_filename": "metadata_filename",
-    "yaml_file": "model_config",
-    "prompt_yaml_file": "prompt_config",
-    "GYLPH_pretrained_ckpt": "ts_checkpoint",
-    "VLM_pretrained_ckpt": "ocr_adapter",
-    "llava_model_path": "caption_model",
-    "vlm_device": "caption_device",
-    "edm_steps": "steps",
-    "s_cfg": "cfg_scale",
-    "s_stage1": "restoration_scale",
-    "s_stage2": "control_scale",
-    "linear_CFG": "linear_cfg",
-    "linear_s_stage2": "linear_control_scale",
-    "spt_linear_CFG": "cfg_scale_start",
-    "spt_linear_s_stage2": "control_scale_start",
-    "a_prompt": "positive_image_prompt",
-    "a_text_prompt": "positive_text_prompt",
-    "n_prompt": "negative_image_prompt",
-    "n_text_prompt": "negative_text_prompt",
-    "use_tile_vae": "tile_vae",
-    "sign": "variant",
-    "hq_meta_path": "hq_metadata",
-    "neg_meta_path": "negative_metadata",
-    "val_hq_meta_path": "validation_hq_metadata",
-    "val_neg_meta_path": "validation_negative_metadata",
-    "num_epochs": "epochs",
-    "img_size_train": "train_image_size",
-    "img_size_val": "validation_image_size",
-    "gpus": "devices",
-    "pretrained_ckpt": "ts_checkpoint",
-    "ckpt_dir": "checkpoint_dir",
-    "ckpt_filename": "checkpoint_filename",
-}
-
-
-def _reject_legacy_half_loading(enabled):
-    if enabled:
-        raise ValueError(
-            "loading_half_params=True is unsupported for inference/training; "
-            "use ae_dtype and diff_dtype to select runtime precision."
-        )
-
 
 _FIXED_TRAINING_OPTIONS = {
     "upscale",
@@ -84,7 +37,6 @@ class RuntimeConfig:
     control_scale_start: float = 0.0
     ae_dtype: str = "bf16"
     diff_dtype: str = "fp16"
-    loading_half_params: InitVar[bool] = False
     tile_vae: bool = False
     encoder_tile_size: int = 512
     decoder_tile_size: int = 64
@@ -92,14 +44,6 @@ class RuntimeConfig:
     positive_text_prompt: str = "literal text restoration, No other characters except text.Focus on restoring text details. Do not degrade overall image quality. ultra-sharp glyphs, pixel-level text clarity, perfect readability, preserve exact font shapes and spacing, high contrast, legible"
     negative_image_prompt: str = "painting, oil painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurring, dirty, messy, worst quality, low quality, frames, watermark, signature, jpeg artifacts, deformed, lowres, over-smooth"
     negative_text_prompt: str = "No non-textual shapes, No object-like artifacts, No abstract forms, No objects obscuring the textNo random shapes, No blur, No halos, No ringing, No distortion, No character misplacement, No illegible segments, low resolution."
-
-    def __post_init__(self, loading_half_params):
-        _reject_legacy_half_loading(loading_half_params)
-
-    def __getattr__(self, name):
-        if name in _ALIASES:
-            return getattr(self, _ALIASES[name])
-        raise AttributeError(name)
 
 
 @dataclass
@@ -141,8 +85,7 @@ class TrainingConfig(RuntimeConfig):
     monitor_metric: str = "loss"
     monitor_mode: str = "min"
 
-    def __post_init__(self, loading_half_params):
-        super().__post_init__(loading_half_params)
+    def __post_init__(self):
         self._validate_supported_options()
 
     def _validate_supported_options(self):
@@ -192,12 +135,6 @@ def parse_config(config_type, argv=None):
             parser.set_defaults(**{name: value})
             continue
         options = [_SPECIAL_FLAGS.get(name, "--" + name.replace("_", "-"))]
-        options.extend("--" + old for old, new in _ALIASES.items() if new == name)
-        if "--" + name not in options:
-            options.append("--" + name)
-        # Historical --linear_CFG disabled the enabled default. Keep that alias exact.
-        if name == "linear_cfg":
-            options = [option for option in options if option != "--linear_CFG"]
         kwargs = {"dest": name, "default": value, "help": name.replace("_", " ")}
         if isinstance(value, bool):
             kwargs["action"] = argparse.BooleanOptionalAction
@@ -207,14 +144,10 @@ def parse_config(config_type, argv=None):
             )
             kwargs["required"] = name in required
         parser.add_argument(*dict.fromkeys(options), **kwargs)
-    parser.add_argument(
-        "--linear_CFG", dest="linear_cfg", action="store_false", help=argparse.SUPPRESS
-    )
     return parser.parse_args(argv)
 
 
 def validate_runtime(config):
-    _reject_legacy_half_loading(getattr(config, "loading_half_params", False))
     if isinstance(config, TrainingConfig):
         config._validate_supported_options()
     for name in (
@@ -237,8 +170,3 @@ def validate_runtime(config):
         raise ValueError("diff_dtype must be bf16, fp16, or fp32")
     if config.color_fix_type not in {"Wavelet", "None"}:
         raise ValueError("color_fix_type must be Wavelet or None")
-
-
-def legacy_config_values(values):
-    """Translate keyword arguments from the old script-level config objects."""
-    return {_ALIASES.get(name, name): value for name, value in values.items()}

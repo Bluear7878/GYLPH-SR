@@ -5,12 +5,12 @@ import string
 
 import torch
 
-from llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
+from glyph_sr._vendor.llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
 
 
 def _tokenizer_image_token(*args, **kwargs):
     # Import the bundled VLM helper only when a model is actually used.
-    from llava.mm_utils import tokenizer_image_token
+    from glyph_sr._vendor.llava.mm_utils import tokenizer_image_token
 
     return tokenizer_image_token(*args, **kwargs)
 
@@ -198,7 +198,3 @@ def describe_image(
     image_caption = [image_caption.lstrip()]
 
     return image_caption
-
-
-get_text_position = describe_text_locations
-get_img_describe = describe_image

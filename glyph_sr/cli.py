@@ -4,10 +4,10 @@ import argparse
 from importlib import import_module
 
 _COMMANDS = {
-    "infer": "glyph_sr.inference",
-    "train": "glyph_sr.training",
-    "score": "glyph_sr.evaluation.ocr",
-    "verify": "glyph_sr.evaluation.verify",
+    "infer": ("glyph_sr.inference", "main"),
+    "train": ("glyph_sr.training", "main"),
+    "score": ("glyph_sr.evaluation", "score"),
+    "verify": ("glyph_sr.evaluation", "verify"),
 }
 _DATA_COMMANDS = {
     name: "glyph_sr.data_generation." + name for name in ("prompts", "synthesize", "negatives")
@@ -40,4 +40,5 @@ def main(argv=None):
         return import_module(_DATA_COMMANDS[name]).main(argv)
     if command not in _COMMANDS:
         parser.error(f"unknown command: {command}")
-    return import_module(_COMMANDS[command]).main(argv)
+    module, entrypoint = _COMMANDS[command]
+    return getattr(import_module(module), entrypoint)(argv)

@@ -1,0 +1,38 @@
+{
+  "kind": "recorded_aggregate_measurements",
+  "recorded_date": "2026-09-09",
+  "release_packaged_date": "2026-10-19",
+  "source_commit": "e64a5cc3abe3550a0f56ebab16a58091a286051a",
+  "scope": "Author-produced dataset-level aggregates, all paired statistical tests, and an analysis plan summarized without per-image identifiers. No dataset images, annotations or individual OCR transcriptions are included.",
+  "files": [
+    {
+      "path": "docs/results/aggregates.json",
+      "bytes": 444400,
+      "sha256": "385d3f45d2efb0da26ae0e3b1d13d4128f0765aefdfb865875e43aedbc5974eb",
+      "source": "rebuttal/results/additional_review_20260907/analysis_fp32_control/aggregates.json"
+    },
+    {
+      "path": "docs/results/statistics.json",
+      "bytes": 1060889,
+      "sha256": "9916fe82058a547b21221db0ba96a5fd8fcf8b14442a772c7dbca1993bc82aee",
+      "source": "rebuttal/results/additional_review_20260907/analysis_fp32_control/statistics.json"
+    },
+    {
+      "path": "docs/results/analysis_plan.json",
+      "bytes": 83827,
+      "sha256": "fbce2c6f9067703cdd9ce32384b67136573c9414a085d65fb39fba996a86eb1f",
+      "source": "rebuttal/manifests/additional_review_20260907/control_fp32_20260909/analysis_plan.json",
+      "source_sha256": "3f36a370a96d0c92993cca3f5f1c3cddfddfded545d3594c034dda62f1a7c19f",
+      "previous_packaged_sha256": "7196d38f0a58c534cf63e36c4c1b2a7a414149feb833184889637e0e51e982e4",
+      "transformation": "Removed the original checkout prefix from provenance paths and replaced all image/OCR filename lists with seed-level counts. Family definitions, analysis settings and result values are unchanged."
+    }
+  ],
+  "raw_metrics_sha256": "92446a142ab2caff946de629b2d76d613e27618bdd8f5d63a862b92cb2439849",
+  "metric_boundary": "English *_f1 fields retain the paper word-matching rule; *_strict_f1 fields use exact-word scoring. Non-Latin unicode_f1 uses grapheme scoring. Results are copied from recorded measurements without inferred missing values.",
+  "manuscript_commit": "eefbd46685e464c411aaad18ccb97cc2cec2d9c7",
+  "coverage": {
+    "aggregate_metric_entries": 780,
+    "paired_tests": 732,
+    "analysis_families": 8
+  }
+}

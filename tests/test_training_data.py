@@ -10,7 +10,7 @@ import torch
 from PIL import Image, ImageFilter
 from torchvision import transforms
 
-from glyph_sr.data.training import HQLQDataset, collate_training_samples, make_hqlq_dataloader
+from glyph_sr.data import HQLQDataset, collate_training_samples, make_hqlq_dataloader
 
 
 class TrainingDataTests(unittest.TestCase):
@@ -102,8 +102,8 @@ class TrainingDataTests(unittest.TestCase):
         image.save(self.root / "positive.png")
         dataset = self.dataset(include_types=("P_LQ",))
         with (
-            patch("glyph_sr.data.training.random.choice", return_value=6),
-            patch("glyph_sr.data.training.random.uniform", return_value=1.5),
+            patch("glyph_sr.data.random.choice", return_value=6),
+            patch("glyph_sr.data.random.uniform", return_value=1.5),
         ):
             actual = dataset[0]["input_tensor"]
         degraded = image.resize((6, 6), Image.Resampling.BICUBIC).resize(
