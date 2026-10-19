@@ -1,5 +1,5 @@
 default_stages: [pre-commit, pre-push, manual]
-exclude: ^(llava/|sgm/)
+exclude: ^glyph_sr/_vendor/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -19,6 +19,6 @@ repos:
     rev: v0.11.2
     hooks:
       - id: ruff
-        files: ^(glyph_sr/|tests/|tools/|GLYPHSR/|dataset_generater/|run_GLYPH_SR\.py$|train_GLYPH_SR\.py$)
+        files: ^(glyph_sr/|tests/)
       - id: ruff-format
-        files: ^(glyph_sr/|tests/|tools/|GLYPHSR/|dataset_generater/|run_GLYPH_SR\.py$|train_GLYPH_SR\.py$)
+        files: ^(glyph_sr/|tests/)

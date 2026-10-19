@@ -5,8 +5,8 @@ Official implementation of **A Bi-Objective Framework for Scene Text Super-Resol
 Mingyu Sung, Seungjae Ham, Kangwoo Kim, Il-Min Kim, Sangseok Yun, and Jae-Mo Kang.
 
 [Paper and reviews](https://openreview.net/forum?id=9CnYnByhvB) ·
-[Checkpoints](docs/checkpoints.md) · [Training](docs/training.md) ·
-[Evaluation](docs/evaluation.md) · [Recorded results](evaluation/tmlr2026)
+[Usage guide](docs/guide.md) · [Checkpoints](docs/guide.md#checkpoints) ·
+[Recorded results](docs/results)
 
 GLYPH-SR restores scene text while pursuing text legibility and perceptual image
 quality as separate objectives. A frozen scene-restoration model is combined with
@@ -55,7 +55,7 @@ python -m pip install -e '.[runtime]'
 The runtime dependency pins match the recorded review environment. The default
 inference placement uses `cuda:0` for SR, `cuda:1` for OCR, and `cuda:2` for scene
 captioning. Device options can place components together when memory permits.
-Download the components listed in [checkpoints.md](docs/checkpoints.md):
+Download the components listed in [the guide](docs/guide.md#checkpoints):
 
 ```text
 checkpoints/
@@ -83,12 +83,11 @@ glyph-sr infer \
 `metadata.jsonl` with the caption, recognized text, and verbalized locations.
 The default configuration uses 50 restoration steps and nominal CFG increasing
 from 4.0 toward 7.5 as the noise level decreases. Dataset-specific evaluation
-settings are documented with the [recorded results](docs/evaluation.md).
+settings are documented with the [recorded results](docs/guide.md#recorded-results).
 
 `python -m glyph_sr` provides the same commands. Use `glyph-sr infer --help`,
-`glyph-sr train --help`, and `glyph-sr data --help` for all options. The earlier
-`run_GLYPH_SR.py` and `train_GLYPH_SR.py` entry points remain compatibility wrappers.
-See [training.md](docs/training.md) for the two adaptation stages and data format.
+`glyph-sr train --help`, and `glyph-sr data --help` for all options. See
+[the guide](docs/guide.md#training) for the two adaptation stages and data format.
 
 ## Recorded results
 
@@ -109,9 +108,10 @@ word. Both OCR columns are percentages, and MANIQA uses its native 0–1 scale.
 
 These conditions show dataset-dependent trade-offs. Full GLYPH-SR/PASD/ResShift-v3
 comparisons, CER, exact-transcription accuracy, common-guider studies, ablations,
-and layout subsets are in [evaluation.md](docs/evaluation.md). The public evidence
-contains 780 aggregate metric entries, all 732 paired tests, and the camera-ready
-appendix's 252 displayed statistical comparisons, with recorded source hashes.
+and layout subsets are preserved in the [recorded results](docs/results). The
+compact evidence contains 780 aggregate metric entries and all 732 paired tests
+across eight analysis families, with source hashes. Dataset images, annotations,
+individual transcriptions, and image identifier lists are not bundled.
 
 ## Score and verify
 
@@ -123,11 +123,9 @@ glyph-sr score --input predictions.jsonl --output scores.json
 glyph-sr verify
 ```
 
-The scorer returns word-matching and exact-word metrics separately. Input format,
-normalization, statistical definitions, and table links are in
-[evaluation.md](docs/evaluation.md). The evidence package contains recorded
-aggregate measurements; raw images and per-image OCR archives are separate from
-this repository. See [validation](docs/release-validation.md) for software checks.
+The scorer returns word-matching and exact-word metrics separately. See
+[the guide](docs/guide.md#ocr-scoring) for input format, normalization, and metric
+definitions. Verification checks the three bundled result files against their hashes.
 
 ## Citation
 

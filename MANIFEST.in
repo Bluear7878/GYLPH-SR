@@ -1,5 +1,4 @@
 include CITATION.cff THIRD_PARTY_NOTICES.md
 recursive-include docs *.md *.json
-recursive-include evaluation *.json *.csv *.tex
 recursive-include glyph_sr/configs *.yaml
 recursive-include licenses *

@@ -65,7 +65,3 @@ def convert_dtype(dtype_str):
     if dtype_str not in types:
         raise NotImplementedError(f"Unsupported precision: {dtype_str}")
     return types[dtype_str]
-
-
-PIL2Tensor = pil_to_tensor
-Tensor2PIL = tensor_to_pil

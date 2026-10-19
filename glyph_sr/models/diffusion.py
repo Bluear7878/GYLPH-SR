@@ -9,12 +9,13 @@ import torchmetrics.functional as TMF
 import torchvision.transforms.functional as TF
 from pytorch_lightning import seed_everything
 
+from glyph_sr._vendor.sgm.models.diffusion import DiffusionEngine
+from glyph_sr._vendor.sgm.modules.distributions.distributions import DiagonalGaussianDistribution
+from glyph_sr._vendor.sgm.util import instantiate_from_config
 from glyph_sr.images import degrade_image, pil_to_tensor, tensor_to_pil
-from sgm.models.diffusion import DiffusionEngine
-from sgm.modules.distributions.distributions import DiagonalGaussianDistribution
-from sgm.util import instantiate_from_config
-from utils.colorfix import adaptive_instance_normalization, wavelet_reconstruction
-from utils.tilevae import VAEHook
+
+from .color import adaptive_instance_normalization, wavelet_reconstruction
+from .vae import VAEHook
 
 
 class DiffusionRestorer(DiffusionEngine):
@@ -428,7 +429,3 @@ class DiffusionRestorer(DiffusionEngine):
         elif color_fix_type == "AdaIn":
             samples = adaptive_instance_normalization(samples, x_stage1)
         return samples
-
-
-# Configuration files and existing checkpoints retain their historical names.
-SR_backbone = DiffusionRestorer

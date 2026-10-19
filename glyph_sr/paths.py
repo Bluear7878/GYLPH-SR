@@ -12,17 +12,8 @@ SDXL_CLIP2_CKPT_PTH = os.getenv("GLYPH_CLIP2_PATH", "laion2b_s39b_b160k")
 
 def resource_path(name):
     """Resolve bundled configuration independently of the current directory."""
-    aliases = {
-        "prompts/prompt_config.yaml": "prompts.yaml",
-        "models/SUPIR.yaml": "supir.yaml",
-        "model_configs/SUPIR.yaml": "supir.yaml",
-        "model_configs/juggernautXL.yaml": "sdxl.yaml",
-        "juggernautXL.yaml": "sdxl.yaml",
-        "SUPIR.yaml": "supir.yaml",
-    }
-    relative = aliases.get(str(name), str(name))
     root = Path(__file__).resolve().parent / "configs"
-    path = (root / relative).resolve()
+    path = (root / str(name)).resolve()
     if not path.is_relative_to(root) or not path.is_file():
         raise FileNotFoundError(f"Unknown packaged configuration: {name}")
     return path

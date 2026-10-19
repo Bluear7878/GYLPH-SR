@@ -12,8 +12,7 @@ from unittest.mock import patch
 import torch
 from PIL import Image
 
-from glyph_sr.data.io import load_metadata, make_image_loader
-from glyph_sr.data_generation.common import move_image_tensors
+from glyph_sr.data import load_metadata, make_image_loader, move_image_tensors
 from glyph_sr.data_generation.negatives import build_neg_lq, process_record
 from glyph_sr.data_generation.prompts import generate_prompt_meta_jsonl
 from glyph_sr.data_generation.synthesize import AUGMENTATION_STYLES, synthesize_records
@@ -50,14 +49,17 @@ class GenerationTests(unittest.TestCase):
         model = SimpleNamespace(config=SimpleNamespace())
         with (
             patch(
-                "glyph_sr.data_generation.common.load_prompt_templates",
+                "glyph_sr.data.load_prompt_templates",
                 return_value={"ocr_prompt": "read"},
             ),
             patch(
                 "glyph_sr.guidance.generate_ocr_text",
                 side_effect=[("ONE", None), ("TWO", None), ("THREE", None)],
             ),
-            patch("llava.mm_utils.process_images", return_value=torch.zeros(1, 3, 16, 16)),
+            patch(
+                "glyph_sr._vendor.llava.mm_utils.process_images",
+                return_value=torch.zeros(1, 3, 16, 16),
+            ),
             patch.object(
                 prompts, "get_synthesis_prompt", side_effect=["sign ONE", "sign TWO", "sign THREE"]
             ) as synthesis,
@@ -177,7 +179,7 @@ class GenerationTests(unittest.TestCase):
                     side_effect=[(text, None) for text in outputs],
                 ) as recognize,
                 patch("glyph_sr.guidance.describe_image", return_value=["a sign"]),
-                patch("llava.mm_utils.process_images", return_value=[tensor]),
+                patch("glyph_sr._vendor.llava.mm_utils.process_images", return_value=[tensor]),
                 patch("glyph_sr.images.degrade_image", side_effect=lambda image, **kwargs: image),
                 patch("glyph_sr.images.pil_to_tensor", return_value=(tensor, 36, 36)),
                 patch("glyph_sr.images.tensor_to_pil", return_value=Image.new("RGB", (36, 36))),

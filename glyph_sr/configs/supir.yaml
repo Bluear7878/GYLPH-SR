@@ -5,17 +5,17 @@ model:
     diffusion_dtype: fp16
     scale_factor: 0.13025
     disable_first_stage_autocast: True
-    network_wrapper: sgm.modules.diffusionmodules.wrappers.ControlWrapper
+    network_wrapper: glyph_sr._vendor.sgm.modules.diffusionmodules.wrappers.ControlWrapper
     denoiser_config:
-      target: sgm.modules.diffusionmodules.denoiser.DiscreteDenoiserWithControl
+      target: glyph_sr._vendor.sgm.modules.diffusionmodules.denoiser.DiscreteDenoiserWithControl
       params:
         num_idx: 1000
         weighting_config:
-          target: sgm.modules.diffusionmodules.denoiser_weighting.EpsWeighting
+          target: glyph_sr._vendor.sgm.modules.diffusionmodules.denoiser_weighting.EpsWeighting
         scaling_config:
-          target: sgm.modules.diffusionmodules.denoiser_scaling.EpsScaling
+          target: glyph_sr._vendor.sgm.modules.diffusionmodules.denoiser_scaling.EpsScaling
         discretization_config:
-          target: sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization
+          target: glyph_sr._vendor.sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization
     control_stage_config:
       target: glyph_sr.models.layers.SceneControlNet
       params:
@@ -60,20 +60,20 @@ model:
         spatial_transformer_attn_type: softmax-xformers
         legacy: False
     conditioner_config:
-      target: sgm.modules.GeneralConditionerWithControl
+      target: glyph_sr._vendor.sgm.modules.GeneralConditionerWithControl
       params:
         emb_models:
           # crossattn cond
           - is_trainable: False
             input_key: txt
-            target: sgm.modules.encoders.modules.FrozenCLIPEmbedder
+            target: glyph_sr._vendor.sgm.modules.encoders.modules.FrozenCLIPEmbedder
             params:
               layer: hidden
               layer_idx: 11
           # crossattn and vector cond
           - is_trainable: False
             input_key: txt
-            target: sgm.modules.encoders.modules.FrozenOpenCLIPEmbedder2
+            target: glyph_sr._vendor.sgm.modules.encoders.modules.FrozenOpenCLIPEmbedder2
             params:
               arch: ViT-bigG-14
               version: laion2b_s39b_b160k
@@ -84,23 +84,23 @@ model:
           # vector cond
           - is_trainable: False
             input_key: original_size_as_tuple
-            target: sgm.modules.encoders.modules.ConcatTimestepEmbedderND
+            target: glyph_sr._vendor.sgm.modules.encoders.modules.ConcatTimestepEmbedderND
             params:
               outdim: 256 # multiplied by two
           # vector cond
           - is_trainable: False
             input_key: crop_coords_top_left
-            target: sgm.modules.encoders.modules.ConcatTimestepEmbedderND
+            target: glyph_sr._vendor.sgm.modules.encoders.modules.ConcatTimestepEmbedderND
             params:
               outdim: 256 # multiplied by two
           # vector cond
           - is_trainable: False
             input_key: target_size_as_tuple
-            target: sgm.modules.encoders.modules.ConcatTimestepEmbedderND
+            target: glyph_sr._vendor.sgm.modules.encoders.modules.ConcatTimestepEmbedderND
             params:
               outdim: 256 # multiplied by two
     first_stage_config:
-      target: sgm.models.autoencoder.AutoencoderKLInferenceWrapper
+      target: glyph_sr._vendor.sgm.models.autoencoder.AutoencoderKLInferenceWrapper
       params:
         ckpt_path: ~
         embed_dim: 4
@@ -120,16 +120,16 @@ model:
         lossconfig:
           target: torch.nn.Identity
     sampler_config:
-      target: sgm.modules.diffusionmodules.sampling.RestoreEDMSampler
+      target: glyph_sr._vendor.sgm.modules.diffusionmodules.sampling.RestoreEDMSampler
       params:
         num_steps: 100
         restore_cfg: 4.0
         s_churn: 0
         s_noise: 1.003
         discretization_config:
-          target: sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization
+          target: glyph_sr._vendor.sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization
         guider_config:
-          target: sgm.modules.diffusionmodules.guiders.LinearCFG
+          target: glyph_sr._vendor.sgm.modules.diffusionmodules.guiders.LinearCFG
           params:
             scale: 7.5
             scale_min: 4.0

@@ -41,7 +41,7 @@ def restore_with_stub_guidance(pipeline, processed):
         patch("glyph_sr.guidance.describe_image", return_value=["scene"]),
         patch("glyph_sr.guidance.generate_ocr_text", return_value=("STOP", None)),
         patch("glyph_sr.guidance.describe_text_locations", return_value="location"),
-        patch("llava.mm_utils.process_images", return_value=processed),
+        patch("glyph_sr._vendor.llava.mm_utils.process_images", return_value=processed),
     ):
         return pipeline.restore(Image.new("L", (80, 40)))
 

@@ -5,13 +5,13 @@ import torch as th
 import torch.nn as nn
 from einops import rearrange
 
-from sgm.modules.attention import (
+from glyph_sr._vendor.sgm.modules.attention import (
     XFORMERS_IS_AVAILABLE,
     CrossAttention,
     MemoryEfficientCrossAttention,
     SpatialTransformer,
 )
-from sgm.modules.diffusionmodules.openaimodel import (
+from glyph_sr._vendor.sgm.modules.diffusionmodules.openaimodel import (
     AttentionBlock,
     Downsample,
     ResBlock,
@@ -21,14 +21,14 @@ from sgm.modules.diffusionmodules.openaimodel import (
     UNetModel,
     Upsample,
 )
-from sgm.modules.diffusionmodules.util import (
+from glyph_sr._vendor.sgm.modules.diffusionmodules.util import (
     conv_nd,
     linear,
     normalization,
     timestep_embedding,
     zero_module,
 )
-from sgm.util import default, exists
+from glyph_sr._vendor.sgm.util import default, exists
 
 
 class ZeroSFT(nn.Module):
@@ -589,7 +589,3 @@ class RestorationUNet(UNetModel):
             assert False, "NS"
         else:
             return self.out(h)
-
-
-GLVControl = SceneControlNet
-LightGLVUNet = RestorationUNet

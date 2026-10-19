@@ -3,11 +3,18 @@
 import argparse
 import copy
 import hashlib
+import re
 from pathlib import Path
 
-from glyph_sr.data.io import make_image_loader, write_record
+from glyph_sr.data import make_image_loader, move_image_tensors, release_memory, write_record
 
-from .common import move_image_tensors, release_memory, sanitize_prompt
+
+def sanitize_prompt(raw, extra_style=None):
+    match = re.search(r"[\"“”‘’`](.+?)[\"“”‘’`]", raw)
+    if match:
+        raw = raw.replace(match.group(0), match.group(1).strip(), 1)
+    raw = raw.rstrip().rstrip(".")
+    return f"{raw}, {extra_style}" if extra_style else raw
 
 
 def get_synthesis_prompt(
@@ -27,8 +34,8 @@ def get_synthesis_prompt(
 ):
     import torch
 
-    from llava.constants import DEFAULT_IMAGE_TOKEN
-    from llava.mm_utils import tokenizer_image_token
+    from glyph_sr._vendor.llava.constants import DEFAULT_IMAGE_TOKEN
+    from glyph_sr._vendor.llava.mm_utils import tokenizer_image_token
 
     if "[TEXT]" in ranked_candidates and len(ranked_candidates.strip()) <= len("[TEXT]") + 1:
         return None
@@ -83,10 +90,9 @@ def generate_prompt_meta_jsonl(
 ):
     import torch
 
+    from glyph_sr._vendor.llava.mm_utils import process_images
+    from glyph_sr.data import load_prompt_templates
     from glyph_sr.guidance import generate_ocr_text
-    from llava.mm_utils import process_images
-
-    from .common import load_prompt_templates
 
     if max_samples < 1:
         raise ValueError("max_samples must be positive")
@@ -154,7 +160,9 @@ def parse_args(argv=None):
     parser.add_argument("--prompt-bank", "--prompt_bank", "-p", default="prompt_bank")
     parser.add_argument("--prompt-yaml-file", "--prompt_yaml_file")
     parser.add_argument("--model-path", "--model_path", default="lmms-lab/llama3-llava-next-8b")
-    parser.add_argument("--conv-template", "--conv_template", default="llava_llama_3")
+    parser.add_argument(
+        "--conv-template", "--conv_template", choices=["llava_llama_3"], default="llava_llama_3"
+    )
     parser.add_argument("--batch-size", "--batch_size", type=int, default=1)
     parser.add_argument("--num-workers", "--num_workers", type=int, default=4)
     parser.add_argument("--max-samples", "--max_samples", type=int, default=10000)
@@ -167,12 +175,12 @@ def run(args):
         raise NotADirectoryError(f"Image directory not found: {args.image_dir}")
     if args.batch_size < 1 or args.num_workers < 0 or args.max_samples < 1:
         raise ValueError("batch_size/max_samples must be positive and num_workers nonnegative")
+    from glyph_sr._vendor.llava.constants import IMAGE_TOKEN_INDEX
+    from glyph_sr._vendor.llava.conversation import conv_templates
+    from glyph_sr._vendor.llava.model.builder import load_pretrained_model
     from glyph_sr.paths import resource_path
-    from llava.constants import IMAGE_TOKEN_INDEX
-    from llava.conversation import conv_templates
-    from llava.model.builder import load_pretrained_model
 
-    prompt_yaml = args.prompt_yaml_file or resource_path("prompts/prompt_config.yaml")
+    prompt_yaml = args.prompt_yaml_file or resource_path("prompts.yaml")
     if not Path(prompt_yaml).is_file():
         raise FileNotFoundError(f"Prompt configuration not found: {prompt_yaml}")
     loader = make_image_loader(args.image_dir, args.batch_size, num_workers=args.num_workers)

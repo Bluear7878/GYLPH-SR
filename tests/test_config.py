@@ -1,5 +1,6 @@
 """Protect portable resources and the two distinct SDXL checkpoint defaults."""
 
+import importlib
 import os
 import tempfile
 import unittest
@@ -9,8 +10,6 @@ from unittest.mock import patch
 from omegaconf import OmegaConf
 
 from glyph_sr.paths import resource_path
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 class PackagedConfigTests(unittest.TestCase):
@@ -43,17 +42,21 @@ class PackagedConfigTests(unittest.TestCase):
                 self.assertEqual(config.SUPIR_CKPT_F, overrides["GLYPH_SUPIR_F_CKPT"])
                 self.assertEqual(config.SUPIR_CKPT_Q, overrides["GLYPH_SUPIR_Q_CKPT"])
 
-    def test_legacy_yaml_paths_match_packaged_configuration(self):
-        for legacy, packaged in (
-            ("model_configs/juggernautXL.yaml", "sdxl.yaml"),
-            ("model_configs/SUPIR.yaml", "supir.yaml"),
-            ("prompts/prompt_config.yaml", "prompts.yaml"),
-        ):
-            with self.subTest(legacy=legacy):
-                self.assertEqual(
-                    OmegaConf.load(ROOT / legacy), OmegaConf.load(resource_path(packaged))
-                )
-                self.assertEqual(resource_path(legacy), resource_path(packaged))
+    def test_packaged_model_targets_are_importable(self):
+        def check(value):
+            if isinstance(value, dict):
+                if "target" in value:
+                    module, name = value["target"].rsplit(".", 1)
+                    self.assertTrue(callable(getattr(importlib.import_module(module), name)))
+                for child in value.values():
+                    check(child)
+            elif isinstance(value, list):
+                for child in value:
+                    check(child)
+
+        for filename in ("sdxl.yaml", "supir.yaml"):
+            with self.subTest(config=filename):
+                check(OmegaConf.to_container(OmegaConf.load(resource_path(filename))))
 
     def test_bundled_resources_do_not_depend_on_working_directory(self):
         previous = Path.cwd()
@@ -61,7 +64,7 @@ class PackagedConfigTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as directory:
                 os.chdir(directory)
                 self.assertEqual(resource_path("sdxl.yaml").parent.name, "configs")
-                self.assertTrue(resource_path("prompts/prompt_config.yaml").is_file())
+                self.assertTrue(resource_path("prompts.yaml").is_file())
                 with self.assertRaises(FileNotFoundError):
                     resource_path("../../pyproject.toml")
         finally:

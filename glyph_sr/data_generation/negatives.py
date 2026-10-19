@@ -2,11 +2,28 @@
 
 import argparse
 import os
+import random
+import re
+import string
 from pathlib import Path
 
-from glyph_sr.data.io import load_metadata, write_record
+from glyph_sr.data import load_metadata, move_image_tensors, release_memory, write_record
 
-from .common import move_image_tensors, random_masking_prompt, release_memory
+
+def random_masking_prompt(caption, mask_prob=0.5):
+    """Preserve the original first-quoted-span character corruption rule."""
+    if not 0 <= mask_prob <= 1:
+        raise ValueError("mask_prob must be between zero and one")
+    pool = string.ascii_letters + string.digits
+
+    def replace(match):
+        return "".join(
+            char if char.isspace() or random.random() > mask_prob else random.choice(pool)
+            for char in match.group(2)
+        )
+
+    caption = re.sub(r"([\"“”‘’`])([^\"“”‘’`]+?)\1", replace, caption, count=1)
+    return re.sub(r"[\"“”‘’`]", "", caption).strip().rstrip(".")
 
 
 def process_record(
@@ -28,10 +45,10 @@ def process_record(
     import torch
     from PIL import Image
 
+    from glyph_sr._vendor.llava.constants import IMAGE_TOKEN_INDEX
+    from glyph_sr._vendor.llava.mm_utils import process_images
     from glyph_sr.guidance import describe_image, generate_ocr_text
     from glyph_sr.images import degrade_image, pil_to_tensor, tensor_to_pil
-    from llava.constants import IMAGE_TOKEN_INDEX
-    from llava.mm_utils import process_images
 
     hq_path = Path(root_dir) / rec["hq"]
     if not hq_path.is_file():
@@ -242,8 +259,8 @@ def build_neg_lq(
 def create_restoration_model(config_path, sign="Q", load_default_setting=False):
     from omegaconf import OmegaConf
 
+    from glyph_sr._vendor.sgm.util import instantiate_from_config
     from glyph_sr.checkpoints import load_state_dict
-    from sgm.util import instantiate_from_config
 
     if sign not in {None, "F", "Q"}:
         raise ValueError("SUPIR sign must be F or Q")
@@ -278,7 +295,7 @@ def parse_args(argv=None):
     parser.add_argument("--ocr-model", default="lmms-lab/llama3-llava-next-8b")
     parser.add_argument("--ocr-device", default="cuda:1")
     parser.add_argument("--sr-device", default="cuda:0")
-    parser.add_argument("--conv-template", default="llava_llama_3")
+    parser.add_argument("--conv-template", choices=["llava_llama_3"], default="llava_llama_3")
     for name, default, kind in (
         ("upscale", 1, int),
         ("seed", -1, int),
@@ -354,15 +371,14 @@ def run(args):
         raise ValueError("upscale, min_size and edm_steps must be positive")
     import torch
 
+    from glyph_sr._vendor.llava.conversation import conv_templates
+    from glyph_sr._vendor.llava.model.builder import load_pretrained_model
+    from glyph_sr.data import load_prompt_templates
     from glyph_sr.images import convert_dtype
     from glyph_sr.paths import resource_path
-    from llava.conversation import conv_templates
-    from llava.model.builder import load_pretrained_model
 
-    from .common import load_prompt_templates
-
-    model_yaml = args.yaml_file or resource_path("models/SUPIR.yaml")
-    prompt_yaml = args.prompt_yaml_file or resource_path("prompts/prompt_config.yaml")
+    model_yaml = args.yaml_file or resource_path("supir.yaml")
+    prompt_yaml = args.prompt_yaml_file or resource_path("prompts.yaml")
     for path in (model_yaml, prompt_yaml):
         if not Path(path).is_file():
             raise FileNotFoundError(f"Generation configuration not found: {path}")

@@ -34,8 +34,8 @@ jobs:
           python -m pip check
       - name: Check first-party Python
         run: |
-          python -m ruff check glyph_sr tests tools GLYPHSR dataset_generater run_GLYPH_SR.py train_GLYPH_SR.py
-          python -m ruff format --check glyph_sr tests tools GLYPHSR dataset_generater run_GLYPH_SR.py train_GLYPH_SR.py
+          python -m ruff check glyph_sr tests
+          python -m ruff format --check glyph_sr tests
       - name: Check CLI help without site packages
         run: |
           python -S -m glyph_sr --help
@@ -47,8 +47,6 @@ jobs:
           python -S -m glyph_sr data prompts --help
           python -S -m glyph_sr data synthesize --help
           python -S -m glyph_sr data negatives --help
-          python -S run_GLYPH_SR.py --help
-          python -S train_GLYPH_SR.py --help
       - name: Test CPU behavior and recorded results
         run: python -m pytest -q tests
       - name: Verify bundled evidence
@@ -81,8 +79,11 @@ jobs:
           "$glyph_smoke_python" - <<'PY'
           import json
           import math
+          import importlib.util
           from pathlib import Path
           from glyph_sr.paths import resource_path
+          for old_module in ("GLYPHSR", "llava", "sgm", "utils", "dataset_generater", "CKPT_PTH"):
+              assert importlib.util.find_spec(old_module) is None, old_module
           for resource in ("sdxl.yaml", "supir.yaml", "prompts.yaml"):
               assert resource_path(resource).is_file()
           scores = json.loads(Path("scores.json").read_text())
