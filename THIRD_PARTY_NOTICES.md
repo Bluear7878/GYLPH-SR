@@ -33,11 +33,10 @@ The original Nunchaku snapshot identifies itself as `0.3.0dev0`; an exact upstre
 commit was not recorded. To preserve the actual source used by the generator,
 [training instructions](docs/guide.md#data-preparation) pin the archived backend to GLYPH-SR
 commit `e5e45de5960ab236ca61f9139fe0101a8de960ff` and its original subdirectory.
-That immutable snapshot includes the native build sources. The current tree keeps
-only GLYPH-SR's data-generation entry points, not duplicated CUDA libraries,
-benchmarks, web applications, or upstream test suites.
+That immutable snapshot includes the native build sources. GLYPH-SR's
+data-generation entry points load this optional backend as an external dependency.
 
-Weights, datasets and pretrained model releases have their own terms. Their
-references and hashes are documented in [checkpoints](docs/guide.md#checkpoints).
-Historical source, experiment scripts and the environment freeze remain available
-in the repository history at the same pre-refactor commit.
+Weights, datasets and pretrained model releases have their own terms. Model
+downloads are listed in [the guide](docs/guide.md#checkpoints). The pinned backend
+source remains available in repository history at the commit above; its native
+build files are separate from the current package.

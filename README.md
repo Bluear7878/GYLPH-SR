@@ -4,9 +4,8 @@ Official implementation of **A Bi-Objective Framework for Scene Text Super-Resol
 
 Mingyu Sung, Seungjae Ham, Kangwoo Kim, Il-Min Kim, Sangseok Yun, and Jae-Mo Kang.
 
-[Paper and reviews](https://openreview.net/forum?id=9CnYnByhvB) ·
-[Usage guide](docs/guide.md) · [Checkpoints](docs/guide.md#checkpoints) ·
-[Recorded results](docs/results)
+[Paper](https://openreview.net/forum?id=9CnYnByhvB) ·
+[Usage guide](docs/guide.md) · [Checkpoints](docs/guide.md#checkpoints)
 
 GLYPH-SR restores scene text while pursuing text legibility and perceptual image
 quality as separate objectives. A frozen scene-restoration model is combined with
@@ -52,9 +51,8 @@ python -m pip install xformers==0.0.32.post2
 python -m pip install -e '.[runtime]'
 ```
 
-The runtime dependency pins match the recorded review environment. The default
-inference placement uses `cuda:0` for SR, `cuda:1` for OCR, and `cuda:2` for scene
-captioning. Device options can place components together when memory permits.
+The default inference placement uses `cuda:0` for SR, `cuda:1` for OCR, and
+`cuda:2` for scene captioning. Device options can place components together when memory permits.
 Download the components listed in [the guide](docs/guide.md#checkpoints):
 
 ```text
@@ -75,57 +73,31 @@ The LLaVA base and text encoders use their model caches or configured local path
 glyph-sr infer \
   --input /path/to/low_resolution.png \
   --output-dir ./results/demo \
-  --upscale 4 --down-factor 1 --seed 1234 \
+  --upscale 4 --down-factor 1 \
   --sr-device cuda:0 --ocr-device cuda:1 --caption-device cuda:2
 ```
 
 `--down-factor 1` uses the supplied LR input. The command writes a restored PNG and
 `metadata.jsonl` with the caption, recognized text, and verbalized locations.
 The default configuration uses 50 restoration steps and nominal CFG increasing
-from 4.0 toward 7.5 as the noise level decreases. Dataset-specific evaluation
-settings are documented with the [recorded results](docs/guide.md#recorded-results).
+from 4.0 toward 7.5 as the noise level decreases.
 
 `python -m glyph_sr` provides the same commands. Use `glyph-sr infer --help`,
 `glyph-sr train --help`, and `glyph-sr data --help` for all options. See
 [the guide](docs/guide.md#training) for the two adaptation stages and data format.
 
-## Recorded results
-
-The following **measured** results use three diffusion seeds (1234, 2345, 3456), a
-minimum internal side of 1024 pixels, and Wavelet color correction. Values are
-mean ± sample standard deviation across seeds. WM is the paper's nonstandard
-word-matching score; exact-word F1 counts every unmatched predicted/reference
-word. Both OCR columns are percentages, and MANIQA uses its native 0–1 scale.
-
-| Dataset | Scale | OpenOCR WM F1 | OpenOCR exact-word F1 | MANIQA |
-| --- | --- | ---: | ---: | ---: |
-| SVT | ×4 | 65.67 ± 0.97 | 25.50 ± 0.66 | 0.4422 ± 0.0005 |
-| SVT | ×8 | 36.38 ± 0.39 | 13.75 ± 0.23 | 0.4159 ± 0.0010 |
-| SCUT-CTW1500 | ×4 | 41.62 ± 0.20 | 29.54 ± 0.35 | 0.6606 ± 0.0037 |
-| SCUT-CTW1500 | ×8 | 8.65 ± 0.02 | 6.48 ± 0.01 | 0.4368 ± 0.0043 |
-| CUTE80 | ×4 | 76.74 ± 0.30 | 48.54 ± 0.58 | 0.4813 ± 0.0009 |
-| CUTE80 | ×8 | 66.49 ± 0.91 | 38.77 ± 0.71 | 0.4533 ± 0.0010 |
-
-These conditions show dataset-dependent trade-offs. Full GLYPH-SR/PASD/ResShift-v3
-comparisons, CER, exact-transcription accuracy, common-guider studies, ablations,
-and layout subsets are preserved in the [recorded results](docs/results). The
-compact evidence contains 780 aggregate metric entries and all 732 paired tests
-across eight analysis families, with source hashes. Dataset images, annotations,
-individual transcriptions, and image identifier lists are not bundled.
-
-## Score and verify
+## OCR scoring
 
 Saved OCR predictions can be scored without loading restoration models:
 
 ```bash
 python -m pip install -e '.[evaluation]'
 glyph-sr score --input predictions.jsonl --output scores.json
-glyph-sr verify
 ```
 
 The scorer returns word-matching and exact-word metrics separately. See
 [the guide](docs/guide.md#ocr-scoring) for input format, normalization, and metric
-definitions. Verification checks the three bundled result files against their hashes.
+definitions.
 
 ## Citation
 

@@ -22,3 +22,7 @@ build/
 dist/
 *.egg-info/
 .ruff_cache/
+
+# Experiment records are kept outside the public source distribution.
+/docs/results/
+/docs/checkpoints.json

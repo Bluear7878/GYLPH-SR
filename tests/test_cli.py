@@ -125,7 +125,7 @@ runtime = {'torch', 'numpy', 'PIL', 'transformers', 'diffusers', 'lpips', 'pytor
 assert not runtime.intersection(sys.modules), runtime.intersection(sys.modules)
 assert not any(name.startswith('glyph_sr._vendor') for name in sys.modules)
 """
-        commands = [(), ("infer",), ("train",), ("score",), ("verify",), ("data",)]
+        commands = [(), ("infer",), ("train",), ("score",), ("data",)]
         commands += [("data", name) for name in ("prompts", "synthesize", "negatives")]
         for command in commands:
             with self.subTest(command=command):

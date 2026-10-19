@@ -2,29 +2,21 @@
 
 ## Checkpoints
 
-Place the recorded model components under `checkpoints/` or configure their paths.
+Place the model components under `checkpoints/` or configure their paths.
 The TS checkpoint uses the `full_model` loading policy; loading only its text
 projections changes the model configuration.
 
 | Component | Source | Path under `checkpoints/` |
 | --- | --- | --- |
 | Juggernaut XL v8 | [Pinned file](https://huggingface.co/RunDiffusion/Juggernaut-XL-v8/resolve/5c38059bf38387bed17f70e5c1e5c00544caf41e/juggernautXL_v8Rundiffusion.safetensors) | `juggernautXL_v8Rundiffusion.safetensors` |
-| SUPIR-v0Q | [Recorded download](https://weights.replicate.delivery/default/SUPIR-v0Q.ckpt), [upstream](https://github.com/Fanghua-Yu/SUPIR) | `SUPIR-v0Q.ckpt` |
+| SUPIR-v0Q | [Download](https://weights.replicate.delivery/default/SUPIR-v0Q.ckpt), [upstream](https://github.com/Fanghua-Yu/SUPIR) | `SUPIR-v0Q.ckpt` |
 | TS-ControlNet | [Google Drive](https://drive.google.com/file/d/121NK-KAOzrKPgQ8XGIf57TQ3HqLFM3yb/view) | `TS-ControlNet_cp.ckpt` |
 | OCR LoRA configuration | [Google Drive](https://drive.google.com/file/d/1AvgzyFtdx0Q0K3O21qYaFLl1fb1m08JG/view) | `Llava-next_FT/adapter_config.json` |
 | OCR LoRA weights | [Google Drive](https://drive.google.com/file/d/1m7PIIE-_uScY085a48xKLy-10AdzsvEj/view) | `Llava-next_FT/adapter_model.safetensors` |
 | LLaVA-NeXT base | [lmms-lab/llama3-llava-next-8b](https://huggingface.co/lmms-lab/llama3-llava-next-8b) | Model cache or local snapshot |
 
-[checkpoints.json](checkpoints.json) records recovered file sizes and SHA-256
-identities. The large payloads were not downloaded again during repository cleanup.
-Verify downloaded copies with:
-
-```bash
-glyph-sr verify --checkpoint-dir ./checkpoints
-```
-
-The recorded LLaVA base revision is `6d6dcb8d7948364bebef9c11aba6b0e6c8835391`.
-For a pinned local snapshot:
+Use LLaVA base revision `6d6dcb8d7948364bebef9c11aba6b0e6c8835391`
+for a pinned local snapshot:
 
 ```python
 from huggingface_hub import snapshot_download
@@ -83,12 +75,10 @@ glyph-sr train \
   --negative-metadata /path/to/train/metadata_with_neg.jsonl \
   --validation-hq-metadata /path/to/val/metadata_HQ.jsonl \
   --validation-negative-metadata /path/to/val/metadata_with_neg.jsonl \
-  --batch-size 1 --epochs 200
+  --batch-size 1
 ```
 
-The paper's matched ablations use 5,000 updates, batch size 12, image size 512,
-learning rate `1e-6`, and 5,000 warm-up updates; the full checkpoint has 22,695
-updates. Use `glyph-sr train --help` for training-budget, precision, device-count,
+Use `glyph-sr train --help` for training-budget, precision, device-count,
 checkpoint, and logging controls.
 
 HQ metadata contains a scene prompt and positive image reference:
@@ -106,7 +96,8 @@ Negative metadata also records source and candidate OCR strings:
 These examples are synthetic. Relative image paths resolve from the HQ metadata
 file's directory. LQ variants use bicubic down/up-sampling and Gaussian blur.
 Negatives whose source OCR is `[TEXT]` or shares any case-sensitive exact word
-with the candidate OCR are excluded. Training uses all four partitions; validation uses positive/HQ.
+with the candidate OCR are excluded. Training uses all four partitions; validation
+uses positive/HQ.
 Batches larger than one require compatible image dimensions; the loader preserves
 image aspect ratios and rejects mixed tensor shapes.
 
@@ -131,7 +122,7 @@ Negative restoration uses SUPIR's original SDXL base,
 `sd_xl_base_1.0_0.9vae.safetensors`. Set `GLYPH_SUPIR_SDXL_CKPT` to its path or place
 it under `./checkpoints/`. The main GLYPH-SR restorer uses Juggernaut XL v8.
 Generation models and weights need their own environment and setup. The optional
-native Nunchaku backend is pinned to the recorded source snapshot:
+native Nunchaku backend is pinned to an archived source snapshot:
 
 ```bash
 python -m pip install --no-build-isolation \
@@ -141,7 +132,7 @@ python -m pip install --no-build-isolation \
 Install it in a separate generation environment with compatible PyTorch/CUDA build
 dependencies. The snapshot reports `0.3.0dev0`; an equivalent upstream tag was not
 recorded. See [third-party provenance](../THIRD_PARTY_NOTICES.md) for its origin.
-The synthetic corpus and original generation orchestration are not bundled.
+Training images and annotations must be supplied separately.
 
 ## OCR scoring
 
@@ -181,63 +172,3 @@ across the dataset before calculating precision, recall, and F1. Word order is
 ignored, and these rules do not measure spatial localization. Undefined zero-denominator
 ratios become zero. CER and exact-transcription accuracy use exact-score normalization;
 the paper's historical word accuracy and 1-NED are separate measures.
-
-## Recorded results
-
-[results/aggregates.json](results/aggregates.json) preserves 780 measured aggregate
-metric entries. [results/statistics.json](results/statistics.json) preserves all
-732 paired tests in eight declared families. Both files retain their recorded
-source bytes; the [manifest](results/manifest.json) records their hashes and provenance.
-
-| Analysis family | Tests |
-| --- | ---: |
-| Main benchmark | 216 |
-| Common guider | 102 |
-| SVT cues | 54 |
-| SVT scheduler | 18 |
-| SVT CFG | 72 |
-| SVT control strength | 54 |
-| SVT corpus | 72 |
-| Curved/dense layouts | 144 |
-
-English `*_f1` fields use the paper's word-matching rule; `*_strict_f1` fields use
-exact-word scoring. Non-Latin `unicode_f1` uses grapheme matching. MANIQA and
-CLIP-IQA use native 0–1 scales, while MUSIQ uses its native scale. The matched runs
-used `pyiqa==0.1.16`; scaling older results does not establish protocol equivalence.
-
-The benchmark comparison uses seeds 1234, 2345, and 3456, matched LR inputs, and
-matched target canvases. GLYPH-SR uses a minimum internal side of 1024 and Wavelet
-correction. SVT has
-350 images (349 OCR annotations), SCUT-CTW1500 has 500, and CUTE80 has 80. ResShift-v3
-at ×8 uses 2× bicubic pre-upsampling before its released ×4 model.
-
-SVT cue/strength/corpus ablations use 1024/Wavelet, 50 steps, and seed 1234; the
-corpus checkpoints use 5,000 updates, and the control sweep uses an FP32 denoiser
-and BF16 VAE. The SVT scheduler comparison uses three seeds. Common-guider studies
-hold weights/settings fixed across Chinese/Hindi crops and an English control;
-cue ablations share scene captions with text identities removed. Curved/dense
-SCUT subsets are selected from annotations without consulting restoration outcomes:
-curved requires a 14-vertex polygon with normalized centerline bending ≥0.05, and
-dense requires at least 10 non-ignored instances. The subsets can overlap.
-
-Paired 95% intervals use 10,000 image-cluster bootstrap resamples, retaining all
-seeds of each image together. Holm adjustment covers every test in its declared
-family. Differences are comparison minus reference; seed standard deviations
-are different from these intervals.
-
-The [analysis plan](results/analysis_plan.json) retains settings, family definitions,
-and seed-level cohort counts. Per-image identifier lists are omitted, and its
-original source hash is retained in the manifest. Dataset images, annotation bodies,
-and individual OCR transcriptions are not included in these recorded results.
-
-## Verification
-
-```bash
-glyph-sr verify
-```
-
-Verification checks all three result files against their recorded sizes and hashes.
-It locates source-checkout or installed-wheel evidence automatically, including
-`pip --target` installations. `--root /path/to/checkout` selects a particular copy.
-GPU training, full restoration inference, and new measurements of paper results
-were not performed by this repository cleanup.

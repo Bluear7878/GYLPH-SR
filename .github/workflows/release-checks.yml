@@ -42,17 +42,30 @@ jobs:
           python -S -m glyph_sr infer --help
           python -S -m glyph_sr train --help
           python -S -m glyph_sr score --help
-          python -S -m glyph_sr verify --help
           python -S -m glyph_sr data --help
           python -S -m glyph_sr data prompts --help
           python -S -m glyph_sr data synthesize --help
           python -S -m glyph_sr data negatives --help
-      - name: Test CPU behavior and recorded results
+      - name: Test CPU behavior
         run: python -m pytest -q tests
-      - name: Verify bundled evidence
-        run: python -m glyph_sr verify
-      - name: Build source and wheel distributions
-        run: python -m build
+      - name: Build distributions without experiment records
+        run: |
+          python -m build
+          python - <<'PYCODE'
+          from pathlib import Path
+          import tarfile
+          import zipfile
+          for path in Path("dist").iterdir():
+              if path.suffix == ".whl":
+                  with zipfile.ZipFile(path) as archive:
+                      names = archive.namelist()
+              elif path.name.endswith(".tar.gz"):
+                  with tarfile.open(path) as archive:
+                      names = archive.getnames()
+              else:
+                  continue
+              assert not any("/docs/results/" in name or name.endswith("/docs/checkpoints.json") for name in names), path
+          PYCODE
       - name: Smoke-test the wheel in an isolated evaluation environment
         env:
           PYTHONPATH: ''
@@ -71,7 +84,6 @@ jobs:
           "$glyph_smoke_python" -m glyph_sr infer --help
           "$glyph_smoke_python" -m glyph_sr train --help
           "$glyph_smoke_python" -m glyph_sr data synthesize --help
-          "$glyph_smoke_python" -m glyph_sr verify
           cat > predictions.jsonl <<'EOF'
           {"filename": "smoke.png", "ground_truth": "STOP", "predicted": "STOP EXTRA"}
           EOF

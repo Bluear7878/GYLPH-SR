@@ -55,8 +55,6 @@ glyph_sr = ["configs/*.yaml"]
 
 [tool.setuptools.data-files]
 "share/glyph_sr" = ["THIRD_PARTY_NOTICES.md", "CITATION.cff"]
-"share/glyph_sr/docs/results" = ["docs/results/*.json"]
-"share/glyph_sr/docs" = ["docs/checkpoints.json"]
 "share/glyph_sr/licenses" = ["licenses/*"]
 
 [tool.ruff]
