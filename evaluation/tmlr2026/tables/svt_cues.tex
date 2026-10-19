@@ -1,0 +1,35 @@
+\begin{table}[H]
+\centering
+\caption{OCR $F_1$ uses exact-word matching. SVT $\times4$ cue ablation on all 350 inputs (349 OCR annotations), with a minimum internal side of 1024 pixels, Wavelet correction, and 50 steps. Diffusion seed 1234. All conditions, including Full, use the same scene caption with text identities removed for each image.}
+\label{tab:ar-svt-cues-ocr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+Condition & OpenOCR $F_1$ & GOT-OCR2 $F_1$ & LLaVA $F_1$ \\
+\midrule
+Full & 25.23 & 11.61 & 7.10 \\
+Text only & 25.05 & 7.20 & 7.19 \\
+Position only & 16.10 & 8.64 & 5.20 \\
+Neither & 16.56 & 6.80 & 5.29 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{SVT $\times4$ cue ablation on all 350 inputs (349 OCR annotations), with a minimum internal side of 1024 pixels, Wavelet correction, and 50 steps. Diffusion seed 1234. All conditions, including Full, use the same scene caption with text identities removed for each image.}
+\label{tab:ar-svt-cues-iqa}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+Condition & MANIQA & CLIP-IQA & MUSIQ \\
+\midrule
+Full & 0.4399 & 0.4563 & 68.56 \\
+Text only & 0.4459 & 0.4643 & 68.88 \\
+Position only & 0.4127 & 0.4275 & 66.50 \\
+Neither & 0.4268 & 0.4446 & 67.19 \\
+\bottomrule
+\end{tabular}
+\end{table}

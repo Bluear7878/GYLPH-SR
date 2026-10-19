@@ -1,25 +1,102 @@
 name: Release checks
+
 on:
   push:
-    branches: [main, codex/tmlr-release-refresh]
+    branches: [main]
   pull_request:
+
 permissions:
   contents: read
+
 jobs:
   cpu-checks:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.12']
+    env:
+      CUDA_VISIBLE_DEVICES: ''
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      - name: Install CPU test dependencies
+          python-version: ${{ matrix.python-version }}
+      - name: Install CPU wheels and package extras
         run: |
+          python -m pip install --upgrade pip
           python -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install -r requirements.txt -r requirements/evaluation.txt
+          python -m pip install -e '.[runtime,evaluation,dev]'
+          python -m pip check
+      - name: Check first-party Python
+        run: |
+          python -m ruff check glyph_sr tests tools GLYPHSR dataset_generater run_GLYPH_SR.py train_GLYPH_SR.py
+          python -m ruff format --check glyph_sr tests tools GLYPHSR dataset_generater run_GLYPH_SR.py train_GLYPH_SR.py
+      - name: Check CLI help without site packages
+        run: |
+          python -S -m glyph_sr --help
+          python -S -m glyph_sr infer --help
+          python -S -m glyph_sr train --help
+          python -S -m glyph_sr score --help
+          python -S -m glyph_sr verify --help
+          python -S -m glyph_sr data --help
+          python -S -m glyph_sr data prompts --help
+          python -S -m glyph_sr data synthesize --help
+          python -S -m glyph_sr data negatives --help
+          python -S run_GLYPH_SR.py --help
+          python -S train_GLYPH_SR.py --help
+      - name: Test CPU behavior and recorded results
+        run: python -m pytest -q tests
       - name: Verify bundled evidence
-        run: python tools/verify_release.py
-      - name: Test CLI, checkpoint loading and OCR metrics
-        run: python -m unittest discover -s tests -v
+        run: python -m glyph_sr verify
+      - name: Build source and wheel distributions
+        run: python -m build
+      - name: Smoke-test the wheel in an isolated evaluation environment
+        env:
+          PYTHONPATH: ''
+        run: |
+          glyph_wheels=(dist/*.whl)
+          test "${#glyph_wheels[@]}" -eq 1
+          test -f "${glyph_wheels[0]}"
+          glyph_wheel_path="${GITHUB_WORKSPACE}/${glyph_wheels[0]}"
+          glyph_smoke_root=$(mktemp -d "${RUNNER_TEMP}/glyph-wheel-smoke.XXXXXX")
+          python -m venv "$glyph_smoke_root/venv"
+          glyph_smoke_python="$glyph_smoke_root/venv/bin/python"
+          "$glyph_smoke_python" -m pip install "${glyph_wheel_path}[evaluation]"
+          mkdir "$glyph_smoke_root/work"
+          cd "$glyph_smoke_root/work"
+          "$glyph_smoke_root/venv/bin/glyph-sr" --help
+          "$glyph_smoke_python" -m glyph_sr infer --help
+          "$glyph_smoke_python" -m glyph_sr train --help
+          "$glyph_smoke_python" -m glyph_sr data synthesize --help
+          "$glyph_smoke_python" -m glyph_sr verify
+          cat > predictions.jsonl <<'EOF'
+          {"filename": "smoke.png", "ground_truth": "STOP", "predicted": "STOP EXTRA"}
+          EOF
+          "$glyph_smoke_python" -m glyph_sr score --input predictions.jsonl --output scores.json
+          "$glyph_smoke_python" - <<'PY'
+          import json
+          import math
+          from pathlib import Path
+          from glyph_sr.paths import resource_path
+          for resource in ("sdxl.yaml", "supir.yaml", "prompts.yaml"):
+              assert resource_path(resource).is_file()
+          scores = json.loads(Path("scores.json").read_text())
+          assert scores["count"] == 1
+          assert math.isclose(scores["corrected_word"]["f1"], 200 / 3)
+          assert scores["legacy_submitted_word"]["f1"] == 100
+          PY
       - name: Check whitespace
-        run: git diff --check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          git diff --check
+          if [ -n "$BASE_SHA" ] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            git diff --check "$BASE_SHA" HEAD
+          else
+            git show --format= --check HEAD
+          fi

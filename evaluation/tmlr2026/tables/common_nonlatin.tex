@@ -1,0 +1,21 @@
+\begin{table}[H]
+\centering
+\caption{Evaluation with a fixed Qwen2.5-VL guider and GLYPH-SR weights and settings across both scripts and scales; 100 inputs per script, seed 1234. Full and no-OCR/layout conditions use the same scene caption with text identities removed for each image. Grapheme $F_1$, CER, and exact-transcription accuracy are percentages.}
+\label{tab:ar-common-nonlatin}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Script & Scale & Cues & Grapheme $F_1$ & CER & Exact \\
+\midrule
+Chinese & $\times4$ & Full & 79.84 & 35.10 & 58.00 \\
+Chinese & $\times4$ & No OCR/layout & 79.96 & 35.10 & 58.00 \\
+Chinese & $\times16$ & Full & 18.27 & 89.75 & 2.00 \\
+Chinese & $\times16$ & No OCR/layout & 18.27 & 89.75 & 2.00 \\
+Hindi & $\times4$ & Full & 63.19 & 42.09 & 41.00 \\
+Hindi & $\times4$ & No OCR/layout & 62.88 & 42.76 & 40.00 \\
+Hindi & $\times16$ & Full & 13.03 & 92.26 & 6.00 \\
+Hindi & $\times16$ & No OCR/layout & 13.03 & 92.26 & 6.00 \\
+\bottomrule
+\end{tabular}
+\end{table}

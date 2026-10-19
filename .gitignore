@@ -14,3 +14,9 @@ lightning_logs/
 *.ckpt
 *.safetensors
 .env
+
+# Python distribution artifacts
+build/
+dist/
+*.egg-info/
+.ruff_cache/

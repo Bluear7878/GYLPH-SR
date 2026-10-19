@@ -1,53 +1,45 @@
 # GLYPH-SR
 
-Official implementation of **A Bi-Objective Framework for Scene Text Super-Resolution: Balancing Legibility and Fidelity**.
+Official implementation of **A Bi-Objective Framework for Scene Text Super-Resolution: Balancing Legibility and Fidelity**, accepted at **Transactions on Machine Learning Research (TMLR), 2026**.
 
 Mingyu Sung, Seungjae Ham, Kangwoo Kim, Il-Min Kim, Sangseok Yun, and Jae-Mo Kang.
 
-**Accepted at TMLR; camera-ready preparation in progress (2026).**
-[Paper and review](https://openreview.net/forum?id=9CnYnByhvB) ·
+[Paper and reviews](https://openreview.net/forum?id=9CnYnByhvB) ·
 [Checkpoints](docs/checkpoints.md) · [Training](docs/training.md) ·
 [Evaluation](docs/evaluation.md) · [Recorded results](evaluation/tmlr2026)
 
-## Overview
+GLYPH-SR restores scene text while pursuing text legibility and perceptual image
+quality as separate objectives. A frozen scene-restoration model is combined with
+adapted text-control modules. During sampling, a ping-pong schedule selects
+scene-caption or OCR text/location conditioning; continuous schedules interpolate
+those conditioning tensors. The shared U-Net is evaluated with pretrained and
+adapted fusion modules, and its predictions are averaged with fixed equal weights.
+The OCR guider is LLaVA-NeXT 8B with a separately trained LoRA adapter.
 
-GLYPH-SR restores text in full natural scenes using vision-language guidance and
-an SDXL-based diffusion restorer. It combines a frozen scene-restoration path,
-a trainable text-control path, and a ping-pong schedule that alternates the two
-guidance streams. OCR text, verbalized locations and a scene caption provide
-conditioning signals.
+```mermaid
+flowchart LR
+    LR["LR image"] --> SC["Scene-caption conditioning"]
+    LR --> TX["OCR text/location conditioning"]
+    SC --> Q["Select or interpolate<br/>by schedule lambda_i"]
+    TX --> Q
+    LR --> H["Shared LR representation h"]
+    Q --> C["Condition-dependent<br/>control features"]
+    H --> C
+    Z["Noisy latent and noise level"] --> C
+    C --> U["Shared U-Net evaluated twice<br/>pretrained and adapted fusion"]
+    Q --> U
+    Z --> U
+    U --> M["Fixed prediction average<br/>0.5 base + 0.5 adapted"]
+    M --> E["CFG and EDM update"]
+```
 
-The paper treats legibility and perceptual fidelity as separate objectives.
-Results on SVT, SCUT-CTW1500 and CUTE80 depend on the dataset and degradation;
-improvements on one axis need not imply improvements on the other. See the
-paper for complete comparisons and limitations.
-
-![GLYPH-SR architecture: scene and text guidance enter separate control paths and alternate during diffusion sampling](https://github.com/user-attachments/assets/9b7f2f98-caec-4c75-a2a1-c368b38f435e)
-
-## October 2026 release update
-
-- Updated paper identity, citation and model documentation, including the actual
-  **LLaVA-NeXT 8B** base and separately trained OCR LoRA.
-- Replaced machine-specific defaults with relative paths/environment variables
-  and exposed SR, OCR and caption-model device selection.
-- Added checkpoint key-coverage checks and support for Lightning checkpoint
-  containers, so incompatible TS weights fail explicitly.
-- Added a portable OCR scorer separating corrected exact-word metrics from
-  historical matching scores.
-- Included recorded matched-review aggregates, statistics, analysis plan and
-  selected LaTeX tables with a hash verifier.
-
-The old README's ×6 table and broad superiority statements are superseded by
-the paper and the scoped evaluation records. The old environment freeze remains
-in `requirements/legacy-environment.txt` for provenance.
+Each prompt condition uses the same LR representation; CFG combines positive
+and negative prompt evaluations before the EDM update.
 
 ## Installation
 
-Use Linux, Python **3.10**, and NVIDIA GPUs for restoration. The dependency pins
-follow the recorded review environment; upgrading Transformers independently can
-break the bundled LLaVA code. The following CUDA 12.8/PyTorch 2.8 wheel pair follows
-[PyTorch's installation matrix](https://pytorch.org/get-started/previous-versions/).
-Use a driver compatible with that wheel build.
+Restoration uses Linux, Python **3.10**, and NVIDIA GPUs. Install the matching
+PyTorch and xformers wheels first, then install the package from this checkout:
 
 ```bash
 git clone https://github.com/Bluear7878/GYLPH-SR.git
@@ -57,16 +49,13 @@ conda activate glyph-sr
 python -m pip install --upgrade pip
 python -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
 python -m pip install xformers==0.0.32.post2
-python -m pip install -r requirements.txt
+python -m pip install -e '.[runtime]'
 ```
 
-The diffusion model, caption VLM and OCR-adapted VLM are large. The inference
-entry point defaults to three logical devices (`cuda:0`, `cuda:1`, `cuda:2`).
-They may share a device if enough memory is available; the release update does
-not establish a new minimum-VRAM or single-GPU performance claim.
-
-Download and verify the files in [docs/checkpoints.md](docs/checkpoints.md).
-The default directory layout is:
+The runtime dependency pins match the recorded review environment. The default
+inference placement uses `cuda:0` for SR, `cuda:1` for OCR, and `cuda:2` for scene
+captioning. Device options can place components together when memory permits.
+Download the components listed in [checkpoints.md](docs/checkpoints.md):
 
 ```text
 checkpoints/
@@ -78,48 +67,67 @@ checkpoints/
     └── adapter_model.safetensors
 ```
 
-The LLaVA base and CLIP encoders use the Hugging Face/OpenCLIP caches unless local
-paths are configured. Model weights are not stored in this Git repository.
+The LLaVA base and text encoders use their model caches or configured local paths.
 
 ## Restore an image
 
-Run from the repository root after checkpoint setup:
-
 ```bash
-python run_GLYPH_SR.py \
-  --img_path /path/to/low_resolution.png \
-  --save_dir ./results/demo \
-  --upscale 4 --down_factor 1 --seed 1234 \
-  --yaml_file model_configs/juggernautXL.yaml \
-  --GYLPH_pretrained_ckpt ./checkpoints/TS-ControlNet_cp.ckpt \
-  --VLM_pretrained_ckpt ./checkpoints/Llava-next_FT \
-  --sr_device cuda:0 --ocr_device cuda:1 --vlm_device cuda:2
+glyph-sr infer \
+  --input /path/to/low_resolution.png \
+  --output-dir ./results/demo \
+  --upscale 4 --down-factor 1 --seed 1234 \
+  --sr-device cuda:0 --ocr-device cuda:1 --caption-device cuda:2
 ```
 
-`--down_factor 1` keeps the supplied LR input; larger values deliberately degrade
-it first. The script writes a PNG and `metadata.jsonl` containing its caption,
-OCR text and verbalized locations. This single-image example is not a complete
-reproduction of the paper's matched experiment protocol.
+`--down-factor 1` uses the supplied LR input. The command writes a restored PNG and
+`metadata.jsonl` with the caption, recognized text, and verbalized locations.
+The default configuration uses 50 restoration steps and nominal CFG increasing
+from 4.0 toward 7.5 as the noise level decreases. Dataset-specific evaluation
+settings are documented with the [recorded results](docs/evaluation.md).
 
-`python run_GLYPH_SR.py --help` and `python train_GLYPH_SR.py --help` work without
-loading the model stack. See [training.md](docs/training.md) for the actual
-metadata arguments and [evaluation.md](docs/evaluation.md) for scoring saved OCR
-predictions and interpreting the included results.
+`python -m glyph_sr` provides the same commands. Use `glyph-sr infer --help`,
+`glyph-sr train --help`, and `glyph-sr data --help` for all options. The earlier
+`run_GLYPH_SR.py` and `train_GLYPH_SR.py` entry points remain compatibility wrappers.
+See [training.md](docs/training.md) for the two adaptation stages and data format.
 
-## Validation
+## Recorded results
 
-The release checks use CPU toy models and synthetic predictions, not new SR
-experiments:
+The following **measured** results use three diffusion seeds (1234, 2345, 3456), a
+minimum internal side of 1024 pixels, and Wavelet color correction. Values are
+mean ± sample standard deviation across seeds. WM is the paper's nonstandard
+word-matching score; exact-word F1 counts every unmatched predicted/reference
+word. Both OCR columns are percentages, and MANIQA uses its native 0–1 scale.
+
+| Dataset | Scale | OpenOCR WM F1 | OpenOCR exact-word F1 | MANIQA |
+| --- | --- | ---: | ---: | ---: |
+| SVT | ×4 | 65.67 ± 0.97 | 25.50 ± 0.66 | 0.4422 ± 0.0005 |
+| SVT | ×8 | 36.38 ± 0.39 | 13.75 ± 0.23 | 0.4159 ± 0.0010 |
+| SCUT-CTW1500 | ×4 | 41.62 ± 0.20 | 29.54 ± 0.35 | 0.6606 ± 0.0037 |
+| SCUT-CTW1500 | ×8 | 8.65 ± 0.02 | 6.48 ± 0.01 | 0.4368 ± 0.0043 |
+| CUTE80 | ×4 | 76.74 ± 0.30 | 48.54 ± 0.58 | 0.4813 ± 0.0009 |
+| CUTE80 | ×8 | 66.49 ± 0.91 | 38.77 ± 0.71 | 0.4533 ± 0.0010 |
+
+These conditions show dataset-dependent trade-offs. Full GLYPH-SR/PASD/ResShift-v3
+comparisons, CER, exact-transcription accuracy, common-guider studies, ablations,
+and layout subsets are in [evaluation.md](docs/evaluation.md). The public evidence
+contains 780 aggregate metric entries, all 732 paired tests, and the camera-ready
+appendix's 252 displayed statistical comparisons, with recorded source hashes.
+
+## Score and verify
+
+Saved OCR predictions can be scored without loading restoration models:
 
 ```bash
-python -m pip install -r requirements/evaluation.txt
-python -m unittest discover -s tests -v
-python tools/verify_release.py
+python -m pip install -e '.[evaluation]'
+glyph-sr score --input predictions.jsonl --output scores.json
+glyph-sr verify
 ```
 
-The public bundle contains aggregate review evidence, not the complete raw
-image/OCR archive or a turnkey reproduction of every table. Historical metric
-protocol differences are documented in [evaluation.md](docs/evaluation.md).
+The scorer returns word-matching and exact-word metrics separately. Input format,
+normalization, statistical definitions, and table links are in
+[evaluation.md](docs/evaluation.md). The evidence package contains recorded
+aggregate measurements; raw images and per-image OCR archives are separate from
+this repository. See [validation](docs/release-validation.md) for software checks.
 
 ## Citation
 
@@ -129,14 +137,14 @@ protocol differences are documented in [evaluation.md](docs/evaluation.md).
   author  = {Sung, Mingyu and Ham, Seungjae and Kim, Kangwoo and Kim, Il-Min and Yun, Sangseok and Kang, Jae-Mo},
   journal = {Transactions on Machine Learning Research},
   year    = {2026},
-  note    = {Accepted; camera-ready version in preparation},
+  note    = {Accepted},
   url     = {https://openreview.net/forum?id=9CnYnByhvB}
 }
 ```
 
 Machine-readable metadata is available in [CITATION.cff](CITATION.cff).
 
-## Acknowledgements
+## Acknowledgements and terms
 
 This work was supported by the National Research Foundation of Korea(NRF) grant
 funded by the Korea government(MSIT) (RS-2026-25493331).
@@ -145,4 +153,5 @@ The implementation builds on [SUPIR](https://github.com/Fanghua-Yu/SUPIR),
 [LLaVA-NeXT](https://github.com/LLaVA-VL/LLaVA-NeXT),
 [generative-models](https://github.com/Stability-AI/generative-models), and
 [Nunchaku](https://github.com/nunchaku-tech/nunchaku). Their code and model terms
-remain applicable; this update does not assign a new repository-wide license.
+remain applicable. See [third-party provenance](THIRD_PARTY_NOTICES.md) and the
+retained license notices for code and model terms.

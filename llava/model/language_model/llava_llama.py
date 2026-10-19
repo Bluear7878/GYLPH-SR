@@ -12,14 +12,14 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+# Modified for GLYPH-SR: remove an inactive local-model import comment.
+
 
 from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
-# , LlamaModel, LlamaForCausalLM, GenerationConfig
-# from .modeling_llama import LlamaModel, LlamaForCausalLM
 from transformers import (AutoConfig, AutoModelForCausalLM, LlamaConfig,
                           LlamaForCausalLM, LlamaModel)
 from transformers.generation.utils import GenerateOutput

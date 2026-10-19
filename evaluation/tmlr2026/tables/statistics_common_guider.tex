@@ -1,0 +1,76 @@
+\begingroup\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.06}
+\begin{longtable}{llrrr}
+\caption{Common-guider comparisons. Holm adjustment includes all 102 tests in this analysis family.}\label{tab:ar-stats-common-guider-CUTE80-x16-all-1}\label{tab:ar-stats-common-guider-CUTE80-x4-all-1}\label{tab:ar-stats-common-guider-CUTE80-x4-all-2}\label{tab:ar-stats-common-guider-IndicSTR-Hindi-x16-all-1}\label{tab:ar-stats-common-guider-IndicSTR-Hindi-x4-all-1}\label{tab:ar-stats-common-guider-LSVT-Chinese-x16-all-1}\label{tab:ar-stats-common-guider-LSVT-Chinese-x4-all-1}\\
+\toprule
+Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule\endfirsthead
+\multicolumn{5}{l}{\tablename\ \thetable\ (continued)}\\
+\toprule
+Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule\endhead
+\midrule\multicolumn{5}{r}{Continued on the next page}\\\endfoot
+\bottomrule\endlastfoot
+\multicolumn{5}{l}{\textbf{CUTE80 / x16 / all}}\\
+\midrule
+Qwen/full -- Qwen/no cues & OpenOCR $F_1$ & -0.32 & [-3.26, 2.27] & 1.0000 \\
+Qwen/full -- Qwen/no cues & GOT-OCR2 $F_1$ & -0.60 & [-3.48, 1.98] & 1.0000 \\
+Qwen/full -- Qwen/no cues & LLaVA $F_1$ & +0.10 & [-0.14, 0.37] & 1.0000 \\
+Qwen/full -- Qwen/no cues & MANIQA & +0.0027 & [0.0002, 0.0055] & 1.0000 \\
+Qwen/full -- Qwen/no cues & CLIP-IQA & +0.0075 & [-0.0001, 0.0174] & 1.0000 \\
+Qwen/full -- Qwen/no cues & MUSIQ & +0.58 & [0.06, 1.40] & 1.0000 \\
+\midrule
+\multicolumn{5}{l}{\textbf{CUTE80 / x4 / all}}\\
+\midrule
+Qwen/full -- Qwen/no cues & OpenOCR $F_1$ & +0.93 & [-1.71, 3.48] & 1.0000 \\
+Qwen/full -- Qwen/no cues & GOT-OCR2 $F_1$ & +0.39 & [-4.55, 5.26] & 1.0000 \\
+Qwen/full -- Qwen/no cues & LLaVA $F_1$ & +0.31 & [-1.04, 1.74] & 1.0000 \\
+Qwen/full -- Qwen/no cues & MANIQA & +0.0068 & [0.0022, 0.0118] & 0.3230 \\
+Qwen/full -- Qwen/no cues & CLIP-IQA & +0.0110 & [0.0032, 0.0192] & 0.5263 \\
+Qwen/full -- Qwen/no cues & MUSIQ & +0.69 & [0.29, 1.10] & 0.0582 \\
+LLaVA/full -- LLaVA/no cues & OpenOCR $F_1$ & +2.77 & [-0.38, 5.92] & 1.0000 \\
+LLaVA/full -- LLaVA/no cues & GOT-OCR2 $F_1$ & +1.43 & [-2.73, 5.20] & 1.0000 \\
+LLaVA/full -- LLaVA/no cues & LLaVA $F_1$ & +0.97 & [-0.97, 2.98] & 1.0000 \\
+LLaVA/full -- LLaVA/no cues & MANIQA & -0.0021 & [-0.0057, 0.0015] & 1.0000 \\
+LLaVA/full -- LLaVA/no cues & CLIP-IQA & +0.0001 & [-0.0073, 0.0074] & 1.0000 \\
+LLaVA/full -- LLaVA/no cues & MUSIQ & +0.02 & [-0.35, 0.41] & 1.0000 \\
+Qwen/full -- LLaVA/full & OpenOCR $F_1$ & -0.63 & [-4.08, 2.79] & 1.0000 \\
+Qwen/full -- LLaVA/full & GOT-OCR2 $F_1$ & +0.29 & [-4.67, 5.11] & 1.0000 \\
+Qwen/full -- LLaVA/full & LLaVA $F_1$ & +0.97 & [-0.58, 2.72] & 1.0000 \\
+Qwen/full -- LLaVA/full & MANIQA & -0.0186 & [-0.0305, -0.0086] & 0.0204 \\
+Qwen/full -- LLaVA/full & CLIP-IQA & -0.0262 & [-0.0440, -0.0115] & 0.0392 \\
+Qwen/full -- LLaVA/full & MUSIQ & -1.59 & [-2.78, -0.56] & 0.0768 \\
+Qwen/no cues -- LLaVA/no cues & OpenOCR $F_1$ & +1.21 & [-2.00, 4.58] & 1.0000 \\
+Qwen/no cues -- LLaVA/no cues & GOT-OCR2 $F_1$ & +1.33 & [-5.04, 7.28] & 1.0000 \\
+Qwen/no cues -- LLaVA/no cues & LLaVA $F_1$ & +1.64 & [-0.29, 3.90] & 1.0000 \\
+Qwen/no cues -- LLaVA/no cues & MANIQA & -0.0274 & [-0.0415, -0.0151] & 0.0204 \\
+Qwen/no cues -- LLaVA/no cues & CLIP-IQA & -0.0370 & [-0.0561, -0.0195] & 0.0204 \\
+Qwen/no cues -- LLaVA/no cues & MUSIQ & -2.26 & [-3.63, -1.01] & 0.0204 \\
+\midrule
+\multicolumn{5}{l}{\textbf{IndicSTR-Hindi / x16 / all}}\\
+\midrule
+Qwen/full -- Qwen/no cues & Grapheme $F_1$ & +0.00 & [0.00, 0.00] & 1.0000 \\
+Qwen/full -- Qwen/no cues & CER & +0.00 & [0.00, 0.00] & 1.0000 \\
+Qwen/full -- Qwen/no cues & Exact & +0.00 & [0.00, 0.00] & 1.0000 \\
+\midrule
+\multicolumn{5}{l}{\textbf{IndicSTR-Hindi / x4 / all}}\\
+\midrule
+Qwen/full -- Qwen/no cues & Grapheme $F_1$ & +0.32 & [-0.66, 1.47] & 1.0000 \\
+Qwen/full -- Qwen/no cues & CER & -0.67 & [-1.70, 0.00] & 1.0000 \\
+Qwen/full -- Qwen/no cues & Exact & +1.00 & [0.00, 3.00] & 1.0000 \\
+\midrule
+\multicolumn{5}{l}{\textbf{LSVT-Chinese / x16 / all}}\\
+\midrule
+Qwen/full -- Qwen/no cues & Grapheme $F_1$ & +0.00 & [0.00, 0.00] & 1.0000 \\
+Qwen/full -- Qwen/no cues & CER & +0.00 & [0.00, 0.00] & 1.0000 \\
+Qwen/full -- Qwen/no cues & Exact & +0.00 & [0.00, 0.00] & 1.0000 \\
+\midrule
+\multicolumn{5}{l}{\textbf{LSVT-Chinese / x4 / all}}\\
+\midrule
+Qwen/full -- Qwen/no cues & Grapheme $F_1$ & -0.12 & [-0.59, 0.22] & 1.0000 \\
+Qwen/full -- Qwen/no cues & CER & +0.00 & [-0.57, 0.56] & 1.0000 \\
+Qwen/full -- Qwen/no cues & Exact & +0.00 & [0.00, 0.00] & 1.0000 \\
+\midrule
+\end{longtable}
+\endgroup

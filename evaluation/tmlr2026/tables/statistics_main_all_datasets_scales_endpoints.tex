@@ -1,12 +1,18 @@
-\begin{table}[H]
-\centering
-\caption{Paired changes on CUTE80 x4, all inputs. Intervals are 95\% image-cluster bootstrap intervals; all seeds of one image remain in the same resampled cluster. Holm adjustment covers all 216 declared tests in this family. OCR F1 is exact-word F1 for English and grapheme F1 for the non-Latin inputs. Differences are comparison minus reference.}
-\label{tab:ar-stats-main-all-datasets-scales-endpoints-CUTE80-x4-all-1}
-\small
+\begingroup\small
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lllll}
+\renewcommand{\arraystretch}{1.06}
+\begin{longtable}{llrrr}
+\caption{Main method comparisons. Holm adjustment includes all 216 tests in this analysis family.}\label{tab:ar-stats-main-all-datasets-scales-endpoints-CUTE80-x4-all-1}\label{tab:ar-stats-main-all-datasets-scales-endpoints-CUTE80-x8-all-1}\label{tab:ar-stats-main-all-datasets-scales-endpoints-SCUT-CTW1500-x4-all-1}\label{tab:ar-stats-main-all-datasets-scales-endpoints-SCUT-CTW1500-x8-all-1}\label{tab:ar-stats-main-all-datasets-scales-endpoints-SVT-x4-all-1}\label{tab:ar-stats-main-all-datasets-scales-endpoints-SVT-x8-all-1}\\
 \toprule
 Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule\endfirsthead
+\multicolumn{5}{l}{\tablename\ \thetable\ (continued)}\\
+\toprule
+Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule\endhead
+\midrule\multicolumn{5}{r}{Continued on the next page}\\\endfoot
+\bottomrule\endlastfoot
+\multicolumn{5}{l}{\textbf{CUTE80 / x4 / all}}\\
 \midrule
 GLYPH-SR -- PASD & OpenOCR $F_1$ & +5.51 & [-3.19, 13.92] & 1.0000 \\
 GLYPH-SR -- PASD & GOT-OCR2 $F_1$ & +12.04 & [4.63, 19.25] & 0.1584 \\
@@ -20,19 +26,8 @@ GLYPH-SR -- ResShift-v3 & LLaVA $F_1$ & -2.62 & [-4.36, -1.33] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & MANIQA & +0.1009 & [0.0837, 0.1187] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & CLIP-IQA & -0.0036 & [-0.0237, 0.0174] & 1.0000 \\
 GLYPH-SR -- ResShift-v3 & MUSIQ & +6.12 & [4.88, 7.40] & 0.0432 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Paired changes on CUTE80 x8, all inputs. Intervals are 95\% image-cluster bootstrap intervals; all seeds of one image remain in the same resampled cluster. Holm adjustment covers all 216 declared tests in this family. OCR F1 is exact-word F1 for English and grapheme F1 for the non-Latin inputs. Differences are comparison minus reference.}
-\label{tab:ar-stats-main-all-datasets-scales-endpoints-CUTE80-x8-all-1}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lllll}
-\toprule
-Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule
+\multicolumn{5}{l}{\textbf{CUTE80 / x8 / all}}\\
 \midrule
 GLYPH-SR -- PASD & OpenOCR $F_1$ & -2.07 & [-9.98, 5.75] & 1.0000 \\
 GLYPH-SR -- PASD & GOT-OCR2 $F_1$ & -9.05 & [-15.59, 7.91] & 1.0000 \\
@@ -46,19 +41,8 @@ GLYPH-SR -- ResShift-v3 & LLaVA $F_1$ & -0.64 & [-2.88, 1.53] & 1.0000 \\
 GLYPH-SR -- ResShift-v3 & MANIQA & +0.0971 & [0.0778, 0.1174] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & CLIP-IQA & -0.0031 & [-0.0287, 0.0230] & 1.0000 \\
 GLYPH-SR -- ResShift-v3 & MUSIQ & +9.60 & [7.52, 11.68] & 0.0432 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Paired changes on SCUT-CTW1500 x4, all inputs. Intervals are 95\% image-cluster bootstrap intervals; all seeds of one image remain in the same resampled cluster. Holm adjustment covers all 216 declared tests in this family. OCR F1 is exact-word F1 for English and grapheme F1 for the non-Latin inputs. Differences are comparison minus reference.}
-\label{tab:ar-stats-main-all-datasets-scales-endpoints-SCUT-CTW1500-x4-all-1}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lllll}
-\toprule
-Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule
+\multicolumn{5}{l}{\textbf{SCUT-CTW1500 / x4 / all}}\\
 \midrule
 GLYPH-SR -- PASD & OpenOCR $F_1$ & +12.39 & [10.75, 14.12] & 0.0432 \\
 GLYPH-SR -- PASD & GOT-OCR2 $F_1$ & +8.05 & [4.86, 12.47] & 0.0432 \\
@@ -72,19 +56,8 @@ GLYPH-SR -- ResShift-v3 & LLaVA $F_1$ & +4.01 & [3.21, 4.87] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & MANIQA & +0.1876 & [0.1737, 0.2012] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & CLIP-IQA & +0.1174 & [0.1051, 0.1297] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & MUSIQ & +0.04 & [-0.99, 1.04] & 1.0000 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Paired changes on SCUT-CTW1500 x8, all inputs. Intervals are 95\% image-cluster bootstrap intervals; all seeds of one image remain in the same resampled cluster. Holm adjustment covers all 216 declared tests in this family. OCR F1 is exact-word F1 for English and grapheme F1 for the non-Latin inputs. Differences are comparison minus reference.}
-\label{tab:ar-stats-main-all-datasets-scales-endpoints-SCUT-CTW1500-x8-all-1}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lllll}
-\toprule
-Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule
+\multicolumn{5}{l}{\textbf{SCUT-CTW1500 / x8 / all}}\\
 \midrule
 GLYPH-SR -- PASD & OpenOCR $F_1$ & +2.96 & [2.20, 3.77] & 0.0432 \\
 GLYPH-SR -- PASD & GOT-OCR2 $F_1$ & +1.58 & [0.65, 3.08] & 0.1288 \\
@@ -98,19 +71,8 @@ GLYPH-SR -- ResShift-v3 & LLaVA $F_1$ & +1.13 & [0.90, 1.38] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & MANIQA & +0.0557 & [0.0356, 0.0759] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & CLIP-IQA & +0.0006 & [-0.0192, 0.0200] & 1.0000 \\
 GLYPH-SR -- ResShift-v3 & MUSIQ & -12.63 & [-14.37, -10.89] & 0.0432 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Paired changes on SVT x4, all inputs. Intervals are 95\% image-cluster bootstrap intervals; all seeds of one image remain in the same resampled cluster. Holm adjustment covers all 216 declared tests in this family. OCR F1 is exact-word F1 for English and grapheme F1 for the non-Latin inputs. Differences are comparison minus reference.}
-\label{tab:ar-stats-main-all-datasets-scales-endpoints-SVT-x4-all-1}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lllll}
-\toprule
-Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule
+\multicolumn{5}{l}{\textbf{SVT / x4 / all}}\\
 \midrule
 GLYPH-SR -- PASD & OpenOCR $F_1$ & +15.40 & [12.47, 18.32] & 0.0432 \\
 GLYPH-SR -- PASD & GOT-OCR2 $F_1$ & +4.02 & [0.29, 12.24] & 1.0000 \\
@@ -124,19 +86,8 @@ GLYPH-SR -- ResShift-v3 & LLaVA $F_1$ & +0.67 & [0.12, 1.23] & 1.0000 \\
 GLYPH-SR -- ResShift-v3 & MANIQA & +0.0790 & [0.0702, 0.0874] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & CLIP-IQA & -0.0197 & [-0.0325, -0.0067] & 0.2720 \\
 GLYPH-SR -- ResShift-v3 & MUSIQ & +9.92 & [9.01, 10.79] & 0.0432 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Paired changes on SVT x8, all inputs. Intervals are 95\% image-cluster bootstrap intervals; all seeds of one image remain in the same resampled cluster. Holm adjustment covers all 216 declared tests in this family. OCR F1 is exact-word F1 for English and grapheme F1 for the non-Latin inputs. Differences are comparison minus reference.}
-\label{tab:ar-stats-main-all-datasets-scales-endpoints-SVT-x8-all-1}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lllll}
-\toprule
-Comparison & Metric & $\Delta$ & 95\% CI & $p_H$ \\
+\midrule
+\multicolumn{5}{l}{\textbf{SVT / x8 / all}}\\
 \midrule
 GLYPH-SR -- PASD & OpenOCR $F_1$ & +8.13 & [5.79, 10.48] & 0.0432 \\
 GLYPH-SR -- PASD & GOT-OCR2 $F_1$ & +4.26 & [2.22, 7.52] & 0.0432 \\
@@ -150,6 +101,6 @@ GLYPH-SR -- ResShift-v3 & LLaVA $F_1$ & +2.01 & [1.58, 2.49] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & MANIQA & +0.0743 & [0.0651, 0.0833] & 0.0432 \\
 GLYPH-SR -- ResShift-v3 & CLIP-IQA & -0.0182 & [-0.0325, -0.0037] & 1.0000 \\
 GLYPH-SR -- ResShift-v3 & MUSIQ & +13.50 & [12.16, 14.74] & 0.0432 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\midrule
+\end{longtable}
+\endgroup

@@ -1,19 +1,19 @@
 import contextlib
 import io
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import torch
 
-from GLYPHSR.checkpoint import load_TS_pretrained_model
-from tools.score_ocr_predictions import aggregate_counts, corrected_word_counts, legacy_counts
 import run_GLYPH_SR as inference
 import train_GLYPH_SR as training
+from GLYPHSR.checkpoint import load_TS_pretrained_model
+from tools.score_ocr_predictions import aggregate_counts, corrected_word_counts, legacy_counts
 
 
 def tiny_model():
@@ -29,7 +29,9 @@ class ReleaseTests(unittest.TestCase):
     def test_entrypoint_help_without_runtime_imports(self):
         for script in ("run_GLYPH_SR.py", "train_GLYPH_SR.py"):
             # -S removes site packages: help must not import torch/transformers.
-            result = subprocess.run([sys.executable, "-S", script, "--help"], capture_output=True, text=True)
+            result = subprocess.run(
+                [sys.executable, "-S", script, "--help"], capture_output=True, text=True
+            )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("--yaml_file", result.stdout)
 
@@ -43,11 +45,12 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(args.ocr_device, "cuda:0")
 
     def test_missing_input_fails_before_model_loading(self):
-        with self.assertRaisesRegex(FileNotFoundError, "img_path"):
+        with self.assertRaisesRegex(FileNotFoundError, "input_path"):
             inference.validate_inputs(inference.Config(img_path="missing-input.png"))
 
     def test_checkpoint_environment_paths(self):
         from omegaconf import OmegaConf
+
         with patch.dict(os.environ, {"GLYPH_SDXL_CKPT": "/custom/model.safetensors"}):
             config = OmegaConf.load("model_configs/juggernautXL.yaml")
             self.assertEqual(config.SDXL_CKPT, "/custom/model.safetensors")
@@ -63,8 +66,12 @@ class ReleaseTests(unittest.TestCase):
                 path = Path(tmp) / "model.ckpt"
                 torch.save(payload, path)
                 load_TS_pretrained_model(target, path, "cpu")
-                self.assertTrue(all(torch.equal(a, b) for a, b in zip(source.parameters(), target.parameters())))
-                self.assertEqual(target._ts_checkpoint_load_report["matched_projection_tensor_count"], 2)
+                self.assertTrue(
+                    all(torch.equal(a, b) for a, b in zip(source.parameters(), target.parameters()))
+                )
+                self.assertEqual(
+                    target._ts_checkpoint_load_report["matched_projection_tensor_count"], 2
+                )
 
     def test_unrelated_and_incomplete_checkpoints_fail(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -92,7 +99,9 @@ class ReleaseTests(unittest.TestCase):
 
     def test_image_resize_with_supported_pillow(self):
         from PIL import Image
+
         from llava.mm_utils import auto_pad_images, resize_and_center_crop
+
         image = Image.new("RGB", (40, 20), (10, 20, 30))
         crop = resize_and_center_crop(image, 12)
         padded = auto_pad_images(image, [16, 32])
@@ -102,10 +111,27 @@ class ReleaseTests(unittest.TestCase):
 
     def test_scorer_cli(self):
         import json
+
         with tempfile.TemporaryDirectory() as tmp:
             source, output = Path(tmp) / "predictions.jsonl", Path(tmp) / "scores.json"
-            source.write_text(json.dumps({"filename": "synthetic", "ground_truth": "STOP", "predicted": "STOP EXTRA"}) + "\n")
-            result = subprocess.run([sys.executable, "tools/score_ocr_predictions.py", "--input", str(source), "--output", str(output)], capture_output=True, text=True)
+            source.write_text(
+                json.dumps(
+                    {"filename": "synthetic", "ground_truth": "STOP", "predicted": "STOP EXTRA"}
+                )
+                + "\n"
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "tools/score_ocr_predictions.py",
+                    "--input",
+                    str(source),
+                    "--output",
+                    str(output),
+                ],
+                capture_output=True,
+                text=True,
+            )
             self.assertEqual(result.returncode, 0, result.stderr)
             scores = json.loads(output.read_text())
             self.assertAlmostEqual(scores["corrected_word"]["f1"], 200 / 3)
