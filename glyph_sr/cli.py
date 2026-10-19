@@ -7,7 +7,6 @@ _COMMANDS = {
     "infer": ("glyph_sr.inference", "main"),
     "train": ("glyph_sr.training", "main"),
     "score": ("glyph_sr.evaluation", "score"),
-    "verify": ("glyph_sr.evaluation", "verify"),
 }
 _DATA_COMMANDS = {
     name: "glyph_sr.data_generation." + name for name in ("prompts", "synthesize", "negatives")
