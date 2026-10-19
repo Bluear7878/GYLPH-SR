@@ -1,5 +1,5 @@
 model:
-  target: GLYPHSR.SR_model.SR_backbone
+  target: glyph_sr.models.diffusion.DiffusionRestorer
   params:
     ae_dtype: bf16
     diffusion_dtype: fp16
@@ -17,7 +17,7 @@ model:
         discretization_config:
           target: sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization
     control_stage_config:
-      target: GLYPHSR.modules.SR_modules.GLVControl
+      target: glyph_sr.models.layers.SceneControlNet
       params:
         adm_in_channels: 2816
         num_classes: sequential
@@ -38,7 +38,7 @@ model:
         legacy: False
         input_upscale: 1
     network_config:
-      target: GLYPHSR.modules.SR_modules.LightGLVUNet
+      target: glyph_sr.models.layers.RestorationUNet
       params:
         mode: XL-base
         project_type: ZeroSFT

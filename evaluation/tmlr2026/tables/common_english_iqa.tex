@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\caption{English CUTE80 guider comparison on all 80 inputs, seed 1234. GLYPH-SR weights, sampler, and geometry remain fixed. Within each guider, both cue conditions use the same scene caption with text identities removed for each image. OCR uses exact-word $F_1$; IQA uses the same fixed evaluator configurations.}
+\label{tab:ar-common-english-iqa}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Guider & Scale & Cues & MANIQA & CLIP-IQA & MUSIQ \\
+\midrule
+LLaVA & $\times4$ & Full & 0.4827 & 0.6336 & 67.98 \\
+LLaVA & $\times4$ & No OCR/layout & 0.4847 & 0.6335 & 67.96 \\
+Qwen & $\times4$ & Full & 0.4641 & 0.6074 & 66.40 \\
+Qwen & $\times4$ & No OCR/layout & 0.4574 & 0.5964 & 65.70 \\
+Qwen & $\times16$ & Full & 0.3145 & 0.4167 & 40.13 \\
+Qwen & $\times16$ & No OCR/layout & 0.3118 & 0.4092 & 39.55 \\
+\bottomrule
+\end{tabular}
+\end{table}

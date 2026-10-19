@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glyph-sr"
+version = "0.2.0"
+description = "Bi-objective scene-text super-resolution with vision-language conditioning"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [{name = "GLYPH-SR authors"}]
+dependencies = []
+
+[project.scripts]
+glyph-sr = "glyph_sr.cli:main"
+
+[project.optional-dependencies]
+evaluation = ["RapidFuzz==3.14.5"]
+dev = ["pytest>=8,<9", "ruff==0.11.2", "build>=1,<2"]
+runtime = [
+    "accelerate==1.10.1",
+    "diffusers==0.32.2",
+    "einops==0.8.1",
+    "einops-exts==0.0.4",
+    "ftfy==6.3.1",
+    "k-diffusion==0.1.1.post1",
+    "kornia==0.6.9",
+    "lpips==0.1.4",
+    "numpy==1.26.4",
+    "omegaconf==2.3.0",
+    "open-clip-torch==2.24.0",
+    "opencv-python==4.11.0.86",
+    "peft==0.14.0",
+    "pillow==11.3.0",
+    "pytorch-lightning==2.1.2",
+    "PyYAML==6.0.3",
+    "safetensors==0.6.2",
+    "scipy==1.15.3",
+    "sentencepiece==0.2.1",
+    "tensorboard==2.20.0",
+    "timm==1.0.20",
+    "torchmetrics==1.6.1",
+    "transformers==4.43.0",
+    "tokenizers==0.19.1",
+    "tqdm==4.67.1",
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["glyph_sr*", "GLYPHSR*", "llava*", "sgm*", "utils*", "tools*", "dataset_generater*"]
+
+[tool.setuptools]
+py-modules = ["CKPT_PTH", "run_GLYPH_SR", "train_GLYPH_SR"]
+
+[tool.setuptools.package-data]
+glyph_sr = ["configs/*.yaml"]
+
+[tool.setuptools.data-files]
+"share/glyph_sr" = ["THIRD_PARTY_NOTICES.md", "CITATION.cff"]
+"share/glyph_sr/evaluation/tmlr2026" = ["evaluation/tmlr2026/*.json", "evaluation/tmlr2026/*.csv"]
+"share/glyph_sr/evaluation/tmlr2026/tables" = ["evaluation/tmlr2026/tables/*.tex"]
+"share/glyph_sr/docs" = ["docs/checkpoints.json"]
+"share/glyph_sr/licenses" = ["licenses/*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+extend-exclude = ["llava", "sgm", "third_party"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

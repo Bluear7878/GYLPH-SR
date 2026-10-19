@@ -1,0 +1,2 @@
+# Preserve copied upstream license texts verbatim, including their whitespace.
+licenses/*.txt -whitespace

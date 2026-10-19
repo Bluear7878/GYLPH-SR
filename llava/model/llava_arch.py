@@ -12,6 +12,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+# Modified for GLYPH-SR: remove inactive debugger comments without changing architecture logic.
+
 
 import math
 import random
@@ -286,16 +288,13 @@ class LlavaMetaForCausalLM(ABC):
             dim=-1,
         )
         if getattr(self.config, "add_faster_video", False):
-            # import pdb; pdb.set_trace()
             # (3584, 832, 14) -> (3584, 64, 13, 14)
             image_feature = image_feature.view(feature_dim, num_frames, resize_h, -1)
             #  (3584, 64, 13, 14) -> (64, 13, 14, 3584)
             image_feature = image_feature.permute(1, 2, 3, 0).contiguous()
             # (64, 13, 14, 3584) -> (64, 13*14, 3584)
             image_feature = image_feature.flatten(1, 2)
-            # import pdb; pdb.set_trace()
             return image_feature
-        # import pdb; pdb.set_trace()
         image_feature = image_feature.flatten(1, 2).transpose(0, 1)
         return image_feature
 
@@ -339,7 +338,6 @@ class LlavaMetaForCausalLM(ABC):
         if isinstance(modalities, str):
             modalities = [modalities]
 
-        # import pdb; pdb.set_trace()
         if type(images) is list or images.ndim == 5:
             if type(images) is list:
                 images = [x.unsqueeze(0) if x.ndim == 3 else x for x in images]
@@ -390,7 +388,6 @@ class LlavaMetaForCausalLM(ABC):
                     # currently image_feature is a tensor of shape (4, num_patches, hidden_size)
                     # we want to first unflatten it to (2, 2, h, w, hidden_size)
                     # rank0_print("At least we are reaching here")
-                    # import pdb; pdb.set_trace()
                     if image_idx in video_idx_in_batch:  # video operations
                         # rank0_print("Video")
                         if mm_newline_position == "grid":
@@ -402,7 +399,6 @@ class LlavaMetaForCausalLM(ABC):
                                 )
                                 # Add a token for each frame
                                 concat_slow_fater_token = []
-                                # import pdb; pdb.set_trace()
                                 for _ in range(image_feature.shape[0]):
                                     if _ % self.config.faster_token_stride == 0:
                                         concat_slow_fater_token.append(
@@ -428,7 +424,6 @@ class LlavaMetaForCausalLM(ABC):
                                                 dim=0,
                                             )
                                         )
-                                # import pdb; pdb.set_trace()
                                 image_feature = torch.cat(concat_slow_fater_token)
 
                                 # print("!!!!!!!!!!!!")
@@ -692,7 +687,6 @@ class LlavaMetaForCausalLM(ABC):
 
             cur_new_input_embeds = [x.to(self.device) for x in cur_new_input_embeds]
 
-            # import pdb; pdb.set_trace()
             cur_new_input_embeds = torch.cat(cur_new_input_embeds)
             cur_new_labels = torch.cat(cur_new_labels)
 
@@ -810,7 +804,6 @@ class LlavaMetaForCausalLM(ABC):
             right_add = random.randint(left_add, self.config.pos_skipping_range)
             position_ids[:, :split_position] += left_add
             position_ids[:, split_position:] += right_add
-        # import pdb; pdb.set_trace()
         # rank0_print("Finish preparing")
         return (
             None,

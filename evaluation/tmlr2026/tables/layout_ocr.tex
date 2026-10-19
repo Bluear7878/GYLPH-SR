@@ -1,0 +1,25 @@
+\begin{table}[H]
+\centering
+\caption{OCR $F_1$ uses exact-word matching. Annotation-defined SCUT-CTW1500 layout subsets, selected without consulting restoration outcomes. Curved: at least one 14-vertex text polygon with normalized centerline bending at least 0.05. Dense: at least 10 non-ignored annotated text instances. The subsets may overlap. Values are mean and sample SD across three inference seeds.}
+\label{tab:ar-layout-ocr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lllllll}
+\toprule
+Subset & N & Scale & Method & OpenOCR $F_1$ & GOT-OCR2 $F_1$ & LLaVA $F_1$ \\
+\midrule
+Curved & 464 & $\times4$ & GLYPH-SR & 29.51$\pm$0.33 & 20.97$\pm$5.45 & 14.46$\pm$0.60 \\
+Curved & 464 & $\times4$ & PASD & 17.17$\pm$0.30 & 13.09$\pm$0.29 & 7.34$\pm$0.18 \\
+Curved & 464 & $\times4$ & ResShift-v3 & 23.86$\pm$0.17 & 16.48$\pm$2.89 & 10.31$\pm$0.09 \\
+Curved & 464 & $\times8$ & GLYPH-SR & 6.52$\pm$0.02 & 4.72$\pm$1.36 & 3.44$\pm$0.05 \\
+Curved & 464 & $\times8$ & PASD & 3.45$\pm$0.17 & 3.16$\pm$0.07 & 2.46$\pm$0.04 \\
+Curved & 464 & $\times8$ & ResShift-v3 & 4.18$\pm$0.22 & 2.89$\pm$0.82 & 2.32$\pm$0.08 \\
+Dense & 49 & $\times4$ & GLYPH-SR & 17.40$\pm$0.48 & 12.37$\pm$6.47 & 12.39$\pm$0.84 \\
+Dense & 49 & $\times4$ & PASD & 7.10$\pm$0.99 & 4.75$\pm$0.28 & 6.86$\pm$0.09 \\
+Dense & 49 & $\times4$ & ResShift-v3 & 11.85$\pm$0.41 & 7.43$\pm$2.65 & 7.92$\pm$0.44 \\
+Dense & 49 & $\times8$ & GLYPH-SR & 3.07$\pm$0.41 & 3.93$\pm$0.48 & 4.46$\pm$0.16 \\
+Dense & 49 & $\times8$ & PASD & 1.03$\pm$0.11 & 1.58$\pm$0.18 & 4.21$\pm$0.08 \\
+Dense & 49 & $\times8$ & ResShift-v3 & 1.19$\pm$0.23 & 1.04$\pm$0.67 & 3.69$\pm$0.10 \\
+\bottomrule
+\end{tabular}
+\end{table}

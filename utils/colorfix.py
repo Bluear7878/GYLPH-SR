@@ -1,46 +1,11 @@
-"""
-# --------------------------------------------------------------------------------
-#   Color fixed script from Li Yi (https://github.com/pkuliyi2015/sd-webui-stablesr/blob/master/srmodule/colorfix.py)
-# --------------------------------------------------------------------------------
+"""Color correction adapted from Li Yi's StableSR implementation.
+
+Source: https://github.com/pkuliyi2015/sd-webui-stablesr/blob/master/srmodule/colorfix.py
 """
 
 import torch
-from PIL import Image
 from torch import Tensor
 from torch.nn import functional as F
-from torchvision.transforms import ToPILImage, ToTensor
-
-
-def adain_color_fix(target: Image, source: Image):
-    # Convert images to tensors
-    to_tensor = ToTensor()
-    target_tensor = to_tensor(target).unsqueeze(0)
-    source_tensor = to_tensor(source).unsqueeze(0)
-
-    # Apply adaptive instance normalization
-    result_tensor = adaptive_instance_normalization(target_tensor, source_tensor)
-
-    # Convert tensor back to image
-    to_image = ToPILImage()
-    result_image = to_image(result_tensor.squeeze(0).clamp_(0.0, 1.0))
-
-    return result_image
-
-
-def wavelet_color_fix(target: Image, source: Image):
-    # Convert images to tensors
-    to_tensor = ToTensor()
-    target_tensor = to_tensor(target).unsqueeze(0)
-    source_tensor = to_tensor(source).unsqueeze(0)
-
-    # Apply wavelet reconstruction
-    result_tensor = wavelet_reconstruction(target_tensor, source_tensor)
-
-    # Convert tensor back to image
-    to_image = ToPILImage()
-    result_image = to_image(result_tensor.squeeze(0).clamp_(0.0, 1.0))
-
-    return result_image
 
 
 def calc_mean_std(feat: Tensor, eps=1e-5):
@@ -70,9 +35,7 @@ def adaptive_instance_normalization(content_feat: Tensor, style_feat: Tensor):
     size = content_feat.size()
     style_mean, style_std = calc_mean_std(style_feat)
     content_mean, content_std = calc_mean_std(content_feat)
-    normalized_feat = (content_feat - content_mean.expand(size)) / content_std.expand(
-        size
-    )
+    normalized_feat = (content_feat - content_mean.expand(size)) / content_std.expand(size)
     return normalized_feat * style_std.expand(size) + style_mean.expand(size)
 
 

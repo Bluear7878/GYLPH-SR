@@ -1,0 +1,37 @@
+\begin{table}[H]
+\centering
+\caption{OCR $F_1$ uses exact-word matching. SVT $\times4$ CFG ablation on all 350 inputs (349 OCR annotations), with a minimum internal side of 1024 pixels, Wavelet correction, and 50 steps. Diffusion seed 1234.}
+\label{tab:ar-svt-cfg-ocr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+Condition & OpenOCR $F_1$ & GOT-OCR2 $F_1$ & LLaVA $F_1$ \\
+\midrule
+2 & 33.99 & 38.63 & 7.90 \\
+4 & 30.71 & 11.93 & 7.90 \\
+7.5 & 24.82 & 6.99 & 7.56 \\
+12 & 21.50 & 6.07 & 6.54 \\
+20 & 19.49 & 3.29 & 6.03 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{SVT $\times4$ CFG ablation on all 350 inputs (349 OCR annotations), with a minimum internal side of 1024 pixels, Wavelet correction, and 50 steps. Diffusion seed 1234.}
+\label{tab:ar-svt-cfg-iqa}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+Condition & MANIQA & CLIP-IQA & MUSIQ \\
+\midrule
+2 & 0.2830 & 0.2644 & 50.31 \\
+4 & 0.3455 & 0.3398 & 60.12 \\
+7.5 & 0.4417 & 0.4594 & 68.66 \\
+12 & 0.4987 & 0.5147 & 71.71 \\
+20 & 0.5350 & 0.5214 & 72.87 \\
+\bottomrule
+\end{tabular}
+\end{table}

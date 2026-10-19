@@ -1,0 +1,19 @@
+\begin{table}[H]
+\centering
+\caption{English CUTE80 guider comparison on all 80 inputs, seed 1234. GLYPH-SR weights, sampler, and geometry remain fixed. Within each guider, both cue conditions use the same scene caption with text identities removed for each image. OCR uses exact-word $F_1$; IQA uses the same fixed evaluator configurations.}
+\label{tab:ar-common-english-ocr}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Guider & Scale & Cues & OpenOCR $F_1$ & GOT-OCR2 $F_1$ & LLaVA $F_1$ \\
+\midrule
+LLaVA & $\times4$ & Full & 48.42 & 39.00 & 11.98 \\
+LLaVA & $\times4$ & No OCR/layout & 45.65 & 37.57 & 11.01 \\
+Qwen & $\times4$ & Full & 47.79 & 39.29 & 12.96 \\
+Qwen & $\times4$ & No OCR/layout & 46.86 & 38.90 & 12.65 \\
+Qwen & $\times16$ & Full & 20.37 & 19.78 & 5.25 \\
+Qwen & $\times16$ & No OCR/layout & 20.69 & 20.37 & 5.15 \\
+\bottomrule
+\end{tabular}
+\end{table}

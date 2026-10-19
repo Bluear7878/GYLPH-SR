@@ -1,61 +1,15 @@
-# ------------------------------------------------------------------------
-#
-#   Ultimate VAE Tile Optimization
-#
-#   Introducing a revolutionary new optimization designed to make
-#   the VAE work with giant images on limited VRAM!
-#   Say goodbye to the frustration of OOM and hello to seamless output!
-#
-# ------------------------------------------------------------------------
-#
-#   This script is a wild hack that splits the image into tiles,
-#   encodes each tile separately, and merges the result back together.
-#
-#   Advantages:
-#   - The VAE can now work with giant images on limited VRAM
-#       (~10 GB for 8K images!)
-#   - The merged output is completely seamless without any post-processing.
-#
-#   Drawbacks:
-#   - Giant RAM needed. To store the intermediate results for a 4096x4096
-#       images, you need 32 GB RAM it consumes ~20GB); for 8192x8192
-#       you need 128 GB RAM machine (it consumes ~100 GB)
-#   - NaNs always appear in for 8k images when you use fp16 (half) VAE
-#       You must use --no-half-vae to disable half VAE for that giant image.
-#   - Slow speed. With default tile size, it takes around 50/200 seconds
-#       to encode/decode a 4096x4096 image; and 200/900 seconds to encode/decode
-#       a 8192x8192 image. (The speed is limited by both the GPU and the CPU.)
-#   - The gradient calculation is not compatible with this hack. It
-#       will break any backward() or torch.autograd.grad() that passes VAE.
-#       (But you can still use the VAE to generate training data.)
-#
-#   How it works:
-#   1) The image is split into tiles.
-#       - To ensure perfect results, each tile is padded with 32 pixels
-#           on each side.
-#       - Then the conv2d/silu/upsample/downsample can produce identical
-#           results to the original image without splitting.
-#   2) The original forward is decomposed into a task queue and a task worker.
-#       - The task queue is a list of functions that will be executed in order.
-#       - The task worker is a loop that executes the tasks in the queue.
-#   3) The task queue is executed for each tile.
-#       - Current tile is sent to GPU.
-#       - local operations are directly executed.
-#       - Group norm calculation is temporarily suspended until the mean
-#           and var of all tiles are calculated.
-#       - The residual is pre-calculated and stored and addded back later.
-#       - When need to go to the next tile, the current tile is send to cpu.
-#   4) After all tiles are processed, tiles are merged on cpu and return.
-#
-#   Enjoy!
-#
+"""Tiled VAE execution adapted from Li Yi's Ultimate VAE Tile Optimization.
+
+Original author: LI YI, Nanyang Technological University, 2023-03-02.
+Original license: MIT. This inference path does not support VAE gradients.
+"""
+
+# Original attribution retained verbatim from the copied file:
 #   @author: LI YI @ Nanyang Technological University - Singapore
 #   @date: 2023-03-02
 #   @license: MIT License
-#
-#   Please give me a star if you like this project!
-#
-# -------------------------------------------------------------------------
+# Historical source/license and the unresolved copied revision are recorded in
+# THIRD_PARTY_NOTICES.md; the header does not establish full-file provenance.
 
 import gc
 import math
@@ -79,54 +33,6 @@ except ImportError:
 sd_flag = True
 
 
-def get_recommend_encoder_tile_size():
-    if torch.cuda.is_available():
-        total_memory = (
-            torch.cuda.get_device_properties(devices.device).total_memory // 2**20
-        )
-        if total_memory > 16 * 1000:
-            ENCODER_TILE_SIZE = 3072
-        elif total_memory > 12 * 1000:
-            ENCODER_TILE_SIZE = 2048
-        elif total_memory > 8 * 1000:
-            ENCODER_TILE_SIZE = 1536
-        else:
-            ENCODER_TILE_SIZE = 960
-    else:
-        ENCODER_TILE_SIZE = 512
-    return ENCODER_TILE_SIZE
-
-
-def get_recommend_decoder_tile_size():
-    if torch.cuda.is_available():
-        total_memory = (
-            torch.cuda.get_device_properties(devices.device).total_memory // 2**20
-        )
-        if total_memory > 30 * 1000:
-            DECODER_TILE_SIZE = 256
-        elif total_memory > 16 * 1000:
-            DECODER_TILE_SIZE = 192
-        elif total_memory > 12 * 1000:
-            DECODER_TILE_SIZE = 128
-        elif total_memory > 8 * 1000:
-            DECODER_TILE_SIZE = 96
-        else:
-            DECODER_TILE_SIZE = 64
-    else:
-        DECODER_TILE_SIZE = 64
-    return DECODER_TILE_SIZE
-
-
-if "global const":
-    DEFAULT_ENABLED = False
-    DEFAULT_MOVE_TO_GPU = False
-    DEFAULT_FAST_ENCODER = True
-    DEFAULT_FAST_DECODER = True
-    DEFAULT_COLOR_FIX = 0
-    DEFAULT_ENCODER_TILE_SIZE = get_recommend_encoder_tile_size()
-    DEFAULT_DECODER_TILE_SIZE = get_recommend_decoder_tile_size()
-
-
 # inplace version of silu
 def inplace_nonlinearity(x):
     # Test: fix for Nans
@@ -144,9 +50,7 @@ def attn_forward_new(self, h_):
     attention_mask = None
     encoder_hidden_states = None
     batch_size, sequence_length, _ = hidden_states.shape
-    attention_mask = self.prepare_attention_mask(
-        attention_mask, sequence_length, batch_size
-    )
+    attention_mask = self.prepare_attention_mask(attention_mask, sequence_length, batch_size)
 
     query = self.to_q(hidden_states)
 
@@ -171,9 +75,7 @@ def attn_forward_new(self, h_):
     # dropout
     hidden_states = self.to_out[1](hidden_states)
 
-    hidden_states = hidden_states.transpose(-1, -2).reshape(
-        batch_size, channel, height, width
-    )
+    hidden_states = hidden_states.transpose(-1, -2).reshape(batch_size, channel, height, width)
 
     return hidden_states
 
@@ -190,25 +92,17 @@ def attn_forward_new_pt2_0(
 
     if input_ndim == 4:
         batch_size, channel, height, width = hidden_states.shape
-        hidden_states = hidden_states.view(
-            batch_size, channel, height * width
-        ).transpose(1, 2)
+        hidden_states = hidden_states.view(batch_size, channel, height * width).transpose(1, 2)
 
     batch_size, sequence_length, _ = (
-        hidden_states.shape
-        if encoder_hidden_states is None
-        else encoder_hidden_states.shape
+        hidden_states.shape if encoder_hidden_states is None else encoder_hidden_states.shape
     )
 
     if attention_mask is not None:
-        attention_mask = self.prepare_attention_mask(
-            attention_mask, sequence_length, batch_size
-        )
+        attention_mask = self.prepare_attention_mask(attention_mask, sequence_length, batch_size)
         # scaled_dot_product_attention expects attention_mask shape to be
         # (batch, heads, source_length, target_length)
-        attention_mask = attention_mask.view(
-            batch_size, self.heads, -1, attention_mask.shape[-1]
-        )
+        attention_mask = attention_mask.view(batch_size, self.heads, -1, attention_mask.shape[-1])
 
     if self.group_norm is not None:
         hidden_states = self.group_norm(hidden_states.transpose(1, 2)).transpose(1, 2)
@@ -237,9 +131,7 @@ def attn_forward_new_pt2_0(
         query, key, value, attn_mask=attention_mask, dropout_p=0.0, is_causal=False
     )
 
-    hidden_states = hidden_states.transpose(1, 2).reshape(
-        batch_size, -1, self.heads * head_dim
-    )
+    hidden_states = hidden_states.transpose(1, 2).reshape(batch_size, -1, self.heads * head_dim)
     hidden_states = hidden_states.to(query.dtype)
 
     # linear proj
@@ -248,9 +140,7 @@ def attn_forward_new_pt2_0(
     hidden_states = self.to_out[1](hidden_states)
 
     if input_ndim == 4:
-        hidden_states = hidden_states.transpose(-1, -2).reshape(
-            batch_size, channel, height, width
-        )
+        hidden_states = hidden_states.transpose(-1, -2).reshape(batch_size, channel, height, width)
 
     return hidden_states
 
@@ -265,14 +155,10 @@ def attn_forward_new_xformers(self, hidden_states):
 
     if input_ndim == 4:
         batch_size, channel, height, width = hidden_states.shape
-        hidden_states = hidden_states.view(
-            batch_size, channel, height * width
-        ).transpose(1, 2)
+        hidden_states = hidden_states.view(batch_size, channel, height * width).transpose(1, 2)
 
     batch_size, key_tokens, _ = (
-        hidden_states.shape
-        if encoder_hidden_states is None
-        else encoder_hidden_states.shape
+        hidden_states.shape if encoder_hidden_states is None else encoder_hidden_states.shape
     )
 
     attention_mask = self.prepare_attention_mask(attention_mask, key_tokens, batch_size)
@@ -304,7 +190,11 @@ def attn_forward_new_xformers(self, hidden_states):
     value = self.head_to_batch_dim(value).contiguous()
 
     hidden_states = xformers.ops.memory_efficient_attention(
-        query, key, value, attn_bias=attention_mask, op=attention_op  # , scale=scale
+        query,
+        key,
+        value,
+        attn_bias=attention_mask,
+        op=attention_op,  # , scale=scale
     )
     hidden_states = hidden_states.to(query.dtype)
     hidden_states = self.batch_to_head_dim(hidden_states)
@@ -315,9 +205,7 @@ def attn_forward_new_xformers(self, hidden_states):
     hidden_states = self.to_out[1](hidden_states)
 
     if input_ndim == 4:
-        hidden_states = hidden_states.transpose(-1, -2).reshape(
-            batch_size, channel, height, width
-        )
+        hidden_states = hidden_states.transpose(-1, -2).reshape(batch_size, channel, height, width)
 
     return hidden_states
 
@@ -358,16 +246,16 @@ def xformer_attn_forward(self, h_):
     q, k, v = map(lambda x: rearrange(x, "b c h w -> b (h w) c"), (q, k, v))
 
     q, k, v = map(
-        lambda t: t.unsqueeze(3)
-        .reshape(B, t.shape[1], 1, C)
-        .permute(0, 2, 1, 3)
-        .reshape(B * 1, t.shape[1], C)
-        .contiguous(),
+        lambda t: (
+            t.unsqueeze(3)
+            .reshape(B, t.shape[1], 1, C)
+            .permute(0, 2, 1, 3)
+            .reshape(B * 1, t.shape[1], C)
+            .contiguous()
+        ),
         (q, k, v),
     )
-    out = xformers.ops.memory_efficient_attention(
-        q, k, v, attn_bias=None, op=self.attention_op
-    )
+    out = xformers.ops.memory_efficient_attention(q, k, v, attn_bias=None, op=self.attention_op)
 
     out = (
         out.unsqueeze(0)
@@ -398,9 +286,7 @@ def attn2task(task_queue, net):
             # task_queue.append(('attn', lambda x, net=net: attn_forward_new_xformers(net, x)))
             task_queue.append(("attn", lambda x, net=net: xformer_attn_forward(net, x)))
         elif hasattr(F, "scaled_dot_product_attention"):
-            task_queue.append(
-                ("attn", lambda x, net=net: attn_forward_new_pt2_0(net, x))
-            )
+            task_queue.append(("attn", lambda x, net=net: attn_forward_new_pt2_0(net, x)))
         else:
             task_queue.append(("attn", lambda x, net=net: attn_forward_new(net, x)))
         task_queue.append(["add_res", None])
@@ -617,22 +503,21 @@ def crop_valid_region(x, input_bbox, target_bbox, is_decoder):
 def perfcount(fn):
     def wrapper(*args, **kwargs):
         ts = time()
+        execution_device = next(args[0].net.parameters()).device
 
-        if torch.cuda.is_available():
-            torch.cuda.reset_peak_memory_stats(devices.device)
-        devices.torch_gc()
+        if execution_device.type == "cuda":
+            torch.cuda.reset_peak_memory_stats(execution_device)
+        devices.torch_gc(execution_device)
         gc.collect()
 
         ret = fn(*args, **kwargs)
 
-        devices.torch_gc()
+        devices.torch_gc(execution_device)
         gc.collect()
-        if torch.cuda.is_available():
-            vram = torch.cuda.max_memory_allocated(devices.device) / 2**20
-            torch.cuda.reset_peak_memory_stats(devices.device)
-            print(
-                f"[Tiled VAE]: Done in {time() - ts:.3f}s, max VRAM alloc {vram:.3f} MB"
-            )
+        if execution_device.type == "cuda":
+            vram = torch.cuda.max_memory_allocated(execution_device) / 2**20
+            torch.cuda.reset_peak_memory_stats(execution_device)
+            print(f"[Tiled VAE]: Done in {time() - ts:.3f}s, max VRAM alloc {vram:.3f} MB")
         else:
             print(f"[Tiled VAE]: Done in {time() - ts:.3f}s")
 
@@ -683,10 +568,7 @@ class GroupNormParam:
         var = torch.vstack(self.var_list)
         mean = torch.vstack(self.mean_list)
         max_value = max(self.pixel_list)
-        pixels = (
-            torch.tensor(self.pixel_list, dtype=torch.float32, device=devices.device)
-            / max_value
-        )
+        pixels = torch.tensor(self.pixel_list, dtype=torch.float32, device=var.device) / max_value
         sum_pixels = torch.sum(pixels)
         pixels = pixels.unsqueeze(1) / sum_pixels
         var = torch.sum(var * pixels, dim=0)
@@ -735,19 +617,17 @@ class VAEHook:
         self.net = net  # encoder | decoder
         self.tile_size = tile_size
         self.is_decoder = is_decoder
-        self.fast_mode = (fast_encoder and not is_decoder) or (
-            fast_decoder and is_decoder
-        )
+        self.fast_mode = (fast_encoder and not is_decoder) or (fast_decoder and is_decoder)
         self.color_fix = color_fix and not is_decoder
         self.to_gpu = to_gpu
         self.pad = 11 if is_decoder else 32
 
     def __call__(self, x):
-        B, C, H, W = x.shape
+        _batch, _channels, H, W = x.shape
         original_device = next(self.net.parameters()).device
         try:
             if self.to_gpu:
-                self.net.to(devices.get_optimal_device())
+                self.net.to(x.device)
             if max(H, W) <= self.pad * 2 + self.tile_size:
                 print("[Tiled VAE]: the input size is tiny and unnecessary to tile.")
                 return self.net.original_forward(x)
@@ -795,7 +675,7 @@ class VAEHook:
         real_tile_width = self.get_best_tile_size(real_tile_width, tile_size)
 
         print(
-            f"[Tiled VAE]: split to {num_height_tiles}x{num_width_tiles} = {num_height_tiles*num_width_tiles} tiles. "
+            f"[Tiled VAE]: split to {num_height_tiles}x{num_width_tiles} = {num_height_tiles * num_width_tiles} tiles. "
             + f"Optimal tile size {real_tile_width}x{real_tile_height}, original tile size {tile_size}x{tile_size}"
         )
 
@@ -819,9 +699,7 @@ class VAEHook:
                 ]
 
                 # scale to get the final output bbox
-                output_bbox = [
-                    x * 8 if self.is_decoder else x // 8 for x in output_bbox
-                ]
+                output_bbox = [x * 8 if self.is_decoder else x // 8 for x in output_bbox]
                 tile_output_bboxes.append(output_bbox)
 
                 # indistinguishable expand the input bbox by pad pixels
@@ -873,8 +751,8 @@ class VAEHook:
                 tile = task[1](tile)
             try:
                 devices.test_for_nans(tile, "vae")
-            except:
-                print(f"Nan detected in fast mode estimation. Fast mode disabled.")
+            except devices.NansException:
+                print("Nan detected in fast mode estimation. Fast mode disabled.")
                 return False
 
         raise IndexError("Should not reach here")
@@ -899,18 +777,14 @@ class VAEHook:
         net.last_z_shape = z.shape
 
         # Split the input into tiles and build a task queue for each tile
-        print(
-            f"[Tiled VAE]: input_size: {z.shape}, tile_size: {tile_size}, padding: {self.pad}"
-        )
+        print(f"[Tiled VAE]: input_size: {z.shape}, tile_size: {tile_size}, padding: {self.pad}")
 
         in_bboxes, out_bboxes = self.split_tiles(height, width)
 
         # Prepare tiles by split the input latents
         tiles = []
         for input_bbox in in_bboxes:
-            tile = z[
-                :, :, input_bbox[2] : input_bbox[3], input_bbox[0] : input_bbox[1]
-            ].cpu()
+            tile = z[:, :, input_bbox[2] : input_bbox[3], input_bbox[0] : input_bbox[1]].cpu()
             tiles.append(tile)
 
         num_tiles = len(tiles)
@@ -924,9 +798,7 @@ class VAEHook:
             # then estimate the group norm parameters on the downsampled image
             scale_factor = tile_size / max(height, width)
             z = z.to(device)
-            downsampled_z = F.interpolate(
-                z, scale_factor=scale_factor, mode="nearest-exact"
-            )
+            downsampled_z = F.interpolate(z, scale_factor=scale_factor, mode="nearest-exact")
             # use nearest-exact to keep statictics as close as possible
             print(
                 f"[Tiled VAE]: Fast mode enabled, estimating group norm parameters on {downsampled_z.shape[3]} x {downsampled_z.shape[2]} image"
@@ -935,9 +807,7 @@ class VAEHook:
             # ======= Special thanks to @Kahsolt for distribution shift issue ======= #
             # The downsampling will heavily distort its mean and std, so we need to recover it.
             std_old, mean_old = torch.std_mean(z, dim=[0, 2, 3], keepdim=True)
-            std_new, mean_new = torch.std_mean(
-                downsampled_z, dim=[0, 2, 3], keepdim=True
-            )
+            std_new, mean_new = torch.std_mean(downsampled_z, dim=[0, 2, 3], keepdim=True)
             downsampled_z = (downsampled_z - mean_new) / std_new * std_old + mean_old
             del std_old, mean_old, std_new, mean_new
             # occasionally the std_new is too small or too large, which exceeds the range of float16

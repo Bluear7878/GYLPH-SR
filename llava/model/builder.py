@@ -12,9 +12,10 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+# Modified for GLYPH-SR: load selected architectures and respect explicit device placement.
+
 
 import os
-import shutil
 import warnings
 
 import torch
@@ -23,8 +24,36 @@ from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer,
 
 from llava.constants import (DEFAULT_IM_END_TOKEN, DEFAULT_IM_START_TOKEN,
                              DEFAULT_IMAGE_PATCH_TOKEN)
-from llava.model import *
+from llava import model as model_registry
 from llava.utils import rank0_print
+
+
+def _selected_model_class(model_name):
+    name = model_name.lower()
+    if "mixtral" in name:
+        return model_registry.LlavaMixtralForCausalLM
+    if "mistral" in name or "zephyr" in name:
+        return model_registry.LlavaMistralForCausalLM
+    if "gemma" in name:
+        return model_registry.LlavaGemmaForCausalLM
+    if "qwen" in name or "quyen" in name:
+        if "moe" in name or "a14b" in name:
+            return model_registry.LlavaQwenMoeForCausalLM
+        return model_registry.LlavaQwenForCausalLM
+    return model_registry.LlavaLlamaForCausalLM
+
+
+def _vision_tower_device(device_map):
+    """Respect explicit placement; leave automatic or split dispatch to Accelerate."""
+    if device_map == "auto":
+        return None
+    if isinstance(device_map, dict):
+        # A root entry places the entire model. A split map already owns placement.
+        placement = device_map.get("")
+        if placement is None or placement == "disk":
+            return None
+        return f"cuda:{placement}" if isinstance(placement, int) else placement
+    return f"cuda:{device_map}" if isinstance(device_map, int) else device_map
 
 
 def load_pretrained_model(
@@ -57,21 +86,16 @@ def load_pretrained_model(
     elif torch_dtype == "bfloat16":
         kwargs["torch_dtype"] = torch.bfloat16
     else:
-        import pdb
-
-        pdb.set_trace()
+        raise ValueError(f"Unsupported torch_dtype: {torch_dtype!r}; use float16 or bfloat16")
 
     if customized_config is not None:
         kwargs["config"] = customized_config
 
-    if "multimodal" in kwargs:
-        if kwargs["multimodal"] is True:
-            is_multimodal = True
-            kwargs.pop("multimodal")
-    else:
-        is_multimodal = False
+    is_multimodal = bool(kwargs.pop("multimodal", False))
 
     if "llava" in model_name.lower() or is_multimodal:
+        # Register only the selected architecture before reading its AutoConfig.
+        _selected_model_class(model_name)
         # Load LLaVA model
         if "lora" in model_name.lower() and model_base is None:
             warnings.warn(
@@ -87,7 +111,7 @@ def load_pretrained_model(
 
                 lora_cfg_pretrained = LlavaMixtralConfig.from_pretrained(model_path)
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-                model = LlavaMixtralForCausalLM.from_pretrained(
+                model = model_registry.LlavaMixtralForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=lora_cfg_pretrained,
@@ -100,7 +124,7 @@ def load_pretrained_model(
 
                 lora_cfg_pretrained = LlavaMistralConfig.from_pretrained(model_path)
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-                model = LlavaMistralForCausalLM.from_pretrained(
+                model = model_registry.LlavaMistralForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=lora_cfg_pretrained,
@@ -113,7 +137,7 @@ def load_pretrained_model(
 
                 lora_cfg_pretrained = LlavaGemmaConfig.from_pretrained(model_path)
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-                model = LlavaGemmaForCausalLM.from_pretrained(
+                model = model_registry.LlavaGemmaForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=lora_cfg_pretrained,
@@ -125,7 +149,7 @@ def load_pretrained_model(
 
                 lora_cfg_pretrained = LlavaConfig.from_pretrained(model_path)
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
-                model = LlavaLlamaForCausalLM.from_pretrained(
+                model = model_registry.LlavaLlamaForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=lora_cfg_pretrained,
@@ -190,7 +214,7 @@ def load_pretrained_model(
             if "mixtral" in model_name.lower():
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
                 cfg_pretrained = AutoConfig.from_pretrained(model_path)
-                model = LlavaMixtralForCausalLM.from_pretrained(
+                model = model_registry.LlavaMixtralForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=cfg_pretrained,
@@ -200,7 +224,7 @@ def load_pretrained_model(
             elif "mistral" in model_name.lower() or "zephyr" in model_name.lower():
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
                 cfg_pretrained = AutoConfig.from_pretrained(model_path)
-                model = LlavaMistralForCausalLM.from_pretrained(
+                model = model_registry.LlavaMistralForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=cfg_pretrained,
@@ -210,7 +234,7 @@ def load_pretrained_model(
             elif "gemma" in model_name.lower():
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
                 cfg_pretrained = AutoConfig.from_pretrained(model_path)
-                model = LlavaGemmaForCausalLM.from_pretrained(
+                model = model_registry.LlavaGemmaForCausalLM.from_pretrained(
                     model_base,
                     low_cpu_mem_usage=True,
                     config=cfg_pretrained,
@@ -240,7 +264,7 @@ def load_pretrained_model(
 
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
                 llava_cfg = LlavaConfig.from_pretrained(model_path)
-                model = LlavaLlamaForCausalLM.from_pretrained(
+                model = model_registry.LlavaLlamaForCausalLM.from_pretrained(
                     model_base, low_cpu_mem_usage=True, config=llava_cfg, **kwargs
                 )
             else:
@@ -271,7 +295,7 @@ def load_pretrained_model(
                         setattr(llava_cfg, k, v)
 
                 tokenizer = AutoTokenizer.from_pretrained(model_path)
-                model = LlavaMixtralForCausalLM.from_pretrained(
+                model = model_registry.LlavaMixtralForCausalLM.from_pretrained(
                     model_path,
                     low_cpu_mem_usage=True,
                     attn_implementation=attn_implementation,
@@ -281,7 +305,7 @@ def load_pretrained_model(
 
             elif "mistral" in model_name.lower() or "zephyr" in model_name.lower():
                 tokenizer = AutoTokenizer.from_pretrained(model_path)
-                model = LlavaMistralForCausalLM.from_pretrained(
+                model = model_registry.LlavaMistralForCausalLM.from_pretrained(
                     model_path,
                     low_cpu_mem_usage=True,
                     attn_implementation=attn_implementation,
@@ -313,7 +337,7 @@ def load_pretrained_model(
                     for k, v in overwrite_config.items():
                         setattr(llava_cfg, k, v)
 
-                model = LlavaLlamaForCausalLM.from_pretrained(
+                model = model_registry.LlavaLlamaForCausalLM.from_pretrained(
                     model_path,
                     low_cpu_mem_usage=True,
                     attn_implementation=attn_implementation,
@@ -332,7 +356,7 @@ def load_pretrained_model(
                         rank0_print(f"Overwriting config with {overwrite_config}")
                         for k, v in overwrite_config.items():
                             setattr(llava_cfg, k, v)
-                        model = LlavaQwenMoeForCausalLM.from_pretrained(
+                        model = model_registry.LlavaQwenMoeForCausalLM.from_pretrained(
                             model_path,
                             low_cpu_mem_usage=True,
                             attn_implementation=attn_implementation,
@@ -340,7 +364,7 @@ def load_pretrained_model(
                             **kwargs,
                         )
                     else:
-                        model = LlavaQwenMoeForCausalLM.from_pretrained(
+                        model = model_registry.LlavaQwenMoeForCausalLM.from_pretrained(
                             model_path,
                             low_cpu_mem_usage=True,
                             attn_implementation=attn_implementation,
@@ -356,7 +380,7 @@ def load_pretrained_model(
                         rank0_print(f"Overwriting config with {overwrite_config}")
                         for k, v in overwrite_config.items():
                             setattr(llava_cfg, k, v)
-                        model = LlavaQwenForCausalLM.from_pretrained(
+                        model = model_registry.LlavaQwenForCausalLM.from_pretrained(
                             model_path,
                             low_cpu_mem_usage=True,
                             attn_implementation=attn_implementation,
@@ -364,7 +388,7 @@ def load_pretrained_model(
                             **kwargs,
                         )
                     else:
-                        model = LlavaQwenForCausalLM.from_pretrained(
+                        model = model_registry.LlavaQwenForCausalLM.from_pretrained(
                             model_path,
                             low_cpu_mem_usage=True,
                             attn_implementation=attn_implementation,
@@ -374,7 +398,7 @@ def load_pretrained_model(
             elif "gemma" in model_name.lower():
                 tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False)
                 cfg_pretrained = AutoConfig.from_pretrained(model_path)
-                model = LlavaGemmaForCausalLM.from_pretrained(
+                model = model_registry.LlavaGemmaForCausalLM.from_pretrained(
                     model_path,
                     low_cpu_mem_usage=True,
                     config=cfg_pretrained,
@@ -402,7 +426,7 @@ def load_pretrained_model(
                         rank0_print(f"Overwriting config with {overwrite_config}")
                         for k, v in overwrite_config.items():
                             setattr(llava_cfg, k, v)
-                    model = LlavaLlamaForCausalLM.from_pretrained(
+                    model = model_registry.LlavaLlamaForCausalLM.from_pretrained(
                         model_path,
                         low_cpu_mem_usage=True,
                         attn_implementation=attn_implementation,
@@ -461,8 +485,9 @@ def load_pretrained_model(
         vision_tower = model.get_vision_tower()
         if not vision_tower.is_loaded:
             vision_tower.load_model(device_map=device_map)
-        if device_map != "auto":
-            vision_tower.to(device="cuda", dtype=torch.float16)
+        vision_device = _vision_tower_device(device_map)
+        if vision_device is not None:
+            vision_tower.to(device=vision_device, dtype=torch.float16)
         image_processor = vision_tower.image_processor
 
     if hasattr(model.config, "max_sequence_length"):

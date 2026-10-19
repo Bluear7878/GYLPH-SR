@@ -1,5 +1,5 @@
 model:
-  target: GLYPHSR.SR_model.SR_backbone
+  target: glyph_sr.models.diffusion.DiffusionRestorer
   params:
     ae_dtype: bf16
     diffusion_dtype: fp16
@@ -17,7 +17,7 @@ model:
         discretization_config:
           target: sgm.modules.diffusionmodules.discretizer.LegacyDDPMDiscretization
     control_stage_config:
-      target: GLYPHSR.modules.SR_modules.GLVControl
+      target: glyph_sr.models.layers.SceneControlNet
       params:
         adm_in_channels: 2816
         num_classes: sequential
@@ -38,7 +38,7 @@ model:
         legacy: False
         input_upscale: 1
     network_config:
-      target: GLYPHSR.modules.SR_modules.LightGLVUNet
+      target: glyph_sr.models.layers.RestorationUNet
       params:
         mode: XL-base
         project_type: ZeroSFT
@@ -135,9 +135,9 @@ model:
             scale_min: 4.0
     p_p: 'Cinematic, High Contrast, highly detailed, taken using a Canon EOS R camera, hyper detailed photo - realistic maximum detail, 32k, Color Grading, ultra HD, extreme meticulous detailing, skin pore detailing, hyper sharpness, perfect without deformations.'
     n_p: 'painting, oil painting, illustration, drawing, art, sketch, oil painting, cartoon, CG Style, 3D render, unreal engine, blurring, dirty, messy, worst quality, low quality, frames, watermark, signature, jpeg artifacts, deformed, lowres, over-smooth'
-SDXL_CKPT: /home/delta1/Texture/TEXIR/CKPT_PTH/sd_xl_base_1.0_0.9vae.safetensors
-SUPIR_CKPT_F: /home/delta1/Texture/TEXIR/CKPT_PTH/SUPIR-v0F.ckpt
-SUPIR_CKPT_Q: /home/delta1/Texture/TEXIR/CKPT_PTH/SUPIR-v0Q.ckpt
+SDXL_CKPT: ${oc.env:GLYPH_SUPIR_SDXL_CKPT,./checkpoints/sd_xl_base_1.0_0.9vae.safetensors}
+SUPIR_CKPT_F: ${oc.env:GLYPH_SUPIR_F_CKPT,./checkpoints/SUPIR-v0F.ckpt}
+SUPIR_CKPT_Q: ${oc.env:GLYPH_SUPIR_Q_CKPT,./checkpoints/SUPIR-v0Q.ckpt}
 SUPIR_CKPT: ~
 default_setting:
   s_cfg_Quality: 7.5
